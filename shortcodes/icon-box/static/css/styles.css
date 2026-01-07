@@ -1,22 +1,22 @@
-.fw-iconbox {
+.iconbox {
 	padding: 30px 0;
 }
-.fw-iconbox .fw-iconbox-title h3 {
+.iconbox .iconbox-title h3 {
 	margin-top: 0;
 	font-size: 23px;
 	font-weight: bold;
 }
-.fw-iconbox .fw-iconbox-text {
+.iconbox .iconbox-text {
 	padding-bottom: 10px;
 }
-.fw-iconbox .fw-iconbox-text p:last-child {
+.iconbox .iconbox-text p:last-child {
 	margin-bottom: 0;
 }
 /* Icon box style 1 */
-.fw-iconbox-1 {
+.iconbox-1 {
 	text-align: center;
 }
-.fw-iconbox-1 .fw-iconbox-image {
+.iconbox-1 .iconbox-image {
 	width: 56px;
 	font-size: 28px;
 	line-height: 28px;
@@ -25,30 +25,30 @@
 	color: #5bcc92;
 	border-radius: 5px;
 }
-.fw-iconbox-1 .fw-iconbox-image img {
+.iconbox-1 .iconbox-image img {
 	border-radius: 5px;
 }
-.fw-iconbox-1 .fw-iconbox-title h3 {
+.iconbox-1 .iconbox-title h3 {
 	margin-top: 0.6em;
 }
-.fw-iconbox-1.bg-on .fw-iconbox-image {
+.iconbox-1.bg-on .iconbox-image {
 	width: 56px;
 	height: 56px;
 	line-height: 56px;
 	background-color: #5bcc92;
 	color: #fff;
 }
-.fw-iconbox-1.icon-circle .fw-iconbox-image {
+.iconbox-1.icon-circle .iconbox-image {
 	border-radius: 50%;
 }
-.fw-iconbox-1.icon-circle .fw-iconbox-image img {
+.iconbox-1.icon-circle .iconbox-image img {
 	border-radius: 50%;
 }
 /* Icon box style 2 */
-.fw-iconbox-2 {
+.iconbox-2 {
 	text-align: left;
 }
-.fw-iconbox-2 .fw-iconbox-image {
+.iconbox-2 .iconbox-image {
 	float: left;
 	width: 28px;
 	font-size: 28px;
@@ -57,17 +57,17 @@
 	border-radius: 5px;
 	text-align: left;
 }
-.fw-iconbox-2 .fw-iconbox-image img {
+.iconbox-2 .iconbox-image img {
 	border-radius: 5px;
 }
-.fw-iconbox-2 .fw-iconbox-aside {
+.iconbox-2 .iconbox-aside {
 	margin-left: 43px;
 }
-.fw-iconbox-2.bg-on .fw-iconbox-title h3,
-.fw-iconbox-2.fw-iconbox-image-type .fw-iconbox-title h3 {
+.iconbox-2.bg-on .iconbox-title h3,
+.iconbox-2.iconbox-image-type .iconbox-title h3 {
 	margin-top: 14px;
 }
-.fw-iconbox-2.bg-on .fw-iconbox-image {
+.iconbox-2.bg-on .iconbox-image {
 	width: 56px;
 	height: 56px;
 	line-height: 56px;
@@ -75,17 +75,17 @@
 	color: #fff;
 	text-align: center;
 }
-.fw-iconbox-2.icon-circle .fw-iconbox-image {
+.iconbox-2.icon-circle .iconbox-image {
 	border-radius: 50%;
 }
-.fw-iconbox-2.icon-circle .fw-iconbox-image img {
+.iconbox-2.icon-circle .iconbox-image img {
 	border-radius: 50%;
 }
 /* Icon box style 3 */
-.fw-iconbox-3 {
+.iconbox-3 {
 	text-align: left;
 }
-.fw-iconbox-3 .fw-iconbox-image {
+.iconbox-3 .iconbox-image {
 	float: left;
 	width: 56px;
 	font-size: 28px;
@@ -93,20 +93,20 @@
 	border-radius: 5px;
 	line-height: 28px;
 }
-.fw-iconbox-3 .fw-iconbox-image img {
+.iconbox-3 .iconbox-image img {
 	border-radius: 5px;
 }
-.fw-iconbox-3.fw-iconbox-image-type .fw-iconbox-image {
+.iconbox-3.iconbox-image-type .iconbox-image {
 	margin-right: 15px;
 }
-.fw-iconbox-3 .fw-iconbox-aside {
+.iconbox-3 .iconbox-aside {
 	display: inline;
 }
-.fw-iconbox-3.bg-on .fw-iconbox-title h3,
-.fw-iconbox-3.fw-iconbox-image-type .fw-iconbox-title h3 {
+.iconbox-3.bg-on .iconbox-title h3,
+.iconbox-3.iconbox-image-type .iconbox-title h3 {
 	margin-top: 14px;
 }
-.fw-iconbox-3.bg-on .fw-iconbox-image {
+.iconbox-3.bg-on .iconbox-image {
 	width: 56px;
 	height: 56px;
 	line-height: 56px;
@@ -115,18 +115,18 @@
 	text-align: center;
 	margin-right: 15px;
 }
-.fw-iconbox-3.fw-icon-right .fw-iconbox-image {
+.iconbox-3.icon-right .iconbox-image {
 	float: right;
 	margin-right: 0;
 	margin-left: 15px;
 }
-.fw-iconbox-3 .fw-iconbox-text {
+.iconbox-3 .iconbox-text {
 	clear: both;
 	padding-top: 10px;
 }
-.fw-iconbox-3.icon-circle .fw-iconbox-image {
+.iconbox-3.icon-circle .iconbox-image {
 	border-radius: 50%;
 }
-.fw-iconbox-3.icon-circle .fw-iconbox-image img {
+.iconbox-3.icon-circle .iconbox-image img {
 	border-radius: 50%;
 }

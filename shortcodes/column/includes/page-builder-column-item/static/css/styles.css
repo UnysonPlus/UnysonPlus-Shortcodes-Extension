@@ -1,3 +1,50 @@
+/* Headings */
+.builder-item h1, .builder-item h2, .builder-item h3, .builder-item h4, .builder-item h5, .builder-item h6 {
+    margin: 1em 0 0.5em;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #222; /* dark gray for readability */
+	padding: 8px 0 0 !important;
+}
+
+/* Individual heading sizes */
+.builder-item h1 {
+    font-size: 28px !important;
+}
+
+.builder-item h2 {
+    font-size: 22px !important;
+}
+
+.builder-item h3 {
+    font-size: 18px !important;
+}
+
+.builder-item h4 {
+    font-size: 16px !important;
+}
+
+.builder-item h5 {
+    font-size: 14px !important;
+}
+
+.builder-item h6 {
+    font-size: 13px !important;
+}
+
+/* Optional: add some spacing between heading and paragraph */
+.builder-item h1 + p,
+.builder-item h2 + p,
+.builder-item h3 + p,
+.builder-item h4 + p,
+.builder-item h5 + p,
+.builder-item h6 + p {
+    margin-top: 0.5em;
+}
+
+
+/* Original Unyson CSS Starts Here */
+
 /* Thumb */
 .fw-option-type-page-builder .builder-item-type[data-builder-item-type="column"] img {
 	width: 30px;

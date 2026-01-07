@@ -1,75 +1,128 @@
-.fw-alert {
-	padding: 15px;
-	margin-bottom: 22px;
-	border: 1px solid transparent;
-	border-radius: 3px;
+/* Base alert */
+.alert {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid transparent;
+    border-radius: 0.375rem; /* slightly more modern rounded corners */
+    font-size: 1rem;
+    line-height: 1.5;
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
 }
-.fw-alert .alert-link {
-	font-weight: bold;
+
+/* Link inside alert */
+.alert .alert-link {
+    font-weight: 600;
+    text-decoration: underline;
 }
-.fw-alert > p,
-.fw-alert > ul {
-	margin-bottom: 0;
+
+/* Paragraphs / lists inside alert */
+.alert > p,
+.alert > ul {
+    margin-bottom: 0;
 }
-.fw-alert > p + p {
-	margin-top: 5px;
+.alert > p + p {
+    margin-top: 0.5rem;
 }
-.fw-alert .alert-icon {
-	margin-right: 5px;
-	font-size: 18px;
-	position: relative;
-	top: 1px;
+
+/* Alert icons */
+.alert .alert-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 0.15rem; /* vertically align with text */
 }
+
+/* Dismissible alerts */
 .alert-dismissible {
-	padding-right: 35px;
+    padding-right: 3rem;
+    position: relative;
 }
-.alert-dismissible .close {
-	position: relative;
-	top: -2px;
-	right: -21px;
-	color: inherit;
+.alert-dismissible .btn-close {
+    position: absolute;
+    right: 1rem;
+    z-index: 10;
 }
-.fw-alert-success {
-	background-color: #dff0d8;
-	border-color: #d6e9c6;
-	color: #3c763d;
+
+/* Specific alert types */
+.alert-success {
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+    color: #0f5132;
 }
-.fw-alert-success hr {
-	border-top-color: #c9e2b3;
+.alert-success .alert-link {
+    color: #0c4128;
 }
-.fw-alert-success .alert-link {
-	color: #2b542c;
+
+.alert-info {
+    background-color: #cff4fc;
+    border-color: #b6effb;
+    color: #055160;
 }
-.fw-alert-info {
-	background-color: #d9edf7;
-	border-color: #bce8f1;
-	color: #31708f;
+.alert-info .alert-link {
+    color: #04414d;
 }
-.fw-alert-info hr {
-	border-top-color: #a6e1ec;
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+    color: #664d03;
 }
-.fw-alert-info .alert-link {
-	color: #245269;
+.alert-warning .alert-link {
+    color: #493d02;
 }
-.fw-alert-warning {
-	background-color: #fcf8e3;
-	border-color: #faebcc;
-	color: #8a6d3b;
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+    color: #842029;
 }
-.fw-alert-warning hr {
-	border-top-color: #f7e1b5;
+.alert-danger .alert-link {
+    color: #6a1a21;
 }
-.fw-alert-warning .alert-link {
-	color: #66512c;
+
+.alert-primary {
+    background-color: #cfe2ff;
+    border-color: #b6d4fe;
+    color: #084298;
 }
-.fw-alert-danger {
-	background-color: #f2dede;
-	border-color: #ebccd1;
-	color: #a94442;
+.alert-primary .alert-link {
+    color: #06357a;
 }
-.fw-alert-danger hr {
-	border-top-color: #e4b9c0;
+
+.alert-secondary {
+    background-color: #e2e3e5;
+    border-color: #d3d6d8;
+    color: #41464b;
 }
-.fw-alert-danger .alert-link {
-	color: #843534;
+.alert-secondary .alert-link {
+    color: #34383c;
+}
+
+.alert-light {
+    background-color: #fefefe;
+    border-color: #fdfdfe;
+    color: #636466;
+}
+.alert-light .alert-link {
+    color: #4f4f51;
+}
+
+.alert-dark {
+    background-color: #d3d3d4;
+    border-color: #bcbebf;
+    color: #1b1e21;
+}
+.alert-dark .alert-link {
+    color: #141618;
+}
+
+/* Fade animation for dismissible */
+.alert.fade {
+    opacity: 0;
+    transition: opacity 0.15s linear;
+}
+.alert.show {
+    opacity: 1;
 }

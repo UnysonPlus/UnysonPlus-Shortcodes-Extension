@@ -1,3 +1,9 @@
 jQuery(document).ready(function ($) {
-	$(".fw-tabs-container").tabs();
+    $(".tabs-container").tabs({
+        // prevent focus scroll
+        beforeActivate: function (event, ui) {
+            // Remove focus to avoid jumping
+            ui.newTab.find("a").blur();
+        }
+    });
 });

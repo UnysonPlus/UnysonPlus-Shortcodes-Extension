@@ -13,19 +13,24 @@ $shortcodes = fw_ext( 'shortcodes' );
 /** @var FW_Shortcode_Table $table */
 $table = $shortcodes->get_shortcode( 'table' );
 
+// Build wrapper attributes
+$atts['base_class']       = 'pricing';
+$atts['unique_id_prefix'] = 'pri-';
+$attr = sc_build_wrapper_attr( $atts );
 ?>
-<div class="fw-pricing">
+
+<div <?php echo fw_attr_to_html( $attr ); ?>>
 	<?php foreach ( $atts['table']['cols'] as $col_key => $col ): ?>
-        <div class="fw-package-wrap <?php echo esc_attr( $class_width . ' ' . $col['name'] ); ?> ">
-            <div class="fw-package">
+        <div class="package-wrap <?php echo esc_attr( $class_width . ' ' . $col['name'] ); ?> ">
+            <div class="package">
 				<?php foreach ( $atts['table']['rows'] as $row_key => $row ): ?>
 					<?php if ( $col['name'] == 'desc-col' ) : ?>
-                        <div class="fw-default-row">
+                        <div class="default-row">
 							<?php echo fw_akg( 'textarea', $atts['table']['content'][ $row_key ][ $col_key ], '' ); ?>
                         </div>
 						<?php continue; endif; ?>
 					<?php if ( $row['name'] === 'heading-row' ): ?>
-                        <div class="fw-heading-row">
+                        <div class="heading-row">
                             <span>
 								<?php echo fw_akg(
 									'textarea',
@@ -35,7 +40,7 @@ $table = $shortcodes->get_shortcode( 'table' );
 							</span>
                         </div>
 					<?php elseif ( $row['name'] === 'pricing-row' ): ?>
-                        <div class="fw-pricing-row">
+                        <div class="pricing-row">
                             <span><?php echo fw_akg(
 		                            'amount',
 		                            $atts['table']['content'][ $row_key ][ $col_key ],
@@ -49,7 +54,7 @@ $table = $shortcodes->get_shortcode( 'table' );
                         </div>
 					<?php elseif ( $row['name'] == 'button-row' ) : ?>
 						<?php if ( $button = $table->get_button_shortcode() ): ?>
-                            <div class="fw-button-row">
+                            <div class="button-row">
 								<?php if ( false === empty( $atts['table']['content'][ $row_key ][ $col_key ]['button'] ) and false === empty( $button ) ) : ?>
 									<?php echo $button->render( $atts['table']['content'][ $row_key ][ $col_key ]['button'] ); ?>
 								<?php else : ?>
@@ -58,14 +63,14 @@ $table = $shortcodes->get_shortcode( 'table' );
                             </div>
 						<?php endif; ?>
 					<?php elseif ( $row['name'] === 'switch-row' ) : ?>
-                        <div class="fw-switch-row">
+                        <div class="switch-row">
 							<?php $value = $atts['table']['content'][ $row_key ][ $col_key ]['switch']; ?>
                             <span>
-								<i class="fa fw-price-icon-<?php echo esc_attr( $value ) ?>"></i>
+								<i class="fa price-icon-<?php echo esc_attr( $value ) ?>"></i>
 							</span>
                         </div>
 					<?php elseif ( $row['name'] === 'default-row' ) : ?>
-                        <div class="fw-default-row"><?php
+                        <div class="default-row"><?php
 							echo fw_akg( "textarea", $atts['table']['content'][ $row_key ][ $col_key ] )
 							?></div>
 					<?php endif; ?>
