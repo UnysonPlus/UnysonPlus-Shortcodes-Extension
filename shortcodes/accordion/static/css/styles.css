@@ -1,9 +1,9 @@
-.fw-accordion {
+.accordion {
 	border: 1px solid #cfcfcf;
 	clear: both;
 }
 
-.fw-accordion .fw-accordion-title {
+.accordion .accordion-title {
 	position: relative;
 	font-size: 15px;
 	font-weight: bold;
@@ -15,19 +15,19 @@
 	border-top: 1px solid #cfcfcf;
 }
 
-.fw-accordion .fw-accordion-title:focus {
+.accordion .accordion-title:focus {
 	outline: medium none;
 }
 
-.fw-accordion .fw-accordion-title:first-child {
+.accordion .accordion-title:first-child {
 	border-top: none;
 }
 
-.fw-accordion .fw-accordion-title.ui-state-active {
+.accordion .accordion-title.ui-state-active {
 	background: none;
 }
 
-.fw-accordion .fw-accordion-title .ui-icon {
+.accordion .accordion-title .ui-icon {
 	background: url("../img/plus-accordion.png") no-repeat;
 	position: absolute;
 	top: 20px;
@@ -36,19 +36,19 @@
 	height: 8px;
 }
 
-.fw-accordion .fw-accordion-title.ui-state-active .ui-icon {
+.accordion .accordion-title.ui-state-active .ui-icon {
 	background: url("../img/minus-accordion.png") no-repeat;
 	top: 22px;
 }
 
-.fw-accordion .fw-accordion-content {
+.accordion .accordion-content {
 	padding: 0;
 }
 
-.fw-accordion .fw-accordion-content > p {
+.accordion .accordion-content > p {
 	padding: 0 30px 20px 30px;
 }
 
-.fw-accordion .fw-accordion-content p:last-child {
+.accordion .accordion-content p:last-child {
 	margin-bottom: 0;
 }

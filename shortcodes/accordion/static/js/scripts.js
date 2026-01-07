@@ -1,5 +1,5 @@
 jQuery(document).ready(function($){
-	$( ".fw-accordion" ).accordion({
+	$( ".accordion" ).accordion({
         heightStyle: "content"
     });
 });

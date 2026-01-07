@@ -8,11 +8,16 @@
 ?>
 <?php
 /*
- * you may add the following classes to the `.fw-table` div:
- * `fw-table-bordered`, `fw-table-hover`, `fw-table-striped`
+ * you may add the following classes to the `.table` div:
+ * `table-bordered`, `table-hover`, `table-striped`
  */
+// Build wrapper attributes
+$atts['base_class']       = 'table';
+$atts['unique_id_prefix'] = 'tb-';
+$attr = sc_build_wrapper_attr( $atts );
 ?>
-<div class="fw-table">
+
+<div <?php echo fw_attr_to_html( $attr ); ?>>
 	<table>
 		<?php foreach ( $atts['table']['rows'] as $row_key => $row ) : ?>
 			<?php if ( $row['name'] == 'heading-row' ) : ?>
