@@ -1,0 +1,187 @@
+/* =======================================================================
+ *  Text Expander shortcode — front-end styles (flat-DOM model).
+ *
+ *  Paragraphs are direct children of the single wrapper <div>. Visibility
+ *  is driven by:
+ *    - the WRAPPER class `.fw-text-expander--open` (set by JS on toggle)
+ *    - the `data-expander-hidden="true"` attribute on individual elements
+ *      (paragraphs and inline spans) that should disappear when collapsed
+ *
+ *  Wrapper modifier classes:
+ *    .fw-text-expander--show-{position}  - Show button placement
+ *    .fw-text-expander--hide-{position}  - Hide button placement
+ *    .fw-text-expander--merge            - boundary paragraphs stitched
+ *    .fw-text-expander--native           - native <details>/<summary>
+ *    .fw-text-expander--open             - expanded state
+ *    .fw-text-expander--ellipsis         - show ellipsis when collapsed
+ *    .fw-text-expander--click-anywhere   - visible region is clickable
+ *    .fw-text-expander--icon-*           - icon variant on the toggle
+ *
+ *  Two real <button> elements (show + hide) live in the DOM at all times.
+ *  CSS swaps which one is `display: none` based on the open state. The
+ *  JS click handler picks up either via the shared `.fw-text-expander__toggle`
+ *  class.
+ * ===================================================================== */
+
+/* ---- Toggle button base ----------------------------------------------- */
+
+.fw-text-expander__toggle {
+    display: inline-block;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 0 0 0.4em;
+    font-size: inherit;
+    font-family: inherit;
+    color: #0073aa;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.fw-text-expander__toggle:hover {
+    color: #005177;
+}
+
+.fw-text-expander__toggle:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* ---- Show / hide button visibility ------------------------------------
+ *  Each button has a fixed label and a fixed DOM position. CSS controls
+ *  which one is active based on the wrapper state.
+ * --------------------------------------------------------------------- */
+
+.fw-text-expander__btn--show { display: inline-block; }
+.fw-text-expander__btn--hide { display: none; }
+.fw-text-expander--open .fw-text-expander__btn--show { display: none; }
+.fw-text-expander--open .fw-text-expander__btn--hide { display: inline-block; }
+
+/* ---- Block-positioned button wrappers --------------------------------
+ *  When a button's placement is `block_left|center|right`, it gets its
+ *  own block-level wrapper. The wrap inherits the show/hide visibility
+ *  so it doesn't leave an empty block when its button is hidden.
+ * --------------------------------------------------------------------- */
+
+.fw-text-expander__btn-wrap {
+    display: flex;
+    width: 100%;
+    margin: 8px 0;
+}
+.fw-text-expander__btn-wrap .fw-text-expander__toggle {
+    margin: 0;
+}
+
+.fw-text-expander__btn-wrap--show { display: flex; }
+.fw-text-expander__btn-wrap--hide { display: none; }
+.fw-text-expander--open .fw-text-expander__btn-wrap--show { display: none; }
+.fw-text-expander--open .fw-text-expander__btn-wrap--hide { display: flex; }
+
+.fw-text-expander__btn-wrap--left   { justify-content: flex-start; }
+.fw-text-expander__btn-wrap--center { justify-content: center; }
+.fw-text-expander__btn-wrap--right  { justify-content: flex-end; }
+
+/* ---- Toggle icons (chevron / plus-minus) ------------------------------ */
+
+.fw-text-expander__icon {
+    display: inline-block;
+    width: 0.8em;
+    text-align: center;
+    vertical-align: middle;
+    margin-right: 0.4em;
+    line-height: 1;
+}
+
+.fw-text-expander__icon::before {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.fw-text-expander--icon-chevron .fw-text-expander__icon::before {
+    content: '\25B8';
+}
+
+.fw-text-expander__toggle.fw-text-expander--icon-chevron[aria-expanded="true"] .fw-text-expander__icon::before {
+    transform: rotate(90deg);
+}
+
+.fw-text-expander--icon-plus-minus .fw-text-expander__icon::before {
+    content: '+';
+    font-weight: bold;
+}
+
+.fw-text-expander__toggle.fw-text-expander--icon-plus-minus[aria-expanded="true"] .fw-text-expander__icon::before {
+    content: '\2212';
+}
+
+/* ---- Flat-DOM hidden-element visibility ------------------------------
+ *  Any element (paragraph, span, etc.) carrying data-expander-hidden is
+ *  hidden while the wrapper is collapsed and shown otherwise.
+ *
+ *  Smoothness is provided by the WRAPPER's height transition (driven
+ *  by JS — see setState() in scripts.js). The children themselves snap
+ *  visible/invisible inside the smoothly-animating wrapper. Earlier
+ *  attempts used `transition: display 0.25s allow-discrete` to fade
+ *  children across the display change, but that DEFERS the display
+ *  switch by 0.25s on close, which made the JS scrollHeight read
+ *  return the EXPANDED height instead of the collapsed one (the bug
+ *  symptom: open animated, close stalled then snapped).
+ *
+ *  The --animating class on the wrapper is added by JS only during the
+ *  close transition — it overrides the :not(--open) display:none below
+ *  so children stay visible while the wrapper shrinks. JS removes the
+ *  class on transitionend, at which point the children snap to
+ *  display:none.
+ * --------------------------------------------------------------------- */
+
+.fw-text-expander:not(.fw-text-expander--open):not(.fw-text-expander--animating) [data-expander-hidden="true"] {
+    display: none;
+}
+
+/* ---- Ellipsis (pure CSS, hooked to the last visible paragraph) ------ */
+
+.fw-text-expander--ellipsis:not(.fw-text-expander--native):not(.fw-text-expander--open) .fw-text-expander__last-visible::after {
+    content: '\2026';
+}
+
+.fw-text-expander--ellipsis.fw-text-expander--native:not([open]) .fw-text-expander__last-visible::after {
+    content: '\2026';
+}
+
+/* ---- Click-anywhere cursor cue ---------------------------------------- */
+
+.fw-text-expander--click-anywhere:not(.fw-text-expander--open) > p:not([data-expander-hidden]) {
+    cursor: pointer;
+}
+
+/* ---- Native <details> presentation ----------------------------------- */
+
+.fw-text-expander--native > summary {
+    cursor: pointer;
+    list-style: revert;
+}
+
+.fw-text-expander--native[open] .fw-text-expander__label-show,
+.fw-text-expander--native:not([open]) .fw-text-expander__label-hide {
+    display: none;
+}
+
+.fw-text-expander--native .fw-text-expander__label-show,
+.fw-text-expander--native .fw-text-expander__label-hide {
+    margin-left: 0.4em;
+    color: #0073aa;
+    text-decoration: underline;
+}
+
+/* ---- Reduced motion --------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    .fw-text-expander__toggle,
+    .fw-text-expander__icon::before {
+        transition: none;
+    }
+    /* setState() already skips the wrapper height animation when
+       prefers-reduced-motion is active, so no further CSS is needed. */
+}

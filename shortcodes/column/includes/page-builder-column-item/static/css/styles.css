@@ -11,27 +11,45 @@
 .builder-item h1 {
     font-size: 28px !important;
 }
-
+.builder-item h1 img {
+		width: 100%;
+		max-width: 1.75rem;
+}
 .builder-item h2 {
     font-size: 22px !important;
 }
-
+.builder-item h2 img {
+		width: 100%;
+		max-width: 1.375rem;
+}
 .builder-item h3 {
     font-size: 18px !important;
 }
-
+.builder-item h3 img {
+		width: 100%;
+		max-width: 1.125rem;
+}
 .builder-item h4 {
     font-size: 16px !important;
 }
-
+.builder-item h4 img {
+		width: 100%;
+		max-width: 1rem;
+}
 .builder-item h5 {
     font-size: 14px !important;
 }
-
+.builder-item h5 img {
+		width: 100%;
+		max-width: 0.875rem;
+}
 .builder-item h6 {
     font-size: 13px !important;
 }
-
+.builder-item h6 img {
+		width: 100%;
+		max-width: 0.813rem;
+}
 /* Optional: add some spacing between heading and paragraph */
 .builder-item h1 + p,
 .builder-item h2 + p,
@@ -42,6 +60,9 @@
     margin-top: 0.5em;
 }
 
+.builder-item svg {
+	max-width: 50px;
+}
 
 /* Original Unyson CSS Starts Here */
 
@@ -52,6 +73,15 @@
 }
 
 /* Column Builder Item */
+.pb-item {
+    border-radius: .25rem;
+}
+.pb-item-type-column.pb-item {
+	border-radius: .5rem;
+}
+.pb-item-type-column.pb-item.custom-section {
+    border-radius: .75rem;
+}
 .pb-item-type-column {
 	background-color: #f8f8f8;
 	border: 1px dashed #d8d8d8;

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 120 40">
+    <rect width="120" height="40" fill="#f0f0f0" rx="3"/>
+    <rect x="0" y="0" width="98" height="40" rx="2" fill="#4a9c8e"/>
+    <rect x="100" y="0" width="20" height="40" rx="2" fill="#5b9bd5"/>
+    <text x="49" y="24" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#fff" font-weight="bold">IMG</text>
+    <text x="110" y="24" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#fff" font-weight="bold">TXT</text>
+  </svg>

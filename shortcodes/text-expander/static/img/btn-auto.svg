@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 80" width="160" height="80" role="img" aria-label="Automatic — mirrors the Show button placement, anchored after the expanded text">
+    <rect x="0" y="0" width="160" height="80" fill="#f6f7f7"/>
+
+    <!-- Text lines (slightly shortened to make room for the AUTO badge). -->
+    <rect x="10" y="14" width="115" height="6" rx="2" fill="#666"/>
+    <rect x="10" y="26" width="120" height="6" rx="2" fill="#666"/>
+    <rect x="10" y="38" width="70"  height="6" rx="2" fill="#666"/>
+
+    <!-- Four ghosted button positions: inline + block-left/center/right.
+         Each is the same shape as the corresponding solid button in the
+         other four icons, rendered at low opacity to read as "any of the
+         above". -->
+    <g opacity="0.25" fill="#0073aa">
+        <rect x="86"  y="35" width="32" height="11" rx="2"/>
+        <rect x="10"  y="54" width="36" height="11" rx="2"/>
+        <rect x="62"  y="54" width="36" height="11" rx="2"/>
+        <rect x="114" y="54" width="36" height="11" rx="2"/>
+    </g>
+
+    <!-- AUTO badge, top-right. -->
+    <rect x="130" y="6" width="26" height="14" rx="3" fill="#0073aa"/>
+    <text x="143" y="16" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#ffffff" text-anchor="middle">AUTO</text>
+</svg>

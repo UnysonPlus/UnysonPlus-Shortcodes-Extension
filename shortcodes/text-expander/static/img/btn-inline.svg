@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 80" width="160" height="80" role="img" aria-label="Button inline at the end of the last visible sentence">
+    <rect x="0" y="0" width="160" height="80" fill="#f6f7f7"/>
+    <rect x="10" y="14" width="140" height="6" rx="2" fill="#666"/>
+    <rect x="10" y="26" width="140" height="6" rx="2" fill="#666"/>
+    <rect x="10" y="38" width="90"  height="6" rx="2" fill="#666"/>
+    <rect x="106" y="35" width="40" height="11" rx="2" fill="#0073aa"/>
+</svg>
