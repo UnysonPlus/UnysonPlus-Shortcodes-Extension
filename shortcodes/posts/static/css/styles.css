@@ -1,0 +1,339 @@
+/*
+ * Posts Shortcode — POSITIONING ONLY.
+ * Colors, typography, and decorative styling are intentionally absent;
+ * apply those in your theme stylesheet so the same shortcode reflects
+ * any theme without touching this file.
+ *
+ * BEM convention matches the icon-box shortcode (.posts__el, .posts--mod).
+ */
+
+/* ==========================================================================
+   Wrapper + CSS variables
+   ========================================================================== */
+.posts {
+    --posts-col-gap: 24px;
+    --posts-row-gap: 32px;
+    --posts-cols-d: 3;
+    --posts-cols-t: 2;
+    --posts-cols-m: 1;
+    --posts-card-pad: 1.25rem;
+    box-sizing: border-box;
+}
+.posts *,
+.posts *::before,
+.posts *::after { box-sizing: inherit; }
+
+/* Density presets (padding only — colors stay in theme) */
+.posts[data-density="none"]     { --posts-card-pad: 0; }
+.posts[data-density="compact"]  { --posts-card-pad: 0.75rem; }
+.posts[data-density="regular"]  { --posts-card-pad: 1.25rem; }
+.posts[data-density="spacious"] { --posts-card-pad: 2rem; }
+
+/* Layout-wrap is the optional sidebar+main flex container. */
+.posts__layout-wrap                              { display: block; }
+.posts__layout-wrap--left-sidebar,
+.posts__layout-wrap--right-sidebar               { display: flex; gap: var(--posts-col-gap); align-items: flex-start; }
+.posts__layout-wrap--right-sidebar               { flex-direction: row-reverse; }
+.posts__layout-wrap--left-sidebar .posts__filters,
+.posts__layout-wrap--right-sidebar .posts__filters {
+    flex: 0 0 220px;
+    display: flex; flex-direction: column; gap: 0.5rem;
+}
+.posts__main { flex: 1 1 auto; min-width: 0; }
+
+/* ==========================================================================
+   Grid container — three layout modes
+   ========================================================================== */
+.posts__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--posts-cols-d), minmax(0, 1fr));
+    column-gap: var(--posts-col-gap);
+    row-gap: var(--posts-row-gap);
+}
+
+/* List = single column always */
+.posts--mode-list .posts__grid {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+/* Masonry: CSS multi-column layout (no JS dependency) */
+.posts--mode-masonry .posts__grid {
+    display: block;
+    column-count: var(--posts-cols-d);
+    column-gap: var(--posts-col-gap);
+}
+.posts--mode-masonry .posts__card {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: var(--posts-row-gap);
+    break-inside: avoid;
+}
+
+/* Slider: horizontal scroll-snap (no library dependency) */
+.posts--mode-slider .posts__grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: var(--posts-col-gap);
+    scrollbar-width: thin;
+}
+.posts--mode-slider .posts__card {
+    flex: 0 0 calc((100% - (var(--posts-cols-d) - 1) * var(--posts-col-gap)) / var(--posts-cols-d));
+    scroll-snap-align: start;
+}
+
+/* ==========================================================================
+   Equal-height
+   ========================================================================== */
+.posts--equal-height .posts__card { height: 100%; }
+
+/* ==========================================================================
+   Card base
+   ========================================================================== */
+.posts__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.posts__card .posts__body,
+.posts__card .posts__overlay-body { padding: var(--posts-card-pad); }
+.posts__card .posts__body > * + *,
+.posts__card .posts__overlay-body > * + * { margin-top: 0.6em; }
+
+/* Featured first-post span */
+.posts__card--span-2 { grid-column: span 2; }
+.posts--mode-masonry .posts__card--span-2 { column-span: all; }
+
+/* Image */
+.posts__image {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+}
+.posts__image img,
+.posts__image .posts__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Aspect-ratio crops */
+.posts__image--ratio-16-9 { aspect-ratio: 16 / 9; }
+.posts__image--ratio-4-3  { aspect-ratio: 4 / 3; }
+.posts__image--ratio-3-2  { aspect-ratio: 3 / 2; }
+.posts__image--ratio-1-1  { aspect-ratio: 1 / 1; }
+.posts__image--ratio-2-3  { aspect-ratio: 2 / 3; }
+.posts__image--ratio-auto { aspect-ratio: auto; }
+
+/* ==========================================================================
+   Side-layout cards (image-left / image-right)
+   ========================================================================== */
+.posts__card--side {
+    flex-direction: row;
+    align-items: stretch;
+}
+.posts__card--side .posts__col            { display: flex; flex-direction: column; min-width: 0; }
+.posts__card--side .posts__col--image     { flex: 0 0 40%; }
+.posts__card--side .posts__col--body      { flex: 1 1 auto; padding: var(--posts-card-pad); }
+.posts__card--side .posts__col--body > * + * { margin-top: 0.6em; }
+
+/* Width ratios */
+.posts__card--ratio-30-70 .posts__col--image { flex-basis: 30%; }
+.posts__card--ratio-30-70 .posts__col--body  { flex-basis: 70%; }
+.posts__card--ratio-40-60 .posts__col--image { flex-basis: 40%; }
+.posts__card--ratio-40-60 .posts__col--body  { flex-basis: 60%; }
+.posts__card--ratio-50-50 .posts__col--image { flex-basis: 50%; }
+.posts__card--ratio-50-50 .posts__col--body  { flex-basis: 50%; }
+.posts__card--ratio-60-40 .posts__col--image { flex-basis: 60%; }
+.posts__card--ratio-60-40 .posts__col--body  { flex-basis: 40%; }
+
+/* Image vertical alignment in side layouts */
+.posts__card--imgva-top     .posts__col--image     { align-self: flex-start; }
+.posts__card--imgva-center  .posts__col--image     { align-self: center; }
+.posts__card--imgva-stretch .posts__col--image     { align-self: stretch; }
+.posts__card--imgva-stretch .posts__col--image .posts__image { height: 100%; }
+
+/* Content vertical alignment in side layouts */
+.posts__card--contentva-top           .posts__col--body { justify-content: flex-start; }
+.posts__card--contentva-center        .posts__col--body { justify-content: center; }
+.posts__card--contentva-bottom        .posts__col--body { justify-content: flex-end; }
+.posts__card--contentva-space-between .posts__col--body { justify-content: space-between; }
+
+/* When there's no image, body-only column gets full width */
+.posts__card--side .posts__col--body-only { flex: 1 1 100%; }
+
+/* ==========================================================================
+   Overlay card (text on top of image)
+   ========================================================================== */
+.posts__card--overlay { display: block; }
+.posts__card--overlay .posts__image {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+}
+.posts__card--overlay .posts__image::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0));
+    pointer-events: none;
+}
+.posts__card--overlay .posts__overlay-body {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 320px;
+    height: 100%;
+}
+.posts__card--overlay.posts__card--no-image { min-height: 220px; }
+
+/* Span-2 hero overlay = taller min-height */
+.posts__card--overlay.posts__card--featured .posts__overlay-body { min-height: 420px; }
+
+/* ==========================================================================
+   Categories — placement
+   ========================================================================== */
+.posts__cats { display: flex; flex-wrap: wrap; gap: 0.4em; }
+
+.posts__cats--image-overlay-top-left,
+.posts__cats--image-overlay-top-right,
+.posts__cats--image-overlay-bottom-left,
+.posts__cats--image-overlay-bottom-right {
+    position: absolute;
+    z-index: 2;
+}
+.posts__image .posts__cats--image-overlay-top-left     { top: 0.75rem; left: 0.75rem; }
+.posts__image .posts__cats--image-overlay-top-right    { top: 0.75rem; right: 0.75rem; }
+.posts__image .posts__cats--image-overlay-bottom-left  { bottom: 0.75rem; left: 0.75rem; }
+.posts__image .posts__cats--image-overlay-bottom-right { bottom: 0.75rem; right: 0.75rem; }
+
+/* ==========================================================================
+   Meta bar layouts
+   ========================================================================== */
+.posts__meta--inline-dot,
+.posts__meta--inline-pipe,
+.posts__meta--inline-icons {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.4em;
+}
+.posts__meta--stacked .posts__meta-row { display: block; }
+.posts__meta--stacked .posts__meta-row + .posts__meta-row { margin-top: 0.2em; }
+.posts__meta-sep--gap { width: 0.75em; display: inline-block; }
+
+/* ==========================================================================
+   Read-more shapes
+   ========================================================================== */
+.posts__readmore { display: inline-flex; align-items: center; gap: 0.35em; text-decoration: none; }
+.posts__readmore--button   { padding: 0.5em 1em; border: 1px solid currentColor; border-radius: 0.25em; }
+.posts__readmore--text-link {}
+.posts__readmore--arrow    { font-size: 1.4em; line-height: 1; }
+
+/* ==========================================================================
+   Text alignment (card-wide)
+   ========================================================================== */
+.posts--align-left   .posts__body, .posts--align-left   .posts__overlay-body { text-align: left; }
+.posts--align-center .posts__body, .posts--align-center .posts__overlay-body { text-align: center; }
+.posts--align-right  .posts__body, .posts--align-right  .posts__overlay-body { text-align: right; }
+.posts--align-center .posts__cats,
+.posts--align-center .posts__meta--inline-dot,
+.posts--align-center .posts__meta--inline-pipe,
+.posts--align-center .posts__meta--inline-icons { justify-content: center; }
+.posts--align-right  .posts__cats,
+.posts--align-right  .posts__meta--inline-dot,
+.posts--align-right  .posts__meta--inline-pipe,
+.posts--align-right  .posts__meta--inline-icons { justify-content: flex-end; }
+
+/* ==========================================================================
+   Pagination & filter bar positioning
+   ========================================================================== */
+.posts__pagination { display: flex; gap: 0.5em; margin: 1.5em 0 0; }
+.posts__pagination--left   { justify-content: flex-start; }
+.posts__pagination--center { justify-content: center; }
+.posts__pagination--right  { justify-content: flex-end; }
+.posts__loadmore-wrap      { display: flex; margin: 1.5em 0 0; }
+.posts__loadmore-wrap.posts__pagination--left   { justify-content: flex-start; }
+.posts__loadmore-wrap.posts__pagination--center { justify-content: center; }
+.posts__loadmore-wrap.posts__pagination--right  { justify-content: flex-end; }
+
+.posts__filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1em; }
+.posts__filter  { cursor: pointer; padding: 0.35em 0.8em; }
+
+/* ==========================================================================
+   Slider arrow / dot positioning
+   ========================================================================== */
+.posts--mode-slider                          { position: relative; }
+.posts--mode-slider[data-slider-arrows="hidden"] .posts__slider-arrow { display: none; }
+.posts__slider-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    z-index: 2; width: 2rem; height: 2rem;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, .9); border: 0; cursor: pointer;
+}
+.posts__slider-arrow--prev { left: 0.5rem; }
+.posts__slider-arrow--next { right: 0.5rem; }
+.posts--mode-slider[data-slider-arrows="outside"] .posts__slider-arrow--prev { left: -2.5rem; }
+.posts--mode-slider[data-slider-arrows="outside"] .posts__slider-arrow--next { right: -2.5rem; }
+.posts--mode-slider[data-slider-arrows="above"]   { padding-top: 3rem; }
+.posts--mode-slider[data-slider-arrows="above"] .posts__slider-arrow { top: 0; transform: none; }
+.posts--mode-slider[data-slider-arrows="above"] .posts__slider-arrow--prev { left: auto; right: 3rem; }
+.posts--mode-slider[data-slider-arrows="above"] .posts__slider-arrow--next { right: 0; }
+
+.posts__slider-dots                          { display: flex; gap: 0.4em; justify-content: center; margin-top: 0.75em; }
+.posts--mode-slider[data-slider-dots="hidden"] .posts__slider-dots { display: none; }
+.posts--mode-slider[data-slider-dots="overlay-bottom"] .posts__slider-dots {
+    position: absolute; bottom: 0.5rem; left: 0; right: 0; margin: 0; z-index: 2;
+}
+
+/* ==========================================================================
+   Empty state
+   ========================================================================== */
+.posts__empty { padding: 2em; text-align: center; }
+
+/* ==========================================================================
+   Responsive — tablet (≤ 991px)
+   ========================================================================== */
+@media (max-width: 991px) {
+    .posts__grid              { grid-template-columns: repeat(var(--posts-cols-t), minmax(0, 1fr)); }
+    .posts--mode-masonry .posts__grid { column-count: var(--posts-cols-t); }
+    .posts--mode-slider  .posts__card { flex-basis: calc((100% - (var(--posts-cols-t) - 1) * var(--posts-col-gap)) / var(--posts-cols-t)); }
+
+    .posts__layout-wrap--left-sidebar,
+    .posts__layout-wrap--right-sidebar { flex-direction: column; }
+    .posts__layout-wrap--left-sidebar .posts__filters,
+    .posts__layout-wrap--right-sidebar .posts__filters { flex: 0 0 auto; width: 100%; flex-direction: row; flex-wrap: wrap; }
+}
+
+/* ==========================================================================
+   Responsive — mobile (≤ 782px)
+   Includes layout-style override.
+   ========================================================================== */
+@media (max-width: 782px) {
+    .posts__grid              { grid-template-columns: repeat(var(--posts-cols-m), minmax(0, 1fr)); }
+    .posts--mode-masonry .posts__grid { column-count: var(--posts-cols-m); }
+    .posts--mode-slider  .posts__card { flex-basis: calc((100% - (var(--posts-cols-m) - 1) * var(--posts-col-gap)) / var(--posts-cols-m)); }
+
+    /* Mobile layout overrides flatten side cards to image-top by default. */
+    .posts[data-mobile-layout="standard"] .posts__card--side {
+        flex-direction: column;
+    }
+    .posts[data-mobile-layout="standard"] .posts__card--side .posts__col--image,
+    .posts[data-mobile-layout="standard"] .posts__card--side .posts__col--body {
+        flex-basis: auto; width: 100%;
+    }
+    .posts[data-mobile-layout="side-left"] .posts__card--standard,
+    .posts[data-mobile-layout="side-left"] .posts__card--overlay {
+        flex-direction: row;
+    }
+    .posts[data-mobile-layout="minimal"] .posts__image,
+    .posts[data-mobile-layout="minimal"] .posts__col--image { display: none; }
+
+    /* Hero overlay reduces height on small screens */
+    .posts__card--overlay .posts__overlay-body                  { min-height: 240px; }
+    .posts__card--overlay.posts__card--featured .posts__overlay-body { min-height: 300px; }
+
+    /* Card span-2 collapses to single span on mobile */
+    .posts__card--span-2 { grid-column: span 1; }
+}

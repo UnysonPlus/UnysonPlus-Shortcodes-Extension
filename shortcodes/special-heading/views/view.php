@@ -10,6 +10,10 @@
 $user_class = $atts['css_class'] ?? '';
 $user_id    = $atts['css_id'] ?? '';
 
+// Advanced classes (normalized)
+$title_class    = trim( $atts['title_class'] ?? '' );
+$subtitle_class = trim( $atts['subtitle_class'] ?? '' );
+
 // Always set these before building attributes
 $atts['base_class']       = 'heading';
 $atts['unique_id_prefix'] = 'hd-';
@@ -22,13 +26,13 @@ if ( ! empty( $atts['centered'] ) && $atts['centered'] === 'yes' ) {
 }
 
 // Add heading-specific class
-$atts['css_class'] = 'heading-' . ($atts['heading'] ?? 'h2') . ' ' . $atts['css_class'];
+$atts['css_class'] = 'heading-' . ( $atts['heading'] ?? 'h2' ) . ' ' . $atts['css_class'];
 
 // Build wrapper attributes
 $attr = sc_build_wrapper_attr( $atts );
 
-// Determine if wrapper is needed (only if user explicitly set class or ID)
-$use_wrapper = !empty($user_class) || !empty($user_id);
+// Determine if wrapper is needed
+$use_wrapper = ! empty( $user_class ) || ! empty( $user_id );
 ?>
 
 <?php if ( $use_wrapper ) : ?>
@@ -36,13 +40,30 @@ $use_wrapper = !empty($user_class) || !empty($user_id);
 <?php endif; ?>
 
 <?php if ( ! empty( $atts['title'] ) ) : ?>
-    <<?php echo esc_attr( $atts['heading'] ); ?> class="special-title">
-        <?php echo esc_html( $atts['title'] ); ?>
+    <<?php echo esc_attr( $atts['heading'] ); ?>
+        class="<?php
+            echo esc_attr(
+                trim(
+                    'heading-title' .
+                    ( $title_class !== '' ? ' ' . $title_class : '' )
+                )
+            );
+        ?>">
+        <?php echo wp_kses_post( $atts['title'] ); ?>
     </<?php echo esc_attr( $atts['heading'] ); ?>>
 <?php endif; ?>
 
 <?php if ( ! empty( $atts['subtitle'] ) ) : ?>
-    <div class="special-subtitle"><?php echo esc_html( $atts['subtitle'] ); ?></div>
+    <div class="<?php
+        echo esc_attr(
+            trim(
+                'heading-subtitle' .
+                ( $subtitle_class !== '' ? ' ' . $subtitle_class : '' )
+            )
+        );
+    ?>">
+        <?php echo wp_kses_post( $atts['subtitle'] ); ?>
+    </div>
 <?php endif; ?>
 
 <?php if ( $use_wrapper ) : ?>

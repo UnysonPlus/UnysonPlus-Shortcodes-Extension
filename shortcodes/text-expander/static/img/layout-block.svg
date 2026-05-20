@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 80" width="160" height="80" role="img" aria-label="Block layout: hidden content appears below the button as a block">
+    <rect x="0" y="0" width="160" height="80" fill="#f6f7f7"/>
+    <rect x="8" y="8"  width="144" height="5" rx="2" fill="#666"/>
+    <rect x="8" y="17" width="120" height="5" rx="2" fill="#666"/>
+    <rect x="58" y="30" width="44" height="11" rx="2" fill="#0073aa"/>
+    <rect x="8" y="49" width="144" height="5" rx="2" fill="#bbb"/>
+    <rect x="8" y="58" width="144" height="5" rx="2" fill="#bbb"/>
+    <rect x="8" y="67" width="90"  height="5" rx="2" fill="#bbb"/>
+</svg>

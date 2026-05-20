@@ -248,6 +248,30 @@ $options = array(
     ),
 	*/
 
-    'tab_advanced' => sc_get_advanced_tab(),
+    'tab_animation' => [
+        'title'   => __( 'Animations', 'fw' ),
+        'type'    => 'tab',
+        'options' => sc_get_animation_fields(),
+    ],
+    'tab_advanced' => [
+        'title'   => __('Advanced', 'fw'),
+        'type'    => 'tab',
+        'options' => [
+            'advanced_settings' => [
+                'type'    => 'group',
+                'options' => array_merge(
+                    sc_get_advanced_tab(),
+                    [
+                        'inner_class' => [
+                            'type'  => 'text',
+                            'label' => __( 'Inner Wrapper Class', 'fw' ),
+                            'desc'  => __( 'Optional. When set, an inner &lt;div&gt; is rendered around the column content with these classes — useful for adding border / padding / background around the content without affecting the Bootstrap grid wrapper. Leave blank to render content directly (default).', 'fw' ),
+                            'value' => '',
+                        ],
+                    ]
+                ),
+            ],
+        ],
+    ],
 
 );

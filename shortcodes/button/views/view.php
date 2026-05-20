@@ -9,17 +9,16 @@
 $atts['base_class']       = 'btn';
 $atts['unique_id_prefix'] = 'bt-';
 
-// Build attributes for wrapper (adds id, custom class, etc. from advanced tab)
+$atts['extra_attrs'] = [];
+
 $attr = sc_build_wrapper_attr($atts);
 
-// Collect button classes
 $classes   = ['btn'];
 $style     = !empty($atts['style']) ? $atts['style'] : '';
 $outline   = !empty($atts['outline']) ? $atts['outline'] : '';
 $size      = !empty($atts['size']) ? $atts['size'] : '';
 $block     = !empty($atts['block']) ? $atts['block'] : '';
 $state     = !empty($atts['state']) ? $atts['state'] : '';
-$custom    = !empty($atts['css_class']) ? $atts['css_class'] : '';
 
 if ($style && !$outline) {
     $classes[] = $style;
@@ -39,45 +38,43 @@ if ($state === 'active') {
 if ($state === 'disabled') {
     $classes[] = 'disabled';
 }
-if ($custom) {
-    $classes[] = $custom;
+
+if (!empty($attr['class'])) {
+    $classes[] = $attr['class'];
+    unset($attr['class']);
 }
 
-// Icon handling
 $icon_html = '';
-if (!empty($atts['icon'])) {
-    // Some Unyson icon pickers return arrays
-    if (is_array($atts['icon']) && isset($atts['icon']['icon-class'])) {
+if (!empty($atts['icon']) && is_array($atts['icon'])) {
+    $icon_class = '';
+    if (!empty($atts['icon']['icon-class'])) {
         $icon_class = $atts['icon']['icon-class'];
-    } elseif (is_array($atts['icon']) && isset($atts['icon']['value'])) {
-        $icon_class = $atts['icon']['value'];
-    } else {
-        $icon_class = $atts['icon'];
     }
-
-    if (!empty($icon_class)) {
+    if (!empty($icon_class) && is_string($icon_class)) {
         $icon_html = '<i class="' . esc_attr($icon_class) . '"></i>';
     }
 }
 
-// Button content
+$icon_position = !empty($atts['icon_position']) ? $atts['icon_position'] : 'before';
+
 $button_content = '';
-if ($icon_html && $atts['icon_position'] === 'before') {
+if ($icon_html && $icon_position === 'before') {
     $button_content .= $icon_html . ' ';
 }
 $button_content .= esc_html($atts['label']);
-if ($icon_html && $atts['icon_position'] === 'after') {
+if ($icon_html && $icon_position === 'after') {
     $button_content .= ' ' . $icon_html;
 }
 
-// Disabled button handling
+$target = !empty($atts['target']) && is_string($atts['target']) ? $atts['target'] : '_self';
+
 $disabled_attr = '';
 if ($state === 'disabled') {
     $disabled_attr = ' aria-disabled="true" tabindex="-1"';
 }
 ?>
 <a href="<?php echo esc_url($atts['link']); ?>"
-   target="<?php echo esc_attr($atts['target']); ?>"
+   target="<?php echo esc_attr($target); ?>"
    class="<?php echo esc_attr(implode(' ', $classes)); ?>"
    <?php echo $disabled_attr; ?>
    <?php echo fw_attr_to_html($attr); ?>>

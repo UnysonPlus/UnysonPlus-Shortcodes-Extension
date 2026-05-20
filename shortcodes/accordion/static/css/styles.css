@@ -5,18 +5,22 @@
 
 .accordion .accordion-title {
 	position: relative;
+	display: flex;
+	align-items: center;
 	font-size: 15px;
 	font-weight: bold;
 	color: #333333;
 	background: #f2f2f2;
-	padding: 15px 40px;
+	padding: 1rem;
 	margin: 0;
 	cursor: pointer;
 	border-top: 1px solid #cfcfcf;
+	user-select: none;
 }
 
 .accordion .accordion-title:focus {
-	outline: medium none;
+	outline: 2px solid #4a90d9;
+	outline-offset: -2px;
 }
 
 .accordion .accordion-title:first-child {
@@ -27,26 +31,206 @@
 	background: none;
 }
 
-.accordion .accordion-title .ui-icon {
-	background: url("../img/plus-accordion.png") no-repeat;
+.accordion .accordion-title-text {
+	flex: 1;
+	min-width: 0;
+}
+
+
+/* ── Icon base ────────────────────────────────────────────── */
+
+.accordion .accordion-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	position: relative;
+}
+
+.accordion-icon-none .accordion-icon {
+	display: none;
+}
+
+
+/* ── Icon position ────────────────────────────────────────── */
+
+.accordion-icon-left .accordion-icon {
+	order: -1;
+	margin-right: 12px;
+}
+
+.accordion-icon-right .accordion-icon {
+	order: 1;
+	margin-left: 12px;
+}
+
+
+/* ── Plus / Minus icon ────────────────────────────────────── */
+
+.accordion-icon-plus-minus .accordion-icon::before,
+.accordion-icon-plus-minus .accordion-icon::after {
+	content: '';
 	position: absolute;
-	top: 20px;
-	left: 15px;
+	background: currentColor;
+	transition: transform 0.2s ease;
+}
+
+.accordion-icon-plus-minus .accordion-icon::before {
+	width: 12px;
+	height: 2px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-plus-minus .accordion-icon::after {
+	width: 2px;
+	height: 12px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-plus-minus .ui-state-active .accordion-icon::after {
+	transform: translate(-50%, -50%) rotate(90deg);
+	opacity: 0;
+}
+
+
+/* ── Plus / X icon ────────────────────────────────────────── */
+
+.accordion-icon-plus-x .accordion-icon::before,
+.accordion-icon-plus-x .accordion-icon::after {
+	content: '';
+	position: absolute;
+	background: currentColor;
+	top: 50%;
+	left: 50%;
+	transition: transform 0.2s ease;
+}
+
+.accordion-icon-plus-x .accordion-icon::before {
+	width: 12px;
+	height: 2px;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-plus-x .accordion-icon::after {
+	width: 2px;
+	height: 12px;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-plus-x .ui-state-active .accordion-icon::before {
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.accordion-icon-plus-x .ui-state-active .accordion-icon::after {
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+
+/* ── Chevron icon ─────────────────────────────────────────── */
+
+.accordion-icon-chevron .accordion-icon::before {
+	content: '';
 	width: 8px;
 	height: 8px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(-45deg);
+	transition: transform 0.2s ease;
+	position: absolute;
+	top: 3px;
+	left: 4px;
 }
 
-.accordion .accordion-title.ui-state-active .ui-icon {
-	background: url("../img/minus-accordion.png") no-repeat;
-	top: 22px;
+.accordion-icon-chevron .ui-state-active .accordion-icon::before {
+	transform: rotate(45deg);
+	top: 2px;
 }
+
+
+/* ── Arrow icon ───────────────────────────────────────────── */
+
+.accordion-icon-arrow .accordion-icon::before {
+	content: '';
+	width: 0;
+	height: 0;
+	border-left: 6px solid currentColor;
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid transparent;
+	transition: transform 0.2s ease;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-arrow .ui-state-active .accordion-icon::before {
+	transform: translate(-50%, -50%) rotate(90deg);
+}
+
+
+/* ── Custom icon (image OR text/emoji) ────────────────────── */
+
+/* Relax the fixed 16×16 container — images and emoji often need more room. */
+.accordion-icon-custom .accordion-icon {
+	width: auto;
+	height: auto;
+	min-width: 16px;
+	min-height: 16px;
+	font-size: 1em;
+	line-height: 1;
+	overflow: hidden;
+}
+
+.accordion-icon-custom .accordion-icon-state-closed,
+.accordion-icon-custom .accordion-icon-state-open {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: opacity 0.2s ease;
+}
+
+/* Default state: closed visible, open hidden. Flipped on .ui-state-active. */
+.accordion-icon-custom .accordion-icon-state-open { display: none; }
+
+.accordion-icon-custom .ui-state-active .accordion-icon-state-closed { display: none; }
+.accordion-icon-custom .ui-state-active .accordion-icon-state-open   { display: inline-flex; }
+
+/* Cap uploaded images so a 512×512 PNG doesn't tower over the title. */
+.accordion-icon-custom img {
+	max-width: 100%;
+	max-height: 24px;
+	height: auto;
+	width: auto;
+	display: block;
+}
+
+
+/* ── Item numbering ───────────────────────────────────────── */
+
+.accordion .accordion-number {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	min-width: 1.5em;
+	margin-right: 12px;
+	font-weight: 600;
+	font-size: 0.875em;
+	color: inherit;
+	opacity: 0.7;
+}
+
+
+/* ── Content ──────────────────────────────────────────────── */
 
 .accordion .accordion-content {
-	padding: 0;
-}
-
-.accordion .accordion-content > p {
-	padding: 0 30px 20px 30px;
+	padding: 1rem;
 }
 
 .accordion .accordion-content p:last-child {

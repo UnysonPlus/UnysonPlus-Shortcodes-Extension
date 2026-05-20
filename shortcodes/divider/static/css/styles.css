@@ -1,22 +1,61 @@
-/* Divider space (empty) */
-.fw-divider-space {
-	clear: both;
-	width: 100%;
+/* --- Base Structure --- */
+.fw-divider {
+    display: block;
+    border: none;
+    padding: 0;
+    position: relative;
+    width: 100%;
 }
-.fw-divider-space.space-sm {
-	height: 30px;
+
+.divider-inner {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #fff; /* Match your site background to "cut" the line */
+    padding: 0 15px;
+    z-index: 1;
 }
-.fw-divider-space.space-md {
-	height: 60px;
+
+.alignment-center .divider-inner { left: 50%; transform: translate(-50%, -50%); }
+.alignment-left .divider-inner { left: 10%; }
+.alignment-right .divider-inner { right: 10%; }
+
+/* --- Style 1: Gradient Fade (Ben Knight inspired) --- */
+.divider-gradient {
+    height: 1px;
+    background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.75), transparent);
 }
-.fw-divider-space.space-lg {
-	height: 100px;
+
+/* --- Style 2: Ornamental / Glyph (Ibrahim Jabbari inspired) --- */
+.divider-ornament {
+    height: 1px;
+    background: #ccc;
+    text-align: center;
+    overflow: visible;
+    margin: 2em 0;
 }
-/* Divider only Line */
-.fw-divider-line {
-	clear: both;
-	position: relative;
-	margin-left: auto;
-	margin-right: auto;
-	max-width: 100%;
+
+.divider-ornament:after {
+    content: "§"; /* Or use a FontAwesome glyph code like "\f005" */
+    display: inline-block;
+    position: relative;
+    top: -0.7em;
+    font-size: 1.5em;
+    padding: 0 10px;
+    background: #fff;
+    color: #333;
+}
+
+/* --- Style 3: Inner Shadow / Flare (Lrenhrda inspired) --- */
+.divider-shadow {
+    height: 12px;
+    border: 0;
+    box-shadow: inset 0 12px 12px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Content Handling (Text/Icons) --- */
+.has-content.divider-std {
+    border-top: 1px solid #ccc;
+    height: 0;
+    overflow: visible;
 }

@@ -8,4 +8,3 @@ if (! is_admin()) {
 		fw()->manifest->get_version()
 	);
 }
-
