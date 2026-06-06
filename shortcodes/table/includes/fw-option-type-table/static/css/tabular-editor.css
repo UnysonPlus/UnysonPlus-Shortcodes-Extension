@@ -1,0 +1,409 @@
+/* =========================================================================
+   Tabular table editor (Unyson `table` option type, tabular mode)
+   A modern spreadsheet UI to replace the original cell-by-cell grid.
+   ========================================================================= */
+
+/* purpose toggle: only the active editor shows */
+.fw-option-type-table .fw-table-editor { display: none; }
+.fw-option-type-table .fw-table-editor.fw-table-editor-active { display: block; }
+
+.fw-option-type-table .fw-table-purpose-bar { margin-bottom: 16px; }
+
+/* --- shell -------------------------------------------------------------- */
+.fw-tabular {
+	--tt-border: #e2e4e7;
+	--tt-border-strong: #c9ced3;
+	--tt-bg: #fff;
+	--tt-ctrl-bg: #f6f7f8;
+	--tt-ctrl-bg-hover: #eef0f2;
+	--tt-header-bg: #eef3fb;
+	--tt-footer-bg: #f4f6f8;
+	--tt-accent: #2271b1;
+	--tt-radius: 8px;
+	padding: 0 16px 4px;   /* breathing room on the left/right of the editor */
+	box-sizing: border-box;
+}
+.fw-option-type-table .fw-table-purpose-bar { padding: 0 16px; box-sizing: border-box; }
+
+.fw-tabular-loading {
+	padding: 28px;
+	text-align: center;
+	color: #8a8f94;
+	font-style: italic;
+}
+
+/* --- toolbar ------------------------------------------------------------ */
+.fw-tabular-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding: 10px 12px;
+	background: var(--tt-ctrl-bg);
+	border: 1px solid var(--tt-border);
+	border-bottom: none;
+	border-radius: var(--tt-radius) var(--tt-radius) 0 0;
+}
+
+.fw-tabular-toolbar-group {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.fw-tabular-toolbar .button {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	height: 32px;
+}
+
+.fw-tabular-toolbar .button .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	line-height: 1;
+}
+
+.fw-tabular-num {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	color: #50575e;
+	white-space: nowrap;
+}
+
+.fw-tabular-num input[type="number"] {
+	width: 58px;
+	height: 30px;
+	min-height: 30px;
+	text-align: center;
+}
+
+/* --- grid --------------------------------------------------------------- */
+.fw-tabular-scroll {
+	overflow-x: auto;
+	border: 1px solid var(--tt-border);
+	border-radius: 0 0 var(--tt-radius) var(--tt-radius);
+	background: var(--tt-bg);
+}
+
+table.fw-tabular-grid {
+	border-collapse: separate;
+	border-spacing: 0;
+	width: auto;          /* grow past the container so columns keep a sane width */
+	min-width: 100%;      /* but still fill the width when there are only a few */
+	margin: 0;
+	background: var(--tt-bg);
+	table-layout: auto;
+}
+
+table.fw-tabular-grid th,
+table.fw-tabular-grid td {
+	border-right: 1px solid var(--tt-border);
+	border-bottom: 1px solid var(--tt-border);
+	padding: 0;
+	vertical-align: top;
+}
+
+/* corner + column control row */
+.fw-tabular-grid .fw-tt-colctrl th {
+	background: var(--tt-ctrl-bg);
+	border-bottom: 1px solid var(--tt-border-strong);
+	height: 30px;
+	vertical-align: middle;
+	position: sticky;
+	top: 0;
+	z-index: 2;
+}
+
+.fw-tabular-grid .fw-tt-corner {
+	width: 44px;
+	min-width: 44px;
+}
+
+.fw-tabular-grid .fw-tt-colhead {
+	text-align: center;
+	width: 150px;
+	min-width: 150px;
+	position: relative;
+	padding: 0 4px;
+}
+
+.fw-tabular-grid .fw-tt-colletter {
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: .04em;
+	color: #6c7278;
+	text-transform: uppercase;
+}
+
+.fw-tt-aligned-left  .fw-tt-colletter::after { content: " \00B7 L"; opacity: .6; }
+.fw-tt-aligned-center .fw-tt-colletter::after { content: " \00B7 C"; opacity: .6; }
+.fw-tt-aligned-right .fw-tt-colletter::after { content: " \00B7 R"; opacity: .6; }
+
+/* row control cell (left) */
+.fw-tabular-grid .fw-tt-rowctrl {
+	width: 44px;
+	min-width: 44px;
+	background: var(--tt-ctrl-bg);
+	border-right: 1px solid var(--tt-border-strong);
+	text-align: center;
+	vertical-align: middle;
+	position: relative;
+	white-space: nowrap;
+	user-select: none;
+}
+
+.fw-tt-gripper {
+	cursor: grab;
+	color: #b3b8bd;
+	font-size: 16px;
+	line-height: 30px;
+	display: none;
+}
+
+.fw-tt-rownum {
+	font-size: 11px;
+	font-weight: 600;
+	color: #8a8f94;
+	line-height: 30px;
+}
+
+.fw-tabular-grid tr:hover .fw-tt-rownum { display: none; }
+.fw-tabular-grid tr:hover .fw-tt-gripper { display: inline-block; }
+
+/* the little ▾ menu trigger */
+.fw-tt-menu-btn {
+	position: absolute;
+	top: 50%;
+	right: 2px;
+	transform: translateY(-50%);
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: none;
+	background: transparent;
+	border-radius: 4px;
+	cursor: pointer;
+	color: #6c7278;
+	opacity: 0;
+	transition: opacity .12s ease, background .12s ease;
+}
+
+.fw-tt-colhead:hover .fw-tt-menu-btn,
+.fw-tt-rowctrl:hover .fw-tt-menu-btn,
+.fw-tt-menu-btn:focus { opacity: 1; }
+
+.fw-tt-menu-btn:hover { background: var(--tt-ctrl-bg-hover); color: var(--tt-accent); }
+.fw-tt-menu-btn .dashicons { font-size: 16px; width: 16px; height: 16px; line-height: 22px; }
+
+/* data cells */
+.fw-tabular-grid td.fw-tt-cell {
+	padding: 9px 11px;
+	min-width: 150px;
+	line-height: 1.5;
+	background: var(--tt-bg);
+	outline: none;
+	cursor: text;
+	word-break: break-word;
+	transition: box-shadow .1s ease, background .1s ease;
+}
+
+.fw-tabular-grid td.fw-tt-cell:hover { background: #fafbfc; }
+
+.fw-tabular-grid td.fw-tt-cell:focus {
+	box-shadow: inset 0 0 0 2px var(--tt-accent);
+	background: #fff;
+	position: relative;
+	z-index: 1;
+}
+
+.fw-tabular-grid td.fw-tt-cell:empty::before {
+	content: attr(data-ph);
+	color: #c2c7cc;
+}
+
+/* header / footer rows */
+.fw-tabular-grid tr.fw-tt-header td.fw-tt-cell {
+	background: var(--tt-header-bg);
+	font-weight: 600;
+}
+.fw-tabular-grid tr.fw-tt-header .fw-tt-rowctrl { background: #e3ecf9; }
+
+.fw-tabular-grid tr.fw-tt-footer td.fw-tt-cell {
+	background: var(--tt-footer-bg);
+	font-weight: 600;
+}
+
+/* sortable placeholder */
+.fw-tabular-grid tr.ui-sortable-helper { box-shadow: 0 6px 18px rgba(0,0,0,.16); }
+.fw-tabular-grid tr.ui-sortable-placeholder { visibility: visible !important; }
+.fw-tabular-grid tr.ui-sortable-placeholder td,
+.fw-tabular-grid tr.ui-sortable-placeholder th {
+	background: #eaf1fb !important;
+	border-bottom: 2px dashed var(--tt-accent);
+}
+
+/* =========================================================================
+   Popover menu (column / row actions)
+   ========================================================================= */
+.fw-tabular-menu {
+	position: absolute;
+	z-index: 100100; /* above the Unyson modal */
+	min-width: 196px;
+	padding: 6px;
+	background: #fff;
+	border: 1px solid var(--tt-border-strong, #c9ced3);
+	border-radius: 8px;
+	box-shadow: 0 8px 30px rgba(0,0,0,.18);
+}
+
+.fw-tabular-menu-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	padding: 7px 9px;
+	border: none;
+	background: transparent;
+	border-radius: 5px;
+	text-align: left;
+	font-size: 13px;
+	color: #2c3338;
+	cursor: pointer;
+}
+
+.fw-tabular-menu-item:hover { background: #f0f4fa; color: #135e96; }
+.fw-tabular-menu-item .dashicons { font-size: 17px; width: 17px; height: 17px; color: #6c7278; }
+.fw-tabular-menu-item:hover .dashicons { color: #135e96; }
+
+.fw-tabular-menu-label { flex: 1; }
+.fw-tabular-menu-check { margin-left: auto; color: var(--tt-accent) !important; }
+.fw-tabular-menu-item.is-checked { font-weight: 600; }
+
+.fw-tabular-menu-item.is-danger { color: #b32d2e; }
+.fw-tabular-menu-item.is-danger .dashicons { color: #b32d2e; }
+.fw-tabular-menu-item.is-danger:hover { background: #fcf0f1; }
+
+.fw-tabular-menu-sep { height: 1px; margin: 5px 4px; background: var(--tt-border); }
+
+/* toolbar dividers + dropdown buttons */
+.fw-tabular-toolbar-divider {
+	width: 1px;
+	height: 22px;
+	background: var(--tt-border-strong, #c9ced3);
+	margin: 0 2px;
+}
+.fw-tabular-toolbar .fw-tt-toolbar-menu .dashicons-arrow-down-alt2 {
+	font-size: 13px; width: 13px; height: 13px; opacity: .6;
+}
+
+/* cell selection (for merge) */
+.fw-tabular-grid td.fw-tt-cell.fw-tt-selected {
+	background: #e4eefb !important;
+	box-shadow: inset 0 0 0 1px var(--tt-accent);
+}
+
+/* =========================================================================
+   Import / Export modal
+   ========================================================================= */
+.fw-tabular-modal-ov {
+	position: fixed;
+	inset: 0;
+	background: rgba(20, 24, 28, .55);
+	z-index: 100200;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+}
+
+.fw-tabular-modal {
+	width: 560px;
+	max-width: 100%;
+	max-height: 84vh;
+	display: flex;
+	flex-direction: column;
+	background: #fff;
+	border-radius: 10px;
+	box-shadow: 0 24px 70px rgba(0,0,0,.4);
+	overflow: hidden;
+}
+
+.fw-tabular-modal-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 18px;
+	font-size: 15px;
+	font-weight: 600;
+	color: #1d2327;
+	border-bottom: 1px solid var(--tt-border, #e2e4e7);
+}
+
+.fw-tabular-modal-x {
+	border: none;
+	background: transparent;
+	cursor: pointer;
+	color: #6c7278;
+	font-size: 20px;
+	width: 28px; height: 28px;
+	border-radius: 5px;
+}
+.fw-tabular-modal-x:hover { background: #f0f1f2; color: #1d2327; }
+
+.fw-tabular-modal-body { padding: 18px; overflow: auto; }
+.fw-tabular-modal-foot {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 14px 18px;
+	border-top: 1px solid var(--tt-border, #e2e4e7);
+	background: #f6f7f8;
+}
+
+.fw-tt-modal-note { margin: 0 0 12px; color: #50575e; font-size: 13px; }
+
+.fw-tt-paste-box {
+	min-height: 180px;
+	max-height: 46vh;
+	overflow: auto;
+	padding: 12px 14px;
+	border: 2px dashed var(--tt-border-strong, #c9ced3);
+	border-radius: 8px;
+	background: #fcfcfd;
+	font-size: 13px;
+	line-height: 1.5;
+	outline: none;
+}
+.fw-tt-paste-box:focus { border-color: var(--tt-accent, #2271b1); background: #fff; }
+.fw-tt-paste-box:empty::before { content: attr(data-ph); color: #b3b8bd; }
+.fw-tt-paste-box table { border-collapse: collapse; }
+.fw-tt-paste-box td, .fw-tt-paste-box th { border: 1px solid #d8dbde; padding: 4px 8px; }
+
+.fw-tt-file { display: block; margin: 6px 0 14px; }
+.fw-tt-modal-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #2c3338; }
+
+/* =========================================================================
+   Toast
+   ========================================================================= */
+.fw-tabular-toast {
+	position: fixed;
+	bottom: 28px;
+	left: 50%;
+	transform: translate(-50%, 14px);
+	z-index: 100300;
+	padding: 10px 18px;
+	background: #1d2327;
+	color: #fff;
+	font-size: 13px;
+	border-radius: 7px;
+	box-shadow: 0 8px 28px rgba(0,0,0,.32);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity .22s ease, transform .22s ease;
+}
+.fw-tabular-toast.show { opacity: 1; transform: translate(-50%, 0); }

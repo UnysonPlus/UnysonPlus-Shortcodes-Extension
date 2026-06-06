@@ -13,6 +13,7 @@ $options = [
                     'icon' => [
                         'type'  => 'icon-v2',
                         'label' => __('Icon', 'fw'),
+                        'help'  => __('Pick the glyph to display. Font icons can be recoloured and resized via the Styling tab, unlike pasted emoji. This is the main content of the shortcode, so an icon should always be chosen.', 'fw'),
                         'preview_size' => 'medium',
                         'modal_size' => 'medium',
                     ],
@@ -20,12 +21,47 @@ $options = [
                         'type'  => 'text',
                         'label' => __('Title', 'fw'),
                         'desc'  => __('Icon title', 'fw'),
+                        'help'  => __('Optional tooltip text shown on hover; it also serves as an accessible label for screen readers. Leave it empty for purely decorative icons.', 'fw'),
                     ],
                 ],
             ],
         ],
     ],
 
+    'tab_styling' => [
+        'title'   => __( 'Styling', 'fw' ),
+        'type'    => 'tab',
+        // Drop the default wrapper-level Text Color — the named Title Color
+        // and Icon Color below cover both inner elements, so a wrapper-level
+        // text colour would just compete with the per-element picks.
+        'options' => [
+            'group_colors' => [
+                'type'    => 'group',
+                'options' => [
+                    'bg_color' => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
+                    'title_color' => sc_color_field_compact( array(
+                        'label' => __( 'Title Color', 'fw' ),
+                        'desc'  => __( 'Color preset applied to the title text.', 'fw' ),
+                    ) ),
+                    'icon_color' => sc_color_field_compact( array(
+                        'label' => __( 'Icon Color', 'fw' ),
+                        'desc'  => __( 'Color preset applied to the icon glyph (font icons only).', 'fw' ),
+                    ) ),
+                ],
+            ],
+            'group_spacings' => [
+                'type'    => 'group',
+                'options' => [
+                    'spacing' => array(
+                        'type'  => 'spacing',
+                        'label' => __( 'Margin & Padding', 'fw' ),
+                        'desc'  => __( 'All Sides applies to every side at once; any per-side value (Top, Right, Bottom, Left) overrides it for that direction.', 'fw' ),
+                        'help'  => sc_styling_help_text( 'spacing' ),
+                    ),
+                ],
+            ],
+        ],
+    ],
     'tab_animation' => [
         'title'   => __( 'Animations', 'fw' ),
         'type'    => 'tab',

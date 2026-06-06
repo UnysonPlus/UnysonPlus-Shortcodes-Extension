@@ -144,6 +144,102 @@ table th[class*="col-"] {
 	font-weight: bold;
 }
 
+/* Caption */
+.fw-table-caption { padding: 6px 2px; color: #777; font-size: .92em; }
+.fw-table-caption-bottom { caption-side: bottom; }
+.fw-table-caption-top { caption-side: top; }
+
+/* Sticky header */
+.fw-table-sticky table > thead > tr > th {
+	position: -webkit-sticky;
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background: #fff;
+}
+
+/* tfoot */
+.table table > tfoot > tr > th,
+.table table > tfoot > tr > td {
+	font-weight: 600;
+	border-top: 2px solid #dddddd;
+	background: #fafafa;
+}
+
+/* ==========================================================================
+   Interactive data-table chrome (datatable.js — sort / search / paginate)
+   ========================================================================== */
+.fw-table-interactive { overflow: visible; } /* let controls sit outside the scroll box */
+
+.fw-dt-top,
+.fw-dt-bottom {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px 16px;
+	margin: 0 0 10px;
+	font-size: 14px;
+}
+.fw-dt-bottom { margin: 12px 0 22px; }
+
+.fw-dt-length select { margin: 0 4px; padding: 3px 6px; }
+
+.fw-dt-search { margin-left: auto; }
+.fw-dt-search input[type="search"] {
+	margin-left: 6px;
+	padding: 6px 10px;
+	border: 1px solid #ccd0d4;
+	border-radius: 6px;
+	min-width: 200px;
+}
+
+.fw-dt-info { color: #666; }
+
+.fw-dt-pager { display: inline-flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+.fw-dt-page {
+	min-width: 34px;
+	padding: 6px 10px;
+	border: 1px solid #d4d8dd;
+	background: #fff;
+	border-radius: 6px;
+	cursor: pointer;
+	color: inherit;
+	line-height: 1;
+	transition: background .12s ease, border-color .12s ease, color .12s ease;
+}
+.fw-dt-page:hover:not(.is-disabled):not(.is-active) { background: #f3f5f7; border-color: #b9bfc6; }
+.fw-dt-page.is-active { background: #2271b1; border-color: #2271b1; color: #fff; cursor: default; }
+.fw-dt-page.is-disabled { opacity: .45; cursor: default; }
+.fw-dt-ellipsis { padding: 6px 2px; color: #999; }
+
+/* Sortable header cells */
+.fw-datatable th.fw-dt-sortable {
+	cursor: pointer;
+	position: relative;
+	padding-right: 22px;
+	user-select: none;
+	white-space: nowrap;
+}
+.fw-datatable th.fw-dt-sortable::after {
+	content: "\2195"; /* up-down arrow */
+	position: absolute;
+	right: 7px;
+	top: 50%;
+	transform: translateY(-50%);
+	opacity: .35;
+	font-size: .9em;
+}
+.fw-datatable th.fw-dt-sortable.fw-dt-asc::after { content: "\2191"; opacity: .9; }
+.fw-datatable th.fw-dt-sortable.fw-dt-desc::after { content: "\2193"; opacity: .9; }
+.fw-datatable th.fw-dt-sortable:hover::after { opacity: .7; }
+
+@media screen and (max-width: 600px) {
+	.fw-dt-top, .fw-dt-bottom { flex-direction: column; align-items: stretch; }
+	.fw-dt-search, .fw-dt-pager { margin-left: 0; }
+	.fw-dt-search input[type="search"] { width: 100%; }
+}
+
 
 
 /* Price Table */

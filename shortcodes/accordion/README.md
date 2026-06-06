@@ -105,43 +105,52 @@ Common template recipes: `Q{n}` → "Q1", `Step {n}` → "Step 1", `Section {I}.
      data-collapsible="true|false"
      data-multiple-open="true|false">
 
-  <!-- per tab -->
-  <h3 class="accordion-title [ui-state-active]"
-      id="accordion-<id>-header-<i>"
-      role="tab"
-      aria-controls="accordion-<id>-panel-<i>"
-      aria-expanded="true|false"
-      tabindex="0">
+  <!-- per item: title + content wrapped in an .accordion-item div.
+       The wrapper is what makes per-item spacing / styling possible and
+       lets the JS resolve a clicked title's panel via .closest('.accordion-item'). -->
+  <div class="accordion-item [mb-3]"> <!-- mb-* class from the Item Spacing option, on all items except the last -->
 
-    <span class="accordion-icon" aria-hidden="true">
-      <!-- icon body is empty for plus-minus / plus-x / chevron / arrow / none
-           (those are drawn purely by CSS pseudo-elements on .accordion-icon).
-           For icon_style=custom, two child spans are emitted instead: -->
-      <span class="accordion-icon-state-closed">
-        <img src="…"> | …closed text/emoji…
+    <{h2|h3|h4|h5|h6} class="accordion-title [ui-state-active]"
+        id="accordion-<id>-header-<i>"
+        role="tab"
+        aria-controls="accordion-<id>-panel-<i>"
+        aria-expanded="true|false"
+        tabindex="0">
+      <!-- tag chosen via the new Layout-tab "Title Tag" select. Default h3. -->
+
+      <span class="accordion-icon" aria-hidden="true">
+        <!-- icon body is empty for plus-minus / plus-x / chevron / arrow / none
+             (those are drawn purely by CSS pseudo-elements on .accordion-icon).
+             For icon_style=custom, two child spans are emitted instead: -->
+        <span class="accordion-icon-state-closed">
+          <img src="…"> | …closed text/emoji…
+        </span>
+        <span class="accordion-icon-state-open">
+          <img src="…"> | …open text/emoji…
+        </span>
       </span>
-      <span class="accordion-icon-state-open">
-        <img src="…"> | …open text/emoji…
-      </span>
-    </span>
 
-    <!-- only when Item Numbering != none -->
-    <span class="accordion-number" aria-hidden="true">Q3</span>
+      <!-- only when Item Numbering != none -->
+      <span class="accordion-number" aria-hidden="true">Q3</span>
 
-    <span class="accordion-title-text">Tab title text</span>
-  </h3>
+      <span class="accordion-title-text">Tab title text</span>
+    </{h2|h3|h4|h5|h6}>
 
-  <div class="accordion-content"
-       id="accordion-<id>-panel-<i>"
-       role="tabpanel"
-       aria-labelledby="accordion-<id>-header-<i>"
-       aria-hidden="true|false"
-       style="display:none|block;">
-    Tab content (run through do_shortcode())
+    <div class="accordion-content"
+         id="accordion-<id>-panel-<i>"
+         role="tabpanel"
+         aria-labelledby="accordion-<id>-header-<i>"
+         aria-hidden="true|false"
+         style="display:none|block;">
+      Tab content (run through do_shortcode())
+    </div>
+
   </div>
 
 </div>
 ```
+
+> **Breaking change in 2.7.95:** title and content used to be **siblings** under `.accordion` (no `.accordion-item` wrapper). Custom CSS that relied on adjacent-sibling selectors like `.accordion-title + .accordion-content` will no longer match. Rewrite as descendant selectors under `.accordion-item`, e.g. `.accordion-item .accordion-content`.
 
 DOM source order inside `<h3>` is always **icon → number → title-text**. Flex `order` rules on `.accordion-icon-left .accordion-icon` (`order: -1`) and `.accordion-icon-right .accordion-icon` (`order: 1`) shuffle the icon to either end. The number always stays glued to the title text.
 
@@ -153,9 +162,10 @@ Every selector in [`static/css/styles.css`](static/css/styles.css), grouped by r
 
 **Layout primitives**
 - `.accordion` — wrapper, border, container reset
+- `.accordion .accordion-item` — per-item grouping (one title + one panel). Transparent by default; receives the Item Spacing `mb-*` class on every item except the last
+- `.accordion .accordion-item:first-child .accordion-title` — strips the top border on the first header
 - `.accordion .accordion-title` — header, flex row, padding, cursor, bold
 - `.accordion .accordion-title:focus` — focus outline for keyboard nav
-- `.accordion .accordion-title:first-child` — strips the top border on the first header
 - `.accordion .accordion-title.ui-state-active` — open state (removes header background)
 - `.accordion .accordion-title-text` — flex-grow text label
 - `.accordion .accordion-content` — panel padding

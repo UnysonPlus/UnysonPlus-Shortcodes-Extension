@@ -12,11 +12,11 @@ if ( empty( $atts['image'] ) ) {
 	<div class="fw-team-image"><img src="<?php echo esc_attr($image); ?>" alt="<?php echo esc_attr($atts['name']); ?>"/></div>
 	<div class="fw-team-inner">
 		<div class="fw-team-name">
-			<h3><?php echo $atts['name']; ?></h3>
-			<span><?php echo $atts['job']; ?></span>
+			<h3><?php echo esc_html( $atts['name'] ); ?></h3>
+			<span><?php echo esc_html( $atts['job'] ); ?></span>
 		</div>
 		<div class="fw-team-text">
-			<p><?php echo $atts['desc']; ?></p>
+			<p><?php echo wp_kses_post( $atts['desc'] ); ?></p>
 		</div>
 	</div>
 </div>

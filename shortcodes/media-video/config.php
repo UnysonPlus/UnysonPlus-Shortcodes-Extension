@@ -11,38 +11,48 @@ $cfg['page_builder'] = array(
 
         {{
             var url = o.url;
-            var width = o.width ? o.width : 600;
-            
-            // Map ratio to multiplier for height calculation
-            var ratio_map = {
-                "16x9": 9/16,
-                "4x3": 3/4,
-                "1x1": 1/1,
-                "21x9": 9/21,
-                "9x16": 16/9,
-                "3x4": 4/3
+
+            // Width is a unit-input { value, unit }. Accept a legacy bare number too.
+            var w = o.width, width_val = 600, width_unit = "px";
+            if (w && typeof w === "object") {
+                width_val = (w.value !== "" && w.value != null) ? w.value : 600;
+                width_unit = w.unit || "px";
+            } else if (w) {
+                width_val = w;
+            }
+            var max_width = "" + width_val + width_unit;
+
+            // Aspect ratio as a unit-independent CSS "W / H" string.
+            var ratio_css_map = {
+                "16x9": "16 / 9",
+                "4x3":  "4 / 3",
+                "1x1":  "1 / 1",
+                "21x9": "21 / 9",
+                "9x16": "9 / 16",
+                "3x4":  "3 / 4"
             };
-            var ratio = o.ratio || "16x9";
-            var height = Math.round(width * (ratio_map[ratio] || 9/16));
+            var ratio_css = ratio_css_map[o.ratio || "16x9"] || "16 / 9";
 
             var embed_url = "";
             
-            // YouTube
+            // YouTube (watch?v=, youtu.be/, /shorts/, /live/) — strip any query string.
             if (url.indexOf("youtube.com") !== -1 || url.indexOf("youtu.be") !== -1) {
-                var video_id = url.split("v=")[1] ? url.split("v=")[1].split("&")[0] : url.split("/").pop();
+                var video_id = url.indexOf("v=") !== -1
+                    ? url.split("v=")[1].split("&")[0]
+                    : url.split("/").pop().split("?")[0];
                 embed_url = video_id ? "https://www.youtube.com/embed/" + video_id : "";
             }
-            
+
             // Vimeo
             else if (url.indexOf("vimeo.com") !== -1) {
-                var vimeo_id = url.split("/").pop();
-                embed_url = "https://player.vimeo.com/video/" + vimeo_id;
+                var vimeo_id = url.split("/").pop().split("?")[0];
+                embed_url = vimeo_id ? "https://player.vimeo.com/video/" + vimeo_id : "";
             }
-            
+
             // Dailymotion
             else if (url.indexOf("dailymotion.com") !== -1) {
-                var dm_id = url.split("/video/")[1];
-                embed_url = "https://www.dailymotion.com/embed/video/" + dm_id;
+                var dm_id = url.split("/video/")[1] ? url.split("/video/")[1].split("?")[0] : "";
+                embed_url = dm_id ? "https://www.dailymotion.com/embed/video/" + dm_id : "";
             }
         }}
 
@@ -54,9 +64,9 @@ $cfg['page_builder'] = array(
                 style="
                     display:block;
                     width:100%;
-                    max-width:{{- width }}px;
+                    max-width:{{- max_width }};
                     height:auto;
-                    aspect-ratio: {{- width }} / {{- height }};
+                    aspect-ratio: {{- ratio_css }};
                 "
             ></iframe>
         {{ } else { }}

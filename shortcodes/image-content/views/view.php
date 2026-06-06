@@ -10,6 +10,13 @@ if ( empty( $atts['image'] ) && empty( $atts['content'] ) ) {
         return;
 }
 
+// Route content color to the inner content column (kept off the wrapper).
+// sc_extract_styling_atts returns both preset classes and compact-picker
+// custom-hex inline styles.
+$content_styling = sc_extract_styling_atts( $atts, array( 'content_color' ) );
+$content_extras  = $content_styling['classes'];
+$content_style   = $content_styling['styles'] ? implode( '; ', $content_styling['styles'] ) : '';
+
 $atts['base_class']       = 'image-content';
 $atts['unique_id_prefix'] = 'ic-';
 $atts['extra_attrs']      = [];
@@ -95,7 +102,7 @@ if ( $layout === 'image-left' ) {
                 <div class="the-image col-md-<?php echo esc_attr( $image_col . $image_order_classes ); ?>">
                         <?php echo $image_html; ?>
                 </div>
-                <div class="the-content col-md-<?php echo esc_attr( $content_col . $content_order_classes ); ?>">
+                <div class="the-content col-md-<?php echo esc_attr( $content_col . $content_order_classes . ( $content_extras ? ' ' . implode( ' ', $content_extras ) : '' ) ); ?>"<?php echo $content_style !== '' ? ' style="' . esc_attr( $content_style ) . '"' : ''; ?>>
                         <?php if ( ! empty( $atts['content'] ) ) : ?>
                                 <?php echo do_shortcode( $atts['content'] ); ?>
                         <?php endif; ?>

@@ -8,6 +8,19 @@ class FW_Shortcode_Table extends FW_Shortcode {
 	 */
 	public function _init() {
 		add_action('fw_option_types_init', array($this, '_action_load_option_type'));
+
+		/**
+		 * Safety net: fw_option_types_init fires only ONCE (lazily, on the first
+		 * fw()->backend->option_type() call). If something triggered it before this
+		 * shortcode loaded, the hook above would never run and the `table` /
+		 * `textarea-cell` option types would be "Undefined" in the editor. When the
+		 * action has already fired, register them right now (require_once keeps it
+		 * single-shot, so this never double-registers).
+		 */
+		if ( did_action('fw_option_types_init') ) {
+			$this->_action_load_option_type();
+		}
+
 		add_action('fw_ext_shortcodes_enqueue_static:table', array($this, '_action_enqueue_buttons'));
 	}
 

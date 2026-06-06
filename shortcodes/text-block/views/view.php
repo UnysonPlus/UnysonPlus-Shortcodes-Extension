@@ -6,39 +6,26 @@
  * @var array $atts
  */
 
-$atts['base_class']         = 'text-block';
-$atts['unique_id_prefix']   = 'tb-';
+$atts['base_class']       = 'text-block';
+$atts['unique_id_prefix'] = 'tb-';
 
-// Build extra attributes for the wrapper
-$atts['extra_attrs'] = [
-    // Commented out examples of additional attributes you might want to include
-    
-    // Link behavior
-    // 'target' => ! empty( $atts['target'] ) ? esc_attr( $atts['target'] ) : '',
-    // 'rel'    => ! empty( $atts['rel'] ) ? esc_attr( $atts['rel'] ) : '',
-
-    // Inline styles
-    //'style'  => ! empty( $atts['bg_color'] ) ? 'background-color:' . esc_attr( $atts['bg_color'] ) . ';' : '',
-
-    // Data attributes
-    // 'data-type'   => 'text-block',
-    // 'data-id'   => ! empty( $atts['unique_id'] ) ? esc_attr( $atts['unique_id'] ) : '',
-
-    // ARIA attributes
-    //'aria-label'  => ! empty( $atts['aria_label'] ) ? esc_attr( $atts['aria_label'] ) : '',
-    //'aria-hidden' => ! empty( $atts['aria_hidden'] ) ? esc_attr( $atts['aria_hidden'] ) : '',
-];
+// To add extra wrapper attributes (data-*, aria-*, target, rel, etc.),
+// populate $atts['extra_attrs'] before calling sc_build_wrapper_attr().
+// Inline color/font styling is handled by the Styling tab — pick from
+// dropdowns there instead of writing inline style here.
 
 // Build attributes for wrapper
 $attr = sc_build_wrapper_attr( $atts );
 
 // Determine if wrapper is needed
-$needs_wrapper = ! empty( $atts['css_id'] ) || ! empty( $atts['css_class'] );
+$should_wrap = function_exists( 'sc_needs_wrapper' )
+    ? sc_needs_wrapper( $atts )
+    : ( ! empty( $atts['css_id'] ) || ! empty( $atts['css_class'] ) );
 
 ?>
 
 <?php if ( ! empty( $atts['text'] ) ) : ?>
-    <?php if ( $needs_wrapper ) : ?>
+    <?php if ( $should_wrap ) : ?>
         <div <?php echo fw_attr_to_html( $attr ); ?>>
             <?php echo do_shortcode( $atts['text'] ); ?>
         </div>

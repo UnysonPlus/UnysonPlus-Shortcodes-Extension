@@ -117,9 +117,37 @@ class FW_Shortcode_Calendar extends FW_Shortcode
 	public function _ajax_get_results_json_ajax()
 	{
 		$this->load_data();
-		$data_provider = FW_Request::POST('data_provider');
-		$result = call_user_func($this->data[$data_provider]['callback'], FW_Request::POST());
-		wp_send_json_success($result);
+
+		// Sanitize the provider key — must be a plain slug, no callable strings
+		// or array notation that could subvert the whitelist lookup below.
+		$data_provider = sanitize_key( (string) FW_Request::POST('data_provider') );
+
+		// Whitelist: provider must be registered via the
+		// `fw_shortcode_calendar_provider` filter. Prevents attackers from
+		// invoking arbitrary callbacks even though the AJAX endpoint is
+		// publicly reachable via wp_ajax_nopriv_.
+		if ( $data_provider === '' || ! isset( $this->data[ $data_provider ] ) ) {
+			wp_send_json_error( array( 'message' => __( 'Unknown data provider.', 'fw' ) ), 400 );
+		}
+
+		// Belt-and-suspenders: the registered callback must actually be callable.
+		// Catches the default 'custom' provider (callback === false, server-side
+		// rendered) and any provider with a misconfigured callback. Prevents
+		// PHP warnings and silent failures from `call_user_func( false, … )`.
+		$callback = isset( $this->data[ $data_provider ]['callback'] ) ? $this->data[ $data_provider ]['callback'] : null;
+		if ( ! is_callable( $callback ) ) {
+			wp_send_json_error( array( 'message' => __( 'Provider has no callable handler.', 'fw' ) ), 500 );
+		}
+
+		// Sites that want to restrict providers further on unauthenticated calls
+		// can hook this filter — returning false denies the request.
+		$is_allowed = apply_filters( 'fw_shortcode_calendar_provider_is_allowed', true, $data_provider, $this->data[ $data_provider ] );
+		if ( ! $is_allowed ) {
+			wp_send_json_error( array( 'message' => __( 'Forbidden.', 'fw' ) ), 403 );
+		}
+
+		$result = call_user_func( $callback, FW_Request::POST() );
+		wp_send_json_success( $result );
 	}
 
 	protected function _render($atts, $content = null, $tag = '')

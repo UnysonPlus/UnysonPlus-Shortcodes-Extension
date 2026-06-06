@@ -1,0 +1,350 @@
+/* ------------------------------------------------------------------ *
+ * Button hover animations (.btnfx-*) for the Button shortcode.
+ *
+ * MOTION ONLY — these never set background/color/border, so they compose
+ * with ANY button preset (solid, outline, or gradient) and let the preset's
+ * own :hover state own the colors. Each effect triggers on:
+ *   :hover, :focus-visible      (real interaction on the front end)
+ *   .is-hover                   (so the option/live preview can demo it)
+ *
+ * Box-shadow-based effects use !important so they sit over a preset's own
+ * hover box-shadow; transform / radius / text effects don't collide.
+ * ------------------------------------------------------------------ */
+
+/* Smooth transitions even if a preset didn't set `transition`. */
+.btnfx-lift, .btnfx-grow, .btnfx-tilt, .btnfx-pill, .btnfx-spacing,
+.btnfx-longshadow, .btnfx-inset, .btnfx-ring {
+	transition: transform .25s cubic-bezier(.2,.7,.2,1),
+		box-shadow .3s cubic-bezier(.2,.7,.2,1),
+		border-radius .3s cubic-bezier(.2,.7,.2,1),
+		letter-spacing .25s cubic-bezier(.2,.7,.2,1);
+	will-change: transform;
+}
+
+/* ----- Lift ----- */
+.btnfx-lift:hover, .btnfx-lift:focus-visible, .btnfx-lift.is-hover {
+	transform: translateY(-4px);
+	box-shadow: 0 12px 22px -8px rgba(0,0,0,.35) !important;
+}
+
+/* ----- Grow (scale) ----- */
+.btnfx-grow:hover, .btnfx-grow:focus-visible, .btnfx-grow.is-hover {
+	transform: scale(1.07);
+}
+
+/* ----- 3D push (press down) ----- */
+.btnfx-push {
+	transition: transform .12s ease, box-shadow .12s ease;
+	box-shadow: 0 6px 0 0 rgba(0,0,0,.28) !important;
+}
+.btnfx-push:hover, .btnfx-push:focus-visible, .btnfx-push.is-hover {
+	transform: translateY(2px);
+	box-shadow: 0 4px 0 0 rgba(0,0,0,.28) !important;
+}
+.btnfx-push:active {
+	transform: translateY(6px);
+	box-shadow: 0 0 0 0 rgba(0,0,0,.28) !important;
+}
+
+/* ----- Tilt (3D perspective) ----- */
+.btnfx-tilt:hover, .btnfx-tilt:focus-visible, .btnfx-tilt.is-hover {
+	transform: perspective(500px) rotateX(14deg);
+	box-shadow: 0 12px 18px -10px rgba(0,0,0,.4) !important;
+}
+
+/* ----- Jelly (squash & stretch) ----- */
+@keyframes btnfx-jelly {
+	0%,100% { transform: scale(1,1); }
+	30% { transform: scale(1.12,.86); }
+	50% { transform: scale(.92,1.1); }
+	70% { transform: scale(1.04,.96); }
+}
+.btnfx-jelly:hover, .btnfx-jelly:focus-visible, .btnfx-jelly.is-hover {
+	animation: btnfx-jelly .6s cubic-bezier(.2,.7,.2,1);
+}
+
+/* ----- Wobble ----- */
+@keyframes btnfx-wobble {
+	0%,100% { transform: rotate(0); }
+	20% { transform: rotate(-3deg); }
+	40% { transform: rotate(2.5deg); }
+	60% { transform: rotate(-1.5deg); }
+	80% { transform: rotate(1deg); }
+}
+.btnfx-wobble:hover, .btnfx-wobble:focus-visible, .btnfx-wobble.is-hover {
+	animation: btnfx-wobble .6s cubic-bezier(.2,.7,.2,1);
+}
+
+/* ----- Pill morph (corners round to a pill) ----- */
+.btnfx-pill:hover, .btnfx-pill:focus-visible, .btnfx-pill.is-hover {
+	border-radius: 999px;
+}
+
+/* ----- Long shadow (hard diagonal) ----- */
+.btnfx-longshadow:hover, .btnfx-longshadow:focus-visible, .btnfx-longshadow.is-hover {
+	transform: translate(-3px,-3px);
+	box-shadow: 2px 2px 0 rgba(0,0,0,.25), 4px 4px 0 rgba(0,0,0,.22),
+		6px 6px 0 rgba(0,0,0,.2), 8px 8px 0 rgba(0,0,0,.18),
+		10px 10px 0 rgba(0,0,0,.16), 13px 13px 16px rgba(0,0,0,.2) !important;
+}
+
+/* ----- Inset press (pushed-in shadow) ----- */
+.btnfx-inset:hover, .btnfx-inset:focus-visible, .btnfx-inset.is-hover {
+	transform: translateY(1px);
+	box-shadow: inset 0 4px 10px rgba(0,0,0,.4) !important;
+}
+
+/* ----- Expanding ring ----- */
+.btnfx-ring:hover, .btnfx-ring:focus-visible, .btnfx-ring.is-hover {
+	box-shadow: 0 0 0 6px rgba(0,0,0,.14) !important;
+}
+
+/* ----- Glow pulse (hover only — looping). Pulses a soft halo AND a slight scale,
+   so it's visible on any background colour (a single-colour glow would vanish on a
+   matching background; the scale guarantees it always reads). ----- */
+@keyframes btnfx-glow {
+	0%,100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); transform: scale(1); }
+	50%     { box-shadow: 0 0 16px 3px rgba(0,0,0,.28), 0 0 6px 1px rgba(255,255,255,.5); transform: scale(1.05); }
+}
+.btnfx-glow:hover, .btnfx-glow.is-hover {
+	animation: btnfx-glow 1.2s ease infinite;
+}
+
+/* ----- Shine sweep (translucent white gloss — color-agnostic) ----- */
+.btnfx-shine { position: relative; overflow: hidden; }
+.btnfx-shine::before {
+	content: ""; position: absolute; top: 0; left: 0;
+	width: 45%; height: 100%; pointer-events: none;
+	background: linear-gradient(100deg, transparent, rgba(255,255,255,.5), transparent);
+	transform: translateX(-220%) skewX(-20deg);
+	transition: transform .7s cubic-bezier(.2,.7,.2,1);
+}
+.btnfx-shine:hover::before, .btnfx-shine:focus-visible::before, .btnfx-shine.is-hover::before {
+	transform: translateX(320%) skewX(-20deg);
+}
+
+/* ----- Letter-spacing expand. !important so it beats a preset's font
+   letter-spacing (emitted !important by css-tokens). ----- */
+.btnfx-spacing:hover, .btnfx-spacing:focus-visible, .btnfx-spacing.is-hover {
+	letter-spacing: .2em !important;
+}
+
+/* ----- Glitch (RGB text split — hover only, looping) ----- */
+@keyframes btnfx-glitch {
+	0%,100% { text-shadow: 0 0 transparent; }
+	20% { text-shadow: -2px 0 #ff3b3b, 2px 0 #00e0ff; }
+	40% { text-shadow: 2px 0 #ff3b3b, -2px 0 #00e0ff; }
+	60% { text-shadow: -1px 0 #ff3b3b, 1px 0 #00e0ff; }
+	80% { text-shadow: 1px 0 #ff3b3b, -1px 0 #00e0ff; }
+}
+.btnfx-glitch:hover, .btnfx-glitch.is-hover {
+	animation: btnfx-glitch .4s steps(2) infinite;
+}
+
+/* ----- Bounce (one-shot upward bounce) ----- */
+@keyframes btnfx-bounce {
+	0%,100% { transform: translateY(0); }
+	30% { transform: translateY(-8px); }
+	55% { transform: translateY(-2px); }
+	75% { transform: translateY(-4px); }
+}
+.btnfx-bounce:hover, .btnfx-bounce:focus-visible, .btnfx-bounce.is-hover {
+	animation: btnfx-bounce .6s cubic-bezier(.28,.84,.42,1);
+}
+
+/* ----- Float (gentle up/down loop) ----- */
+@keyframes btnfx-float {
+	0%,100% { transform: translateY(0); }
+	50% { transform: translateY(-5px); }
+}
+.btnfx-float:hover, .btnfx-float.is-hover {
+	animation: btnfx-float 1.4s ease-in-out infinite;
+}
+
+/* ----- Shake (one-shot horizontal) ----- */
+@keyframes btnfx-shake {
+	0%,100% { transform: translateX(0); }
+	20% { transform: translateX(-5px); }
+	40% { transform: translateX(4px); }
+	60% { transform: translateX(-3px); }
+	80% { transform: translateX(2px); }
+}
+.btnfx-shake:hover, .btnfx-shake:focus-visible, .btnfx-shake.is-hover {
+	animation: btnfx-shake .5s ease;
+}
+
+/* ----- Pop (quick scale overshoot, one-shot) ----- */
+@keyframes btnfx-pop {
+	0% { transform: scale(1); }
+	45% { transform: scale(1.14); }
+	100% { transform: scale(1); }
+}
+.btnfx-pop:hover, .btnfx-pop:focus-visible, .btnfx-pop.is-hover {
+	animation: btnfx-pop .35s ease;
+}
+
+/* ----- Heartbeat (double-beat loop) ----- */
+@keyframes btnfx-heartbeat {
+	0% { transform: scale(1); }
+	14% { transform: scale(1.12); }
+	28% { transform: scale(1); }
+	42% { transform: scale(1.12); }
+	70% { transform: scale(1); }
+}
+.btnfx-heartbeat:hover, .btnfx-heartbeat.is-hover {
+	animation: btnfx-heartbeat 1.3s ease infinite;
+}
+
+/* ----- Rotate (slight tilt on hover) ----- */
+.btnfx-rotate { transition: transform .25s cubic-bezier(.2,.7,.2,1); }
+.btnfx-rotate:hover, .btnfx-rotate:focus-visible, .btnfx-rotate.is-hover {
+	transform: rotate(-3deg) scale(1.04);
+}
+
+/* ----- Skew (slanted nudge on hover) ----- */
+.btnfx-skew { transition: transform .25s cubic-bezier(.2,.7,.2,1); }
+.btnfx-skew:hover, .btnfx-skew:focus-visible, .btnfx-skew.is-hover {
+	transform: skewX(-10deg);
+}
+
+/* ----- Underline grow (center-out, uses the text colour so it's preset-agnostic) ----- */
+.btnfx-underline { position: relative; }
+.btnfx-underline::after {
+	content: ""; position: absolute; left: 50%; bottom: 7px; height: 2px; width: 0;
+	background: currentColor; transform: translateX(-50%);
+	transition: width .3s cubic-bezier(.2,.7,.2,1);
+}
+.btnfx-underline:hover::after, .btnfx-underline:focus-visible::after, .btnfx-underline.is-hover::after {
+	width: calc(100% - 28px);
+}
+
+/* ====================================================================
+   Demo ports (universal). Fills/ripple/sweep darken via a background-image
+   overlay (layers behind the label — no markup change); they shine on solid /
+   outline presets and are no-ops on gradient presets (which own background-image).
+   Borders/neon use currentColor; offset/blob are motion-only (work everywhere).
+==================================================================== */
+
+/* ----- Offset shadow ----- */
+.btnfx-offset { transition: transform .25s cubic-bezier(.2,.7,.2,1), box-shadow .25s cubic-bezier(.2,.7,.2,1); }
+.btnfx-offset:hover, .btnfx-offset:focus-visible, .btnfx-offset.is-hover {
+	transform: translate(-4px, -4px);
+	box-shadow: 6px 6px 0 0 rgba(0,0,0,.4) !important;
+}
+
+/* ----- Liquid blob (organic radius morph; snaps back to the preset radius) ----- */
+@keyframes btnfx-blob {
+	0%,100% { border-radius: 38% 62% 63% 37% / 41% 44% 56% 59%; }
+	50%     { border-radius: 62% 38% 40% 60% / 57% 56% 44% 43%; }
+}
+.btnfx-blob:hover, .btnfx-blob.is-hover {
+	animation: btnfx-blob 1.4s ease-in-out infinite;
+}
+
+/* Fills / ripple / split / sweep use a translucent dark ::before overlay revealed
+   by transform — robust (not background-dependent), works on solid / outline / AND
+   gradient presets. The overlay sits above the background; text dims slightly (.2)
+   under it as the fill passes, which reads as the button "filling". */
+.btnfx-fill-right, .btnfx-fill-up, .btnfx-fill-center, .btnfx-fill-center-v,
+.btnfx-fill-diagonal, .btnfx-ripple, .btnfx-split, .btnfx-sweep {
+	position: relative;
+	overflow: hidden;
+}
+.btnfx-fill-right::before, .btnfx-fill-up::before, .btnfx-fill-center::before,
+.btnfx-fill-center-v::before, .btnfx-fill-diagonal::before, .btnfx-sweep::before {
+	content: ""; position: absolute; inset: -1px; z-index: 0; pointer-events: none;
+	background: rgba(0,0,0,.2);
+	transition: transform .42s cubic-bezier(.2,.7,.2,1);
+}
+
+/* ----- Fill: slide right ----- */
+.btnfx-fill-right::before { transform: scaleX(0); transform-origin: left center; }
+.btnfx-fill-right:hover::before, .btnfx-fill-right:focus-visible::before, .btnfx-fill-right.is-hover::before { transform: scaleX(1); }
+
+/* ----- Fill: slide up ----- */
+.btnfx-fill-up::before { transform: scaleY(0); transform-origin: bottom center; }
+.btnfx-fill-up:hover::before, .btnfx-fill-up:focus-visible::before, .btnfx-fill-up.is-hover::before { transform: scaleY(1); }
+
+/* ----- Fill: from center (horizontal) ----- */
+.btnfx-fill-center::before { transform: scaleX(0); transform-origin: center; }
+.btnfx-fill-center:hover::before, .btnfx-fill-center:focus-visible::before, .btnfx-fill-center.is-hover::before { transform: scaleX(1); }
+
+/* ----- Fill: from center (vertical) ----- */
+.btnfx-fill-center-v::before { transform: scaleY(0); transform-origin: center; }
+.btnfx-fill-center-v:hover::before, .btnfx-fill-center-v:focus-visible::before, .btnfx-fill-center-v.is-hover::before { transform: scaleY(1); }
+
+/* ----- Fill: diagonal wipe ----- */
+.btnfx-fill-diagonal::before { transform: translateX(-110%) skewX(-18deg); }
+.btnfx-fill-diagonal:hover::before, .btnfx-fill-diagonal:focus-visible::before, .btnfx-fill-diagonal.is-hover::before { transform: translateX(0) skewX(-18deg); }
+
+/* ----- Ripple (darken circle grows from the center) ----- */
+.btnfx-ripple::before {
+	content: ""; position: absolute; z-index: 0; top: 50%; left: 50%; width: 0; height: 0;
+	border-radius: 50%; background: rgba(0,0,0,.2); transform: translate(-50%, -50%); pointer-events: none;
+	transition: width .5s cubic-bezier(.2,.7,.2,1), height .5s cubic-bezier(.2,.7,.2,1);
+}
+.btnfx-ripple:hover::before, .btnfx-ripple:focus-visible::before, .btnfx-ripple.is-hover::before { width: 250%; height: 600%; }
+
+/* ----- Split wipe (two halves close in from opposite sides) ----- */
+.btnfx-split::before, .btnfx-split::after {
+	content: ""; position: absolute; z-index: 0; left: 0; width: 100%; height: 50%;
+	background: rgba(0,0,0,.2); pointer-events: none;
+	transition: transform .4s cubic-bezier(.2,.7,.2,1);
+}
+.btnfx-split::before { top: 0; transform: translateX(-101%); }
+.btnfx-split::after  { bottom: 0; transform: translateX(101%); }
+.btnfx-split:hover::before, .btnfx-split:focus-visible::before, .btnfx-split.is-hover::before,
+.btnfx-split:hover::after,  .btnfx-split:focus-visible::after,  .btnfx-split.is-hover::after { transform: translateX(0); }
+
+/* ----- Sweep (angled translucent band crosses the button) ----- */
+.btnfx-sweep::before {
+	background: linear-gradient(105deg, transparent 30%, rgba(0,0,0,.25) 50%, transparent 70%);
+	transform: translateX(-100%);
+}
+.btnfx-sweep:hover::before, .btnfx-sweep:focus-visible::before, .btnfx-sweep.is-hover::before { transform: translateX(100%); }
+
+/* ----- Border: four-corner draw (currentColor edges) ----- */
+.btnfx-corners { position: relative; }
+.btnfx-corners::before, .btnfx-corners::after {
+	content: ""; position: absolute; inset: 0; box-sizing: border-box;
+	pointer-events: none; transition: transform .35s cubic-bezier(.2,.7,.2,1);
+}
+.btnfx-corners::before { border-top: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: scaleX(0); }
+.btnfx-corners::after  { border-left: 2px solid currentColor; border-right: 2px solid currentColor; transform: scaleY(0); }
+.btnfx-corners:hover::before, .btnfx-corners:focus-visible::before, .btnfx-corners.is-hover::before { transform: scaleX(1); }
+.btnfx-corners:hover::after,  .btnfx-corners:focus-visible::after,  .btnfx-corners.is-hover::after  { transform: scaleY(1); }
+
+/* ----- Border: two lines meet (top-left + bottom-right grow to meet) ----- */
+.btnfx-meet { position: relative; }
+.btnfx-meet::before, .btnfx-meet::after {
+	content: ""; position: absolute; height: 2px; width: 0; background: currentColor;
+	pointer-events: none; transition: width .35s cubic-bezier(.2,.7,.2,1);
+}
+.btnfx-meet::before { top: 0; left: 0; }
+.btnfx-meet::after  { bottom: 0; right: 0; }
+.btnfx-meet:hover::before, .btnfx-meet:focus-visible::before, .btnfx-meet.is-hover::before,
+.btnfx-meet:hover::after,  .btnfx-meet:focus-visible::after,  .btnfx-meet.is-hover::after { width: 100%; }
+
+/* ----- Neon glow (follows the button's own color) ----- */
+.btnfx-neon { transition: box-shadow .3s ease, text-shadow .3s ease; }
+.btnfx-neon:hover, .btnfx-neon:focus-visible, .btnfx-neon.is-hover {
+	box-shadow: 0 0 6px currentColor, 0 0 18px currentColor !important;
+	text-shadow: 0 0 6px rgba(255,255,255,.7);
+}
+
+/* ----- Never animate a disabled button ----- */
+.btn:disabled[class*="btnfx-"], .btn.disabled[class*="btnfx-"],
+.btn:disabled[class*="btnfx-"]::before, .btn.disabled[class*="btnfx-"]::before,
+.btn:disabled[class*="btnfx-"]::after, .btn.disabled[class*="btnfx-"]::after {
+	animation: none !important;
+	transform: none !important;
+}
+
+/* ----- Accessibility: respect reduced-motion ----- */
+@media (prefers-reduced-motion: reduce) {
+	[class*="btnfx-"], [class*="btnfx-"]::before, [class*="btnfx-"]::after {
+		transition: none !important;
+		animation: none !important;
+		transform: none !important;
+	}
+}

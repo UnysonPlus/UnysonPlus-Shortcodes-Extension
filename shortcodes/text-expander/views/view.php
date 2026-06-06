@@ -79,6 +79,39 @@ if ( ! function_exists( 'fw_text_expander_mark_hidden' ) ) {
     }
 }
 
+if ( ! function_exists( 'fw_text_expander_add_class' ) ) {
+    /**
+     * Append CSS classes to a paragraph token's opening tag. If the token
+     * already has a `class="..."` attribute, merge into it; otherwise add a
+     * fresh class attribute. Used by the per-element color picks to color
+     * visible / hidden paragraphs independently.
+     */
+    function fw_text_expander_add_class( $tok, $extra ) {
+        $extra = trim( (string) $extra );
+        if ( $extra === '' ) {
+            return $tok;
+        }
+        if ( preg_match( '/\bclass\s*=\s*"([^"]*)"/i', $tok['open'] ) ) {
+            $tok['open'] = preg_replace_callback(
+                '/\bclass\s*=\s*"([^"]*)"/i',
+                function ( $m ) use ( $extra ) {
+                    return 'class="' . trim( $m[1] . ' ' . $extra ) . '"';
+                },
+                $tok['open'],
+                1
+            );
+        } else {
+            $tok['open'] = preg_replace(
+                '/^<p\b/i',
+                '<p class="' . esc_attr( $extra ) . '"',
+                $tok['open'],
+                1
+            );
+        }
+        return $tok;
+    }
+}
+
 if ( ! function_exists( 'fw_text_expander_append_html_simple' ) ) {
     /**
      * Append HTML to a paragraph token's inner (immutable return).
@@ -108,6 +141,23 @@ if ( ! function_exists( 'fw_text_expander_inline_text' ) ) {
 /* =====================================================================
  *  1. Read attributes.
  * =================================================================== */
+
+// Per-element color picks (kept off the wrapper). sc_extract_styling_atts
+// returns both preset classes AND compact-picker custom-hex inline styles.
+$visible_styling  = sc_extract_styling_atts( $atts, array( 'visible_color' ) );
+$hidden_styling   = sc_extract_styling_atts( $atts, array( 'hidden_color' ) );
+$btn_show_styling = sc_extract_styling_atts( $atts, array( 'btn_show_color' ) );
+$btn_hide_styling = sc_extract_styling_atts( $atts, array( 'btn_hide_color' ) );
+
+$visible_class_extra  = implode( ' ', $visible_styling['classes'] );
+$hidden_class_extra   = implode( ' ', $hidden_styling['classes'] );
+$btn_show_class_extra = implode( ' ', $btn_show_styling['classes'] );
+$btn_hide_class_extra = implode( ' ', $btn_hide_styling['classes'] );
+
+$visible_style_extra  = $visible_styling['styles']  ? implode( '; ', $visible_styling['styles'] )  : '';
+$hidden_style_extra   = $hidden_styling['styles']   ? implode( '; ', $hidden_styling['styles'] )   : '';
+$btn_show_style_extra = $btn_show_styling['styles'] ? implode( '; ', $btn_show_styling['styles'] ) : '';
+$btn_hide_style_extra = $btn_hide_styling['styles'] ? implode( '; ', $btn_hide_styling['styles'] ) : '';
 
 $atts['base_class']       = 'fw-text-expander';
 $atts['unique_id_prefix'] = 'te-';
@@ -166,8 +216,13 @@ $btn_style = $btn_color_safe ? ' style="color:' . esc_attr( $btn_color_safe ) . 
  *  3. Wrapper id (also serves as aria-controls target — a single panel).
  * =================================================================== */
 
-$unique_base = ! empty( $atts['unique_id'] ) ? sanitize_key( $atts['unique_id'] ) : wp_unique_id( 'te-' );
-$wrapper_id  = 'fw-text-expander-' . $unique_base;
+// Match the unique-class format sc_build_wrapper_attr emits for every
+// other shortcode (`te-{8chars}`, see shortcode-build-helper.php).
+// The id reuses that same string so aria-controls has a valid target.
+$unique_base = ! empty( $atts['unique_id'] )
+	? substr( sanitize_key( strtolower( trim( $atts['unique_id'] ) ) ), 0, 8 )
+	: wp_unique_id();
+$wrapper_id  = sanitize_html_class( 'te-' . $unique_base );
 
 $has_icon       = ( $toggle_icon !== 'none' ) && ! $native_details;
 $btn_icon_class = $has_icon ? ' fw-text-expander--icon-' . sanitize_html_class( $toggle_icon ) : '';
@@ -216,14 +271,17 @@ $aria_controls = $attr['id'];
 
 $render_button = function ( $role ) use (
     $btn_icon_class, $btn_show, $btn_hide, $initially_open,
-    $aria_controls, $btn_style, $has_icon
+    $aria_controls, $btn_style, $has_icon,
+    $btn_show_class_extra, $btn_hide_class_extra
 ) {
-    $label    = ( $role === 'show' ) ? $btn_show : $btn_hide;
-    $variant  = ( $role === 'show' ) ? 'fw-text-expander__btn--show' : 'fw-text-expander__btn--hide';
-    $expanded = $initially_open ? 'true' : 'false';
+    $label       = ( $role === 'show' ) ? $btn_show : $btn_hide;
+    $variant     = ( $role === 'show' ) ? 'fw-text-expander__btn--show' : 'fw-text-expander__btn--hide';
+    $color_extra = ( $role === 'show' ) ? $btn_show_class_extra : $btn_hide_class_extra;
+    $expanded    = $initially_open ? 'true' : 'false';
+    $extra_class = trim( $variant . $btn_icon_class . ( $color_extra !== '' ? ' ' . $color_extra : '' ) );
     ob_start();
     ?><button type="button"
-            class="fw-text-expander__toggle <?php echo esc_attr( $variant . $btn_icon_class ); ?>"
+            class="fw-text-expander__toggle <?php echo esc_attr( $extra_class ); ?>"
             data-role="<?php echo esc_attr( $role ); ?>"
             data-label="<?php echo esc_attr( $label ); ?>"
             aria-expanded="<?php echo esc_attr( $expanded ); ?>"
@@ -260,15 +318,21 @@ if ( $visible_content && ! $hidden_content && ! $native_details ) {
  *  Native <details> / <summary>. Body paragraphs render flat under the
  *  <details> element (the browser is already flat-DOM-friendly here).
  * -------------------------------------------------------------------- */ ?>
+    <?php
+    $native_vis_class  = trim( 'fw-text-expander__last-visible ' . $visible_class_extra );
+    $native_show_class = trim( 'fw-text-expander__label-show ' . $btn_show_class_extra );
+    $native_hide_class = trim( 'fw-text-expander__label-hide ' . $btn_hide_class_extra );
+    $native_hidden_attr = $hidden_class_extra !== '' ? ' class="' . esc_attr( $hidden_class_extra ) . '"' : '';
+    ?>
     <details <?php echo fw_attr_to_html( $attr ); ?><?php if ( $initially_open ) echo ' open'; ?>>
         <summary class="fw-text-expander__summary">
             <?php if ( $visible_content ) : ?>
-                <span class="fw-text-expander__last-visible"><?php echo do_shortcode( fw_text_expander_inline_text( $visible_content ) ); ?></span>
+                <span class="<?php echo esc_attr( $native_vis_class ); ?>"><?php echo do_shortcode( fw_text_expander_inline_text( $visible_content ) ); ?></span>
             <?php endif; ?>
-            <span class="fw-text-expander__label-show"<?php echo $btn_style; ?>><?php echo esc_html( $btn_show ); ?></span>
-            <span class="fw-text-expander__label-hide"<?php echo $btn_style; ?>><?php echo esc_html( $btn_hide ); ?></span>
+            <span class="<?php echo esc_attr( $native_show_class ); ?>"<?php echo $btn_style; ?>><?php echo esc_html( $btn_show ); ?></span>
+            <span class="<?php echo esc_attr( $native_hide_class ); ?>"<?php echo $btn_style; ?>><?php echo esc_html( $btn_hide ); ?></span>
         </summary>
-        <?php echo do_shortcode( $hidden_content ); ?>
+        <div<?php echo $native_hidden_attr; ?>><?php echo do_shortcode( $hidden_content ); ?></div>
     </details>
 
 <?php else : /* ----------------- flat-DOM standard render -------------- */ ?>
@@ -305,6 +369,19 @@ if ( $visible_content && ! $hidden_content && ! $native_details ) {
         $hid_tokens[ $i ] = fw_text_expander_mark_hidden( $tok );
     }
 
+    /* Per-element color picks: paint every visible <p> with the Visible Content
+       Color, every hidden <p> with the Hidden Content Color. */
+    if ( $visible_class_extra !== '' ) {
+        foreach ( $vis_tokens as $i => $tok ) {
+            $vis_tokens[ $i ] = fw_text_expander_add_class( $tok, $visible_class_extra );
+        }
+    }
+    if ( $hidden_class_extra !== '' ) {
+        foreach ( $hid_tokens as $i => $tok ) {
+            $hid_tokens[ $i ] = fw_text_expander_add_class( $tok, $hidden_class_extra );
+        }
+    }
+
     /* Append show button + bridge content to the last visible token. The
        bridge content (hidden_first_inner) lives inside a span that itself
        carries data-expander-hidden so CSS hides only that span when
@@ -318,7 +395,8 @@ if ( $visible_content && ! $hidden_content && ! $native_details ) {
         }
 
         if ( $do_merge ) {
-            $append_buffer .= '<span data-expander-hidden="true"> ' . do_shortcode( $bridge_hidden_inner ) . '</span>';
+            $bridge_class = $hidden_class_extra !== '' ? ' class="' . esc_attr( $hidden_class_extra ) . '"' : '';
+            $append_buffer .= '<span data-expander-hidden="true"' . $bridge_class . '> ' . do_shortcode( $bridge_hidden_inner ) . '</span>';
         }
 
         /* If hide is inline AND hidden is single-paragraph (so it was

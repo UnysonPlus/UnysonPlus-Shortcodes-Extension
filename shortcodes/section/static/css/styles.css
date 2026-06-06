@@ -3,6 +3,24 @@
 	z-index: 1;
 }
 
+.section--alt {
+	background-color: var(--color-section-alt, #f7f7f7);
+}
+
+.section--light {
+	background-color: var(--color-section-light, #ffffff);
+	color:            var(--color-section-light-text, #1a1a1a);
+}
+
+.section--dark {
+	background-color: var(--color-section-dark, #1a1a1a);
+	color:            var(--color-section-dark-text, #ffffff);
+}
+
+.section--dark a {
+	color: var(--color-section-dark-link, #93c5fd);
+}
+
 .section--bleed {
 	position: relative;
 	overflow: hidden;

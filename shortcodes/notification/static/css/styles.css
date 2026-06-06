@@ -3,7 +3,7 @@
     padding: 1rem 1.25rem;
     margin-bottom: 1.5rem;
     border: 1px solid transparent;
-    border-radius: 0.375rem; /* slightly more modern rounded corners */
+    border-radius: 0.375rem;
     font-size: 1rem;
     line-height: 1.5;
     position: relative;
@@ -20,109 +20,225 @@
 
 /* Paragraphs / lists inside alert */
 .alert > p,
-.alert > ul {
+.alert > ul,
+.alert .alert__message > p,
+.alert .alert__message > ul {
     margin-bottom: 0;
 }
-.alert > p + p {
+.alert > p + p,
+.alert .alert__message > p + p {
     margin-top: 0.5rem;
 }
 
-/* Alert icons */
+/*
+|--------------------------------------------------------------------------
+| Icon — original bare-<i> styling (back-compat for existing shortcodes)
+|--------------------------------------------------------------------------
+*/
 .alert .alert-icon {
     font-size: 1.25rem;
     flex-shrink: 0;
-    margin-top: 0.15rem; /* vertically align with text */
+    margin-top: 0.15rem;
 }
 
-/* Dismissible alerts */
+/*
+|--------------------------------------------------------------------------
+| Icon — new wrapper used for custom_icon / icon-v2 picks
+|--------------------------------------------------------------------------
+*/
+.alert .alert__icon {
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: 0.15rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.alert .alert__icon > i {
+    font-size: 1.25rem;
+}
+
+.alert .alert__icon > img,
+.alert .alert__icon > svg,
+.alert .alert__icon-image {
+    width: 1.25em;
+    height: 1.25em;
+    display: block;
+}
+
+/* Label */
+.alert .alert__label {
+    font-weight: 600;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Layout variants
+|--------------------------------------------------------------------------
+| Inline layout (default) uses only the base .alert flex styles above.
+| The "alert--inline" / "alert--border-filled" classes are not emitted by
+| view.php when they equal the defaults, so the class attribute stays
+| byte-for-byte identical for existing saved notifications.
+*/
+.alert.alert--stacked .alert__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Dismissible
+|--------------------------------------------------------------------------
+*/
 .alert-dismissible {
     padding-right: 3rem;
-    position: relative;
 }
-.alert-dismissible .btn-close {
+.alert .alert__close {
     position: absolute;
-    right: 1rem;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: transparent;
+    border: 0;
+    padding: 0.25rem 0.5rem;
+    color: inherit;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.6;
     z-index: 10;
 }
-
-/* Specific alert types */
-.alert-success {
-    background-color: #d1e7dd;
-    border-color: #badbcc;
-    color: #0f5132;
-}
-.alert-success .alert-link {
-    color: #0c4128;
+.alert .alert__close:hover,
+.alert .alert__close:focus {
+    opacity: 0.9;
+    outline: none;
 }
 
-.alert-info {
-    background-color: #cff4fc;
-    border-color: #b6effb;
-    color: #055160;
-}
-.alert-info .alert-link {
-    color: #04414d;
-}
-
-.alert-warning {
-    background-color: #fff3cd;
-    border-color: #ffecb5;
-    color: #664d03;
-}
-.alert-warning .alert-link {
-    color: #493d02;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    border-color: #f5c2c7;
-    color: #842029;
-}
-.alert-danger .alert-link {
-    color: #6a1a21;
-}
-
-.alert-primary {
-    background-color: #cfe2ff;
-    border-color: #b6d4fe;
-    color: #084298;
-}
-.alert-primary .alert-link {
-    color: #06357a;
-}
-
-.alert-secondary {
-    background-color: #e2e3e5;
-    border-color: #d3d6d8;
-    color: #41464b;
-}
-.alert-secondary .alert-link {
-    color: #34383c;
-}
-
-.alert-light {
-    background-color: #fefefe;
-    border-color: #fdfdfe;
-    color: #636466;
-}
-.alert-light .alert-link {
-    color: #4f4f51;
-}
-
-.alert-dark {
-    background-color: #d3d3d4;
-    border-color: #bcbebf;
-    color: #1b1e21;
-}
-.alert-dark .alert-link {
-    color: #141618;
-}
-
-/* Fade animation for dismissible */
+/* Fade animation for dismissible (matches original Bootstrap-style behavior) */
 .alert.fade {
     opacity: 0;
     transition: opacity 0.15s linear;
 }
 .alert.show {
     opacity: 1;
+}
+
+/* JS dismiss transition */
+.alert.is-dismissing {
+    opacity: 0;
+    transition: opacity 0.2s linear;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Filled color variants (default)
+|--------------------------------------------------------------------------
+*/
+.alert-success {
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+    color: #0f5132;
+}
+.alert-success .alert-link { color: #0c4128; }
+
+.alert-info {
+    background-color: #cff4fc;
+    border-color: #b6effb;
+    color: #055160;
+}
+.alert-info .alert-link { color: #04414d; }
+
+.alert-warning {
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+    color: #664d03;
+}
+.alert-warning .alert-link { color: #493d02; }
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+    color: #842029;
+}
+.alert-danger .alert-link { color: #6a1a21; }
+
+.alert-primary {
+    background-color: #cfe2ff;
+    border-color: #b6d4fe;
+    color: #084298;
+}
+.alert-primary .alert-link { color: #06357a; }
+
+.alert-secondary {
+    background-color: #e2e3e5;
+    border-color: #d3d6d8;
+    color: #41464b;
+}
+.alert-secondary .alert-link { color: #34383c; }
+
+.alert-light {
+    background-color: #fefefe;
+    border-color: #fdfdfe;
+    color: #636466;
+}
+.alert-light .alert-link { color: #4f4f51; }
+
+.alert-dark {
+    background-color: #d3d3d4;
+    border-color: #bcbebf;
+    color: #1b1e21;
+}
+.alert-dark .alert-link { color: #141618; }
+
+/*
+|--------------------------------------------------------------------------
+| Outline variant — transparent background, keep border + text color
+|--------------------------------------------------------------------------
+*/
+.alert.alert--border-outline {
+    background-color: transparent;
+}
+.alert.alert--border-outline.alert-success   { border-color: #0f5132; color: #0f5132; }
+.alert.alert--border-outline.alert-info      { border-color: #055160; color: #055160; }
+.alert.alert--border-outline.alert-warning   { border-color: #664d03; color: #664d03; }
+.alert.alert--border-outline.alert-danger    { border-color: #842029; color: #842029; }
+.alert.alert--border-outline.alert-primary   { border-color: #084298; color: #084298; }
+.alert.alert--border-outline.alert-secondary { border-color: #41464b; color: #41464b; }
+.alert.alert--border-outline.alert-light     { border-color: #adb5bd; color: #495057; }
+.alert.alert--border-outline.alert-dark      { border-color: #1b1e21; color: #1b1e21; }
+
+/*
+|--------------------------------------------------------------------------
+| Accent-left variant — neutral background, colored left border
+|--------------------------------------------------------------------------
+*/
+.alert.alert--border-accent {
+    background-color: #fafafa;
+    border-color: #e5e5e5;
+    border-left-width: 4px;
+    border-left-style: solid;
+}
+.alert.alert--border-accent.alert-success   { border-left-color: #198754; color: #0f5132; }
+.alert.alert--border-accent.alert-info      { border-left-color: #0dcaf0; color: #055160; }
+.alert.alert--border-accent.alert-warning   { border-left-color: #ffc107; color: #664d03; }
+.alert.alert--border-accent.alert-danger    { border-left-color: #dc3545; color: #842029; }
+.alert.alert--border-accent.alert-primary   { border-left-color: #0d6efd; color: #084298; }
+.alert.alert--border-accent.alert-secondary { border-left-color: #6c757d; color: #41464b; }
+.alert.alert--border-accent.alert-light     { border-left-color: #adb5bd; color: #495057; }
+.alert.alert--border-accent.alert-dark      { border-left-color: #212529; color: #1b1e21; }
+
+/*
+|--------------------------------------------------------------------------
+| Reduced motion
+|--------------------------------------------------------------------------
+*/
+@media (prefers-reduced-motion: reduce) {
+    .alert,
+    .alert.fade,
+    .alert.is-dismissing {
+        transition: none !important;
+    }
 }

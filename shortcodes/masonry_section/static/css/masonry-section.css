@@ -1,0 +1,51 @@
+/* ===========================================================================
+   Masonry Section — frontend layout.
+
+   The inner column row (`.fw-row`) is turned into a CSS grid; masonry-section.js
+   then sets each child's `grid-row-end: span N` from its measured height so
+   columns of unequal height pack vertically (left-to-right source order).
+
+   Column count + gap come from CSS custom properties set on the section wrapper
+   in views/view.php (--mc-lg / --mc-md / --mc-sm / --mc-gap), with responsive
+   breakpoints below.
+   =========================================================================== */
+
+.masonry-section .fw-row {
+	display: grid;
+	grid-template-columns: repeat(var(--mc-lg, 3), minmax(0, 1fr));
+	grid-auto-rows: 1px;                 /* fine row unit; spans are computed in JS */
+	column-gap: var(--mc-gap, 1.5rem);
+	margin: 0;                           /* cancel the flex grid's negative gutters */
+}
+
+/* Columns become uniform-width grid cells. Neutralize the column grid's
+   width/flex/padding/negative-margins so the CSS grid controls sizing, and
+   pin items to the top of their spanned cell so measuring stays stable. */
+.masonry-section .fw-row > * {
+	width: auto;
+	max-width: none;
+	flex: none;
+	align-self: start;
+	padding-left: 0;
+	padding-right: 0;
+	margin-top: 0;
+	margin-bottom: var(--mc-gap, 1.5rem); /* vertical gap (included in the span math) */
+}
+
+@media ( max-width: 991px ) {
+	.masonry-section .fw-row {
+		grid-template-columns: repeat(var(--mc-md, 2), minmax(0, 1fr));
+	}
+}
+
+@media ( max-width: 575px ) {
+	.masonry-section .fw-row {
+		grid-template-columns: repeat(var(--mc-sm, 1), minmax(0, 1fr));
+	}
+}
+
+/* Before JS runs (or if JS is disabled), fall back to natural grid rows so the
+   content is never clipped — JS upgrades this to true masonry packing. */
+.masonry-section:not(.fw-masonry-ready) .fw-row {
+	grid-auto-rows: auto;
+}

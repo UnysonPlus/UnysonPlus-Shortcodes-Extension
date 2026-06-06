@@ -326,6 +326,53 @@ $options = [
         ],
     ],
 
+    'tab_styling' => [
+        'title'   => __( 'Styling', 'fw' ),
+        'type'    => 'tab',
+        'options' => [
+            'group_colors' => [
+                'type'    => 'group',
+                'options' => [
+                    'text_color'       => sc_color_field_compact( array( 'label' => __( 'Text Color', 'fw' ),       'kind' => 'text' ) ),
+                    'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
+                    'font_size_preset' => sc_font_size_field( array(
+                        'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),
+                    ) ),
+                    'title_color' => sc_color_field_compact( array(
+                        'label' => __( 'Section Title Color', 'fw' ),
+                        'desc'  => __( 'Overrides the general Text Color for the section heading above the testimonials.', 'fw' ),
+                    ) ),
+                    'quote_color' => sc_color_field_compact( array(
+                        'label' => __( 'Quote Color', 'fw' ),
+                        'desc'  => __( 'Overrides the general Text Color for the quote / blockquote body in every testimonial.', 'fw' ),
+                    ) ),
+                    'author_name_color' => sc_color_field_compact( array(
+                        'label' => __( 'Author Name Color', 'fw' ),
+                        'desc'  => __( 'Overrides the general Text Color for the author name line in every testimonial.', 'fw' ),
+                    ) ),
+                    'author_job_color' => sc_color_field_compact( array(
+                        'label' => __( 'Author Job Color', 'fw' ),
+                        'desc'  => __( 'Overrides the general Text Color for the author job/role line in every testimonial.', 'fw' ),
+                    ) ),
+                    'site_link_color' => sc_color_field_compact( array(
+                        'label' => __( 'Site Link Color', 'fw' ),
+                        'desc'  => __( 'Overrides the general Text Color for the Website Name link (its href comes from Website Link).', 'fw' ),
+                    ) ),
+                ],
+            ],
+            'group_spacings' => [
+                'type'    => 'group',
+                'options' => [
+                    'spacing' => array(
+                        'type'  => 'spacing',
+                        'label' => __( 'Margin & Padding', 'fw' ),
+                        'desc'  => __( 'All Sides applies to every side at once; any per-side value (Top, Right, Bottom, Left) overrides it for that direction.', 'fw' ),
+                        'help'  => sc_styling_help_text( 'spacing' ),
+                    ),
+                ],
+            ],
+        ],
+    ],
     'tab_animation' => [
         'title'   => __( 'Animations', 'fw' ),
         'type'    => 'tab',

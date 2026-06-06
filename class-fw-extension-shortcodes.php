@@ -83,6 +83,198 @@ class FW_Extension_Shortcodes extends FW_Extension
 			'wp_ajax_fw_ext_wp_shortcodes_data',
 			array($this, 'send_wp_shortcodes_data')
 		);
+
+		// Resolve Dynamic Content {{tokens}} in shortcode/page-builder atts at render time.
+		require_once dirname( __FILE__ ) . '/includes/dynamic-content-resolver.php';
+
+		// Feed the disable filter from the saved settings (Shortcodes settings page).
+		add_filter(
+			'fw_ext_shortcodes_disable_shortcodes',
+			array( $this, '_filter_disabled_from_settings' )
+		);
+
+		// Admin settings page: enable/disable list + zip/GitHub install.
+		if ( is_admin() ) {
+			require_once dirname( __FILE__ ) . '/includes/class-fw-shortcodes-settings-page.php';
+			new FW_Ext_Shortcodes_Settings_Page( $this );
+		}
+	}
+
+	/**
+	 * Directory (outside the plugin tree) where user-installed shortcodes live.
+	 * Survives plugin updates. Scanned by _FW_Shortcodes_Loader::load_core_shortcodes().
+	 *
+	 * @return array|null array('path' => ..., 'uri' => ...) or null if uploads unavailable.
+	 */
+	public static function get_user_shortcodes_dir()
+	{
+		$upload = wp_upload_dir();
+
+		if ( ! empty( $upload['error'] ) ) {
+			return null;
+		}
+
+		return array(
+			'path' => wp_normalize_path( $upload['basedir'] . '/unysonplus-shortcodes' ),
+			'uri'  => $upload['baseurl'] . '/unysonplus-shortcodes',
+		);
+	}
+
+	/**
+	 * Discover ALL shortcodes (core + user-installed) WITHOUT applying the disable
+	 * filter. Used by the settings page (to show disabled ones too) and by the
+	 * disable filter itself (to compute disabled = all - enabled).
+	 *
+	 * Lightweight: globs folders and reads config.php, never instantiates a shortcode.
+	 *
+	 * @return array tag => array('tag','title','source','icon','deletable','dir')
+	 */
+	public function discover_all_shortcodes()
+	{
+		$result = array();
+
+		// Core (bundled) shortcodes.
+		$core_path = $this->get_path( '/shortcodes' );
+		$core_uri  = $this->get_uri( '/shortcodes' );
+		foreach ( $this->_scan_shortcode_folder( $core_path, $core_uri, 'core', false ) as $tag => $meta ) {
+			$result[ $tag ] = $meta;
+		}
+
+		// User-installed shortcodes (uploads dir).
+		$user_dir = self::get_user_shortcodes_dir();
+		if ( $user_dir && file_exists( $user_dir['path'] ) ) {
+			foreach ( $this->_scan_shortcode_folder( $user_dir['path'], $user_dir['uri'], 'uploaded', true ) as $tag => $meta ) {
+				// A core tag of the same name wins (matches loader behaviour).
+				if ( ! isset( $result[ $tag ] ) ) {
+					$result[ $tag ] = $meta;
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @internal
+	 * @param string $path
+	 * @param string $uri
+	 * @param string $default_source 'core' | 'uploaded'
+	 * @param bool   $deletable
+	 * @return array tag => meta
+	 */
+	private function _scan_shortcode_folder( $path, $uri, $default_source, $deletable )
+	{
+		$out = array();
+
+		if ( ! file_exists( $path ) ) {
+			return $out;
+		}
+
+		$dirs = glob( $path . '/*', GLOB_ONLYDIR );
+		if ( empty( $dirs ) ) {
+			return $out;
+		}
+
+		foreach ( $dirs as $dir ) {
+			$folder = strtolower( basename( $dir ) );
+			$tag    = str_replace( '-', '_', $folder );
+
+			// A valid shortcode folder must at least declare config.php.
+			if ( ! file_exists( $dir . '/config.php' ) ) {
+				continue;
+			}
+
+			$title = $this->_humanize_tag( $tag );
+			$vars  = fw_get_variables_from_file( $dir . '/config.php', array( 'cfg' => null ) );
+			if ( ! empty( $vars['cfg'] ) ) {
+				$cfg_title = fw_akg( 'page_builder/title', $vars['cfg'] );
+				if ( $cfg_title ) {
+					$title = $cfg_title;
+				}
+			}
+
+			$source = $default_source;
+			if ( $deletable && file_exists( $dir . '/.fw-source' ) ) {
+				$marker = trim( (string) @file_get_contents( $dir . '/.fw-source' ) );
+				if ( in_array( $marker, array( 'zip', 'github', 'uploaded' ), true ) ) {
+					$source = $marker;
+				}
+			}
+
+			$out[ $tag ] = array(
+				'tag'       => $tag,
+				'title'     => $title,
+				'source'    => $source,
+				// Only inline SVG for bundled (trusted) shortcodes; for user-installed
+				// ones reference the file via <img> so a malicious SVG can't inject script.
+				'icon'      => $this->_locate_folder_icon( $dir, $uri . '/' . $folder, ! $deletable ),
+				'deletable' => $deletable,
+				'dir'       => $folder,
+			);
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Inline SVG (or <img> for PNG) for the shortcode's page-builder icon, by folder.
+	 * Mirrors _locate_shortcode_icon() but without needing a FW_Shortcode instance.
+	 *
+	 * @internal
+	 */
+	private function _locate_folder_icon( $dir, $uri, $allow_inline_svg = true )
+	{
+		if ( file_exists( $dir . '/static/img/page_builder.svg' ) ) {
+			if ( $allow_inline_svg ) {
+				return trim( (string) @file_get_contents( $dir . '/static/img/page_builder.svg' ) );
+			}
+			return '<img src="' . esc_url( $uri . '/static/img/page_builder.svg' ) . '" alt="" />';
+		}
+
+		if ( file_exists( $dir . '/static/img/page_builder.png' ) ) {
+			return '<img src="' . esc_url( $uri . '/static/img/page_builder.png' ) . '" alt="" />';
+		}
+
+		return '';
+	}
+
+	/**
+	 * @internal
+	 */
+	private function _humanize_tag( $tag )
+	{
+		return ucwords( str_replace( array( '_', '-' ), ' ', $tag ) );
+	}
+
+	/**
+	 * Build the disabled-tags list from the saved "enabled_shortcodes" setting.
+	 * We store the ENABLED set, so anything discovered but not in it is disabled.
+	 * If the option was never saved (null) nothing is disabled (all on by default).
+	 *
+	 * @internal
+	 * @param array $disabled
+	 * @return array
+	 */
+	public function _filter_disabled_from_settings( $disabled )
+	{
+		// Read RAW (not via fw_get_db_ext_settings_option). This runs on every
+		// request; the latter would load + process this extension's full settings
+		// schema (the preset libraries) just to read one key — firing
+		// fw_option_types_init too early (before the page-builder shortcodes
+		// register their custom option types, which broke the Table editor) and
+		// dropping this non-schema key during option processing.
+		$enabled = class_exists( 'FW_WP_Option' )
+			? FW_WP_Option::get( 'fw_ext_settings_options:' . $this->get_name(), 'enabled_shortcodes', null )
+			: null;
+
+		if ( ! is_array( $enabled ) ) {
+			return $disabled; // never configured -> keep everything enabled
+		}
+
+		$all            = array_keys( $this->discover_all_shortcodes() );
+		$newly_disabled = array_diff( $all, $enabled );
+
+		return array_values( array_unique( array_merge( (array) $disabled, $newly_disabled ) ) );
 	}
 
 	/**

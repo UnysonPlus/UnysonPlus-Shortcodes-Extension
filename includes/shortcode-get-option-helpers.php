@@ -31,6 +31,16 @@ function sc_get_advanced_tab() {
                     'desc'  => false,
                     'type'  => 'text',
                 ],
+                'custom_css' => [
+                    'label'      => __( 'Custom CSS', 'fw' ),
+                    'desc'       => __( 'Scoped to THIS element. Use the keyword "selector" for the element itself, e.g. "selector { padding: 80px 0; }" or "selector .title { font-size: 48px; }". Travels with the element when you export/import a template, and renders on every page the element appears on — no need to edit Theme Settings or page CSS.', 'fw' ),
+                    'type'       => 'code-editor',
+                    'value'      => '',
+                    // `mode` is read at the top level by the code-editor option
+                    // type (NOT under `properties`); without it the editor
+                    // defaults to htmlmixed and raw CSS isn't syntax-highlighted.
+                    'mode'       => 'css',
+                ],
             ],
         ],
         'group_responsive' => [
@@ -45,6 +55,32 @@ function sc_get_advanced_tab() {
                         'hide-sm' => __( 'Tablet (768 – 991px)', 'fw' ),
                         'hide-md' => __( 'Desktop (≥ 992px)', 'fw' ),
                     ],
+                ],
+            ],
+        ],
+        'group_custom_attrs' => [
+            'type'    => 'group',
+            'options' => [
+                'custom_attrs' => [
+                    'label'           => __( 'Custom HTML Attributes', 'fw' ),
+                    'type'            => 'addable-box',
+                    'value'           => [],
+                    'box-options'     => [
+                        'name'  => [
+                            'label' => __( 'Name', 'fw' ),
+                            'type'  => 'text',
+                            'value' => '',
+                            'desc'  => __( 'e.g. aria-label, data-id, role', 'fw' ),
+                        ],
+                        'value' => [
+                            'label' => __( 'Value', 'fw' ),
+                            'type'  => 'text',
+                            'value' => '',
+                        ],
+                    ],
+                    'add-button-text' => __( 'Add attribute', 'fw' ),
+                    'template'        => '{{- name }}="{{- value }}"',
+                    'desc'            => __( 'Add extra HTML attributes to this shortcode\'s wrapper. Allowed: data-*, aria-*, role, title, tabindex, lang, target, rel. Other attribute names are silently ignored for safety.', 'fw' ),
                 ],
             ],
         ],
@@ -75,3 +111,33 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 
     return $attr;
 }, 10, 2 );
+
+/**
+ * Apply user-defined custom HTML attributes from the Advanced tab's
+ * Custom HTML Attributes field to every shortcode wrapper. Whitelist-based —
+ * only data-*, aria-*, plus a small list of safe exact names are passed
+ * through. Anything else (style, class, id, on* handlers, etc.) is silently
+ * dropped to keep the admin-input surface from becoming an XSS vector.
+ */
+add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
+    if ( empty( $atts['custom_attrs'] ) || ! is_array( $atts['custom_attrs'] ) ) {
+        return $attr;
+    }
+
+    static $exact_allow = array( 'role', 'title', 'tabindex', 'lang', 'target', 'rel' );
+
+    foreach ( $atts['custom_attrs'] as $row ) {
+        if ( empty( $row['name'] ) ) { continue; }
+        $name  = strtolower( trim( (string) $row['name'] ) );
+        $value = isset( $row['value'] ) ? (string) $row['value'] : '';
+
+        $is_data_or_aria = preg_match( '/^(data|aria)-[a-z0-9_-]+$/', $name );
+        $is_exact_allow  = in_array( $name, $exact_allow, true );
+
+        if ( ! $is_data_or_aria && ! $is_exact_allow ) { continue; }
+
+        $attr[ $name ] = esc_attr( $value );
+    }
+
+    return $attr;
+}, 15, 2 );

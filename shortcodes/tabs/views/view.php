@@ -5,12 +5,26 @@
  * @var array $atts
  */
 
+// Per-element color picks (kept off the wrapper). Applied across all tabs.
+// sc_extract_styling_atts gives both preset classes AND compact-picker
+// custom-hex inline styles for each per-element field.
+$tab_title_styling   = sc_extract_styling_atts( $atts, array( 'tab_title_color' ) );
+$tab_content_styling = sc_extract_styling_atts( $atts, array( 'tab_content_color' ) );
+$tab_title_extras    = $tab_title_styling['classes'];
+$tab_content_extras  = $tab_content_styling['classes'];
+$tab_title_style     = $tab_title_styling['styles']   ? implode( '; ', $tab_title_styling['styles'] )   : '';
+$tab_content_style   = $tab_content_styling['styles'] ? implode( '; ', $tab_content_styling['styles'] ) : '';
+$tab_title_class     = ! empty( $tab_title_extras )   ? ' ' . implode( ' ', $tab_title_extras )   : '';
+$tab_content_class   = ! empty( $tab_content_extras ) ? ' ' . implode( ' ', $tab_content_extras ) : '';
+$tab_title_style_attr   = $tab_title_style   !== '' ? ' style="' . esc_attr( $tab_title_style ) . '"'   : '';
+$tab_content_style_attr = $tab_content_style !== '' ? ' style="' . esc_attr( $tab_content_style ) . '"' : '';
+
 // Always set these before building attributes
 $atts['base_class']       = 'tabs';
 $atts['unique_id_prefix'] = 'tb-';
 
 // Generate unique tabs ID
-$tabs_id = uniqid('tabs-');
+$tabs_id = wp_unique_id( 'tabs-' );
 
 // Use CSS ID if provided, otherwise fallback to tabs_id
 $atts['css_id'] = !empty($atts['css_id']) ? $atts['css_id'] : $tabs_id;
@@ -72,7 +86,7 @@ $has_active = array_filter($tabs, fn($t) => !empty($t['is_active']) && $t['is_ac
                         $tab_id = $tabs_id . '-' . ($key + 1);
                     ?>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link <?php echo $is_active ? 'active' : ''; ?>" 
+                            <button class="nav-link <?php echo $is_active ? 'active' : ''; echo esc_attr( $tab_title_class ); ?>"<?php echo $tab_title_style_attr; ?>
                                     id="<?php echo esc_attr($tab_id . '-tab'); ?>" 
                                     data-bs-toggle="tab" 
                                     data-bs-target="#<?php echo esc_attr($tab_id); ?>" 
@@ -96,9 +110,9 @@ $has_active = array_filter($tabs, fn($t) => !empty($t['is_active']) && $t['is_ac
                         $fade_class = $fade_enabled ? 'fade' : '';
                         $active_class = $is_active ? 'show active' : '';
                     ?>
-                        <div class="tab-pane <?php echo $fade_class . ' ' . $active_class; ?>" 
-                             id="<?php echo esc_attr($tab_id); ?>" 
-                             role="tabpanel" 
+                        <div class="tab-pane <?php echo $fade_class . ' ' . $active_class; echo esc_attr( $tab_content_class ); ?>"<?php echo $tab_content_style_attr; ?>
+                             id="<?php echo esc_attr($tab_id); ?>"
+                             role="tabpanel"
                              aria-labelledby="<?php echo esc_attr($tab_id . '-tab'); ?>">
                             <?php echo do_shortcode($tab['tab_content']); ?>
                         </div>
@@ -115,13 +129,13 @@ $has_active = array_filter($tabs, fn($t) => !empty($t['is_active']) && $t['is_ac
                 $tab_id = $tabs_id . '-' . ($key + 1);
             ?>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link <?php echo $is_active ? 'active' : ''; ?>" 
-                            id="<?php echo esc_attr($tab_id . '-tab'); ?>" 
-                            data-bs-toggle="tab" 
-                            data-bs-target="#<?php echo esc_attr($tab_id); ?>" 
-                            type="button" 
-                            role="tab" 
-                            aria-controls="<?php echo esc_attr($tab_id); ?>" 
+                    <button class="nav-link <?php echo $is_active ? 'active' : ''; echo esc_attr( $tab_title_class ); ?>"<?php echo $tab_title_style_attr; ?>
+                            id="<?php echo esc_attr($tab_id . '-tab'); ?>"
+                            data-bs-toggle="tab"
+                            data-bs-target="#<?php echo esc_attr($tab_id); ?>"
+                            type="button"
+                            role="tab"
+                            aria-controls="<?php echo esc_attr($tab_id); ?>"
                             aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>">
                         <?php echo esc_html($tab['tab_title']); ?>
                     </button>
@@ -138,9 +152,9 @@ $has_active = array_filter($tabs, fn($t) => !empty($t['is_active']) && $t['is_ac
                 $fade_class = $fade_enabled ? 'fade' : '';
                 $active_class = $is_active ? 'show active' : '';
             ?>
-                <div class="tab-pane <?php echo $fade_class . ' ' . $active_class; ?>" 
-                     id="<?php echo esc_attr($tab_id); ?>" 
-                     role="tabpanel" 
+                <div class="tab-pane <?php echo $fade_class . ' ' . $active_class; echo esc_attr( $tab_content_class ); ?>"<?php echo $tab_content_style_attr; ?>
+                     id="<?php echo esc_attr($tab_id); ?>"
+                     role="tabpanel"
                      aria-labelledby="<?php echo esc_attr($tab_id . '-tab'); ?>">
                     <?php echo do_shortcode($tab['tab_content']); ?>
                 </div>

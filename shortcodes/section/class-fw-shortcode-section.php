@@ -30,12 +30,12 @@ class FW_Shortcode_Section extends FW_Shortcode
 	{
 		$config = $this->get_config('page_builder');
 
-		$icon = $this->locate_path( "/static/img/page_builder.svg" );
+		// Use the SVG icon by URL (rendered via <img src>, like the column
+		// thumbnails) — reliable regardless of the builder's inline-icon support.
+		$icon = $this->locate_URI( "/static/img/page_builder.svg" );
 
-		if (!$icon) {
+		if ( ! $icon ) {
 			$icon = $this->locate_URI( "/static/img/page_builder.png" );
-		} else {
-			$icon = file_get_contents($icon);
 		}
 
 		return array_merge(

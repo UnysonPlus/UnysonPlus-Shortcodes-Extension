@@ -1,4 +1,25 @@
 (function(fwe) {
+
+	// Live column item views, re-previewed when the device toggle changes.
+	// IMPORTANT: we bind ONE handler to the custom fwEvents bus here, instead of
+	// per-view via Backbone `this.listenTo(fwEvents, …)`. fwEvents is NOT a
+	// Backbone.Events object, so listenTo would make Backbone's stopListening()
+	// call fwEvents.off() when a column is removed — that throws
+	// (Object.keys(undefined)) and aborts the delete (deleted columns reappear,
+	// qtips stick, controls die). A plain registry never touches fwEvents.off.
+	// Dead views (detached from the DOM) are pruned lazily.
+	var fwDeviceColumnViews = [];
+	fwe.on('fw:builder:device-preview', function () {
+		for (var i = fwDeviceColumnViews.length - 1; i >= 0; i--) {
+			var v = fwDeviceColumnViews[i];
+			if (!v || !v.model || !v.el || !document.body.contains(v.el)) {
+				fwDeviceColumnViews.splice(i, 1);
+				continue;
+			}
+			try { v.applyLayoutPreview(); } catch (e) {}
+		}
+	});
+
 	fwe.on('fw-builder:' + 'page-builder' + ':register-items', function(builder) {
 		var PageBuilderColumnItem,
 			PageBuilderColumnItemView,
@@ -33,6 +54,16 @@
 		PageBuilderColumnItemView = builder.classes.ItemView.extend({
 			initialize: function(options) {
 				this.defaultInitialize();
+
+				// Live-preview the responsive layout (width / offset / alignment)
+				// on the canvas whenever the column's options change.
+				this.listenTo(this.model, 'change:atts', this.applyLayoutPreview);
+
+				// Re-preview on device-toggle changes via the module-level registry
+				// above (NOT this.listenTo(fwEvents, …) — see the note there).
+				if (fwDeviceColumnViews.indexOf(this) === -1) {
+					fwDeviceColumnViews.push(this);
+				}
 
 				this.initOptions = options;
 				this.initOptions.templateData = this.initOptions.templateData || {};
@@ -82,6 +113,84 @@
 					model: this.model,
 					builder: builder
 				});
+
+				this.applyLayoutPreview();
+			},
+			/**
+			 * Reflect the responsive Width / Offset / Alignment options on the
+			 * canvas for the active device (window.fwPbDevice, default 'lg'). Uses
+			 * inline styles so it doesn't depend on Bootstrap / frontend-grid
+			 * utilities (absent in the admin). Resolves width/offset by the same
+			 * mobile-first cascade as the frontend; only sets a property when
+			 * applicable, resetting to '' otherwise.
+			 */
+			applyLayoutPreview: function () {
+				if (!this.model) { return; } // guard: skip views whose model is gone
+				var atts   = this.model.get('atts') || {};
+				var device = window.fwPbDevice || 'lg';
+
+				// Effective width for the active device (mirrors the frontend cascade):
+				//   sm (phone, xs): w_phone, else full-width (the xs base is fw-col-12)
+				//   md (tablet):    w_tablet, else the base picker width (leave empty
+				//                   so the fw-col-sm-* backend class drives the canvas)
+				//   lg (desktop):   w_desktop → w_tablet → base picker width
+				var w = '';
+				if (device === 'sm') {
+					w = (atts.w_phone && atts.w_phone !== 'default') ? String(atts.w_phone) : '12';
+				} else if (device === 'md') {
+					if (atts.w_tablet && atts.w_tablet !== 'default') { w = String(atts.w_tablet); }
+				} else {
+					_.each(['w_desktop', 'w_tablet'], function (k) {
+						if (w === '' && atts[k] && atts[k] !== 'default') { w = String(atts[k]); }
+					});
+				}
+				var widthCss = { 'flex': '', 'max-width': '', 'width': '' };
+				if (w === 'auto') {
+					widthCss = { 'flex': '1 0 0%', 'max-width': 'none', 'width': 'auto' };
+				} else if (/^([1-9]|1[0-2])$/.test(w)) {
+					var pct = (parseInt(w, 10) / 12 * 100) + '%';
+					widthCss = { 'flex': '0 0 ' + pct, 'max-width': pct, 'width': pct };
+				}
+				this.$el.css(widthCss);
+
+				// Offset → margin-left, for the active device:
+				//   sm: offset_phone | md: offset_tablet | lg: offset_desktop → offset_tablet
+				var off = '';
+				if (device === 'sm') {
+					off = (atts.offset_phone && atts.offset_phone !== 'none') ? String(atts.offset_phone) : '';
+				} else if (device === 'md') {
+					off = (atts.offset_tablet && atts.offset_tablet !== 'none') ? String(atts.offset_tablet) : '';
+				} else {
+					_.each(['offset_desktop', 'offset_tablet'], function (k) {
+						if (off === '' && atts[k] && atts[k] !== 'none') { off = String(atts[k]); }
+					});
+				}
+				this.$el.css('margin-left', /^([1-9]|1[01])$/.test(off) ? (parseInt(off, 10) / 12 * 100) + '%' : '');
+
+				// Column self vertical alignment (within the row).
+				var selfMap = { start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch' };
+				this.$el.css('align-self', selfMap[atts.align_self] || '');
+
+				// Content alignment in the canvas — vertical + horizontal, like the live
+				// page. The content container is grown to fill the column (flex-canvas.css),
+				// so Middle / Bottom / Space Between have room to show when the column is
+				// taller than its content (equal-height row). "Top / Default" applies no
+				// flex, so elements stay at the top and the drop area fills the column.
+				var $items     = this.$('.builder-items').first();
+				var justifyMap = { start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between' };
+				var alignMap   = { start: 'flex-start', center: 'center', end: 'flex-end' };
+				var cv = justifyMap[ atts.content_v ];
+				var ch = alignMap[ atts.content_h ];
+				if ( cv || ch ) {
+					$items.css({
+						'display': 'flex',
+						'flex-direction': 'column',
+						'justify-content': cv || '',
+						'align-items': ch || ''
+					});
+				} else {
+					$items.css({ 'display': '', 'flex-direction': '', 'justify-content': '', 'align-items': '' });
+				}
 			},
 			events: {
 				'click': 'editOptions',

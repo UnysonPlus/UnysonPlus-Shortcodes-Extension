@@ -112,6 +112,91 @@
 
 						console.error('Ajax error', error);
 					});
+			})
+			.on('click'+ eventsNamespace, 'a[data-export-template]', function(){
+				var templateId = $(this).attr('data-export-template');
+
+				loading.show();
+
+				$.ajax({
+					type: 'post',
+					dataType: 'json',
+					url: ajaxurl,
+					data: {
+						'action': 'fw_builder_templates_column_export',
+						'builder_type': builder.get('type'),
+						'template_id': templateId
+					}
+				})
+					.done(function(json){
+						loading.hide();
+
+						if (!json.success) {
+							console.error('Failed to export builder template', json);
+							return;
+						}
+
+						var payload = JSON.stringify(json.data.content, null, 2);
+						var blob = new Blob([payload], { type: 'application/json' });
+						var url = URL.createObjectURL(blob);
+						var a = document.createElement('a');
+						a.href = url;
+						a.download = json.data.filename;
+						document.body.appendChild(a);
+						a.click();
+						document.body.removeChild(a);
+						setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+					})
+					.fail(function(xhr, status, error){
+						loading.hide();
+
+						console.error('Ajax export error', error);
+					});
+			})
+			.on('click'+ eventsNamespace, 'a.import-template', function () {
+				var $input = $(this).closest('.save-template-wrapper').find('input.template-import-file');
+				$input.val('');
+				$input.trigger('click');
+			})
+			.on('change'+ eventsNamespace, 'input.template-import-file', function () {
+				var file = this.files && this.files[0];
+				if (!file) {
+					return;
+				}
+
+				var formData = new FormData();
+				formData.append('action', 'fw_builder_templates_column_import');
+				formData.append('builder_type', builder.get('type'));
+				formData.append('template_file', file);
+
+				loading.show();
+
+				$.ajax({
+					type: 'post',
+					dataType: 'json',
+					url: ajaxurl,
+					data: formData,
+					processData: false,
+					contentType: false
+				})
+					.done(function (json) {
+						loading.hide();
+
+						if (!json.success) {
+							var msg = (json.data && json.data.message)
+								? json.data.message
+								: (localized.l10n.import_failed || 'Failed to import template');
+							window.alert(msg);
+							return;
+						}
+
+						tooltipRefreshCallback();
+					})
+					.fail(function (xhr, status, error) {
+						loading.hide();
+						console.error('Ajax import error', error);
+						window.alert(localized.l10n.import_failed || 'Failed to import template');
+					});
 			});
 	});
 

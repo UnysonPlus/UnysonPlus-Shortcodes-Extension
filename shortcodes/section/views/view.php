@@ -18,6 +18,27 @@ $bg_image = ( ! empty( $atts['background_image'] ) && ! empty( $atts['background
 $bg_video_data_attr    = [];
 $section_extra_classes = '';
 
+$variant = ( isset( $atts['variant'] ) && in_array( $atts['variant'], [ 'alt', 'light', 'dark' ], true ) )
+        ? $atts['variant']
+        : '';
+
+if ( $variant !== '' ) {
+        $section_extra_classes .= ' section--' . $variant;
+}
+
+// Per-section column-gap modifier classes — picked up by css-tokens.php's
+// `.section--gap-{slug} .row` / `.section--gap-x-{slug} .row` /
+// `.section--gap-y-{slug} .row` rules which override Bootstrap's
+// --bs-gutter-x / --bs-gutter-y on every row inside this section.
+// Empty atts (the "Use Default Gap" / "Use Section Gap" dropdown choices)
+// emit nothing, so the site-wide Theme Settings default applies.
+foreach ( [ 'gap' => 'section--gap-', 'gap_x' => 'section--gap-x-', 'gap_y' => 'section--gap-y-' ] as $att_key => $class_prefix ) {
+        if ( empty( $atts[ $att_key ] ) ) { continue; }
+        $slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $atts[ $att_key ] );
+        if ( $slug === '' ) { continue; }
+        $section_extra_classes .= ' ' . $class_prefix . strtolower( $slug );
+}
+
 if ( ! empty( $atts['video'] ) ) {
         $filetype  = wp_check_filetype( $atts['video'] );
         $filetypes = array(
@@ -45,8 +66,8 @@ if ( ! empty( $atts['video'] ) ) {
 $section_style = $bg_color . $bg_image;
 
 $container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] )
-        ? 'container-fluid'
-        : 'container';
+        ? 'fw-container-fluid'
+        : 'fw-container';
 
 $attr = sc_build_wrapper_attr( $atts );
 
@@ -102,7 +123,8 @@ $has_bleed = $bleed_enabled && ! empty( $bleed_url );
 if ( $has_bleed ) :
 
         $existing_class = ! empty( $attr['class'] ) ? $attr['class'] . ' ' : '';
-        $attr['class']  = $existing_class . 'section--bleed';
+        $bleed_extra    = trim( 'section--bleed ' . trim( $section_extra_classes ) );
+        $attr['class']  = $existing_class . $bleed_extra;
 
         $bleed_side     = ! empty( $bleed_opts['bleed_image_side'] ) ? $bleed_opts['bleed_image_side'] : 'right';
         $bleed_ratio    = ! empty( $bleed_opts['bleed_image_ratio'] ) ? $bleed_opts['bleed_image_ratio'] : '5-7';

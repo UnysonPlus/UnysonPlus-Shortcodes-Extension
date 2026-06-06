@@ -70,6 +70,39 @@
 }
 
 /* --------------------------------------------------------------------------
+   Icon Badge — backing shape around the icon. The shape and style come from
+   modifier classes (`icon-box__icon--badge-{solid|outline}-{square|rounded|
+   circle}`); the colour comes from an inline style emitted by view.php
+   (background-color for solid variants, border-color + color for outline).
+   -------------------------------------------------------------------------- */
+.icon-box__icon--has-badge {
+    padding: 0.5rem;
+}
+
+.icon-box__icon--badge-solid-square,
+.icon-box__icon--badge-outline-square {
+    border-radius: 0;
+}
+
+.icon-box__icon--badge-solid-rounded,
+.icon-box__icon--badge-outline-rounded {
+    border-radius: 0.5rem;
+}
+
+.icon-box__icon--badge-solid-circle,
+.icon-box__icon--badge-outline-circle {
+    border-radius: 50%;
+}
+
+.icon-box__icon--badge-outline-square,
+.icon-box__icon--badge-outline-rounded,
+.icon-box__icon--badge-outline-circle {
+    background: transparent;
+    border-width: 2px;
+    border-style: solid;
+}
+
+/* --------------------------------------------------------------------------
    Title & content
    -------------------------------------------------------------------------- */
 .icon-box__title {
@@ -93,9 +126,19 @@
 .icon-box__inner--top {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 0.75rem;
+    /* text-align is the default alignment for icon (via .icon-box__icon-align),
+       title and content. align-items is intentionally NOT set to center: the
+       children stretch full-width (default) so per-element Bootstrap text-*
+       classes can override this default. */
     text-align: center;
+}
+
+/* Icon aligner — full-width block so a Bootstrap text-* class (or the inherited
+   text-align) positions the inline-flex icon. Used by the top-title layout;
+   the between-title-content layout aligns the icon on .icon-box__divider. */
+.icon-box__icon-align {
+    width: 100%;
 }
 
 /* --------------------------------------------------------------------------
@@ -147,15 +190,16 @@
 .icon-box__inner--divider {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 0.5rem;
+    /* See note on .icon-box__inner--top: align-items is left at the default so
+       full-width children honour their own text-* alignment classes. */
     text-align: center;
 }
 
 .icon-box__inner--divider .icon-box__divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* Block (not flex) so the inline-flex icon is positioned by text-align —
+       inherited center by default, overridable via a Bootstrap text-* class. */
+    display: block;
     margin: 0.5rem 0;
 }
 
@@ -183,3 +227,16 @@
         text-align: center;
     }
 }
+
+/* --------------------------------------------------------------------------
+   Bootstrap text-alignment fallback (scoped)
+   The view emits Bootstrap utility classes (text-start / text-center /
+   text-end) for the Icon / Title / Content alignment options. Those utilities
+   ship with Bootstrap but aren't guaranteed to be enqueued on the frontend
+   (the builder's frontend-grid.css carries only grid utilities). Define them
+   scoped to the icon box so alignment works regardless; if global Bootstrap
+   IS present, these are harmless duplicates (same value, same !important).
+   -------------------------------------------------------------------------- */
+.icon-box__wrapper .text-start  { text-align: left !important; }
+.icon-box__wrapper .text-center { text-align: center !important; }
+.icon-box__wrapper .text-end    { text-align: right !important; }

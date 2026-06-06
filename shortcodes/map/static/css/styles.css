@@ -1,41 +1,55 @@
+/** Map canvas: ensure it has dimensions even before JS sets the height,
+    so it never collapses to 0px while the API loads. **/
+.map .fw-map-canvas {
+	width: 100%;
+	min-height: 300px;
+}
+
 /** fix infowindow dimensions **/
-.map-canvas .unyson-shortcode-map-content {
+.fw-map-canvas .unyson-shortcode-map-content {
 	/*max-width: 420px;*/
 	min-width: 274px;
 	padding: 5px 4px ;
 }
-.map-canvas img {
+.fw-map-canvas img {
 	max-width: none !important;
 
 }
-.map-canvas .gm-style-iw{
+.fw-map-canvas .gm-style-iw{
 	/*min-height: 70px;*/
 	overflow: hidden;
 }
 /** .fix infowindow dimensions **/
 
-.map-canvas .infowindow a {
+.fw-map-canvas .infowindow a {
 	text-decoration: none;
 	font-weight: bold;
 	color: #568EC7;
 }
-.map-canvas .infowindow-thump img {
+.fw-map-canvas .infowindow-thump img {
 	width: 100px;
 	height: 60px;
 	margin-right: 10px;
 }
-.map-canvas .infowindow-thump {
+.fw-map-canvas .infowindow-thump {
 	float: left;
 }
-.map-canvas .infowindow-title {
+.fw-map-canvas .infowindow-title {
 	line-height: 27px;
 }
-.map-canvas .infowindow-description {
+.fw-map-canvas .infowindow-description {
 	color: #AFAFAF;
 	font-size: 11px;
 	font-style: italic;
 }
-.map-canvas .infowindow-content {
+.fw-map-canvas .infowindow-content {
 	float: left;
 	max-width: 130px;
+}
+/* The thumb + content blocks float; clear them so the popup/info-window
+   (Google InfoWindow OR Leaflet popup) gets the correct height. */
+.fw-map-canvas .infowindow:after {
+	content: '';
+	display: table;
+	clear: both;
 }

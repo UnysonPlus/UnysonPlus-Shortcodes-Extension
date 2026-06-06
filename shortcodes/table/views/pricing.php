@@ -26,37 +26,37 @@ $attr = sc_build_wrapper_attr( $atts );
 				<?php foreach ( $atts['table']['rows'] as $row_key => $row ): ?>
 					<?php if ( $col['name'] == 'desc-col' ) : ?>
                         <div class="default-row">
-							<?php echo fw_akg( 'textarea', $atts['table']['content'][ $row_key ][ $col_key ], '' ); ?>
+							<?php echo wp_kses_post( fw_akg( 'textarea', $atts['table']['content'][ $row_key ][ $col_key ], '' ) ); ?>
                         </div>
 						<?php continue; endif; ?>
 					<?php if ( $row['name'] === 'heading-row' ): ?>
                         <div class="heading-row">
                             <span>
-								<?php echo fw_akg(
+								<?php echo wp_kses_post( fw_akg(
 									'textarea',
 									$atts['table']['content'][ $row_key ][ $col_key ],
 									$col['name'] === 'desc-col' ? '&nbps;' : ''
-								); ?>
+								) ); ?>
 							</span>
                         </div>
 					<?php elseif ( $row['name'] === 'pricing-row' ): ?>
                         <div class="pricing-row">
-                            <span><?php echo fw_akg(
+                            <span><?php echo wp_kses_post( fw_akg(
 		                            'amount',
 		                            $atts['table']['content'][ $row_key ][ $col_key ],
 		                            $col['name'] === 'desc-col' ? '&nbps;' : ''
-	                            ) ?></span>
-                            <small><?php echo fw_akg(
+	                            ) ) ?></span>
+                            <small><?php echo wp_kses_post( fw_akg(
 									'description',
 									$atts['table']['content'][ $row_key ][ $col_key ],
 									$col['name'] === 'desc-col' ? '&nbps;' : ''
-								) ?></small>
+								) ) ?></small>
                         </div>
 					<?php elseif ( $row['name'] == 'button-row' ) : ?>
 						<?php if ( $button = $table->get_button_shortcode() ): ?>
                             <div class="button-row">
 								<?php if ( false === empty( $atts['table']['content'][ $row_key ][ $col_key ]['button'] ) and false === empty( $button ) ) : ?>
-									<?php echo $button->render( $atts['table']['content'][ $row_key ][ $col_key ]['button'] ); ?>
+									<?php echo $button->render( $atts['table']['content'][ $row_key ][ $col_key ]['button'] ); // shortcode-rendered HTML, safe ?>
 								<?php else : ?>
                                     <span>&nbsp;</span>
 								<?php endif; ?>
@@ -71,7 +71,7 @@ $attr = sc_build_wrapper_attr( $atts );
                         </div>
 					<?php elseif ( $row['name'] === 'default-row' ) : ?>
                         <div class="default-row"><?php
-							echo fw_akg( "textarea", $atts['table']['content'][ $row_key ][ $col_key ] )
+							echo wp_kses_post( fw_akg( "textarea", $atts['table']['content'][ $row_key ][ $col_key ] ) )
 							?></div>
 					<?php endif; ?>
 				<?php endforeach; ?>

@@ -15,9 +15,9 @@ unset($div_attr['name'], $div_attr['value'], $div_attr['rows']);
 
 <div <?php echo fw_attr_to_html($div_attr) ?>>
 	<div class="fw-textarea-tab content">
-		<?php echo htmlspecialchars($option['value'], ENT_COMPAT, 'UTF-8') ?>
+		<?php echo esc_html( $option['value'] ) ?>
 	</div>
 	<div class="fw-textarea-tab control closed">
-		<textarea <?php echo fw_attr_to_html($option['attr']) ?> ><?php echo htmlspecialchars($option['value'], ENT_COMPAT, 'UTF-8') ?></textarea>
+		<textarea <?php echo fw_attr_to_html($option['attr']) ?> ><?php echo esc_textarea( $option['value'] ) ?></textarea>
 	</div>
 </div>

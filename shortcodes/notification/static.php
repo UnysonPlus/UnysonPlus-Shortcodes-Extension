@@ -6,3 +6,10 @@ wp_enqueue_style(
 	$shortcodes_extension->get_declared_URI('/shortcodes/notification/static/css/styles.css'),
 	array('font-awesome')
 );
+wp_enqueue_script(
+	'fw-shortcode-notification',
+	$shortcodes_extension->get_declared_URI('/shortcodes/notification/static/js/notification.js'),
+	array(),
+	false,
+	true
+);
