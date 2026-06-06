@@ -26,18 +26,24 @@ class Page_Builder_Column_Item extends Page_Builder_Item {
 		 */
 		$column_shortcode = fw()->extensions->get( 'shortcodes' )->get_shortcode( 'column' );
 
+		// Version these assets by the SHORTCODES extension (where the column lives)
+		// so a plugin/extension bump cache-busts them. They previously used the
+		// THEME version, which meant plugin-side edits to this CSS/JS never busted
+		// the browser/CDN cache — stale builder scripts kept loading after updates.
+		$version = fw()->extensions->get( 'shortcodes' )->manifest->get_version();
+
 		wp_enqueue_style(
 			$this->get_builder_type() . '_item_type_' . $this->get_type(),
 			$column_shortcode->get_uri( '/includes/page-builder-column-item/static/css/styles.css' ),
 			array(),
-			fw()->theme->manifest->get_version()
+			$version
 		);
 
 		wp_enqueue_script(
 			$this->get_builder_type() . '_item_type_' . $this->get_type(),
 			$column_shortcode->get_uri( '/includes/page-builder-column-item/static/js/scripts.js' ),
 			array( 'fw-events', 'underscore' ),
-			fw()->theme->manifest->get_version(),
+			$version,
 			true
 		);
 
@@ -62,7 +68,7 @@ class Page_Builder_Column_Item extends Page_Builder_Item {
 				'title'       => apply_filters( 'fw_ext_shortcodes_column_title', $value['title'], $key ),
 				'description' => apply_filters( 'fw_ext_shortcodes_column_description',
 					sprintf( __( 'Add a %s column', 'fw' ), $value['title'] ), $key ),
-				'icon'        => ($icon = $column_shortcode->locate_URI( "/thumbnails/{$key}.png" ))
+				'icon'        => ($icon = $column_shortcode->locate_URI( "/thumbnails/{$key}.svg" ))
 					? $icon : 'dashicons dashicons-align-none',
 				'data'        => array(
 					'width' => $key

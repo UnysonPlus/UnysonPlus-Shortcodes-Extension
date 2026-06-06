@@ -18,5 +18,5 @@ $attr = array_merge( $attr, $map_data_attr );
 
 ?>
 <div <?php echo fw_attr_to_html($attr); ?>>
-	<div class="map-canvas"></div>
+	<div class="fw-map-canvas"></div>
 </div>

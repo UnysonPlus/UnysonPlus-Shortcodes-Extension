@@ -13,7 +13,8 @@ $options = [
                     'title'   => [
                         'type'  => 'text',
                         'label' => __('Title', 'fw'),
-                        'desc'  => __('This can be left blank', 'fw')
+                        'desc'  => __('This can be left blank', 'fw'),
+                        'help'  => __('The bold headline above the content, e.g. "Ready to get started?". Leave empty if the content alone carries the message.', 'fw')
                     ],
                     'message' => [
                         'type'   => 'wp-editor',
@@ -21,6 +22,7 @@ $options = [
                         'reinit' => true,
                         'label'  => __('Content', 'fw'),
                         'desc'   => __('Enter content for this text block', 'fw'),
+                        'help'   => __('Use the visual editor for formatting, links, and lists. Keep it concise; this sits between the Title and the button.', 'fw'),
                         'tinymce' => true, //Load TinyMCE, can be used to pass settings directly to TinyMCE using an array. Default: true
                         'size' => 'large',
                         'editor_height' => 425, //The height to set the editor in pixels. If set, will be used instead of textarea_rows. 
@@ -32,12 +34,14 @@ $options = [
                     'button_label' => [
                         'label' => __('Button Label', 'fw'),
                         'desc'  => __('This is the text that appears on your button', 'fw'),
+                        'help'  => __('Use a short action phrase, e.g. "Get Started" or "Contact Us". Empty labels leave the button blank.', 'fw'),
                         'type'  => 'text',
                         'value' => 'Click'
                     ],
                     'button_link' => [
                         'label' => __('Button Link', 'fw'),
                         'desc'  => __('Where should your button link to', 'fw'),
+                        'help'  => __('Enter a full URL (e.g. https://example.com/signup) or an on-page anchor like #contact. The default "#" goes nowhere, so replace it.', 'fw'),
                         'type'  => 'text',
                         'value' => '#'
                     ],
@@ -45,6 +49,7 @@ $options = [
                         'type'  => 'switch',
                         'label' => __('Open Link in New Window', 'fw'),
                         'desc'  => __('Select here if you want to open the linked page in a new window', 'fw'),
+                        'help'  => __('Recommended for links to external sites so visitors keep your page open. Leave off for links within your own site.', 'fw'),
                         'right-choice' => [
                             'value' => '_blank',
                             'label' => __('Yes', 'fw'),
@@ -59,6 +64,46 @@ $options = [
         ],
     ],
 
+    'tab_styling' => [
+        'title'   => __( 'Styling', 'fw' ),
+        'type'    => 'tab',
+        // Drop the default wrapper-level Text Color — Title Color and Content
+        // Color below cover both text elements, so a wrapper-level pick would
+        // just compete with the per-element picks.
+        'options' => [
+            'group_colors' => [
+                'type'    => 'group',
+                'options' => [
+                    'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
+                    'font_size_preset' => sc_font_size_field( array(
+                        'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),
+                    ) ),
+                    'title_color' => sc_color_field_compact( array(
+                        'label' => __( 'Title Color', 'fw' ),
+                        'desc'  => __( 'Color preset applied to the call-to-action title.', 'fw' ),
+                    ) ),
+                    // Key stays `message_color` for back-compat with saved
+                    // instances; the editor-facing label is "Content Color"
+                    // to match the Content tab where the field is "Content".
+                    'message_color' => sc_color_field_compact( array(
+                        'label' => __( 'Content Color', 'fw' ),
+                        'desc'  => __( 'Color preset applied to the call-to-action content / body.', 'fw' ),
+                    ) ),
+                ],
+            ],
+            'group_spacings' => [
+                'type'    => 'group',
+                'options' => [
+                    'spacing' => array(
+                        'type'  => 'spacing',
+                        'label' => __( 'Margin & Padding', 'fw' ),
+                        'desc'  => __( 'All Sides applies to every side at once; any per-side value (Top, Right, Bottom, Left) overrides it for that direction.', 'fw' ),
+                        'help'  => sc_styling_help_text( 'spacing' ),
+                    ),
+                ],
+            ],
+        ],
+    ],
     'tab_animation' => [
         'title'   => __( 'Animations', 'fw' ),
         'type'    => 'tab',

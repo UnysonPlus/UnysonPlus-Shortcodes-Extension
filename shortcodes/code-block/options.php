@@ -14,9 +14,37 @@ $options = [
 						'type'   => 'code-editor',
 						'label'  => __( 'Code', 'fw' ),
 						'desc'   => __( 'Enter some HTML/CSS/JavaScript here. Syntax highlighting enabled.', 'fw' ),
+						'help'   => __( 'Paste raw markup exactly as you want it output — it is not escaped, so use this only with code you trust. Best for embeds, custom widgets, or snippets the visual editor would strip.', 'fw' ),
 						'mode'   => 'htmlmixed', // covers HTML + inline CSS/JS — the common code-block case
 						'height' => 500,
 					],
+				],
+			],
+		],
+	],
+	'tab_styling' => [
+		'title'   => __( 'Styling', 'fw' ),
+		'type'    => 'tab',
+		'options' => [
+			'group_colors' => [
+				'type'    => 'group',
+				'options' => [
+					'text_color'       => sc_color_field_compact( array( 'label' => __( 'Text Color', 'fw' ),       'kind' => 'text' ) ),
+					'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
+					'font_size_preset' => sc_font_size_field( array(
+						'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),
+					) ),
+				],
+			],
+			'group_spacings' => [
+				'type'    => 'group',
+				'options' => [
+					'spacing' => array(
+						'type'  => 'spacing',
+						'label' => __( 'Margin & Padding', 'fw' ),
+						'desc'  => __( 'All Sides applies to every side at once; any per-side value (Top, Right, Bottom, Left) overrides it for that direction.', 'fw' ),
+						'help'  => sc_styling_help_text( 'spacing' ),
+					),
 				],
 			],
 		],

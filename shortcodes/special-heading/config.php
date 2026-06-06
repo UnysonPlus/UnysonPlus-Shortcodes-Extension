@@ -7,6 +7,7 @@ $cfg['page_builder'] = array(
 	'description'   => __('Add a Special Heading', 'fw'),
 	'tab'           => __('Content Elements', 'fw'),
 	'popup_size'    => 'medium', // can be large, medium or small
-	'title_template' => '<{{= o.heading }}>{{= o.title }}</{{= o.heading }}>
+	'title_template' => '<div>{{= o.overline }}</div>
+						<{{= o.heading }}>{{= o.title }}</{{= o.heading }}>
 						<div>{{= o.subtitle }}</div>',
 );

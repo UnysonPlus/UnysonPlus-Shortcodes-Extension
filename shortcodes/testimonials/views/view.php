@@ -6,6 +6,26 @@
  * @var array $atts
  */
 
+/* Per-element color picks (kept off the wrapper). sc_extract_styling_atts
+   gives both preset classes AND compact-picker custom-hex inline styles. */
+$title_styling       = sc_extract_styling_atts( $atts, array( 'title_color' ) );
+$quote_styling       = sc_extract_styling_atts( $atts, array( 'quote_color' ) );
+$author_name_styling = sc_extract_styling_atts( $atts, array( 'author_name_color' ) );
+$author_job_styling  = sc_extract_styling_atts( $atts, array( 'author_job_color' ) );
+$site_link_styling   = sc_extract_styling_atts( $atts, array( 'site_link_color' ) );
+
+$title_class_extra       = implode( ' ', $title_styling['classes'] );
+$quote_class_extra       = implode( ' ', $quote_styling['classes'] );
+$author_name_class_extra = implode( ' ', $author_name_styling['classes'] );
+$author_job_class_extra  = implode( ' ', $author_job_styling['classes'] );
+$site_link_class_extra   = implode( ' ', $site_link_styling['classes'] );
+
+$title_style_extra       = $title_styling['styles']       ? implode( '; ', $title_styling['styles'] )       : '';
+$quote_style_extra       = $quote_styling['styles']       ? implode( '; ', $quote_styling['styles'] )       : '';
+$author_name_style_extra = $author_name_styling['styles'] ? implode( '; ', $author_name_styling['styles'] ) : '';
+$author_job_style_extra  = $author_job_styling['styles']  ? implode( '; ', $author_job_styling['styles'] )  : '';
+$site_link_style_extra   = $site_link_styling['styles']   ? implode( '; ', $site_link_styling['styles'] )   : '';
+
 /* Wrapper base */
 $atts['base_class']       = 'testimonials';
 $atts['unique_id_prefix'] = 'ts-';
@@ -65,7 +85,7 @@ $indicator_style      = sc_get( 'carousel_indicator_style', $atts, 'dots' ); // 
 <div <?php echo fw_attr_to_html( $attr ); ?>>
     <div class="<?php echo esc_attr( $container_cls ); ?>">
         <?php if ( $title ): ?>
-            <h3 class="testimonials-title <?php echo esc_attr( $text_align ); ?>"><?php echo esc_html( $title ); ?></h3>
+            <h3 class="testimonials-title <?php echo esc_attr( trim( $text_align . ' ' . $title_class_extra ) ); ?>"<?php echo $title_style_extra !== '' ? ' style="' . esc_attr( $title_style_extra ) . '"' : ''; ?>><?php echo esc_html( $title ); ?></h3>
         <?php endif; ?>
 
         <?php if ( empty( $testimonials ) ): ?>
@@ -85,6 +105,14 @@ $indicator_style      = sc_get( 'carousel_indicator_style', $atts, 'dots' ); // 
                                 'avatar_dim'      => $avatar_dim,
                                 'show_rating'     => $show_rating,
                                 'avatar_position' => $avatar_position,
+                                'quote_color_class'       => $quote_class_extra,
+                                'author_name_color_class' => $author_name_class_extra,
+                                'author_job_color_class'  => $author_job_class_extra,
+                                'site_link_color_class'   => $site_link_class_extra,
+                                'quote_color_style'       => $quote_style_extra,
+                                'author_name_color_style' => $author_name_style_extra,
+                                'author_job_color_style'  => $author_job_style_extra,
+                                'site_link_color_style'   => $site_link_style_extra,
                             ] ); ?>
                         </div>
                     <?php endforeach; ?>
@@ -103,13 +131,17 @@ $indicator_style      = sc_get( 'carousel_indicator_style', $atts, 'dots' ); // 
                             'avatar_dim'      => $avatar_dim,
                             'show_rating'     => $show_rating,
                             'avatar_position' => $avatar_position,
+                            'quote_color_class'       => $quote_class_extra,
+                            'author_name_color_class' => $author_name_class_extra,
+                            'author_job_color_class'  => $author_job_class_extra,
+                            'site_link_color_class'   => $site_link_class_extra,
                         ] ); ?>
                     </div>
                 </div>
 
             <?php else: /* carousel */ ?>
                 <?php
-                $carousel_id = uniqid( 'testimonial-carousel-' );
+                $carousel_id = wp_unique_id( 'testimonial-carousel-' );
                 $groups      = sc_chunk( $testimonials, $items_per_slide );
                 $col_class   = sc_col_class( $items_per_slide );
 
@@ -160,6 +192,10 @@ $indicator_style      = sc_get( 'carousel_indicator_style', $atts, 'dots' ); // 
                                                     'avatar_dim'      => $avatar_dim,
                                                     'show_rating'     => $show_rating,
                                                     'avatar_position' => $avatar_position,
+                                                    'quote_color_class'       => $quote_class_extra,
+                                                    'author_name_color_class' => $author_name_class_extra,
+                                                    'author_job_color_class'  => $author_job_class_extra,
+                                                    'site_link_color_class'   => $site_link_class_extra,
                                                 ] ); ?>
                                             </div>
                                         <?php endforeach; ?>

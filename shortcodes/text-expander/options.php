@@ -192,16 +192,37 @@ $options = [
         'title'   => __( 'Styling', 'fw' ),
         'type'    => 'tab',
         'options' => [
-            'group_styling' => [
+            'group_colors' => [
                 'type'    => 'group',
                 'options' => [
                     'btn_color' => [
                         'type'  => 'color-picker',
-                        'label' => __( 'Button Colour', 'fw' ),
-                        'desc'  => __( 'Colour of the toggle button text.', 'fw' ),
+                        'label' => __( 'Button Colour (custom hex/rgba)', 'fw' ),
+                        'desc'  => __( 'Free-form colour for both toggle buttons. Overridden by the per-button presets below when picked.', 'fw' ),
                         'help'  => __( 'Accepts hex (#rrggbb) and rgb()/rgba() values. Anything that does not match those patterns is silently dropped — no malformed inline styles are ever emitted.', 'fw' ),
                         'value' => '',
                     ],
+                    'visible_color' => sc_color_field_compact( array(
+                        'label' => __( 'Visible Content Color', 'fw' ),
+                        'desc'  => __( 'Color preset applied to every paragraph in Visible Content.', 'fw' ),
+                    ) ),
+                    'hidden_color' => sc_color_field_compact( array(
+                        'label' => __( 'Hidden Content Color', 'fw' ),
+                        'desc'  => __( 'Color preset applied to every paragraph in Hidden Content (and the bridge span when Merge is on).', 'fw' ),
+                    ) ),
+                    'btn_show_color' => sc_color_field_compact( array(
+                        'label' => __( 'Show More Button Color', 'fw' ),
+                        'desc'  => __( 'Color preset applied to the "Show More" toggle button. Overrides the free-form Button Colour above.', 'fw' ),
+                    ) ),
+                    'btn_hide_color' => sc_color_field_compact( array(
+                        'label' => __( 'Show Less Button Color', 'fw' ),
+                        'desc'  => __( 'Color preset applied to the "Show Less" toggle button. Overrides the free-form Button Colour above.', 'fw' ),
+                    ) ),
+                ],
+            ],
+            'group_options' => [
+                'type'    => 'group',
+                'options' => [
                     'toggle_icon' => [
                         'type'    => 'select',
                         'label'   => __( 'Toggle Icon', 'fw' ),

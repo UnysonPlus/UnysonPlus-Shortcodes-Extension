@@ -31,6 +31,24 @@ class _FW_Shortcodes_Loader
 	{
 		$shortcode_extension = fw_ext('shortcodes');
 		self::load_extension_shortcodes($shortcode_extension);
+
+		/**
+		 * Also load user-installed shortcodes from the uploads directory
+		 * (installed via the Shortcodes settings page: zip upload / GitHub URL).
+		 * Kept outside the plugin tree so they survive plugin updates.
+		 * Loaded AFTER the bundled shortcodes, so a name clash keeps the core one
+		 * (load_folder_shortcodes() skips a tag that is already defined).
+		 */
+		if (class_exists('FW_Extension_Shortcodes')) {
+			$user_dir = FW_Extension_Shortcodes::get_user_shortcodes_dir();
+
+			if ($user_dir && file_exists($user_dir['path'])) {
+				self::load_folder_shortcodes('shortcodes', array(
+					'path' => $user_dir['path'],
+					'uri'  => $user_dir['uri'],
+				));
+			}
+		}
 	}
 
 	private static function load_extensions_shortcodes()

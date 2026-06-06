@@ -12,12 +12,14 @@ $options = [
                                                 'type'  => 'upload',
                                                 'label' => __( 'Image', 'fw' ),
                                                 'desc'  => __( 'Upload or choose an image from the media library', 'fw' ),
+                                                'help'  => __( 'Use a high-resolution image at least as wide as its column; the theme scales it down crisply but cannot add detail when scaling up.', 'fw' ),
                                         ],
                                         'content' => [
                                                 'type'          => 'wp-editor',
                                                 'reinit'        => true,
                                                 'label'         => __( 'Content', 'fw' ),
                                                 'desc'          => __( 'Enter the text content to display alongside the image', 'fw' ),
+                                                'help'          => __( 'Accepts shortcodes, so you can nest headings or buttons here to build a full hero-style block beside the image.', 'fw' ),
                                                 'tinymce'       => true,
                                                 'size'          => 'large',
                                                 'editor_height' => 300,
@@ -29,6 +31,7 @@ $options = [
                                                 'type'  => 'text',
                                                 'label' => __( 'Image Alt Text', 'fw' ),
                                                 'desc'  => __( 'Leave empty to use the alt text from the media library', 'fw' ),
+                                                'help'  => __( 'Describes the image for screen readers and search engines. Set this when the image carries meaning; leave blank for purely decorative images.', 'fw' ),
                                                 'value' => '',
                                         ],
                                         'image_link_group' => [
@@ -38,11 +41,13 @@ $options = [
                                                                 'type'  => 'text',
                                                                 'label' => __( 'Image Link', 'fw' ),
                                                                 'desc'  => __( 'Optional URL to link the image to', 'fw' ),
+                                                                'help'  => __( 'Enter a full URL including https://. Leave empty to keep the image non-clickable.', 'fw' ),
                                                                 'value' => '',
                                                         ],
                                                         'image_link_target' => [
                                                                 'type'         => 'switch',
                                                                 'label'        => __( 'Open Link in New Window', 'fw' ),
+                                                                'help'         => __( 'Only applies when an Image Link is set. Turn on for links to external sites so visitors do not leave your page.', 'fw' ),
                                                                 'right-choice' => [
                                                                         'value' => '_blank',
                                                                         'label' => __( 'Yes', 'fw' ),
@@ -70,6 +75,7 @@ $options = [
                                                 'type'    => 'select',
                                                 'label'   => __( 'Layout', 'fw' ),
                                                 'desc'    => __( 'Choose the position of the image relative to the content', 'fw' ),
+                                                'help'    => __( 'Alternate the layout between stacked Image-Content blocks down a page for a zig-zag rhythm that keeps long sections engaging.', 'fw' ),
                                                 'choices' => [
                                                         'image-left'  => __( 'Image Left / Content Right', 'fw' ),
                                                         'image-right' => __( 'Image Right / Content Left', 'fw' ),
@@ -105,6 +111,7 @@ $options = [
                                                         'type'    => 'image-picker',
                                                         'label'   => __( 'Column Ratio', 'fw' ),
                                                         'desc'    => __( 'Set the width ratio between the image and content columns', 'fw' ),
+                                                        'help'    => __( 'The first number is the image column, the second is the content column. Lean toward the content side when there is a lot of text to read.', 'fw' ),
                                                         'choices' => $choices,
                                                         'value'   => '4-8',
                                                 ];
@@ -113,6 +120,7 @@ $options = [
                                                 'type'    => 'select',
                                                 'label'   => __( 'Vertical Alignment', 'fw' ),
                                                 'desc'    => __( 'Align the image and content vertically within the row', 'fw' ),
+                                                'help'    => __( 'Matters most when the image and the text are different heights. Center usually looks balanced; Top aligns both columns to the same baseline.', 'fw' ),
                                                 'choices' => [
                                                         'align-items-start'  => __( 'Top', 'fw' ),
                                                         'align-items-center' => __( 'Center', 'fw' ),
@@ -124,6 +132,7 @@ $options = [
                                                 'type'    => 'select',
                                                 'label'   => __( 'Gap', 'fw' ),
                                                 'desc'    => __( 'Space between the image and content columns', 'fw' ),
+                                                'help'    => __( 'Larger gaps give the block more breathing room; choose None when you want the image and text to read as a single tight unit.', 'fw' ),
                                                 'choices' => [
                                                         'g-0' => __( 'None', 'fw' ),
                                                         'g-3' => __( 'Small', 'fw' ),
@@ -136,6 +145,7 @@ $options = [
                                                 'type'    => 'select',
                                                 'label'   => __( 'Mobile Stacking Order', 'fw' ),
                                                 'desc'    => __( 'Which column appears first when stacked on mobile', 'fw' ),
+                                                'help'    => __( 'On narrow screens the columns stack vertically. Choose Content First when the heading should be read before the image on phones.', 'fw' ),
                                                 'choices' => [
                                                         'image-first'   => __( 'Image First', 'fw' ),
                                                         'content-first' => __( 'Content First', 'fw' ),
@@ -151,13 +161,14 @@ $options = [
                 'title'   => __( 'Styling', 'fw' ),
                 'type'    => 'tab',
                 'options' => [
-                        'group_styling' => [
+                        'group_options' => [
                                 'type'    => 'group',
                                 'options' => [
                                         'image_fit' => [
                                                 'type'    => 'select',
                                                 'label'   => __( 'Image Fit', 'fw' ),
                                                 'desc'    => __( 'How the image fills its column', 'fw' ),
+                                                'help'    => __( 'Cover crops the image to completely fill the column (good for matching heights); Contain shows the whole image, which may leave empty space.', 'fw' ),
                                                 'choices' => [
                                                         'contain' => __( 'Contain (show full image)', 'fw' ),
                                                         'cover'   => __( 'Cover (fill column)', 'fw' ),
@@ -167,6 +178,7 @@ $options = [
                                         'image_radius' => [
                                                 'type'    => 'select',
                                                 'label'   => __( 'Image Border Radius', 'fw' ),
+                                                'help'    => __( 'Rounds the image corners. Circle works best with a square image and Cover fit, otherwise the result will be an oval.', 'fw' ),
                                                 'choices' => [
                                                         'rounded-0'      => __( 'None', 'fw' ),
                                                         'rounded-2'      => __( 'Small', 'fw' ),
@@ -179,6 +191,7 @@ $options = [
                                         'image_shadow' => [
                                                 'type'    => 'select',
                                                 'label'   => __( 'Image Shadow', 'fw' ),
+                                                'help'    => __( 'Adds a drop shadow to lift the image off the page. Keep it subtle (Small) on light backgrounds so it does not look heavy.', 'fw' ),
                                                 'choices' => [
                                                         ''          => __( 'None', 'fw' ),
                                                         'shadow-sm' => __( 'Small', 'fw' ),
@@ -187,6 +200,15 @@ $options = [
                                                 ],
                                                 'value' => '',
                                         ],
+                                ],
+                        ],
+                        'group_colors' => [
+                                'type'    => 'group',
+                                'options' => [
+                                        'content_color' => sc_color_field_compact( array(
+                                                'label' => __( 'Content Color', 'fw' ),
+                                                'desc'  => __( 'Color preset applied to the body content text.', 'fw' ),
+                                        ) ),
                                 ],
                         ],
                 ],

@@ -1,0 +1,193 @@
+.fw-sc-settings .fw-sc-section-title {
+	margin-top: 1.6em;
+	padding-bottom: .4em;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.fw-sc-notice-hidden {
+	display: none !important;
+}
+
+#fw-sc-notice {
+	margin: 12px 0;
+	padding: 1px 12px;
+	border-left: 4px solid #72aee6;
+	background: #fff;
+	box-shadow: 0 1px 1px rgba( 0, 0, 0, .04 );
+}
+
+#fw-sc-notice.notice-success {
+	border-left-color: #00a32a;
+}
+
+#fw-sc-notice.notice-error {
+	border-left-color: #d63638;
+}
+
+/* Toolbar */
+.fw-sc-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin: 14px 0;
+}
+
+.fw-sc-toolbar .fw-sc-search {
+	flex: 1 1 260px;
+	max-width: 360px;
+}
+
+.fw-sc-toolbar-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-left: auto;
+}
+
+.fw-sc-count {
+	color: #646970;
+	margin-right: 4px;
+	white-space: nowrap;
+}
+
+/* List */
+.fw-sc-list {
+	margin: 0;
+	display: grid;
+	grid-template-columns: repeat( auto-fill, minmax( 320px, 1fr ) );
+	gap: 10px;
+}
+
+.fw-sc-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	padding: 10px 12px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+}
+
+.fw-sc-item-new {
+	border-color: #00a32a;
+	box-shadow: 0 0 0 1px #00a32a inset;
+}
+
+.fw-sc-item-label {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex: 1 1 auto;
+	min-width: 0;
+	cursor: pointer;
+}
+
+.fw-sc-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	flex: 0 0 26px;
+	color: #50575e;
+}
+
+.fw-sc-icon svg,
+.fw-sc-icon img {
+	max-width: 100%;
+	max-height: 100%;
+	width: auto;
+	height: auto;
+}
+
+.fw-sc-meta {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.fw-sc-title {
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.fw-sc-tag {
+	font-size: 11px;
+	color: #787c82;
+	background: transparent;
+	padding: 0;
+}
+
+/* Source badge */
+.fw-sc-badge {
+	flex: 0 0 auto;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .03em;
+	padding: 2px 7px;
+	border-radius: 10px;
+	background: #f0f0f1;
+	color: #50575e;
+}
+
+.fw-sc-badge-core {
+	background: #e5f1fb;
+	color: #0a4b78;
+}
+
+.fw-sc-badge-github {
+	background: #ededed;
+	color: #1f2328;
+}
+
+.fw-sc-badge-zip,
+.fw-sc-badge-uploaded {
+	background: #edf7ed;
+	color: #135e29;
+}
+
+.fw-sc-delete {
+	flex: 0 0 auto;
+	color: #b32d2e !important;
+	text-decoration: none;
+}
+
+.fw-sc-delete:hover {
+	color: #d63638 !important;
+	text-decoration: underline;
+}
+
+/* Install panel */
+.fw-sc-trust {
+	color: #8a6d1b;
+}
+
+.fw-sc-install {
+	display: grid;
+	grid-template-columns: repeat( auto-fit, minmax( 300px, 1fr ) );
+	gap: 16px;
+	margin-top: 12px;
+}
+
+.fw-sc-card {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 16px;
+}
+
+.fw-sc-card h3 {
+	margin-top: 0;
+}
+
+.fw-sc-card input[type="file"],
+.fw-sc-card input[type="url"] {
+	display: block;
+	margin: 10px 0;
+	max-width: 100%;
+}

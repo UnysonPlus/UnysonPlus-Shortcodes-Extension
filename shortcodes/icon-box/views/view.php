@@ -20,7 +20,7 @@ if (
     fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_frontend_css();
 }
 
-/*
+/*f
 |--------------------------------------------------------------------------
 | Normalize incoming attributes
 |--------------------------------------------------------------------------
@@ -43,6 +43,120 @@ $link_rel_value = isset( $atts['link_rel'] ) ? $atts['link_rel'] : 'sponsored';
 
 /*
 |--------------------------------------------------------------------------
+| Alignment — emit Bootstrap text-* utility classes per element
+|--------------------------------------------------------------------------
+| Empty value ('') means "inherit the layout default" → no class emitted, so
+| existing content is untouched. Icon alignment only applies to the block
+| layouts (top-title, between-title-content); inline / stack layouts position
+| the icon via flexbox and ignore it.
+*/
+// Maps the alignment value to a Bootstrap text-* utility. The fields now use the
+// shared sc_alignment_field() picker (left/center/right); the legacy start/end keys
+// are kept so content saved before the switch still resolves.
+$align_map = [
+    'left'   => 'text-start',
+    'start'  => 'text-start',
+    'center' => 'text-center',
+    'right'  => 'text-end',
+    'end'    => 'text-end',
+];
+$icon_align          = isset( $atts['icon_align'] )    ? (string) $atts['icon_align']    : '';
+$title_align         = isset( $atts['title_align'] )   ? (string) $atts['title_align']   : '';
+$content_align       = isset( $atts['content_align'] ) ? (string) $atts['content_align'] : '';
+$icon_align_class    = isset( $align_map[ $icon_align ] )    ? $align_map[ $icon_align ]    : '';
+$title_align_class   = isset( $align_map[ $title_align ] )   ? $align_map[ $title_align ]   : '';
+$content_align_class = isset( $align_map[ $content_align ] ) ? $align_map[ $content_align ] : '';
+
+/*
+|--------------------------------------------------------------------------
+| Icon Badge — coloured background or outlined ring around the icon
+|--------------------------------------------------------------------------
+| Layout tab picks one of seven variants (none / {solid|outline}-{square|
+| rounded|circle}); Styling tab supplies the colour via the compact picker.
+|
+| The compact picker stores `{ predefined: 'bg-{slug}', custom: '#hex' }`;
+| pre-migration saves still hold the flat string `'bg-{slug}'`. Both paths
+| funnel through here.
+|
+| Output split:
+|   - Preset pick → emit a UTILITY CLASS on the icon span (themeable,
+|     cascade-friendly, no inline-style override)
+|       solid   → `bg-{slug}`
+|       outline → `border border-{slug} text-{slug}`
+|         (border-{slug} paints the ring, text-{slug} paints currentColor
+|          so the inner SVG / font-icon picks up the same tone)
+|   - Custom-hex pick → emit an inline style, since no utility class can
+|     express an arbitrary hex
+|       solid   → `background-color: #hex`
+|       outline → `border-color: #hex; color: #hex`
+*/
+
+/*
+ * TEMP MIGRATION — remove once all icon boxes are re-saved under the new keys.
+ * "Icon Fill" was renamed to "Icon Badge" (option keys icon_fill → icon_badge,
+ * icon_fill_color → icon_badge_color). These two fallbacks let content saved
+ * under the OLD keys keep its badge shape + colour. Delete the `: ( … icon_fill … )`
+ * halves (and the legacy keys in the unset() below) when no longer needed.
+ */
+$icon_badge = ! empty( $atts['icon_badge'] )
+    ? (string) $atts['icon_badge']
+    : ( ! empty( $atts['icon_fill'] ) ? (string) $atts['icon_fill'] : 'none' );
+
+$icon_badge_color_raw = ( isset( $atts['icon_badge_color'] ) && $atts['icon_badge_color'] !== '' )
+    ? $atts['icon_badge_color']
+    : ( isset( $atts['icon_fill_color'] ) ? $atts['icon_fill_color'] : '' );
+/* END TEMP MIGRATION */
+
+// Peel apart whichever half of the value is live.
+$icon_badge_preset = '';
+$icon_badge_custom = '';
+if ( is_array( $icon_badge_color_raw ) ) {
+    $icon_badge_preset = isset( $icon_badge_color_raw['predefined'] ) ? (string) $icon_badge_color_raw['predefined'] : '';
+    $icon_badge_custom = isset( $icon_badge_color_raw['custom'] )     ? (string) $icon_badge_color_raw['custom']     : '';
+} elseif ( is_string( $icon_badge_color_raw ) ) {
+    // Legacy plain-string save from before the compact-picker migration.
+    $icon_badge_preset = $icon_badge_color_raw;
+}
+
+unset( $atts['icon_badge'], $atts['icon_badge_color'], $atts['icon_fill'], $atts['icon_fill_color'] );
+
+$allowed_badges   = array( 'solid-square', 'solid-rounded', 'solid-circle', 'outline-square', 'outline-rounded', 'outline-circle' );
+$has_badge        = in_array( $icon_badge, $allowed_badges, true );
+$icon_badge_class = '';
+$icon_badge_attr  = '';
+
+if ( $has_badge ) {
+    $icon_badge_class = 'icon-box__icon--has-badge icon-box__icon--badge-' . sanitize_html_class( $icon_badge );
+    $is_solid   = strpos( $icon_badge, 'solid-' )   === 0;
+    $is_outline = strpos( $icon_badge, 'outline-' ) === 0;
+
+    if ( $icon_badge_preset !== '' ) {
+        // Preset path — emit utility classes. The saved slug carries the
+        // `bg-` prefix because the field uses `kind => 'bg'`. Strip it,
+        // then rebuild the class(es) appropriate to the badge variant so
+        // the CSS cascade paints the right property.
+        $slug = sanitize_html_class( preg_replace( '/^bg-/', '', $icon_badge_preset ) );
+        if ( $slug !== '' ) {
+            if ( $is_solid ) {
+                $icon_badge_class .= ' bg-' . $slug;
+            } elseif ( $is_outline ) {
+                $icon_badge_class .= ' border border-' . $slug . ' text-' . $slug;
+            }
+        }
+    } elseif ( $icon_badge_custom !== '' ) {
+        // Custom-hex path — inline style, since no utility class can
+        // express an arbitrary hex.
+        $hex = $icon_badge_custom;
+        if ( $is_solid ) {
+            $icon_badge_attr = ' style="background-color:' . esc_attr( $hex ) . '"';
+        } elseif ( $is_outline ) {
+            $icon_badge_attr = ' style="border-color:' . esc_attr( $hex ) . ';color:' . esc_attr( $hex ) . '"';
+        }
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | Wrapper attributes (uses shared helper for css_class / css_id / unique)
 |--------------------------------------------------------------------------
 */
@@ -60,6 +174,20 @@ if ( ! $has_content ) {
 if ( ! $has_icon ) {
     $wrapper_classes[] = 'icon-box--no-icon';
 }
+
+// Route per-element color picks to specific inner elements (kept out of wrapper).
+// The Styling tab's general "Text Color" is left on the wrapper as the base.
+// sc_extract_styling_atts() returns both classes (preset picks) AND inline
+// styles (compact-picker custom-hex picks) so each named field can be either.
+$title_styling   = sc_extract_styling_atts( $atts, array( 'title_color' ) );
+$content_styling = sc_extract_styling_atts( $atts, array( 'content_color' ) );
+$icon_styling    = sc_extract_styling_atts( $atts, array( 'icon_color' ) );
+$title_extras    = $title_styling['classes'];
+$content_extras  = $content_styling['classes'];
+$icon_extras     = $icon_styling['classes'];
+$title_style     = $title_styling['styles']   ? implode( '; ', $title_styling['styles'] )   : '';
+$content_style   = $content_styling['styles'] ? implode( '; ', $content_styling['styles'] ) : '';
+$icon_style      = $icon_styling['styles']    ? implode( '; ', $icon_styling['styles'] )    : '';
 
 $atts['base_class']       = 'icon-box';
 $atts['unique_id_prefix'] = 'ib-';
@@ -84,18 +212,63 @@ if ( ! function_exists( 'sc_iconbox_render_icon_markup' ) ) {
         if ( is_string( $custom_icon ) && $custom_icon !== '' ) {
 
             // Allow inline SVG markup, while still filtering anything dangerous.
-            $svg_allowed = [
-                'svg'      => [ 'xmlns' => true, 'viewbox' => true, 'width' => true, 'height' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true, 'role' => true, 'aria-hidden' => true, 'focusable' => true ],
-                'g'        => [ 'fill' => true, 'stroke' => true, 'transform' => true, 'class' => true ],
-                'path'     => [ 'd' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ],
-                'circle'   => [ 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true ],
-                'rect'     => [ 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true, 'class' => true ],
-                'line'     => [ 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true ],
-                'polyline' => [ 'points' => true, 'fill' => true, 'stroke' => true, 'class' => true ],
-                'polygon'  => [ 'points' => true, 'fill' => true, 'stroke' => true, 'class' => true ],
-                'title'    => [],
-                'desc'     => [],
-            ];
+			$svg_allowed = [
+				'svg'      => [ 
+					'xmlns'           => true, 
+					'viewbox'         => true, 
+					'width'           => true, 
+					'height'          => true, 
+					'fill'            => true, 
+					'stroke'          => true, 
+					'stroke-width'    => true, 
+					'stroke-linecap'  => true, // Added
+					'stroke-linejoin' => true, // Added
+					'class'           => true, 
+					'role'            => true, 
+					'aria-hidden'     => true, 
+					'focusable'       => true 
+				],
+				'g'        => [ 'fill' => true, 'stroke' => true, 'transform' => true, 'class' => true ],
+				'path'     => [ 
+					'd'               => true, 
+					'fill'            => true, 
+					'stroke'          => true, 
+					'stroke-width'    => true, 
+					'stroke-linecap'  => true, 
+					'stroke-linejoin' => true, 
+					'class'           => true 
+				],
+				'circle'   => [ 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true ],
+				'rect'     => [ 
+					'x'               => true, 
+					'y'               => true, 
+					'width'           => true, 
+					'height'          => true, 
+					'rx'              => true, 
+					'ry'              => true, 
+					'fill'            => true, 
+					'stroke'          => true, 
+					'stroke-width'    => true, // Added to prevent potential styling drops on rects
+					'stroke-linecap'  => true, // Added
+					'stroke-linejoin' => true, // Added
+					'class'           => true 
+				],
+				'line'     => [ 
+					'x1'              => true, 
+					'y1'              => true, 
+					'x2'              => true, 
+					'y2'              => true, 
+					'stroke'          => true, 
+					'stroke-width'    => true, 
+					'stroke-linecap'  => true, // Added
+					'stroke-linejoin' => true, // Added
+					'class'           => true 
+				],
+				'polyline' => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ],
+				'polygon'  => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ],
+				'title'    => [],
+				'desc'     => [],
+			];
 
             if ( stripos( $custom_icon, '<svg' ) !== false ) {
                 return wp_kses( $custom_icon, $svg_allowed );
@@ -133,13 +306,19 @@ if ( ! function_exists( 'sc_iconbox_render_icon_markup' ) ) {
 }
 
 if ( ! function_exists( 'sc_iconbox_render_icon_container' ) ) {
-    function sc_iconbox_render_icon_container( $custom_icon, $picked_icon, $extra_class = '' ) {
+    /**
+     * @param string $extra_attrs  Optional. Pre-built attribute fragment with a
+     *                             leading space (e.g. ` style="background-color:#000"`).
+     *                             The caller is responsible for escaping; we
+     *                             append it verbatim into the opening tag.
+     */
+    function sc_iconbox_render_icon_container( $custom_icon, $picked_icon, $extra_class = '', $extra_attrs = '' ) {
         $markup = sc_iconbox_render_icon_markup( $custom_icon, $picked_icon );
         if ( $markup === '' ) {
             return '';
         }
         $class = 'icon-box__icon' . ( $extra_class ? ' ' . esc_attr( $extra_class ) : '' );
-        return '<span class="' . $class . '" aria-hidden="true">' . $markup . '</span>';
+        return '<span class="' . $class . '"' . $extra_attrs . ' aria-hidden="true">' . $markup . '</span>';
     }
 }
 
@@ -148,20 +327,44 @@ if ( ! function_exists( 'sc_iconbox_render_icon_container' ) ) {
 | Pre-rendered fragments
 |--------------------------------------------------------------------------
 */
-$icon_html = $has_icon ? sc_iconbox_render_icon_container( $custom_icon, $picked_icon ) : '';
+$icon_class_str = trim( implode( ' ', $icon_extras ) . ( $icon_badge_class !== '' ? ' ' . $icon_badge_class : '' ) );
+
+// Compose the icon's extra-attrs fragment. The icon-badge inline style (set
+// earlier from icon_badge_color) and the Icon Color custom-hex inline style
+// (from sc_extract_styling_atts above) are both per-icon — merge into a
+// single style="…" so we don't emit two style attributes on one tag.
+$icon_extra_attrs = $icon_badge_attr; // may be ` style="background-color:…"`
+if ( $icon_style !== '' ) {
+    if ( $icon_extra_attrs !== '' && preg_match( '/\bstyle="([^"]*)"/', $icon_extra_attrs, $m ) ) {
+        $merged = rtrim( $m[1], '; ' ) . '; ' . $icon_style;
+        $icon_extra_attrs = ' style="' . esc_attr( $merged ) . '"';
+    } else {
+        $icon_extra_attrs = ' style="' . esc_attr( $icon_style ) . '"';
+    }
+}
+
+$icon_html = $has_icon
+    ? sc_iconbox_render_icon_container( $custom_icon, $picked_icon, $icon_class_str, $icon_extra_attrs )
+    : '';
 
 $title_html = '';
 if ( $title !== '' ) {
-    $title_html = sprintf(
-        '<%1$s class="icon-box__title">%2$s</%1$s>',
+    $title_class      = trim( 'icon-box__title ' . implode( ' ', $title_extras ) . ( $title_align_class ? ' ' . $title_align_class : '' ) );
+    $title_style_attr = $title_style !== '' ? ' style="' . esc_attr( $title_style ) . '"' : '';
+    $title_html       = sprintf(
+        '<%1$s class="%2$s"%3$s>%4$s</%1$s>',
         $title_tag,
+        esc_attr( $title_class ),
+        $title_style_attr,
         wp_kses_post( $title )
     );
 }
 
 $content_html = '';
 if ( $has_content ) {
-    $content_html = '<div class="icon-box__content">' . wp_kses_post( $content ) . '</div>';
+    $content_class      = trim( 'icon-box__content ' . implode( ' ', $content_extras ) . ( $content_align_class ? ' ' . $content_align_class : '' ) );
+    $content_style_attr = $content_style !== '' ? ' style="' . esc_attr( $content_style ) . '"' : '';
+    $content_html       = '<div class="' . esc_attr( $content_class ) . '"' . $content_style_attr . '>' . wp_kses_post( $content ) . '</div>';
 }
 
 /*
@@ -214,7 +417,7 @@ if ( $box_link !== '' ) {
             <?php endif; ?>
 
             <?php if ( $icon_html !== '' ) : ?>
-                <div class="icon-box__divider" role="presentation">
+                <div class="icon-box__divider<?php echo $icon_align_class ? ' ' . esc_attr( $icon_align_class ) : ''; ?>" role="presentation">
                     <?php echo $icon_html; ?>
                 </div>
             <?php endif; ?>
@@ -262,7 +465,11 @@ if ( $box_link !== '' ) {
     <?php else : /* top-title (default) */ ?>
 
         <div class="icon-box__inner icon-box__inner--top">
-            <?php echo $icon_html; ?>
+            <?php if ( $icon_html !== '' ) : ?>
+                <div class="icon-box__icon-align<?php echo $icon_align_class ? ' ' . esc_attr( $icon_align_class ) : ''; ?>">
+                    <?php echo $icon_html; ?>
+                </div>
+            <?php endif; ?>
             <?php echo $title_html; ?>
             <?php echo $content_html; ?>
         </div>

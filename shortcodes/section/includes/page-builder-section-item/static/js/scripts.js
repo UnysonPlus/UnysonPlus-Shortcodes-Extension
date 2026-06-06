@@ -246,6 +246,13 @@
 				this.defaultInitialize();
 			},
 			allowIncomingType: function (type) {
+				// Reject ALL section-like types (not just the literal 'section'),
+				// so custom variants like hero_section/parallax_section can't be
+				// nested inside this section either. Falls back to the original
+				// strict equality if the registry hasn't loaded yet.
+				if (window.fwSectionLikeTypes && typeof window.fwSectionLikeTypes.isSectionLike === 'function') {
+					return !window.fwSectionLikeTypes.isSectionLike(type);
+				}
 				return 'section' !== type;
 			},
 			allowDestinationType: function (type) {

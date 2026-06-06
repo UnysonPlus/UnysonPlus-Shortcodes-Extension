@@ -2,6 +2,16 @@
     die( 'Forbidden' );
 }
 
+// Button Style defaults to the FIRST preset (Primary in the default order) and has
+// no "None" row — a styleless button is rarely intended (use the Link preset for
+// text-only). Computed once so the default tracks whatever preset is listed first.
+$sc_button_style_choices = function_exists( 'sc_get_button_style_choices' ) ? sc_get_button_style_choices() : array();
+$sc_button_style_default = '';
+if ( is_array( $sc_button_style_choices ) && $sc_button_style_choices ) {
+    reset( $sc_button_style_choices );
+    $sc_button_style_default = (string) key( $sc_button_style_choices );
+}
+
 $options = [
     'tab_content' => [
         'title'   => __('Content', 'fw'),
@@ -13,12 +23,14 @@ $options = [
                     'label'  => [
                         'label' => __('Button Label', 'fw'),
                         'desc'  => __('This is the text that appears on your button', 'fw'),
+                        'help'  => __('Keep it short and action-oriented, e.g. "Get Started" or "Download". Leave it empty to render an icon-only button (set a Button Icon below).', 'fw'),
                         'type'  => 'text',
                         'value' => 'Submit'
                     ],
                     'link'   => [
                         'label' => __('Button Link', 'fw'),
                         'desc'  => __('Where should your button link to', 'fw'),
+                        'help'  => __('Accepts a full URL (https://...), a relative path, an anchor such as #section-id, or mailto:/tel: links. The default "#" links nowhere — replace it with your real destination.', 'fw'),
                         'type'  => 'text',
                         'value' => '#'
                     ],
@@ -26,6 +38,7 @@ $options = [
                         'type'  => 'switch',
                         'label'   => __('Open Link in New Window', 'fw'),
                         'desc'    => __('Select here if you want to open the linked page in a new window', 'fw'),
+                        'help'    => __('Recommended for links to external websites so visitors do not lose your page. Leave it off for links within your own site, where staying in the same tab is expected.', 'fw'),
                         'right-choice' => [
                             'value' => '_blank',
                             'label' => __('Yes', 'fw'),
@@ -38,18 +51,20 @@ $options = [
                     'icon' => [
                         'label' => __('Button Icon', 'fw'),
                         // 'desc'  => __('Optional icon class (e.g. bi bi-star)', 'fw'),
+                        'help'  => __('Optional icon shown alongside the label, e.g. an arrow for "Next" or a cart for "Buy". Use Icon Position below to place it before or after the text.', 'fw'),
                         'type'  => 'icon-v2',
                         'preview_size' => 'medium',
                         'modal_size' => 'medium',
                     ],
                     'icon_position' => [
                         'label'   => __('Icon Position', 'fw'),
+                        'help'    => __('Whether the Button Icon sits to the left (Before) or right (After) of the label. Arrows usually read best After; leading symbols like a cart or download glyph read best Before. Ignored when no icon is set.', 'fw'),
                         'type'    => 'select',
                         'choices' => [
                             'before' => __('Before Label', 'fw'),
                             'after'  => __('After Label', 'fw'),
                         ],
-                        'value' => 'before'
+                        'value' => 'after'
                     ],
                 ],
             ],
@@ -60,68 +75,79 @@ $options = [
         'title'   => __('Styling', 'fw'),
         'type'    => 'tab',
         'options' => [
-            'group_content' => [
+            'group_options' => [
                 'type'    => 'group',
                 'options' => [
                     'style' => [
-                        'label'   => __('Button Style', 'fw'),
-                        'desc'    => __('Choose a style for your button', 'fw'),
-                        'type'    => 'select',
-                        'choices' => [
-                            'btn-primary'   => __('Primary (Main)', 'fw'),
-                            'btn-secondary' => __('Secondary (Accent)', 'fw'),
-                            'btn-dark'      => __('Neutral (Gray)', 'fw'),
-                            'btn-success'   => __('Green (Success)', 'fw'),
-                            'btn-danger'    => __('Red (Danger)', 'fw'),
-                            'btn-warning'   => __('Yellow (Warning)', 'fw'),
-                            'btn-info'      => __('Teal (Info)', 'fw'),
-                            'btn-light'     => __('Light (White)', 'fw'),
-                            'btn-black'     => __('Dark (Black)', 'fw'), // Bootstrap doesn’t have btn-black by default, maps to custom class
-                            'btn-link'      => __('Link (Minimal)', 'fw'),
-                        ]
-                    ],
-                'outline' => [
-                        'label'   => __('Outline Style', 'fw'),
-                        'desc'    => __('Use outline version of the button', 'fw'),
-                        'type'    => 'select',
-                        'choices' => [
-                            ''                    => __('No Outline', 'fw'),
-                            'btn-outline-primary'   => __('Outline Primary (Main)', 'fw'),
-                            'btn-outline-secondary' => __('Outline Secondary (Accent)', 'fw'),
-                            'btn-outline-dark'      => __('Outline Neutral (Gray)', 'fw'),
-                            'btn-outline-success'   => __('Outline Green (Success)', 'fw'),
-                            'btn-outline-danger'    => __('Outline Red (Danger)', 'fw'),
-                            'btn-outline-warning'   => __('Outline Yellow (Warning)', 'fw'),
-                            'btn-outline-info'      => __('Outline Teal (Info)', 'fw'),
-                            'btn-outline-light'     => __('Outline Light (White)', 'fw'),
-                            'btn-outline-dark'      => __('Outline Dark (Black)', 'fw'), // same as Gray unless you define a custom .btn-black
-                            'btn-outline-link'      => __('Outline Link (Minimal)', 'fw'), // not in Bootstrap, optional
-                        ]
+                        'label'        => __('Button Style', 'fw'),
+                        'desc'         => __('Sourced from Theme Settings → General → Buttons. Includes the outline presets. Each option previews the real button.', 'fw'),
+                        'type'         => 'button-style-picker',
+                        'choices'      => $sc_button_style_choices,
+                        'value'        => $sc_button_style_default,
+                        'allow_none'   => false,
+                        'preview_text' => __( 'Button', 'fw' ),
+                        'help'         => sc_styling_help_text( 'button_style' ),
                     ],
                     'size' => [
-                        'label'   => __('Button Size', 'fw'),
+                        'label'        => __('Button Size', 'fw'),
+                        'desc'         => __('Sourced from Theme Settings → General → Buttons → Sizes. Each option previews the button at that size.', 'fw'),
+                        'type'         => 'button-style-picker',
+                        'choices'      => sc_get_button_size_choices(),
+                        'preview_text' => __( 'Button', 'fw' ),
+                        // Size classes carry no color, so ride them on a primary button
+                        // (otherwise the preview is an unstyled, background-less .btn).
+                        'preview_base' => 'btn btn-primary',
+                        'help'         => sc_styling_help_text( 'button_size' ),
+                    ],
+                    // Multi-picker: the Custom Width field only appears when "Custom"
+                    // is selected. Saved shape: width => [ 'mode' => '', 'custom' => [ 'custom_width' => {value,unit} ] ].
+                    'width' => [
+                        'type'   => 'multi-picker',
+                        'label'        => false,
+		                'desc'         => false,
+                        'picker' => [
+                            'mode' => [
+                                'label'  => __('Button Width', 'fw'),
+                                'desc'   => __('Auto fits the label; Full Width spans its container; Custom reveals a width field.', 'fw'),
+                                'help'   => __('Full Width is handy for stacked mobile buttons or call-to-action panels. Choosing Custom unlocks the Custom Width field below for an exact size.', 'fw'),
+                                'type'    => 'select',
+                                'choices' => [
+                                    ''       => __('Auto (fit content)', 'fw'),
+                                    'w-100'  => __('Full Width', 'fw'),
+                                    'custom' => __('Custom', 'fw'),
+                                ],
+                                'value'   => '',
+                            ],
+                        ],
+                        'choices' => [
+                            'custom' => [
+                                'custom_width' => [
+                                    'label' => __('Custom Width', 'fw'),
+                                    'help'  => __('Enter a number and unit, e.g. 200px or 50%. Percentage widths are relative to the button\'s container. Only used when Button Width is set to Custom.', 'fw'),
+                                    'type'  => 'unit-input',
+                                    'units' => array( 'px', '%', 'rem', 'em', 'vw' ),
+                                    'min'   => 0,
+                                ],
+                            ],
+                        ],
+                        'show_borders' => false,
+                    ],
+                    'alignment' => [
+                        'label'   => __('Alignment', 'fw'),
+                        'desc'    => __('Aligns the button within its container. Has no effect when Button Width is Full Width.', 'fw'),
+                        'help'    => __('Use this to centre a button under a paragraph or push it to one edge of its column. Leave on Default to inherit the surrounding text alignment.', 'fw'),
                         'type'    => 'select',
                         'choices' => [
-                            ''       => __('Normal', 'fw'),
-                            'btn-sm' => __('Small', 'fw'),
-                            'btn-lg' => __('Large', 'fw'),
-                        ]
-                    ],
-                    'block' => [
-                        'type'  => 'switch',
-                        'label' => __('Full Width', 'fw'),
-                        'desc'  => __('Make the button full width (block level)', 'fw'),
-                        'right-choice' => [
-                            'value' => 'w-100',
-                            'label' => __('Yes', 'fw'),
+                            ''       => __('Default (inherit)', 'fw'),
+                            'left'   => __('Left', 'fw'),
+                            'center' => __('Center', 'fw'),
+                            'right'  => __('Right', 'fw'),
                         ],
-                        'left-choice' => [
-                            'value' => '',
-                            'label' => __('No', 'fw'),
-                        ],
+                        'value'   => '',
                     ],
                     'state' => [
                         'label'   => __('Button State', 'fw'),
+                        'help'    => __('Active renders the button in its pressed-down style; Disabled greys it out and blocks clicks. Use Disabled for buttons that are intentionally not yet available — it is a visual state only, not a security measure.', 'fw'),
                         'type'    => 'select',
                         'choices' => [
                             ''         => __('Normal', 'fw'),
@@ -129,6 +155,27 @@ $options = [
                             'disabled' => __('Disabled', 'fw'),
                         ]
                     ],
+                    'hover_animation' => [
+                        'label'   => __('Hover Animation', 'fw'),
+                        'desc'    => __('Motion applied on hover/focus. Works with any button style or gradient — it animates transform/shadow only, so your preset keeps its colors. Open the dropdown and hover a button to preview.', 'fw'),
+                        'help'    => __('A subtle effect (e.g. a slight lift or grow) draws the eye to a key call-to-action. Keep it restrained on pages with many buttons so the motion does not become distracting.', 'fw'),
+                        'type'    => 'button-hover-animation',
+                        'choices' => sc_get_hover_animation_choices(),
+                        // Load the .btnfx-* effect classes in the options form so previews animate.
+                        'fx_css'  => fw_ext('shortcodes')->get_declared_URI('/shortcodes/button/static/css/hover-fx.css'),
+                    ],
+                ],
+            ],
+            'group_spacings' => [
+                'type'    => 'group',
+                'options' => [
+                    'spacing' => array(
+                        'type'  => 'spacing',
+                        'mode'  => 'margin',
+                        'label' => __( 'Margin', 'fw' ),
+                        'desc'  => __( 'Spacing around the button. All Sides applies to every side at once; any per-side value (Top, Right, Bottom, Left) overrides it. Padding comes from the Button Size preset, so it is not set here.', 'fw' ),
+                        'help'  => sc_styling_help_text( 'spacing' ),
+                    ),
                 ],
             ],
         ],

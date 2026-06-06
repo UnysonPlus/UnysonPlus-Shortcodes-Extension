@@ -1,4 +1,43 @@
 .btn-black {
-	background-color:#000; 
-	color:#fff; 
+	background-color:#000;
+	color:#fff;
+}
+
+/* --- Button icons (icon-v2) ---------------------------------------------- *
+ * Center the icon next to the label and scale it with the button font-size.
+ * A button with an icon gets `has-icon` (added in the view) so we lay it out as
+ * a flex row centered on the cross-axis — `gap` provides icon/label spacing.
+ * We key off the explicit `.has-icon` class (not :has(), which silently no-ops
+ * on older browsers and was why earlier tweaks appeared to do nothing). */
+.btn.has-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: .4em;
+}
+
+/* Icon glyph: scale with the button, height-collapse to a 1em line box so flex
+   centering lands on the glyph itself. line-height:1 here is correct because
+   the icon is its OWN flex item being centered — it's not sharing the label's
+   line box. */
+.btn.has-icon > i {
+	display: inline-flex;
+	align-items: center;
+	font-size: inherit;
+	line-height: 1;
+}
+
+/* Dashicons render the glyph from a fixed 20px / line-height:1 / 20px box that
+   ignores the button size — reset it so it tracks font-size and centers. */
+.btn.has-icon > i.dashicons,
+.btn.has-icon > i[class*="dashicons-"] {
+	width: 1em;
+	height: 1em;
+	font-size: inherit;
+	line-height: 1;
+}
+.btn.has-icon > i.dashicons::before,
+.btn.has-icon > i[class*="dashicons-"]::before {
+	font-size: inherit;
+	line-height: 1;
 }

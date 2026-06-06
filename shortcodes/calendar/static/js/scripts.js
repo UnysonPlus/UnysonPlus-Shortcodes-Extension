@@ -111,6 +111,28 @@
 
 					$calendarWrapper.find('.hidden-header').removeClass('hidden-header');
 
+					//Background-color preset: applied to the inner day/week/month
+					//box rather than the wrapper, so the calendar grid is the
+					//tinted surface (not the page-header / nav area above it).
+					//Survives prev/next/today re-renders because this fires
+					//after each view load.
+					{
+						var bgClass = $calendarWrapper.data('bg-class');
+						if (typeof bgClass === 'string' && bgClass.length) {
+							var $box = null;
+							if (view === 'day') {
+								$box = $calendarWrapper.find('#cal-day-box');
+							} else if (view === 'week') {
+								$box = $calendarWrapper.find('.cal-week-box');
+							} else if (view === 'month') {
+								$box = $calendarWrapper.find('.cal-month-box');
+							}
+							if ($box && $box.length) {
+								$box.addClass(bgClass);
+							}
+						}
+					}
+
 					if ( view === 'day' )
 					{
 						//set height for timeblocks container

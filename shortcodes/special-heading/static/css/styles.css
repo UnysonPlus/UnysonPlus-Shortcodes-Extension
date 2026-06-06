@@ -9,3 +9,118 @@
 .heading.heading-center {
 	text-align: center;
 }
+
+/* Overline — small label above the title (Content → Overline). The outer element
+   is a flex row so the per-element alignment class can position the label group
+   via justify-content (text-align can't move a flex row). Case, markers and the
+   pill live on the inner .heading-overline__label, which shrink-wraps its content
+   so a pill / underline hugs the text. Targeted directly (not nested under
+   .heading) so it works whether or not the heading wrapper renders. */
+.heading-overline {
+	display: flex;
+	justify-content: flex-start;
+	font-size: 0.875rem;
+	line-height: 1.2;
+	margin-bottom: 0.5rem;
+	color: var(--color-muted, #6c757d);
+}
+.heading-overline.text-center { justify-content: center; }
+.heading-overline.text-end    { justify-content: flex-end; }
+
+.heading-overline__label {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.625rem;
+	font-weight: 500;
+}
+
+/* Case — small uppercase, letter-spaced, heavier kicker. */
+.heading-overline--kicker .heading-overline__label {
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	font-weight: 600;
+	font-size: 0.8125rem;
+}
+
+/* Leading line — the editorial "— FAQs" look. */
+.heading-overline--rule .heading-overline__label::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 1.75rem;
+	height: 2px;
+	background: currentColor;
+	opacity: 0.6;
+}
+
+/* Leading dot. */
+.heading-overline--dot .heading-overline__label::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 0.5em;
+	height: 0.5em;
+	border-radius: 50%;
+	background: currentColor;
+}
+
+/* Lines on both sides (looks best centered). */
+.heading-overline--lines .heading-overline__label::before,
+.heading-overline--lines .heading-overline__label::after {
+	content: "";
+	flex: 0 0 auto;
+	width: 1.5rem;
+	height: 2px;
+	background: currentColor;
+	opacity: 0.6;
+}
+
+/* Underline accent — sized to the text since the label shrink-wraps. */
+.heading-overline--underline .heading-overline__label {
+	border-bottom: 2px solid currentColor;
+	padding-bottom: 0.15em;
+}
+
+/* Vertical bar marker (a leading pipe). */
+.heading-overline--bar .heading-overline__label::before {
+	content: "";
+	flex: 0 0 auto;
+	width: 3px;
+	height: 1em;
+	border-radius: 1px;
+	background: currentColor;
+}
+
+/* Trailing marker — move the single leading mark to after the label text. The
+   marker is the label's ::before flex item; bumping its order past the text node
+   (order 0) places it last. Not applied to the flanking "lines" marker. */
+.heading-overline--mark-after .heading-overline__label::before { order: 1; }
+
+/* Pill / badge — tinted background auto-derived from the Overline Color
+   (currentColor). color-mix gives the soft tint; the rgba line is the fallback
+   for browsers without color-mix. A marker (e.g. a dot), if chosen, sits inside. */
+.heading-overline--pill .heading-overline__label {
+	padding: 0.35em 0.75em;
+	border-radius: 999px;
+	/* Pill tint from the Overline Color: keep its hue + saturation but force a
+	   light lightness, so e.g. #185FA5 text yields a ~#e6f1fb chip. Relative-color
+	   syntax preserves saturation (a plain mix toward white/transparent greys out);
+	   the color-mix line is the fallback for browsers without `hsl(from …)`. */
+	background: color-mix(in srgb, currentColor 14%, #fff);
+	background: hsl(from currentColor h s 94.4%);
+}
+
+/* Outline pill — bordered, transparent (a quieter badge than the filled tint).
+   The border follows the Overline Color, softened via color-mix where supported. */
+.heading-overline--pill-outline .heading-overline__label {
+	padding: 0.35em 0.75em;
+	border-radius: 999px;
+	border: 1px solid currentColor;
+	border-color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+/* ───── Layout tab: element-spacing presets (vertical rhythm) ─────
+   "Normal" keeps the theme/default margins; Tight and Relaxed set explicit
+   gaps between the overline → title → subtitle. */
+.heading--space-tight .heading-overline,
+.heading--space-tight .heading-title { margin-bottom: 0.25rem; }
+.heading--space-relaxed .heading-overline,
+.heading--space-relaxed .heading-title { margin-bottom: 1rem; }

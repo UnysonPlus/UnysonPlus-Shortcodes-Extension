@@ -61,6 +61,24 @@ if ( ! function_exists( 'sc_render_card' ) ) {
         $show_rating     = $args['show_rating'];
         $avatar_position = $args['avatar_position']; // top|left|right|none
 
+        // Per-element color picks from the parent Styling tab. Empty strings
+        // when no preset is picked, in which case the class addition is a no-op.
+        $quote_color_class       = isset( $args['quote_color_class'] )       ? trim( $args['quote_color_class'] )       : '';
+        $author_name_color_class = isset( $args['author_name_color_class'] ) ? trim( $args['author_name_color_class'] ) : '';
+        $author_job_color_class  = isset( $args['author_job_color_class'] )  ? trim( $args['author_job_color_class'] )  : '';
+        $site_link_color_class   = isset( $args['site_link_color_class'] )   ? trim( $args['site_link_color_class'] )   : '';
+
+        // Compact-picker custom-hex inline styles (peer-of-class for each
+        // per-element field). Empty when only a preset / nothing is picked.
+        $quote_color_style       = isset( $args['quote_color_style'] )       ? trim( $args['quote_color_style'] )       : '';
+        $author_name_color_style = isset( $args['author_name_color_style'] ) ? trim( $args['author_name_color_style'] ) : '';
+        $author_job_color_style  = isset( $args['author_job_color_style'] )  ? trim( $args['author_job_color_style'] )  : '';
+        $site_link_color_style   = isset( $args['site_link_color_style'] )   ? trim( $args['site_link_color_style'] )   : '';
+
+        $maybe_style = function ( $s ) {
+            return $s !== '' ? ' style="' . esc_attr( $s ) . '"' : '';
+        };
+
         $content     = isset( $t['content'] ) ? $t['content'] : '';
         $author_name = isset( $t['author_name'] ) ? $t['author_name'] : '';
         $author_job  = isset( $t['author_job'] ) ? $t['author_job'] : '';
@@ -85,12 +103,14 @@ if ( ! function_exists( 'sc_render_card' ) ) {
 
         $site_html = '';
         if ( $site_name && $site_url ) {
-            $site_html = '<span class="testimonial-site"><a href="' . esc_url( $site_url ) . '" rel="nofollow" target="_blank">' . esc_html( $site_name ) . '</a></span>';
+            $site_class = trim( 'testimonial-site ' . $site_link_color_class );
+            $site_html  = '<span class="' . esc_attr( $site_class ) . '"' . $maybe_style( $site_link_color_style ) . '><a href="' . esc_url( $site_url ) . '" rel="nofollow" target="_blank">' . esc_html( $site_name ) . '</a></span>';
         }
 
-        $meta_parts  = array_filter( [
-            $author_job ? '<span class="testimonial-job">' . esc_html( $author_job ) . '</span>' : '',
-            $site_html
+        $job_class  = trim( 'testimonial-job ' . $author_job_color_class );
+        $meta_parts = array_filter( [
+            $author_job ? '<span class="' . esc_attr( $job_class ) . '"' . $maybe_style( $author_job_color_style ) . '>' . esc_html( $author_job ) . '</span>' : '',
+            $site_html,
         ] );
         $author_meta = $meta_parts
             ? '<div class="testimonial-meta small text-muted">' . implode( ' <span class="sep">|</span> ', $meta_parts ) . '</div>'
@@ -98,14 +118,16 @@ if ( ! function_exists( 'sc_render_card' ) ) {
 
         $author_block = '';
         if ( $author_name ) {
-            $author_block .= '<div class="testimonial-author fw-semibold">' . esc_html( $author_name ) . '</div>';
+            $name_class    = trim( 'testimonial-author fw-semibold ' . $author_name_color_class );
+            $author_block .= '<div class="' . esc_attr( $name_class ) . '"' . $maybe_style( $author_name_color_style ) . '>' . esc_html( $author_name ) . '</div>';
         }
         $author_block .= $author_meta;
         if ( $rating_html ) {
             $author_block .= '<div class="mt-2">' . $rating_html . '</div>';
         }
 
-        $quote_html = '<blockquote class="testimonial-quote mb-3"><p class="mb-0">'
+        $quote_class = trim( 'testimonial-quote mb-3 ' . $quote_color_class );
+        $quote_html  = '<blockquote class="' . esc_attr( $quote_class ) . '"' . $maybe_style( $quote_color_style ) . '><p class="mb-0">'
             . esc_html( $content ) . '</p></blockquote>' . $author_block;
 
         $classes = trim( 'testimonial-item ' . $card_style . ' ' . $text_align . ' avatar-pos-' . $avatar_position );

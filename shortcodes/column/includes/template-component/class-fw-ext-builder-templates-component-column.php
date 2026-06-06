@@ -43,12 +43,16 @@ class FW_Ext_Builder_Templates_Component_Column extends FW_Ext_Builder_Templates
 				$delete_btn = '';
 			} else {
 				$delete_btn = '<a href="#" onclick="return false;" data-delete-template="'. fw_htmlspecialchars($template_id) .'"'
-				              . ' class="template-delete dashicons fw-x"></a>';
+				              . ' class="template-delete dashicons fw-x" title="'. esc_attr__('Delete', 'fw') .'"></a>';
 			}
+
+			$export_btn = '<a href="#" onclick="return false;" data-export-template="'. fw_htmlspecialchars($template_id) .'"'
+			              . ' class="template-export dashicons dashicons-download" title="'. esc_attr__('Export', 'fw') .'"></a>';
 
 			$html .=
 				'<li>'
 					. $delete_btn
+					. $export_btn
 					. '<a href="#" onclick="return false;" data-load-template="'. fw_htmlspecialchars($template_id) .'"'
 						. ' class="template-title">'
 						. fw_htmlspecialchars($template['title'])
@@ -63,6 +67,15 @@ class FW_Ext_Builder_Templates_Component_Column extends FW_Ext_Builder_Templates
 				'<p class="fw-text-muted load-template-title">'. __('Load Template', 'fw') .':</p>'
 				. '<ul class="std">'. $html .'</ul>';
 		}
+
+		$html =
+			'<div class="save-template-wrapper import-only">'
+				. '<a href="#" onclick="return false;" class="import-template button button-secondary">'
+					. __('Import Column…', 'fw')
+				. '</a>'
+				. '<input type="file" class="template-import-file fw-hidden" accept="application/json,.json" />'
+			. '</div>'
+			. $html;
 
 		return $html;
 	}
@@ -101,9 +114,12 @@ class FW_Ext_Builder_Templates_Component_Column extends FW_Ext_Builder_Templates
 			'_fw_option_type_builder_templates_'. $this->get_type(),
 			array(
 				'l10n' => array(
-					'template_name' => __('Template Name', 'fw'),
-					'save_template' => __('Save Column', 'fw'),
+					'template_name'         => __('Template Name', 'fw'),
+					'save_template'         => __('Save Column', 'fw'),
 					'save_template_tooltip' => __('Save as Template', 'fw'),
+					'import_failed'         => __('Failed to import template', 'fw'),
+					'import_not_json'       => __('That file is not a valid JSON file', 'fw'),
+					'import_no_file'        => __('Please choose a file to import', 'fw'),
 				),
 			)
 		);
@@ -114,6 +130,8 @@ class FW_Ext_Builder_Templates_Component_Column extends FW_Ext_Builder_Templates
 		add_action('wp_ajax_fw_builder_templates_'. $this->get_type() .'_load',   array($this, '_action_ajax_load_template'));
 		add_action('wp_ajax_fw_builder_templates_'. $this->get_type() .'_save',   array($this, '_action_ajax_save_template'));
 		add_action('wp_ajax_fw_builder_templates_'. $this->get_type() .'_delete', array($this, '_action_ajax_delete_template'));
+		add_action('wp_ajax_fw_builder_templates_'. $this->get_type() .'_export', array($this, '_action_ajax_export_template'));
+		add_action('wp_ajax_fw_builder_templates_'. $this->get_type() .'_import', array($this, '_action_ajax_import_template'));
 	}
 
 	private function get_templates($builder_type)
@@ -245,6 +263,178 @@ class FW_Ext_Builder_Templates_Component_Column extends FW_Ext_Builder_Templates
 		}
 
 		wp_send_json_success();
+	}
+
+	/**
+	 * Wrap a saved column template in the portable export envelope. See
+	 * the Full component for the rationale; the only differences are the
+	 * `kind` field (`column`) and the absence of `check_ajax_referer`
+	 * (matches this component's existing save / load / delete handlers).
+	 *
+	 * @internal
+	 */
+	public function _action_ajax_export_template()
+	{
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error();
+		}
+
+		$builder_type = (string)FW_Request::POST('builder_type');
+
+		if (!$this->builder_type_is_valid($builder_type)) {
+			wp_send_json_error();
+		}
+
+		$templates = $this->get_templates($builder_type);
+
+		$template_id = (string)FW_Request::POST('template_id');
+
+		if (!isset($templates[$template_id])) {
+			wp_send_json_error();
+		}
+
+		$template = $templates[$template_id];
+
+		$envelope = array(
+			'_fw_template_export' => array(
+				'format_version' => 2, // v2: per-element Custom CSS travels inside `json`
+				'kind'           => $this->get_type(),
+				'builder_type'   => $builder_type,
+				'plugin_version' => fw()->manifest->get_version(),
+				'exported_at'    => time(),
+			),
+			'title'   => isset($template['title']) ? (string)$template['title'] : '',
+			'json'    => (string)$template['json'],
+			'created' => isset($template['created']) && is_numeric($template['created']) ? (int)$template['created'] : time(),
+		);
+
+		$slug = sanitize_title($envelope['title']);
+		if (empty($slug)) {
+			$slug = 'template';
+		}
+
+		wp_send_json_success(array(
+			'filename' => $slug .'-'. $this->get_type() .'-'. substr($template_id, 0, 8) .'.json',
+			'content'  => $envelope,
+		));
+	}
+
+	/**
+	 * Column import — like the Full importer plus one extra check: the
+	 * decoded inner `json` must carry `type === 'column'`, matching the
+	 * existing `_action_ajax_save_template()` validation.
+	 *
+	 * @internal
+	 */
+	public function _action_ajax_import_template()
+	{
+		if (!current_user_can('edit_posts')) {
+			wp_send_json_error();
+		}
+
+		$builder_type = (string)FW_Request::POST('builder_type');
+
+		if (!$this->builder_type_is_valid($builder_type)) {
+			wp_send_json_error();
+		}
+
+		if (
+			empty($_FILES['template_file'])
+			|| !isset($_FILES['template_file']['error'])
+			|| $_FILES['template_file']['error'] !== UPLOAD_ERR_OK
+		) {
+			wp_send_json_error(array('message' => __('No file uploaded', 'fw')));
+		}
+
+		if ($_FILES['template_file']['size'] > 5 * 1024 * 1024) {
+			wp_send_json_error(array('message' => __('File is too large', 'fw')));
+		}
+
+		$tmp = isset($_FILES['template_file']['tmp_name'])
+			? sanitize_text_field((string)$_FILES['template_file']['tmp_name'])
+			: '';
+
+		if (empty($tmp) || !is_uploaded_file($tmp)) {
+			wp_send_json_error(array('message' => __('Upload failed', 'fw')));
+		}
+
+		$contents = @file_get_contents($tmp);
+
+		if ($contents === false || $contents === '') {
+			wp_send_json_error(array('message' => __('Could not read uploaded file', 'fw')));
+		}
+
+		$data = json_decode($contents, true);
+
+		if (!is_array($data)) {
+			wp_send_json_error(array('message' => __('That file is not a valid JSON file', 'fw')));
+		}
+
+		if (
+			!isset($data['_fw_template_export'])
+			|| !is_array($data['_fw_template_export'])
+		) {
+			wp_send_json_error(array('message' => __('Not an Unyson+ template file', 'fw')));
+		}
+
+		$envelope = $data['_fw_template_export'];
+
+		if (!isset($envelope['kind']) || $envelope['kind'] !== $this->get_type()) {
+			wp_send_json_error(array('message' => sprintf(
+				/* translators: 1: envelope kind found in the file, 2: kind expected by this importer */
+				__('This is a %1$s template — open the %2$s list to import it.', 'fw'),
+				isset($envelope['kind']) ? (string)$envelope['kind'] : __('unknown', 'fw'),
+				$this->get_type()
+			)));
+		}
+
+		if (
+			!isset($envelope['builder_type'])
+			|| $envelope['builder_type'] !== $builder_type
+		) {
+			wp_send_json_error(array('message' => __('Template was exported from a different builder type', 'fw')));
+		}
+
+		if (!isset($data['json']) || !is_string($data['json'])) {
+			wp_send_json_error(array('message' => __('Template file is missing the body', 'fw')));
+		}
+
+		$template_json = trim((string)$data['json']);
+
+		$decoded_json = json_decode($template_json, true);
+
+		if (empty($template_json) || $decoded_json === null) {
+			wp_send_json_error(array('message' => __('Template content is not valid JSON', 'fw')));
+		}
+
+		if (!isset($decoded_json['type']) || $decoded_json['type'] !== $this->get_type()) {
+			wp_send_json_error(array('message' => __('Template content does not match the expected type', 'fw')));
+		}
+
+		unset($decoded_json);
+
+		$template = array(
+			'title'   => isset($data['title']) ? trim((string)$data['title']) : '',
+			'json'    => $template_json,
+			'created' => isset($data['created']) && is_numeric($data['created']) ? (int)$data['created'] : time(),
+		);
+
+		if (empty($template['title'])) {
+			$template['title'] = __('Imported Template', 'fw');
+		}
+
+		$template_id = md5($template['json']);
+
+		update_option(
+			$this->get_wp_option_prefix($builder_type) . $template_id,
+			$template,
+			false
+		);
+
+		wp_send_json_success(array(
+			'id'    => $template_id,
+			'title' => $template['title'],
+		));
 	}
 
 	/**

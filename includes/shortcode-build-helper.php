@@ -18,6 +18,61 @@ if (!defined('FW')) die('Forbidden');
  * @return array Attributes array suitable for fw_attr_to_html().
  */
 
+if ( ! function_exists( 'sc_element_unique_class' ) ) :
+/**
+ * Derive the element's prefixed unique class — e.g. `bt-1a2b3c4d`.
+ *
+ * Single source of truth for the `{unique_id_prefix}{unique_id}` class that
+ * sc_build_wrapper_attr() puts on the wrapper. Returns '' when either the
+ * prefix or the unique_id is missing.
+ *
+ * @param array $atts Shortcode attributes (expects unique_id_prefix, unique_id, optional unique_length).
+ * @return string Sanitized class without the leading dot, or '' .
+ */
+function sc_element_unique_class( $atts ) {
+	$prefix = ! empty( $atts['unique_id_prefix'] ) ? $atts['unique_id_prefix'] : '';
+	if ( empty( $prefix ) || empty( $atts['unique_id'] ) ) {
+		return '';
+	}
+	$length = ! empty( $atts['unique_length'] ) ? (int) $atts['unique_length'] : 8;
+	$slug   = substr(
+		sanitize_key( strtolower( preg_replace( '/\s+/', '-', trim( $atts['unique_id'] ) ) ) ),
+		0,
+		$length
+	);
+	return sanitize_html_class( $prefix . $slug );
+}
+endif;
+
+if ( ! function_exists( 'sc_element_scope_class' ) ) :
+/**
+ * Derive a prefix-independent scope class for per-element Custom CSS — e.g.
+ * `u1a2b3c4d`. Derived from `unique_id` ALONE (fixed 8-char slug, leading
+ * `u` so it's a valid class start) so the front-end wrapper and the per-page
+ * CSS aggregator (framework/includes/dynamic-css.php) compute the SAME class
+ * without needing to know each shortcode's type-specific unique_id_prefix.
+ *
+ * The per-element Custom CSS field's `selector` token resolves to `.{scope}`.
+ *
+ * @param array $atts Shortcode attributes (expects unique_id).
+ * @return string Sanitized class without the leading dot, or '' .
+ */
+function sc_element_scope_class( $atts ) {
+	if ( empty( $atts['unique_id'] ) ) {
+		return '';
+	}
+	$slug = substr(
+		sanitize_key( strtolower( preg_replace( '/\s+/', '-', trim( $atts['unique_id'] ) ) ) ),
+		0,
+		8
+	);
+	if ( $slug === '' ) {
+		return '';
+	}
+	return sanitize_html_class( 'u' . $slug );
+}
+endif;
+
 function sc_build_wrapper_attr( $atts ) {
 
     $base_class       = ! empty( $atts['base_class'] ) ? $atts['base_class'] : '';
@@ -45,15 +100,19 @@ function sc_build_wrapper_attr( $atts ) {
     }
 
     // Add unique class only if both prefix and unique_id are defined
-    if ( ! empty( $unique_id_prefix ) && ! empty( $atts['unique_id'] ) ) {
-        $unique_class = substr(
-            sanitize_key( $normalize_id( $atts['unique_id'] ) ),
-            0,
-            $unique_length
-        );
-
-        $unique_class = sanitize_html_class( $unique_id_prefix . $unique_class );
+    $unique_class = sc_element_unique_class( $atts );
+    if ( $unique_class !== '' ) {
         $classes[] = $unique_class;
+    }
+
+    // Add the prefix-independent scope class only when this element carries
+    // per-element Custom CSS, so the CSS aggregator's `.u{hash}` rules have a
+    // matching target. Markup stays clean for elements without custom CSS.
+    if ( ! empty( $atts['custom_css'] ) ) {
+        $scope_class = sc_element_scope_class( $atts );
+        if ( $scope_class !== '' ) {
+            $classes[] = $scope_class;
+        }
     }
 
     // Add user-defined CSS class

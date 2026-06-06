@@ -1,0 +1,39 @@
+.fw-hero-section {
+	position: relative;
+	overflow: hidden;
+	width: 100%;
+}
+
+.fw-hero-section__bg {
+	position: absolute;
+	inset: -10% 0 -10% 0;
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	will-change: transform;
+	transform: translate3d(0, 0, 0);
+	z-index: 0;
+}
+
+.fw-hero-section__overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.fw-hero-section__inner {
+	position: relative;
+	z-index: 2;
+	width: 100%;
+	padding-top: 4rem;
+	padding-bottom: 4rem;
+}
+
+@media (max-width: 768px) {
+	/* Mobile Safari can't do background-attachment: fixed on iOS; the JS
+	   parallax handles it instead. Slight buffer for translate movement. */
+	.fw-hero-section__bg {
+		inset: -15% 0 -15% 0;
+	}
+}
