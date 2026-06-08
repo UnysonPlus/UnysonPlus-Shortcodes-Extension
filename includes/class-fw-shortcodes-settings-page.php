@@ -256,8 +256,21 @@ class FW_Ext_Shortcodes_Settings_Page {
 							<div class="inside">
 								<?php
 								// Render this library's fields only; all panels are in the DOM
-								// (just CSS-hidden) so a Save submits every tab's values.
-								echo fw()->backend->render_options( $inner, $values );
+								// (just CSS-hidden) so a Save submits every tab's values. The
+								// fields are wrapped in a border-less `group` so the rows read
+								// as one cohesive block (no inner separators) — matching the
+								// Breadcrumbs settings look. The group is a render-only
+								// container (no stored id), so the save handler — which reads
+								// the raw presets_options() schema — is unaffected.
+								echo fw()->backend->render_options(
+									array(
+										'group_' . $tab_id => array(
+											'type'    => 'group',
+											'options' => $inner,
+										),
+									),
+									$values
+								);
 								?>
 							</div>
 						</div>
