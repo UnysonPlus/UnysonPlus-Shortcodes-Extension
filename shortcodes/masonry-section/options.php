@@ -14,16 +14,16 @@ $options = array(
 			),
 			'gap' => array(
 				'label'   => __( 'Gap', 'fw' ),
-				'desc'    => __( 'Space between items (horizontal and vertical)', 'fw' ),
+				'desc'    => __( 'Space between items. "Use Default Gap" matches the site / standard-section gutter.', 'fw' ),
 				'type'    => 'select',
 				'choices' => array(
-					'0.5rem' => __( 'Extra Small', 'fw' ),
+					'' => __( 'Use Default Gap', 'fw' ), '0.5rem' => __( 'Extra Small', 'fw' ),
 					'1rem'   => __( 'Small', 'fw' ),
 					'1.5rem' => __( 'Medium', 'fw' ),
 					'2rem'   => __( 'Large', 'fw' ),
 					'3rem'   => __( 'Extra Large', 'fw' ),
 				),
-				'value' => '1.5rem',
+				'value' => '',
 			),
 			'is_fullwidth' => array(
 				'label' => __( 'Full Width', 'fw' ),
