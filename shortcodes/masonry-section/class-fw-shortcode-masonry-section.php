@@ -128,7 +128,7 @@ class FW_Shortcode_Masonry_Section extends FW_Shortcode {
 	public function _action_register_builder_item_types() {
 		if ( fw_ext( 'page-builder' ) ) {
 			require $this->get_declared_path(
-				'/includes/page-builder-masonry_section-item/class-page-builder-masonry_section-item.php'
+				'/includes/page-builder-masonry_section-item/class-page-builder-masonry-section-item.php'
 			);
 		}
 	}

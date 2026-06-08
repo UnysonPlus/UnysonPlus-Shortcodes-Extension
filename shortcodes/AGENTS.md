@@ -34,11 +34,11 @@ Each shortcode directory under this one has its own `AGENTS.md` that documents
 the concrete shape of THAT shortcode (its options/atts, rendering, pitfalls).
 After you create a new shortcode, write a sibling `AGENTS.md` in its folder
 following the structure described at the bottom of this guide. The worked
-example is `hero_section/AGENTS.md`.
+example is `hero-section/AGENTS.md`.
 
 ## Step 1 — folder structure
 
-Mirror the canonical reference implementation at `hero_section/`:
+Mirror the canonical reference implementation at `hero-section/`:
 
 ```
 shortcodes/{your_type}/
@@ -248,7 +248,7 @@ only fires once per editor render.
 
 ## Step 4 — `config.php` / `options.php` / `static.php` / `views/view.php`
 
-These follow standard Unyson shortcode conventions. Use `hero_section/` as the
+These follow standard Unyson shortcode conventions. Use `hero-section/` as the
 worked example and `shortcodes/section/` as the canonical built-in. Key points:
 
 - **`config.php`** — returns the `$shortcode->get_config()` data. For a
@@ -263,7 +263,7 @@ worked example and `shortcodes/section/` as the canonical built-in. Key points:
   it in the per-shortcode `AGENTS.md`.
 - **`static.php`** — frontend asset enqueues. Use
   `fw_ext('shortcodes')->get_uri(...)` for URI resolution and
-  `manifest->get_version()` for cache-busting. See `hero_section/static.php`.
+  `manifest->get_version()` for cache-busting. See `hero-section/static.php`.
 - **`views/view.php`** — frontend HTML template. The variables `$atts` and
   `$content` are in scope. `$content` is the rendered inner rows / columns /
   simples after the items corrector and shortcode-rendering pass. Output a
@@ -337,7 +337,7 @@ If steps 1–8 all pass, the shortcode is wired correctly.
 
 ## Reference implementation
 
-`hero_section/` is the canonical worked example of this recipe. Its
+`hero-section/` is the canonical worked example of this recipe. Its
 `AGENTS.md` is the per-shortcode counterpart to this guide and shows the
 expected structure for new shortcode `AGENTS.md` files.
 

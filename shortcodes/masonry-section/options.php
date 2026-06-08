@@ -2,45 +2,15 @@
 	die( 'Forbidden' );
 }
 
-$col_choices = array(
-	'1' => __( '1 Column', 'fw' ),
-	'2' => __( '2 Columns', 'fw' ),
-	'3' => __( '3 Columns', 'fw' ),
-	'4' => __( '4 Columns', 'fw' ),
-	'5' => __( '5 Columns', 'fw' ),
-	'6' => __( '6 Columns', 'fw' ),
-);
-
 $options = array(
 	'tab_layout' => array(
 		'title'   => __( 'Layout', 'fw' ),
 		'type'    => 'tab',
 		'options' => array(
-			'masonry_columns' => array(
-				'type'    => 'group',
-				'options' => array(
-					'cols_lg' => array(
-						'label'   => __( 'Columns (Desktop)', 'fw' ),
-						'help'    => __( 'Number of masonry columns on large screens (≥ 992px).', 'fw' ),
-						'type'    => 'select',
-						'choices' => $col_choices,
-						'value'   => '3',
-					),
-					'cols_md' => array(
-						'label'   => __( 'Columns (Tablet)', 'fw' ),
-						'help'    => __( 'Columns between 576px and 991px.', 'fw' ),
-						'type'    => 'select',
-						'choices' => $col_choices,
-						'value'   => '2',
-					),
-					'cols_sm' => array(
-						'label'   => __( 'Columns (Phone)', 'fw' ),
-						'help'    => __( 'Columns below 576px. Usually 1.', 'fw' ),
-						'type'    => 'select',
-						'choices' => $col_choices,
-						'value'   => '1',
-					),
-				),
+			'masonry_info' => array(
+				'type'  => 'html-fixed',
+				'label' => __( 'How it packs', 'fw' ),
+				'html'  => __( 'Drop in columns at any width (1/2, 1/3, 2/3, 1/4 …) — each keeps its width and they stack vertically like tetris blocks to fill the gaps. No fixed column count.', 'fw' ),
 			),
 			'gap' => array(
 				'label'   => __( 'Gap', 'fw' ),

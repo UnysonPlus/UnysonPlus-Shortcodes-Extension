@@ -7,10 +7,7 @@
  * @var string $content
  */
 
-$cols_lg = isset( $atts['cols_lg'] ) && $atts['cols_lg'] !== '' ? (int) $atts['cols_lg'] : 3;
-$cols_md = isset( $atts['cols_md'] ) && $atts['cols_md'] !== '' ? (int) $atts['cols_md'] : 2;
-$cols_sm = isset( $atts['cols_sm'] ) && $atts['cols_sm'] !== '' ? (int) $atts['cols_sm'] : 1;
-$gap     = ! empty( $atts['gap'] ) ? $atts['gap'] : '1.5rem';
+$gap = ! empty( $atts['gap'] ) ? $atts['gap'] : '1.5rem';
 
 $background_color = ! empty( $atts['background_color'] ) ? $atts['background_color'] : '';
 $padding_top      = isset( $atts['padding_top'] ) ? trim( $atts['padding_top'] ) : '';
@@ -29,9 +26,6 @@ if ( ! empty( $attr['class'] ) ) {
 $attr['class'] = $classes;
 
 $style  = '';
-$style .= '--mc-lg:' . max( 1, $cols_lg ) . ';';
-$style .= '--mc-md:' . max( 1, $cols_md ) . ';';
-$style .= '--mc-sm:' . max( 1, $cols_sm ) . ';';
 $style .= '--mc-gap:' . $gap . ';';
 if ( $background_color ) {
 	$style .= 'background-color:' . $background_color . ';';
