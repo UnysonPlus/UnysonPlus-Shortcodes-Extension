@@ -17,7 +17,11 @@
 	grid-template-columns: repeat(12, minmax(0, 1fr));
 	grid-auto-rows: 1px;            /* fine row unit; row spans set in scripts.js */
 	grid-auto-flow: row dense;      /* back-fill gaps under shorter columns */
-	column-gap: 10px;
+	/* No column-gap: the masonry section's root carries `pb-item-type-column`, so
+	   its columns already get the SAME `0 11px 11px` padding gutter a standard
+	   column row uses. Adding a column-gap here would stack on top of that padding
+	   and make masonry gaps wider than a standard section. */
+	column-gap: 0;
 	align-items: start;            /* don't stretch items — keeps measuring stable */
 }
 
@@ -35,7 +39,10 @@
 	width: auto !important;
 	max-width: none !important;
 	flex: none !important;
-	margin: 0 0 10px 0;            /* vertical gap (included in the row-span math) */
+	/* No extra bottom margin either — the column's own 11px bottom padding is the
+	   vertical gutter (same as a standard wrapped column row). The bin-packer
+	   already counts that padding in each item's measured height. */
+	margin: 0;
 }
 
 /* Width class → column span. Higher specificity than the default above, so the
