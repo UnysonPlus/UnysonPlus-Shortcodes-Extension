@@ -1,0 +1,54 @@
+/* ===========================================================================
+   Masonry Section — editor canvas preview.
+
+   The child-column container is a 12-track CSS grid with `grid-auto-flow: dense`.
+   COLUMN WIDTHS are driven purely by CSS: each column's `fw-col-sm-N` width class
+   maps straight to `grid-column: span N` (rules at the bottom). The class IS the
+   width, so the span is correct the instant the class is on the element — no JS
+   reading, no timing, no race (this is what fixed the "broken after drop" bug).
+
+   scripts.js only sets `grid-row-end: span K` from each column's measured height
+   (the part that genuinely needs measuring). flex-canvas is excluded from masonry
+   containers (see flex-canvas.js), so this grid is the sole layout authority.
+   =========================================================================== */
+
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items {
+	display: grid !important;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	grid-auto-rows: 1px;            /* fine row unit; row spans set in scripts.js */
+	grid-auto-flow: row dense;      /* back-fill gaps under shorter columns */
+	column-gap: 10px;
+	align-items: start;            /* don't stretch items — keeps measuring stable */
+}
+
+/* Until scripts.js has set row spans (`.fw-masonry-ready`), fall back to natural
+   rows so items are never clipped to 1px. */
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items:not(.fw-masonry-ready) {
+	grid-auto-rows: auto;
+}
+
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item {
+	float: none;
+	/* flow-root so the item contains its floated inner panels (true height). */
+	display: flow-root !important;
+	grid-column: span 12;          /* default; the fw-col-sm-N rules below override */
+	width: auto !important;
+	max-width: none !important;
+	flex: none !important;
+	margin: 0 0 10px 0;            /* vertical gap (included in the row-span math) */
+}
+
+/* Width class → column span. Higher specificity than the default above, so the
+   matching class always wins. No JS involved in widths at all. */
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-1  { grid-column: span 1; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-2  { grid-column: span 2; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-3  { grid-column: span 3; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-4  { grid-column: span 4; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-5  { grid-column: span 5; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-6  { grid-column: span 6; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-7  { grid-column: span 7; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-8  { grid-column: span 8; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-9  { grid-column: span 9; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-10 { grid-column: span 10; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-11 { grid-column: span 11; }
+.fw-option-type-builder .pb-section-like-masonry_section > .builder-items > .builder-item.fw-col-sm-12 { grid-column: span 12; }

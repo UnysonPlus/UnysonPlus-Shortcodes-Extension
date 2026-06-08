@@ -1,0 +1,46 @@
+/* ===========================================================================
+   Masonry Section — frontend layout.
+
+   Columns keep their real widths (1/2, 1/3, 2/3, 1/4 …) and tetris-pack to fill
+   vertical gaps. The inner `.fw-row` becomes a 12-track CSS grid with a fine 1px
+   row unit and `grid-auto-flow: dense`; masonry-section.js sets, per column:
+     - `grid-column: span N`  — N is the column's width in /12 (from its
+                                fw-col-{bp}-N class for the active breakpoint), so
+                                1/4→span 3, 3/4→span 9, etc. So 1/4 + 3/4 fill row
+                                one, and a later 1/4 tucks UP under the first 1/4
+                                to fill the gap (reads 1/4, 3/4, 1/4).
+     - `grid-row-end: span K` — K from the column's measured height.
+
+   Gap comes from `--mc-gap` set on the section wrapper in views/view.php.
+   =========================================================================== */
+
+.masonry-section .fw-row {
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	grid-auto-rows: 1px;                  /* fine row unit; spans are computed in JS */
+	grid-auto-flow: row dense;            /* back-fill gaps under shorter columns */
+	column-gap: var(--mc-gap, 1.5rem);
+	margin: 0;                            /* cancel the flex grid's negative gutters */
+}
+
+/* Columns become grid cells whose size is driven by the grid area (set in JS).
+   Neutralize Bootstrap's flex/width/padding/negative-margins, default to full
+   width until JS assigns the real span, and pin items to the top of their cell
+   so measuring stays stable. */
+.masonry-section .fw-row > * {
+	grid-column: span 12;                 /* JS overrides with the real /12 width */
+	width: auto;
+	max-width: none;
+	flex: none;
+	align-self: start;
+	padding-left: 0;
+	padding-right: 0;
+	margin-top: 0;
+	margin-bottom: var(--mc-gap, 1.5rem); /* vertical gap (included in the span math) */
+}
+
+/* Before JS runs (or if disabled), fall back to natural grid rows so content is
+   never clipped — columns stack full-width, then JS upgrades to true packing. */
+.masonry-section:not(.fw-masonry-ready) .fw-row {
+	grid-auto-rows: auto;
+}

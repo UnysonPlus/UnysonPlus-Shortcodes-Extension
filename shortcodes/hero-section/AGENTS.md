@@ -21,7 +21,7 @@ the structure here.
 
 ## Registration
 
-`class-fw-shortcode-hero_section.php` hooks two things in `_init()`:
+`class-fw-shortcode-hero-section.php` hooks two things in `_init()`:
 
 | Hook | Purpose | Lifecycle |
 |------|---------|-----------|
@@ -182,7 +182,7 @@ specifics:
 
 ## Files
 
-- `class-fw-shortcode-hero_section.php` — main shortcode class
+- `class-fw-shortcode-hero-section.php` — main shortcode class
 - `config.php` — page-builder config (tab, title, description, popup
   metadata)
 - `options.php` — section edit-modal fields (the atts schema documented
