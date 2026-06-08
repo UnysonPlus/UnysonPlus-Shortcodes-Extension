@@ -39,7 +39,10 @@ later short columns tuck UP to fill vertical gaps. Modeled exactly on `../hero-s
   `grid-auto-flow: dense`; `static/js/masonry-section.js` sets per column `grid-column: span N`
   (N = its /12 width from the `fw-col-{bp}-N` class, mobile-first cascade base→sm→md→lg) and
   `grid-row-end: span K` (measured height). `dense` flow tucks a later short column up into the
-  gap beside/under a taller one. The old `cols_lg/md/sm` options are removed; `gap` → `--mc-gap`.
+  gap beside/under a taller one. The old `cols_lg/md/sm` options are removed. The **`gap` option
+  defaults to "Use Default Gap" (empty)**: view.php only emits `--mc-gap` for an explicit size, so
+  the CSS falls back to `var(--bs-gutter-x, 1.5rem)` — the same site/section gutter a standard
+  `[section]` row uses, so masonry gaps match the rest of the site instead of hardcoding 1.5rem.
 - Editor preview mirrors the front end's result but gets there differently: this item's
   `…/static/css/styles.css` makes the child `.builder-items` a 12-track dense grid AND maps each
   `fw-col-sm-N` class straight to `grid-column: span N` (widths are pure CSS — see the Watch-out

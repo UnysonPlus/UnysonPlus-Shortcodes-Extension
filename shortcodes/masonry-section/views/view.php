@@ -7,7 +7,11 @@
  * @var string $content
  */
 
-$gap = ! empty( $atts['gap'] ) ? $atts['gap'] : '1.5rem';
+// Only emit --mc-gap when the user picked an EXPLICIT gap. When empty (the
+// default), we leave it unset so the CSS falls back to the site/section gutter
+// (`--bs-gutter-x`) — exactly what a standard `[section]` row uses — so the
+// masonry's gaps match the rest of the site instead of hardcoding 1.5rem.
+$gap = isset( $atts['gap'] ) ? trim( (string) $atts['gap'] ) : '';
 
 $background_color = ! empty( $atts['background_color'] ) ? $atts['background_color'] : '';
 $padding_top      = isset( $atts['padding_top'] ) ? trim( $atts['padding_top'] ) : '';
@@ -26,7 +30,9 @@ if ( ! empty( $attr['class'] ) ) {
 $attr['class'] = $classes;
 
 $style  = '';
-$style .= '--mc-gap:' . $gap . ';';
+if ( $gap !== '' ) {
+	$style .= '--mc-gap:' . $gap . ';';
+}
 if ( $background_color ) {
 	$style .= 'background-color:' . $background_color . ';';
 }
