@@ -11,5 +11,5 @@ if ($button = $table->get_button_shortcode()) {
 
 wp_enqueue_style(
 	'fw-shortcode-table',
-	$shortcodes->get_declared_URI('/shortcodes/table/static/css/styles.css')
+	fw_min_uri($shortcodes->get_declared_URI('/shortcodes/table/static/css/styles.css'))
 );

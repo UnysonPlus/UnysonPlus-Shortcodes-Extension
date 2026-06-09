@@ -3,12 +3,12 @@
 $shortcodes_extension = fw_ext('shortcodes');
 wp_enqueue_style(
 	'fw-shortcode-notification',
-	$shortcodes_extension->get_declared_URI('/shortcodes/notification/static/css/styles.css'),
+	fw_min_uri($shortcodes_extension->get_declared_URI('/shortcodes/notification/static/css/styles.css')),
 	array('font-awesome')
 );
 wp_enqueue_script(
 	'fw-shortcode-notification',
-	$shortcodes_extension->get_declared_URI('/shortcodes/notification/static/js/notification.js'),
+	fw_min_uri($shortcodes_extension->get_declared_URI('/shortcodes/notification/static/js/notification.js')),
 	array(),
 	false,
 	true

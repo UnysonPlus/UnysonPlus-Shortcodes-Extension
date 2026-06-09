@@ -101,7 +101,7 @@ $is_datatable = ( $f_sort || $f_search || $f_page ) && ! $has_merge;
 if ( $is_datatable ) {
 	wp_enqueue_script(
 		'fw-shortcode-table-datatable',
-		fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/table/static/js/datatable.js' ),
+		fw_min_uri(fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/table/static/js/datatable.js' )),
 		array( 'jquery' ),
 		fw()->theme->manifest->get_version(),
 		true
