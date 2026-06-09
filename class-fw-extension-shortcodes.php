@@ -291,7 +291,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 
 		wp_register_script(
 			'fw-ext-shortcodes-editor-integration',
-			fw_ext('shortcodes')->get_uri('/static/js/aggressive-coder.js'),
+			fw_min_uri(fw_ext('shortcodes')->get_uri('/static/js/aggressive-coder.js')),
 			array('fw'),
 			fw_ext('shortcodes')->manifest->get('version'),
 			true
@@ -299,7 +299,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 
 		wp_enqueue_script(
 			'fw-ext-shortcodes-load-shortcodes-data',
-			fw_ext('shortcodes')->get_uri('/static/js/load-shortcodes-data.js'),
+			fw_min_uri(fw_ext('shortcodes')->get_uri('/static/js/load-shortcodes-data.js')),
 			array('fw'),
 			fw_ext('shortcodes')->manifest->get('version'),
 			true

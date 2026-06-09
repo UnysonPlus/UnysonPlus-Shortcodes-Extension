@@ -6,42 +6,42 @@ $shortcodes_extension = fw_ext( 'shortcodes' );
 
 wp_enqueue_style(
 	'fw-shortcode-calendar-bootstrap3',
-	$shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/libs/bootstrap3/css/bootstrap-grid.css' )
+	fw_min_uri($shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/libs/bootstrap3/css/bootstrap-grid.css' ))
 );
 wp_enqueue_style(
 	'fw-shortcode-calendar-calendar',
-	$shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/css/calendar.css' )
+	fw_min_uri($shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/css/calendar.css' ))
 );
 wp_enqueue_style(
 	'fw-shortcode-calendar',
-	$shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/css/styles.css' )
+	fw_min_uri($shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/css/styles.css' ))
 );
 
 
 wp_enqueue_script(
 	'fw-shortcode-calendar-bootstrap3',
-	$shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/libs/bootstrap3/js/bootstrap.min.js' ),
+	fw_min_uri($shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/libs/bootstrap3/js/bootstrap.min.js' )),
 	array( 'jquery', 'underscore' ),
 	fw()->manifest->get_version(),
 	true
 );
 wp_enqueue_script(
 	'fw-shortcode-calendar-timezone',
-	$shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/libs/jstimezonedetect/jstz.min.js' ),
+	fw_min_uri($shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/libs/jstimezonedetect/jstz.min.js' )),
 	array( 'jquery', 'underscore' ),
 	fw()->manifest->get_version(),
 	true
 );
 wp_enqueue_script(
 	'fw-shortcode-calendar-calendar',
-	$shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/js/calendar.js' ),
+	fw_min_uri($shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/js/calendar.js' )),
 	array( 'jquery', 'underscore', 'fw-shortcode-calendar-bootstrap3', 'fw-shortcode-calendar-timezone' ),
 	fw()->manifest->get_version(),
 	true
 );
 wp_enqueue_script(
 	'fw-shortcode-calendar',
-	$shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/js/scripts.js' ),
+	fw_min_uri($shortcodes_extension->get_declared_URI( '/shortcodes/calendar/static/js/scripts.js' )),
 	array( 'jquery', 'underscore', 'fw-shortcode-calendar-calendar' ),
 	fw()->manifest->get_version(),
 	true

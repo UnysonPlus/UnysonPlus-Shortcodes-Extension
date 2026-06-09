@@ -27,33 +27,33 @@ if ( version_compare( $shortcodes_extension->manifest->get_version(), '1.3.9', '
 
 	wp_enqueue_style(
 		'fw-shortcode-section-background-video',
-		$shortcodes_extension->get_uri( '/shortcodes/section/static/css/background.css' )
+		fw_min_uri($shortcodes_extension->get_uri( '/shortcodes/section/static/css/background.css' ))
 	);
 
 	wp_enqueue_script(
 		'fw-shortcode-section-formstone-core',
-		$shortcodes_extension->get_uri( '/shortcodes/section/static/js/core.js' ),
+		fw_min_uri($shortcodes_extension->get_uri( '/shortcodes/section/static/js/core.js' )),
 		array( 'jquery' ),
 		false,
 		true
 	);
 	wp_enqueue_script(
 		'fw-shortcode-section-formstone-transition',
-		$shortcodes_extension->get_uri( '/shortcodes/section/static/js/transition.js' ),
+		fw_min_uri($shortcodes_extension->get_uri( '/shortcodes/section/static/js/transition.js' )),
 		array( 'jquery' ),
 		false,
 		true
 	);
 	wp_enqueue_script(
 		'fw-shortcode-section-formstone-background',
-		$shortcodes_extension->get_uri( '/shortcodes/section/static/js/background.js' ),
+		fw_min_uri($shortcodes_extension->get_uri( '/shortcodes/section/static/js/background.js' )),
 		array( 'jquery' ),
 		false,
 		true
 	);
 	wp_enqueue_script(
 		'fw-shortcode-section',
-		$shortcodes_extension->get_uri( '/shortcodes/section/static/js/background.init.js' ),
+		fw_min_uri($shortcodes_extension->get_uri( '/shortcodes/section/static/js/background.init.js' )),
 		array(
 			'fw-shortcode-section-formstone-core',
 			'fw-shortcode-section-formstone-transition',
@@ -65,19 +65,19 @@ if ( version_compare( $shortcodes_extension->manifest->get_version(), '1.3.9', '
 } else {
 	wp_enqueue_style(
 		'fw-shortcode-section-background-video',
-		$shortcodes_extension->get_uri( '/shortcodes/section/static/css/jquery.fs.wallpaper.css' )
+		fw_min_uri($shortcodes_extension->get_uri( '/shortcodes/section/static/css/jquery.fs.wallpaper.css' ))
 	);
 
 	wp_enqueue_script(
 		'fw-shortcode-section-background-video',
-		$shortcodes_extension->get_uri( '/shortcodes/section/static/js/jquery.fs.wallpaper.min.js' ),
+		fw_min_uri($shortcodes_extension->get_uri( '/shortcodes/section/static/js/jquery.fs.wallpaper.min.js' )),
 		array( 'jquery' ),
 		false,
 		true
 	);
 	wp_enqueue_script(
 		'fw-shortcode-section',
-		$shortcodes_extension->get_uri( '/shortcodes/section/static/js/scripts.js' ),
+		fw_min_uri($shortcodes_extension->get_uri( '/shortcodes/section/static/js/scripts.js' )),
 		array( 'fw-shortcode-section-background-video' ),
 		false,
 		true
@@ -86,6 +86,6 @@ if ( version_compare( $shortcodes_extension->manifest->get_version(), '1.3.9', '
 
 wp_enqueue_style(
 	'fw-shortcode-section',
-	$shortcodes_extension->get_uri( '/shortcodes/section/static/css/styles.css' )
+	fw_min_uri($shortcodes_extension->get_uri( '/shortcodes/section/static/css/styles.css' ))
 );
 

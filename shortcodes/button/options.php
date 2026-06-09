@@ -162,7 +162,7 @@ $options = [
                         'type'    => 'button-hover-animation',
                         'choices' => sc_get_hover_animation_choices(),
                         // Load the .btnfx-* effect classes in the options form so previews animate.
-                        'fx_css'  => fw_ext('shortcodes')->get_declared_URI('/shortcodes/button/static/css/hover-fx.css'),
+                        'fx_css'  => fw_min_uri(fw_ext('shortcodes')->get_declared_URI('/shortcodes/button/static/css/hover-fx.css')),
                     ],
                 ],
             ],

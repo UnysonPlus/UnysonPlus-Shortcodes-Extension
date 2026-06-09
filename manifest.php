@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.5.90';
+$manifest['version']     = '1.5.94';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,18 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.5.91 - New "Header/Footer Elements" builder tab with five navigation/site-chrome
+ *          shortcodes: Navigation Menu ([nav_menu]), Site Logo ([site_logo]),
+ *          Search ([site_search]), Social Icons ([social_icons]) and Menu Toggle
+ *          ([menu_toggle]). These are the building blocks for authoring headers and
+ *          footers with the visual page builder (the Header & Footer Builder
+ *          extension), but work in normal page content too. [nav_menu] reuses the
+ *          theme's `.primary-menu` / `.menu-item-has-children` markup contract so the
+ *          theme's navigation JS (dropdowns, accordion, off-canvas drawer) drives
+ *          builder-authored menus unchanged; [menu_toggle] emits the theme's
+ *          `.menu-toggle` + `aria-controls` markup so it opens the existing drawer with
+ *          no extra JS. The tab name comes from each shortcode's config.php `tab` key.
+ *
  * 1.5.52 - New Shortcodes settings page (wp-admin → Unyson → Shortcodes). It lists
  *          every discovered shortcode (core + user-installed) with an enable/disable
  *          checkbox, a live search filter, Enable-all / Disable-all, an enabled/total

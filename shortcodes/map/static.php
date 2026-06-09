@@ -13,12 +13,12 @@ $shortcodes_extension = fw_ext('shortcodes');
 
 wp_enqueue_style(
 	'fw-shortcode-map',
-	$shortcodes_extension->get_uri('/shortcodes/map/static/css/styles.css')
+	fw_min_uri($shortcodes_extension->get_uri('/shortcodes/map/static/css/styles.css'))
 );
 
 wp_enqueue_script(
 	'fw-shortcode-map-script',
-	$shortcodes_extension->get_uri('/shortcodes/map/static/js/scripts.js'),
+	fw_min_uri($shortcodes_extension->get_uri('/shortcodes/map/static/js/scripts.js')),
 	array('jquery', 'underscore'),
 	fw()->manifest->get_version(),
 	true

@@ -34,14 +34,14 @@ class Page_Builder_Column_Item extends Page_Builder_Item {
 
 		wp_enqueue_style(
 			$this->get_builder_type() . '_item_type_' . $this->get_type(),
-			$column_shortcode->get_uri( '/includes/page-builder-column-item/static/css/styles.css' ),
+			fw_min_uri($column_shortcode->get_uri( '/includes/page-builder-column-item/static/css/styles.css' )),
 			array(),
 			$version
 		);
 
 		wp_enqueue_script(
 			$this->get_builder_type() . '_item_type_' . $this->get_type(),
-			$column_shortcode->get_uri( '/includes/page-builder-column-item/static/js/scripts.js' ),
+			fw_min_uri($column_shortcode->get_uri( '/includes/page-builder-column-item/static/js/scripts.js' )),
 			array( 'fw-events', 'underscore' ),
 			$version,
 			true

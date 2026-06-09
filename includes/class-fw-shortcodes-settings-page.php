@@ -300,13 +300,13 @@ class FW_Ext_Shortcodes_Settings_Page {
 			}
 			wp_enqueue_style(
 				'fw-ext-component-presets',
-				$this->extension->get_uri( '/static/css/component-presets.css' ),
+				fw_min_uri($this->extension->get_uri( '/static/css/component-presets.css' )),
 				array(),
 				$this->extension->manifest->get( 'version' )
 			);
 			wp_enqueue_script(
 				'fw-ext-component-presets',
-				$this->extension->get_uri( '/static/js/component-presets.js' ),
+				fw_min_uri($this->extension->get_uri( '/static/js/component-presets.js' )),
 				array( 'jquery' ),
 				$this->extension->manifest->get( 'version' ),
 				true
@@ -322,14 +322,14 @@ class FW_Ext_Shortcodes_Settings_Page {
 
 		wp_enqueue_style(
 			'fw-ext-shortcodes-admin-settings',
-			$this->extension->get_uri( '/static/css/admin-settings.css' ),
+			fw_min_uri($this->extension->get_uri( '/static/css/admin-settings.css' )),
 			array(),
 			$version
 		);
 
 		wp_enqueue_script(
 			'fw-ext-shortcodes-admin-settings',
-			$this->extension->get_uri( '/static/js/admin-settings.js' ),
+			fw_min_uri($this->extension->get_uri( '/static/js/admin-settings.js' )),
 			array( 'jquery' ),
 			$version,
 			true

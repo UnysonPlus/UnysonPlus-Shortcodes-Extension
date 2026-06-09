@@ -3,6 +3,6 @@
 $shortcodes_extension = fw_ext('shortcodes');
 wp_enqueue_style(
 	'fw-shortcode-divider',
-	$shortcodes_extension->get_declared_URI('/shortcodes/divider/static/css/styles.css')
+	fw_min_uri($shortcodes_extension->get_declared_URI('/shortcodes/divider/static/css/styles.css'))
 );
 

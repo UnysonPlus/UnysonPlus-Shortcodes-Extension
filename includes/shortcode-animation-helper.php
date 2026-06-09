@@ -364,8 +364,8 @@ add_action( 'wp_footer', function () {
     $shortcodes_ext = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
     if ( ! $shortcodes_ext ) return;
 
-    $css_uri = $shortcodes_ext->get_declared_URI( '/static/css/animate.min.css' );
-    $js_uri  = $shortcodes_ext->get_declared_URI( '/static/js/sc-animations.js' );
+    $css_uri = fw_min_uri($shortcodes_ext->get_declared_URI( '/static/css/animate.min.css' ));
+    $js_uri  = fw_min_uri($shortcodes_ext->get_declared_URI( '/static/js/sc-animations.js' ));
 
     wp_enqueue_style( 'animate-css', $css_uri, [], '4.1.1' );
 

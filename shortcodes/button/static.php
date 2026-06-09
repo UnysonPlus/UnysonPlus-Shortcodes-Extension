@@ -7,7 +7,7 @@ $shortcodes_extension = fw_ext('shortcodes');
 // legacy .btn-black helper.
 wp_enqueue_style(
 	'fw-shortcode-button',
-	$shortcodes_extension->get_declared_URI('/shortcodes/button/static/css/styles.css')
+	fw_min_uri($shortcodes_extension->get_declared_URI('/shortcodes/button/static/css/styles.css'))
 );
 
 // Hover animations (.btnfx-* motion-only classes). Loads on the front end and in
@@ -15,7 +15,7 @@ wp_enqueue_style(
 // adds one of these classes to the button.
 wp_enqueue_style(
 	'fw-shortcode-button-hover-fx',
-	$shortcodes_extension->get_declared_URI('/shortcodes/button/static/css/hover-fx.css'),
+	fw_min_uri($shortcodes_extension->get_declared_URI('/shortcodes/button/static/css/hover-fx.css')),
 	array('fw-shortcode-button'),
 	$shortcodes_extension->manifest->get_version()
 );
