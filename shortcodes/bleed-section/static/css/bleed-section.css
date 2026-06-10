@@ -1,0 +1,54 @@
+/* Bleed Section — split content + full-bleed image.
+ * The section is positioned; the bg + image halves are absolutely positioned to
+ * the viewport edge, the content sits in a relative container above them. On
+ * mobile the halves stack (image above content) in normal flow. */
+
+.bleed-section {
+	position: relative;
+	overflow: hidden;
+}
+
+.bleed-section__bg {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	z-index: 0;
+}
+
+.bleed-section__img {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	z-index: 1;
+}
+
+.bleed-section__img img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+@media (max-width: 767.98px) {
+	.bleed-section {
+		overflow: visible;
+	}
+
+	.bleed-section__bg {
+		width: 100% !important;
+		left: 0 !important;
+		right: 0 !important;
+	}
+
+	.bleed-section__img {
+		position: relative;
+		width: 100% !important;
+		left: auto !important;
+		right: auto !important;
+		margin-bottom: 1rem;
+	}
+
+	.bleed-section__img img {
+		max-height: 300px;
+	}
+}

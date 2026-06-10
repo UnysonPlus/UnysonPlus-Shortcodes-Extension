@@ -115,6 +115,15 @@
 					return;
 				}
 
+				// Migrate legacy saved atts to current value-shapes BEFORE the modal
+				// renders them. get_value_from_attributes (PHP) does NOT run on normal
+				// builder load — the modal opens with the raw saved atts — so any
+				// option whose value shape changed (e.g. min_height: select-string →
+				// multi-picker-array) must be migrated here, or the multi-picker's PHP
+				// render throws and the modal shows a blank "error:". Set it back on
+				// the model so a save persists the upgraded shape.
+				this.model.set('atts', migrateSectionAtts(this.model.get('atts')));
+
 				var eventData = {modalSettings: {buttons: []}};
 
 				/**
@@ -266,6 +275,45 @@
 	function itemData () {
 		// return fw.unysonShortcodesData()['section'];
 		return page_builder_item_type_section_data;
+	}
+
+	/**
+	 * Migrate legacy saved section atts to the current value-shapes. Mirrors the
+	 * PHP migrators in section/includes/migration.php. Must run in the editor
+	 * because get_value_from_attributes (PHP) is NOT invoked on normal builder
+	 * load — the options modal renders the raw saved atts.
+	 */
+	function migrateSectionAtts (atts) {
+		if (!_.isObject(atts)) {
+			return atts;
+		}
+
+		// min_height: legacy scalar ('', '40vh', '600px', …) → multi-picker shape
+		// { preset, custom:{ custom_height:{value,unit} } }. Arrays pass through.
+		if (_.has(atts, 'min_height') && !_.isObject(atts.min_height)) {
+			atts = _.clone(atts);
+			atts.min_height = migrateMinHeight(atts.min_height);
+		}
+
+		return atts;
+	}
+
+	function migrateMinHeight (v) {
+		v = (v === null || typeof v === 'undefined') ? '' : String(v);
+		v = v.replace(/^\s+|\s+$/g, '');
+
+		if (v === '' || v === 'auto') {
+			return {preset: 'auto'};
+		}
+		if (['40vh', '60vh', '80vh', '100vh'].indexOf(v) !== -1) {
+			return {preset: v};
+		}
+
+		var m    = v.match(/^([0-9.]+)\s*([a-z%]+)$/i),
+			num  = m ? m[1] : v.replace(/[^0-9.]/g, ''),
+			unit = m ? m[2].toLowerCase() : 'px';
+
+		return {preset: 'custom', custom: {custom_height: {value: num, unit: unit}}};
 	}
 })(fwEvents);
 

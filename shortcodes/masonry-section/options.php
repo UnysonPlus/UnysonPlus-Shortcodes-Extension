@@ -38,11 +38,10 @@ $options = array(
 		'title'   => __( 'Styling', 'fw' ),
 		'type'    => 'tab',
 		'options' => array(
-			'background_color' => array(
-				'label' => __( 'Background Color', 'fw' ),
-				'desc'  => __( 'Section background color', 'fw' ),
-				'type'  => 'color-picker',
-				'value' => '',
+			'background' => array(
+				'type'  => 'background-pro',
+				'label' => __( 'Background', 'fw' ),
+				'desc'  => __( 'Color, gradient, image and video background layers (image over gradient over color). Replaces the old Background Color field — existing masonry sections keep their colour.', 'fw' ),
 			),
 			'padding_top' => array(
 				'label' => __( 'Padding Top', 'fw' ),

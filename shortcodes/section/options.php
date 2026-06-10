@@ -2,32 +2,54 @@
 	die('Forbidden');
 }
 
-$bleed_illustration = '<div style="margin:0 0 15px;padding:15px;background:#f9f9f9;border:1px solid #e0e0e0;border-radius:6px;">
-<svg viewBox="0 0 480 160" style="width:100%;max-width:480px;height:auto;display:block;margin:0 auto 12px;">
-  <rect x="0" y="0" width="480" height="160" rx="4" fill="#1a1a2e" stroke="#444" stroke-width="1"/>
-  <rect x="0" y="0" width="280" height="160" rx="0" fill="#22c55e"/>
-  <rect x="280" y="0" width="200" height="160" rx="0" fill="#2a2a3e"/>
-  <line x1="280" y1="0" x2="280" y2="160" stroke="#fff" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
-  <line x1="60" y1="0" x2="60" y2="160" stroke="#fff" stroke-width="1" stroke-dasharray="4,3" opacity="0.3"/>
-  <line x1="420" y1="0" x2="420" y2="160" stroke="#fff" stroke-width="1" stroke-dasharray="4,3" opacity="0.3"/>
-  <text x="60" y="18" font-size="9" fill="#fff" opacity="0.4" font-family="sans-serif">container</text>
-  <rect x="80" y="35" width="160" height="12" rx="2" fill="#fff" opacity="0.9"/>
-  <rect x="80" y="55" width="180" height="8" rx="2" fill="#fff" opacity="0.5"/>
-  <rect x="80" y="68" width="170" height="8" rx="2" fill="#fff" opacity="0.5"/>
-  <rect x="80" y="81" width="150" height="8" rx="2" fill="#fff" opacity="0.5"/>
-  <rect x="80" y="94" width="165" height="8" rx="2" fill="#fff" opacity="0.5"/>
-  <rect x="80" y="107" width="140" height="8" rx="2" fill="#fff" opacity="0.5"/>
-  <text x="140" y="138" font-size="10" fill="#fff" opacity="0.7" font-family="sans-serif" text-anchor="middle">Content</text>
-  <rect x="300" y="25" width="80" height="80" rx="4" fill="#fff" opacity="0.15" stroke="#fff" stroke-width="1" opacity="0.3"/>
-  <text x="340" y="70" font-size="20" fill="#fff" opacity="0.4" font-family="sans-serif" text-anchor="middle">&#x1f5bc;</text>
-  <text x="350" y="138" font-size="10" fill="#fff" opacity="0.7" font-family="sans-serif" text-anchor="middle">Bleed Image</text>
-  <text x="25" y="85" font-size="8" fill="#fff" opacity="0.35" font-family="sans-serif" text-anchor="middle" transform="rotate(-90,25,85)">bleeds to edge</text>
-  <text x="455" y="85" font-size="8" fill="#fff" opacity="0.35" font-family="sans-serif" text-anchor="middle" transform="rotate(90,455,85)">bleeds to edge</text>
-</svg>
-<p style="margin:0;font-size:12px;color:#666;line-height:1.5;">
-<strong>Bleed Layout</strong> splits the section into two sides. The <strong>content side</strong> (with your chosen background color) extends to the viewport edge, while a <strong>bleed image</strong> fills the opposite side and also extends to the viewport edge. This creates a striking split-screen effect commonly used for featured content sections.
-</p>
-</div>';
+/**
+ * Inline SVG glyphs for the Content Vertical Align image-picker, in the same
+ * visual language as the column alignment glyphs: blue (#2271b1) = the SECTION,
+ * gray (#bdbdbd) = the COLUMN, white (#fff) = the CONTENT element with a #8c8c8c
+ * line for its content; rounded corners + a #dcdcde hairline throughout. The
+ * gray column is full-height; the white element rides at the top / centre /
+ * bottom of it to show where the content lands. Returned as a data-URI.
+ */
+$section_rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
+	return '<rect x="' . round( $x, 1 ) . '" y="' . round( $y, 1 ) . '" width="' . round( $w, 1 )
+		. '" height="' . round( $h, 1 ) . '" rx="' . $rx . '" fill="' . $fill . '"'
+		. ( $stroke !== '' ? ' stroke="' . $stroke . '"' : '' ) . '/>';
+};
+
+// A white element box + its #8c8c8c content line (mirrors the column's glyph_el).
+$section_el = function ( $x, $y, $w, $h ) use ( $section_rrect ) {
+	$ly = $y + $h / 2;
+	return $section_rrect( $x, $y, $w, $h, 2, '#ffffff', '#dcdcde' )
+		. '<line x1="' . round( $x + 6, 1 ) . '" y1="' . round( $ly, 1 ) . '" x2="' . round( $x + $w - 6, 1 )
+		. '" y2="' . round( $ly, 1 ) . '" stroke="#8c8c8c" stroke-width="1.5" stroke-linecap="round"/>';
+};
+
+$section_valign_uri = function ( $mode ) use ( $section_rrect, $section_el ) {
+	$w = 120; $icon_h = 50;
+	$svg = $section_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' ); // blue section
+
+	$gx = 17; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;        // column band
+	$svg .= $section_rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // gray full-height column
+
+	$ex = $gx + 5; $ew = $gw - 10; $eh = 9;   // white element
+	$top = $bt + 4; $bottom = $bb - 4;
+	$ey = $top;
+	if ( $mode === 'center' )     { $ey = ( $top + $bottom ) / 2 - $eh / 2; }
+	elseif ( $mode === 'bottom' ) { $ey = $bottom - $eh; }
+	$svg .= $section_el( $ex, $ey, $ew, $eh );
+
+	$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $w . ' ' . $icon_h . '" width="' . $w . '" height="' . $icon_h . '">' . $svg . '</svg>';
+	return 'data:image/svg+xml,' . rawurlencode( $svg );
+};
+
+// image-picker choice entry (thumb + 3x hover preview), matching the column.
+$section_valign_pick = function ( $uri, $label ) {
+	return array(
+		'small' => array( 'src' => $uri, 'height' => 64 ),
+		'large' => array( 'src' => $uri, 'height' => 150 ),
+		'label' => $label,
+	);
+};
 
 $options = [
 	'tab_layout' => [
@@ -40,7 +62,7 @@ $options = [
 					'variant' => [
 						'type'    => 'select',
 						'label'   => __( 'Section Variant', 'fw' ),
-						'desc'    => __( 'Named visual preset for this section. Pairs with the Background Color picker — pick a variant for the overall theme, override the bg color below if you want a one-off colour.', 'fw' ),
+						'desc'    => __( 'Named visual preset for this section. Pairs with the Background control below — pick a variant for the overall theme, override the colour in Background if you want a one-off.', 'fw' ),
 						'help'    => __( 'Use "Alt" on every other section to create a subtle banded rhythm down the page. "Light"/"Dark" force a fixed scheme regardless of the theme\'s default.', 'fw' ),
 						'value'   => '',
 						'choices' => [
@@ -55,165 +77,62 @@ $options = [
 						'help'  => __( 'On: the section background spans edge-to-edge while content stays in the container. Off: the whole section is constrained to the container width.', 'fw' ),
 						'type'  => 'switch',
 					],
-					'background_color' => [
-						'label' => __( 'Background Color', 'fw' ),
-						'desc'  => __( 'Please select the background color', 'fw' ),
-						'help'  => __( 'Legacy field from the original Unyson plugin, kept for backwards compatibility. For new sections, prefer the Section Variant above or the preset Background Color on the Styling tab — those adapt to the theme palette.', 'fw' ),
-						'type'  => 'color-picker',
-					],
-					'background_image' => [
-						'label'   => __( 'Background Image', 'fw' ),
-						'desc'    => __( 'Please select the background image', 'fw' ),
-						'help'    => __( 'Sits behind the section content; pair it with a semi-transparent Background Color or a dark text variant to keep overlaid text readable.', 'fw' ),
-						'type'    => 'background-image',
-						'choices' => [],
-					],
-					'video' => [
-						'label' => __( 'Background Video', 'fw' ),
-						'desc'  => __( 'Insert Video URL to embed this video', 'fw' ),
-						'help'  => __( 'Accepts a YouTube/Vimeo or self-hosted .mp4 URL that loops behind the content. Set a Background Image too so it shows while the video loads or on devices that block autoplay.', 'fw' ),
-						'type'  => 'text',
-					],
-				],
-			],
-		],
-	],
-
-	'tab_bleed_layout' => [
-		'title'   => __( 'Bleed Layout', 'fw' ),
-		'type'    => 'tab',
-		'options' => [
-			'group_bleed_layout' => [
-				'type'    => 'group',
-				'options' => [
-					'bleed_illustration' => [
-						'type'  => 'html-full',
-						'label' => false,
-						'html'  => $bleed_illustration,
-					],
-					'bleed_layout' => [
-						'type'    => 'multi-picker',
-						'label'   => false,
-						'desc'    => false,
-						'picker'  => [
-							'bleed_enabled' => [
-								'type'         => 'switch',
-								'label'        => __( 'Enable Bleed Layout', 'fw' ),
-								'desc'         => __( 'Split this section into a content area and a full-bleed image', 'fw' ),
-								'help'         => __( 'Turning this on reveals the rest of the bleed controls below. Ideal for featured / split-screen sections; leave off for a standard full-width section.', 'fw' ),
-								'left-choice'  => [
-									'value' => 'no',
-									'label' => __( 'No', 'fw' ),
+					// Multi-picker — canonical shape (see demo.php / CLAUDE.md):
+					// label/desc/help live on the PICKER sub-option; the top-level
+					// label/desc are false; the default is the top-level `value`
+					// keyed by the picker id; choice keys are non-empty; `choices`
+					// reveals the per-choice sub-options. Plus `show_borders`.
+					'min_height' => [
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'value'        => [ 'preset' => 'auto' ],
+						'picker'       => [
+							'preset' => [
+								'label'   => __( 'Min Height', 'fw' ),
+								'desc'    => __( 'Minimum section height. Use a viewport preset (vh) for a hero-style, full-screen section, or pick Custom for an exact value.', 'fw' ),
+								'help'    => __( 'Pairs with Content Vertical Align below — give the section a tall min-height, then centre the content for a classic hero. "Auto" lets the section shrink-wrap its content.', 'fw' ),
+								'type'    => 'select',
+								'choices' => [
+									'auto'   => __( 'Auto (fit content)', 'fw' ),
+									'40vh'   => __( '40% of viewport', 'fw' ),
+									'60vh'   => __( '60% of viewport', 'fw' ),
+									'80vh'   => __( '80% of viewport', 'fw' ),
+									'100vh'  => __( 'Full viewport (100vh)', 'fw' ),
+									'custom' => __( 'Custom…', 'fw' ),
 								],
-								'right-choice' => [
-									'value' => 'yes',
-									'label' => __( 'Yes', 'fw' ),
-								],
-								'value' => 'no',
 							],
 						],
+						'choices'      => [
+							// Revealed only when "Custom…" is picked.
+							'custom' => [
+								'custom_height' => [
+									'type'  => 'unit-input',
+									'label' => __( 'Custom Height', 'fw' ),
+									'desc'  => false,
+									'units' => [ 'px', '%', 'vh', 'vw', 'rem', 'em' ],
+									'value' => [ 'value' => '600', 'unit' => 'px' ],
+								],
+							],
+						],
+						'show_borders' => false,
+					],
+					'content_valign' => [
+						'type'    => 'image-picker',
+						'label'   => __( 'Content Vertical Align', 'fw' ),
+						'desc'    => __( 'Where the content sits when the section is taller than its content (most visible with a Min Height set).', 'fw' ),
+						'value'   => 'top',
 						'choices' => [
-							'yes' => [
-								'bleed_bg_color' => [
-									'type'  => 'color-picker',
-									'label' => __( 'Content Background Color', 'fw' ),
-									'desc'  => __( 'Background color for the content side. Bleeds to the viewport edge.', 'fw' ),
-									'help'  => __( 'Pick a solid brand color here so the text side reads as a distinct panel against the image half. Leave transparent to inherit the section background.', 'fw' ),
-									'value' => '',
-								],
-								'bleed_image' => [
-									'type'  => 'upload',
-									'label' => __( 'Bleed Image', 'fw' ),
-									'desc'  => __( 'Image that fills the opposite side and extends to the viewport edge', 'fw' ),
-									'help'  => __( 'Use a high-resolution image — it is cropped to fill its half (cover), so detail near the edges may be trimmed depending on the Image / Content Ratio.', 'fw' ),
-								],
-								'bleed_image_position' => [
-									'type'    => 'select',
-									'label'   => __( 'Image Position', 'fw' ),
-									'desc'    => __( 'How the image is positioned within its area', 'fw' ),
-									'help'    => __( 'Controls which part stays visible when the image is cropped to fill. Example: choose "Top" for a portrait so faces near the top are not cut off.', 'fw' ),
-									'choices' => [
-										'center'       => __( 'Center', 'fw' ),
-										'top'          => __( 'Top', 'fw' ),
-										'bottom'       => __( 'Bottom', 'fw' ),
-										'left'         => __( 'Left', 'fw' ),
-										'right'        => __( 'Right', 'fw' ),
-										'left top'     => __( 'Left Top', 'fw' ),
-										'right top'    => __( 'Right Top', 'fw' ),
-										'left bottom'  => __( 'Left Bottom', 'fw' ),
-										'right bottom' => __( 'Right Bottom', 'fw' ),
-									],
-									'value' => 'center',
-								],
-								'bleed_image_side' => [
-									'type'    => 'select',
-									'label'   => __( 'Image Side', 'fw' ),
-									'desc'    => __( 'Which side the image appears on', 'fw' ),
-									'help'    => __( 'On desktop only — on mobile the two halves stack vertically per the Mobile Stacking Order option below.', 'fw' ),
-									'choices' => [
-										'right' => __( 'Right', 'fw' ),
-										'left'  => __( 'Left', 'fw' ),
-									],
-									'value' => 'right',
-								],
-								'bleed_image_ratio' => [
-									'type'    => 'select',
-									'label'   => __( 'Image / Content Ratio', 'fw' ),
-									'desc'    => __( 'How much space the image takes vs. the content area', 'fw' ),
-									'help'    => __( 'Each pair sums to 12 Bootstrap columns. Give the content side more room (e.g. 5/12 image + 7/12 content) when you have several paragraphs or a form.', 'fw' ),
-									'choices' => [
-										'1-11' => __( '1/12 Image + 11/12 Content (col-md-1 + col-md-11)', 'fw' ),
-										'2-10' => __( '1/6 Image + 5/6 Content (col-md-2 + col-md-10)', 'fw' ),
-										'3-9'  => __( '1/4 Image + 3/4 Content (col-md-3 + col-md-9)', 'fw' ),
-										'4-8'  => __( '1/3 Image + 2/3 Content (col-md-4 + col-md-8)', 'fw' ),
-										'5-7'  => __( '5/12 Image + 7/12 Content (col-md-5 + col-md-7)', 'fw' ),
-										'6-6'  => __( '1/2 Image + 1/2 Content (col-md-6 + col-md-6)', 'fw' ),
-										'7-5'  => __( '7/12 Image + 5/12 Content (col-md-7 + col-md-5)', 'fw' ),
-										'8-4'  => __( '2/3 Image + 1/3 Content (col-md-8 + col-md-4)', 'fw' ),
-										'9-3'  => __( '3/4 Image + 1/4 Content (col-md-9 + col-md-3)', 'fw' ),
-										'10-2' => __( '5/6 Image + 1/6 Content (col-md-10 + col-md-2)', 'fw' ),
-										'11-1' => __( '11/12 Image + 1/12 Content (col-md-11 + col-md-1)', 'fw' ),
-									],
-									'value' => '5-7',
-								],
-								'bleed_vertical_align' => [
-									'type'    => 'select',
-									'label'   => __( 'Content Vertical Alignment', 'fw' ),
-									'desc'    => __( 'Align the content vertically within the section', 'fw' ),
-									'help'    => __( 'Most noticeable when the image side is taller than the text. "Center" keeps a short heading visually balanced against a tall image.', 'fw' ),
-									'choices' => [
-										'align-items-start'  => __( 'Top', 'fw' ),
-										'align-items-center' => __( 'Center', 'fw' ),
-										'align-items-end'    => __( 'Bottom', 'fw' ),
-									],
-									'value' => 'align-items-center',
-								],
-								'bleed_content_padding' => [
-									'type'    => 'select',
-									'label'   => __( 'Content Padding', 'fw' ),
-									'desc'    => __( 'Vertical padding for the content area', 'fw' ),
-									'help'    => __( 'Adds breathing room above and below the text on the content side. Choose "None" if your inner shortcodes already supply their own spacing.', 'fw' ),
-									'choices' => [
-										'0'    => __( 'None', 'fw' ),
-										'2rem' => __( 'Small', 'fw' ),
-										'3rem' => __( 'Medium', 'fw' ),
-										'5rem' => __( 'Large', 'fw' ),
-									],
-									'value' => '3rem',
-								],
-								'bleed_mobile_stacking' => [
-									'type'    => 'select',
-									'label'   => __( 'Mobile Stacking Order', 'fw' ),
-									'desc'    => __( 'Which appears first on mobile', 'fw' ),
-									'help'    => __( 'On narrow screens the two halves stack top-to-bottom. Pick "Image First" for a hero-style lead visual, or "Content First" to surface the message immediately.', 'fw' ),
-									'choices' => [
-										'content-first' => __( 'Content First', 'fw' ),
-										'image-first'   => __( 'Image First', 'fw' ),
-									],
-									'value' => 'content-first',
-								],
-							],
+							'top'    => $section_valign_pick( $section_valign_uri( 'top' ),    __( 'Top', 'fw' ) ),
+							'center' => $section_valign_pick( $section_valign_uri( 'center' ), __( 'Center', 'fw' ) ),
+							'bottom' => $section_valign_pick( $section_valign_uri( 'bottom' ), __( 'Bottom', 'fw' ) ),
 						],
+					],
+					'background' => [
+						'type'  => 'background-pro',
+						'label' => __( 'Background', 'fw' ),
+						'desc'  => __( 'Color, gradient, image and video background layers (they stack: image over gradient over color). Replaces the old separate Background Color / Image / Video fields — existing sections are migrated automatically.', 'fw' ),
+						'help'  => __( 'Image attachment "Fixed" gives a parallax effect. Video renders a muted, looping background via the section\'s video player; set a poster/fallback image for while it loads or where autoplay is blocked.', 'fw' ),
 					],
 				],
 			],
@@ -221,19 +140,9 @@ $options = [
 	],
 
 	'tab_styling' => [
-		'title'   => __( 'Spacing & Style', 'fw' ),
+		'title'   => __( 'Spacing', 'fw' ),
 		'type'    => 'tab',
 		'options' => [
-			'group_colors' => [
-				'type'    => 'group',
-				'options' => [
-					'bg_color' => sc_color_field_compact( [
-						'label' => __( 'Background Color (preset)', 'fw' ),
-						'kind'  => 'bg',
-						'desc'  => __( 'A named color from the theme palette, or a custom hex via the inline picker. Layers on top of the legacy Background Color on the Layout tab if both are set.', 'fw' ),
-					] ),
-				],
-			],
 			'group_spacings' => [
 				'type'    => 'group',
 				'options' => [
