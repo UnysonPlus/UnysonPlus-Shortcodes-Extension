@@ -27,13 +27,6 @@ $options = [
                                                 'wpautop'       => true,
                                                 'value'         => '',
                                         ],
-                                        'image_alt' => [
-                                                'type'  => 'text',
-                                                'label' => __( 'Image Alt Text', 'fw' ),
-                                                'desc'  => __( 'Leave empty to use the alt text from the media library', 'fw' ),
-                                                'help'  => __( 'Describes the image for screen readers and search engines. Set this when the image carries meaning; leave blank for purely decorative images.', 'fw' ),
-                                                'value' => '',
-                                        ],
                                         'image_link_group' => [
                                                 'type'    => 'group',
                                                 'options' => [
@@ -68,79 +61,85 @@ $options = [
                 'title'   => __( 'Layout', 'fw' ),
                 'type'    => 'tab',
                 'options' => [
-                        'group_layout' => [
+                        'group_layout_arrange' => [
                                 'type'    => 'group',
                                 'options' => [
-                                        'layout' => [
-                                                'type'    => 'select',
-                                                'label'   => __( 'Layout', 'fw' ),
-                                                'desc'    => __( 'Choose the position of the image relative to the content', 'fw' ),
-                                                'help'    => __( 'Alternate the layout between stacked Image-Content blocks down a page for a zig-zag rhythm that keeps long sections engaging.', 'fw' ),
-                                                'choices' => [
-                                                        'image-left'  => __( 'Image Left / Content Right', 'fw' ),
-                                                        'image-right' => __( 'Image Right / Content Left', 'fw' ),
-                                                ],
-                                                'value' => 'image-left',
-                                        ],
-                                        'column_ratio' => call_user_func( function() {
+                                        'layout' => call_user_func( function() {
                                                 $img_uri = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/image-content/static/img' );
-                                                $ratios  = [
-                                                        '1-11' => '1/12 + 11/12',
-                                                        '2-10' => '2/12 + 10/12',
-                                                        '3-9'  => '3/12 + 9/12',
-                                                        '4-8'  => '4/12 + 8/12',
-                                                        '5-7'  => '5/12 + 7/12',
-                                                        '6-6'  => '6/12 + 6/12',
-                                                        '7-5'  => '7/12 + 5/12',
-                                                        '8-4'  => '8/12 + 4/12',
-                                                        '9-3'  => '9/12 + 3/12',
-                                                        '10-2' => '10/12 + 2/12',
-                                                        '11-1' => '11/12 + 1/12',
-                                                ];
-                                                $choices = [];
-                                                foreach ( $ratios as $key => $label ) {
-                                                        $choices[ $key ] = [
-                                                                'small' => [
-                                                                        'src'    => $img_uri . '/ratio-' . $key . '.svg',
-                                                                        'height' => 40,
-                                                                        'title'  => $label,
-                                                                ],
-                                                        ];
-                                                }
                                                 return [
                                                         'type'    => 'image-picker',
-                                                        'label'   => __( 'Column Ratio', 'fw' ),
-                                                        'desc'    => __( 'Set the width ratio between the image and content columns', 'fw' ),
-                                                        'help'    => __( 'The first number is the image column, the second is the content column. Lean toward the content side when there is a lot of text to read.', 'fw' ),
-                                                        'choices' => $choices,
-                                                        'value'   => '4-8',
+                                                        'label'   => __( 'Layout', 'fw' ),
+                                                        'desc'    => __( 'Position of the image relative to the content', 'fw' ),
+                                                        'help'    => __( 'Image Left / Right place the two side by side (use the Split slider below). Image Top stacks the image above the content, full width. Alternate Left/Right down a page for a zig-zag rhythm.', 'fw' ),
+                                                        'choices' => [
+                                                                'image-left'  => [ 'small' => [ 'src' => $img_uri . '/layout-image-left.svg',  'height' => 40, 'title' => __( 'Image Left / Content Right', 'fw' ) ] ],
+                                                                'image-right' => [ 'small' => [ 'src' => $img_uri . '/layout-image-right.svg', 'height' => 40, 'title' => __( 'Image Right / Content Left', 'fw' ) ] ],
+                                                                'image-top'   => [ 'small' => [ 'src' => $img_uri . '/layout-image-top.svg',   'height' => 40, 'title' => __( 'Image Top / Content Below', 'fw' ) ] ],
+                                                        ],
+                                                        'value'   => 'image-left',
                                                 ];
                                         } ),
-                                        'vertical_align' => [
-                                                'type'    => 'select',
-                                                'label'   => __( 'Vertical Alignment', 'fw' ),
-                                                'desc'    => __( 'Align the image and content vertically within the row', 'fw' ),
-                                                'help'    => __( 'Matters most when the image and the text are different heights. Center usually looks balanced; Top aligns both columns to the same baseline.', 'fw' ),
-                                                'choices' => [
-                                                        'align-items-start'  => __( 'Top', 'fw' ),
-                                                        'align-items-center' => __( 'Center', 'fw' ),
-                                                        'align-items-end'    => __( 'Bottom', 'fw' ),
+                                        'column_ratio' => [
+                                                // Visual two-pane split bar (drag the divider). Stored value = the IMAGE's
+                                                // column span (1–11 of 12) — same integer the old slider stored, so this is
+                                                // a drop-in swap with no value migration (view.php is unchanged).
+                                                'type'          => 'column-split',
+                                                'label'         => __( 'Image / Content Split', 'fw' ),
+                                                'desc'          => __( 'Drag the divider to set how the row is shared between the image and the content.', 'fw' ),
+                                                'help'          => __( 'The image takes the left share, the content the right (shown as a fraction in lowest form, e.g. 1/3). The divider stops at 11/12 so the content always keeps at least one column. Applies to the Image Left / Image Right layouts — the Layout swatch chooses which side the image actually sits on.', 'fw' ),
+                                                'value'         => 4,
+                                                'denominator'   => 12,
+                                                'min'           => 1,
+                                                'max'           => 11,
+                                                'show_fraction' => true,
+                                                'panes'         => [
+                                                        [ 'label' => __( 'Image', 'fw' ),   'icon' => 'dashicons-format-image' ],
+                                                        [ 'label' => __( 'Content', 'fw' ), 'icon' => 'dashicons-text' ],
                                                 ],
-                                                'value' => 'align-items-center',
                                         ],
+                                ],
+                        ],
+                        'group_layout_align' => [
+                                'type'    => 'group',
+                                'options' => [
+                                        'vertical_align' => call_user_func( function() {
+                                                $img_uri = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/image-content/static/img' );
+                                                $pick    = function ( $file, $title ) use ( $img_uri ) {
+                                                        return [ 'small' => [ 'src' => $img_uri . '/' . $file, 'height' => 40, 'title' => $title ] ];
+                                                };
+                                                return [
+                                                        'type'    => 'image-picker',
+                                                        'label'   => __( 'Vertical Alignment', 'fw' ),
+                                                        'desc'    => __( 'Align the image and content vertically within the row', 'fw' ),
+                                                        'help'    => __( 'Matters most when the image and the text are different heights. Center usually looks balanced; Top aligns both columns to the same baseline.', 'fw' ),
+                                                        'choices' => [
+                                                                'align-items-start'  => $pick( 'valign-top.svg',    __( 'Top', 'fw' ) ),
+                                                                'align-items-center' => $pick( 'valign-center.svg', __( 'Center', 'fw' ) ),
+                                                                'align-items-end'    => $pick( 'valign-bottom.svg', __( 'Bottom', 'fw' ) ),
+                                                        ],
+                                                        'value'   => 'align-items-center',
+                                                ];
+                                        } ),
+                                        'content_align' => sc_alignment_field( array(
+                                                'label' => __( 'Content Alignment', 'fw' ),
+                                                'desc'  => __( 'Horizontal alignment of the content text', 'fw' ),
+                                                'help'  => __( 'Left reads best for body copy; Center suits short, punchy blocks. Pairs with Content Max Width (a centered block auto-centers in its column).', 'fw' ),
+                                        ) ),
                                         'gap' => [
-                                                'type'    => 'select',
+                                                'type'    => 'short-select',
                                                 'label'   => __( 'Gap', 'fw' ),
-                                                'desc'    => __( 'Space between the image and content columns', 'fw' ),
-                                                'help'    => __( 'Larger gaps give the block more breathing room; choose None when you want the image and text to read as a single tight unit.', 'fw' ),
-                                                'choices' => [
-                                                        'g-0' => __( 'None', 'fw' ),
-                                                        'g-3' => __( 'Small', 'fw' ),
-                                                        'g-4' => __( 'Medium', 'fw' ),
-                                                        'g-5' => __( 'Large', 'fw' ),
-                                                ],
-                                                'value' => 'g-4',
+                                                'desc'    => __( 'Space between the image and the content (the column gutter), sourced from the Gap Scale presets.', 'fw' ),
+                                                'help'    => function_exists( 'sc_styling_help_text' ) ? sc_styling_help_text( 'spacing' ) : '',
+                                                'value'   => '4',
+                                                'choices' => function_exists( 'sc_get_gap_select_choices' )
+                                                        ? sc_get_gap_select_choices( __( 'Use Default Gap', 'fw' ) )
+                                                        : array( '' => __( 'Use Default Gap', 'fw' ), '4' => __( 'Medium', 'fw' ) ),
                                         ],
+                                ],
+                        ],
+                        'group_layout_responsive' => [
+                                'type'    => 'group',
+                                'options' => [
                                         'mobile_order' => [
                                                 'type'    => 'select',
                                                 'label'   => __( 'Mobile Stacking Order', 'fw' ),
@@ -152,6 +151,31 @@ $options = [
                                                 ],
                                                 'value' => 'image-first',
                                         ],
+                                        'breakpoint' => [
+                                                'type'    => 'select',
+                                                'label'   => __( 'Stack Below', 'fw' ),
+                                                'desc'    => __( 'Screen width at which the image and content stack vertically', 'fw' ),
+                                                'help'    => __( 'Above this width they sit side by side; below it they stack. Pick a larger breakpoint when the content needs more room before going side by side.', 'fw' ),
+                                                'choices' => [
+                                                        'sm' => __( 'Small (≥ 576px)', 'fw' ),
+                                                        'md' => __( 'Medium (≥ 768px)', 'fw' ),
+                                                        'lg' => __( 'Large (≥ 992px)', 'fw' ),
+                                                ],
+                                                'value' => 'md',
+                                        ],
+                                        'stack_image_width' => [
+                                                'type'  => 'unit-input',
+                                                'label' => __( 'Stacked Image Max Width', 'fw' ),
+                                                'desc'  => __( 'Image Top layout only — cap the image width so it is not forced full-bleed. Blank = full width.', 'fw' ),
+                                                'help'  => __( 'A constrained, centered image reads better than an edge-to-edge one in the stacked layout. Pairs with Stacked Image Alignment.', 'fw' ),
+                                                'units' => [ 'px', '%', 'rem' ],
+                                                'value' => [ 'value' => '', 'unit' => 'px' ],
+                                        ],
+                                        'stack_image_align' => sc_alignment_field( array(
+                                                'label' => __( 'Stacked Image Alignment', 'fw' ),
+                                                'desc'  => __( 'Image Top layout only — position the image within the block (takes effect once a max width is set)', 'fw' ),
+                                                'value' => 'center',
+                                        ) ),
                                 ],
                         ],
                 ],
@@ -174,6 +198,21 @@ $options = [
                                                         'cover'   => __( 'Cover (fill column)', 'fw' ),
                                                 ],
                                                 'value' => 'contain',
+                                        ],
+                                        'image_ratio' => [
+                                                'type'    => 'select',
+                                                'label'   => __( 'Image Aspect Ratio', 'fw' ),
+                                                'desc'    => __( 'Force the image into a fixed ratio box', 'fw' ),
+                                                'help'    => __( 'Original keeps the image\'s own proportions. A fixed ratio (paired with Image Fit = Cover) crops predictably, without depending on the height of the other column.', 'fw' ),
+                                                'choices' => [
+                                                        ''     => __( 'Original', 'fw' ),
+                                                        '1x1'  => __( 'Square (1:1)', 'fw' ),
+                                                        '4x3'  => __( 'Landscape (4:3)', 'fw' ),
+                                                        '3x2'  => __( 'Photo (3:2)', 'fw' ),
+                                                        '16x9' => __( 'Wide (16:9)', 'fw' ),
+                                                        '3x4'  => __( 'Portrait (3:4)', 'fw' ),
+                                                ],
+                                                'value' => '',
                                         ],
                                         'image_radius' => [
                                                 'type'    => 'select',
@@ -205,10 +244,30 @@ $options = [
                         'group_colors' => [
                                 'type'    => 'group',
                                 'options' => [
+                                        'content_max_width' => [
+                                                'type'  => 'unit-input',
+                                                'label' => __( 'Content Max Width', 'fw' ),
+                                                'desc'  => __( 'Cap the content width for readability — leave blank to fill the column', 'fw' ),
+                                                'help'  => __( 'A measure of about 50–75 characters (e.g. 60ch) keeps long copy comfortable to read. Centered content is auto-centered within its column.', 'fw' ),
+                                                'units' => [ 'ch', 'px', 'rem', 'em', '%' ],
+                                                'value' => [ 'value' => '', 'unit' => 'ch' ],
+                                        ],
                                         'content_color' => sc_color_field_compact( array(
                                                 'label' => __( 'Content Color', 'fw' ),
                                                 'desc'  => __( 'Color preset applied to the body content text.', 'fw' ),
                                         ) ),
+                                        'content_bg' => sc_color_field_compact( array(
+                                                'label' => __( 'Content Background', 'fw' ),
+                                                'desc'  => __( 'Background behind the content — turns the text side into a tinted "card" panel (pair with Content Padding).', 'fw' ),
+                                                'kind'  => 'bg',
+                                        ) ),
+                                        'content_padding' => [
+                                                'type'  => 'spacing',
+                                                'mode'  => 'padding',
+                                                'label' => __( 'Content Padding', 'fw' ),
+                                                'desc'  => __( 'Inner padding of the content panel — set per side, from the Spacing Scale presets (with responsive overrides).', 'fw' ),
+                                                'help'  => function_exists( 'sc_styling_help_text' ) ? sc_styling_help_text( 'spacing' ) : '',
+                                        ],
                                 ],
                         ],
                 ],
