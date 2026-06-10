@@ -361,13 +361,33 @@ if ( ! function_exists( 'sc_flatten_spacing_value' ) ) :
 	function sc_flatten_spacing_value( $spacing ) {
 		$out = array();
 		if ( ! is_array( $spacing ) ) { return $out; }
-		foreach ( array( 'margin', 'padding' ) as $section ) {
-			if ( empty( $spacing[ $section ] ) || ! is_array( $spacing[ $section ] ) ) { continue; }
-			foreach ( $spacing[ $section ] as $slot_value ) {
-				$cls = sc_sanitize_class( (string) $slot_value );
-				if ( $cls !== '' ) { $out[] = $cls; }
+
+		// Collect every slot's class name from a margin/padding subtree pair.
+		$collect = function ( $layer ) use ( &$out ) {
+			if ( ! is_array( $layer ) ) { return; }
+			foreach ( array( 'margin', 'padding' ) as $section ) {
+				if ( empty( $layer[ $section ] ) || ! is_array( $layer[ $section ] ) ) { continue; }
+				foreach ( $layer[ $section ] as $slot_value ) {
+					$cls = sc_sanitize_class( (string) $slot_value );
+					if ( $cls !== '' ) { $out[] = $cls; }
+				}
+			}
+		};
+
+		// Base / phone layer (e.g. m-3, pt-2 — apply at all widths).
+		$collect( $spacing );
+
+		// Per-device overrides (e.g. m-md-3, pt-lg-2). The values already carry
+		// Bootstrap's breakpoint infix, so this just gathers them; the matching
+		// @media utility rules are emitted by css-tokens.php.
+		if ( ! empty( $spacing['advanced'] ) && is_array( $spacing['advanced'] ) ) {
+			foreach ( array( 'md', 'lg' ) as $dev ) {
+				if ( isset( $spacing['advanced'][ $dev ] ) ) {
+					$collect( $spacing['advanced'][ $dev ] );
+				}
 			}
 		}
+
 		return $out;
 	}
 endif;
@@ -1715,3 +1735,180 @@ if ( ! function_exists( 'sc_filter_styling_options' ) ) :
 	}
 endif;
 add_filter( 'fw_shortcode_get_options', 'sc_filter_styling_options', 10, 2 );
+
+if ( ! function_exists( 'sc_bg_pro_style' ) ) :
+	/**
+	 * Compile a `background-pro` value into an inline CSS style string.
+	 *
+	 * Stacks the CSS-able layers exactly like the theme site-background and the
+	 * Section view: solid color, then `background-image: url(image), gradient`
+	 * (image over gradient), plus position / repeat / attachment (Fixed = parallax)
+	 * / size when there's a raster image. The video layer is NOT emitted here —
+	 * use sc_bg_pro_video_attr() for that (it needs the Formstone data-attr + class).
+	 *
+	 * Shared by the Section, Masonry Section and Bleed Section shortcodes.
+	 *
+	 * @param array $bgv A background-pro value (or null/array).
+	 * @return string Inline style declarations (may be '').
+	 */
+	function sc_bg_pro_style( $bgv ) {
+		if ( ! is_array( $bgv ) ) { return ''; }
+
+		$style = '';
+
+		// Color — predefined or custom; both hold a concrete colour in the live control.
+		$cv    = fw_akg( 'color/value', $bgv, array() );
+		$color = '';
+		if ( is_array( $cv ) ) {
+			if ( ! empty( $cv['custom'] ) )         { $color = (string) $cv['custom']; }
+			elseif ( ! empty( $cv['predefined'] ) ) { $color = (string) $cv['predefined']; }
+		}
+		if ( $color !== '' ) {
+			$style .= 'background-color:' . esc_attr( $color ) . ';';
+		}
+
+		// Image over gradient.
+		$images  = array();
+		$img_url = fw_akg( 'image/src/url', $bgv, '' );
+		if ( $img_url ) {
+			$images[] = 'url(' . esc_url( $img_url ) . ')';
+		}
+		$stops = fw_akg( 'gradient/data/stops', $bgv );
+		if ( is_array( $stops ) && count( $stops ) >= 2 && class_exists( 'FW_Option_Type_Gradient_V2' ) ) {
+			$grad = FW_Option_Type_Gradient_V2::to_css( fw_akg( 'gradient/data', $bgv ) );
+			if ( $grad ) { $images[] = $grad; }
+		}
+		if ( $images ) {
+			$style .= 'background-image:' . implode( ', ', $images ) . ';';
+			if ( $img_url ) {
+				$pos      = fw_akg( 'image/position', $bgv, 'center center' );
+				$rep      = fw_akg( 'image/repeat', $bgv, 'no-repeat' );
+				$att      = fw_akg( 'image/attachment', $bgv, 'scroll' );
+				$size_sel = fw_akg( 'image/size/selected', $bgv, 'cover' );
+				$size     = ( 'custom' === $size_sel ) ? fw_akg( 'image/size/custom', $bgv, 'auto' ) : $size_sel;
+				if ( $pos )  { $style .= 'background-position:' . esc_attr( $pos ) . ';'; }
+				if ( $rep )  { $style .= 'background-repeat:' . esc_attr( $rep ) . ';'; }
+				if ( $att )  { $style .= 'background-attachment:' . esc_attr( $att ) . ';'; }
+				if ( $size ) { $style .= 'background-size:' . esc_attr( $size ) . ';'; }
+			}
+		}
+
+		return $style;
+	}
+endif;
+
+if ( ! function_exists( 'sc_bg_pro_video_attr' ) ) :
+	/**
+	 * Compile a `background-pro` value's video layer into the Formstone
+	 * `data-background-options` attribute (the existing section video player).
+	 * Returns an empty array when video is disabled / has no source — the caller
+	 * then knows not to add the `background-video` class.
+	 *
+	 * @param array $bgv A background-pro value.
+	 * @return array data-attr name => JSON string (or empty array).
+	 */
+	function sc_bg_pro_video_attr( $bgv ) {
+		if ( ! is_array( $bgv ) || fw_akg( 'video/enabled', $bgv, 'no' ) !== 'yes' ) {
+			return array();
+		}
+
+		$source   = array();
+		$mp4      = fw_akg( 'video/source_mp4/url', $bgv, '' );
+		$webm     = fw_akg( 'video/source_webm/url', $bgv, '' );
+		$external = fw_akg( 'video/external_url', $bgv, '' );
+		$poster   = fw_akg( 'video/poster/url', $bgv, '' );
+
+		if ( $mp4 )  { $source['mp4']  = $mp4; }
+		if ( $webm ) { $source['webm'] = $webm; }
+		if ( ! $mp4 && ! $webm && $external ) { $source['video'] = $external; }
+		if ( $poster ) { $source['poster'] = $poster; }
+
+		if ( empty( $source ) ) { return array(); }
+
+		$opts = array(
+			'source'   => $source,
+			'loop'     => ( fw_akg( 'video/loop',     $bgv, 'yes' ) === 'yes' ),
+			'autoPlay' => ( fw_akg( 'video/autoplay', $bgv, 'yes' ) === 'yes' ),
+			'mute'     => ( fw_akg( 'video/mute',     $bgv, 'yes' ) === 'yes' ),
+		);
+
+		$data_name = ( function_exists( 'fw_ext' ) && version_compare( fw_ext( 'shortcodes' )->manifest->get_version(), '1.3.9', '>=' ) )
+			? 'data-background-options'
+			: 'data-wallpaper-options';
+
+		return array( $data_name => fw_htmlspecialchars( json_encode( $opts ) ) );
+	}
+endif;
+
+if ( ! function_exists( 'sc_migrate_atts' ) ) :
+	/**
+	 * Reusable atts-migration runner.
+	 *
+	 * Each option's *value transform* is necessarily option-specific (a tiny
+	 * callback), but the *plumbing* — which att, whether it still needs
+	 * migrating, how the callback is invoked, writing the result back — is the
+	 * same every time. This runs a declarative spec of those transforms over a
+	 * shortcode's atts so option upgrades (scalar → array, renamed shapes, merged
+	 * legacy fields, …) only need a few-line migrator each.
+	 *
+	 * Spec — `att_id => migration`, where migration is either:
+	 *   - a callable (shorthand)  →  arg:'value', when:'not_array'
+	 *   - an array:
+	 *       'cb'   => callable,                 // required
+	 *       'arg'  => 'value' | 'atts',         // pass the att's value (default) or the whole atts
+	 *       'when' => 'not_array'|'missing'|'always',
+	 *
+	 *   'value'     → $cb( $atts[$id] )         (transform one option's value)
+	 *   'atts'      → $cb( $atts )              (build from several legacy atts, e.g. background)
+	 *   when 'not_array' (default) → runs only while the value isn't already an array
+	 *   when 'missing'            → runs only while the att is empty/unset
+	 *   when 'always'            → runs every time
+	 * A callback returning null leaves the att untouched (e.g. "no legacy data").
+	 *
+	 *   $atts = sc_migrate_atts( $atts, array(
+	 *       'min_height' => 'section_migrate_min_height',                                    // scalar → multi-picker
+	 *       'background'  => array( 'cb' => 'section_migrate_legacy_background', 'arg' => 'atts', 'when' => 'missing' ),
+	 *   ) );
+	 *
+	 * @param array $atts
+	 * @param array $specs
+	 * @return array
+	 */
+	function sc_migrate_atts( $atts, array $specs ) {
+		if ( ! is_array( $atts ) ) {
+			return $atts;
+		}
+
+		foreach ( $specs as $att_id => $spec ) {
+			if ( ! is_array( $spec ) ) {
+				$spec = array( 'cb' => $spec );
+			}
+			$cb   = isset( $spec['cb'] ) ? $spec['cb'] : null;
+			$arg  = isset( $spec['arg'] ) ? $spec['arg'] : 'value';
+			$when = isset( $spec['when'] ) ? $spec['when'] : 'not_array';
+
+			if ( ! is_callable( $cb ) ) {
+				continue;
+			}
+
+			$current = array_key_exists( $att_id, $atts ) ? $atts[ $att_id ] : null;
+
+			$run = true;
+			if ( $when === 'not_array' )    { $run = ! is_array( $current ); }
+			elseif ( $when === 'missing' )  { $run = empty( $current ); }
+			// 'always' → leave $run true.
+
+			if ( ! $run ) {
+				continue;
+			}
+
+			$new = ( $arg === 'atts' ) ? call_user_func( $cb, $atts ) : call_user_func( $cb, $current );
+
+			if ( $new !== null ) {
+				$atts[ $att_id ] = $new;
+			}
+		}
+
+		return $atts;
+	}
+endif;

@@ -13,7 +13,14 @@
 // masonry's gaps match the rest of the site instead of hardcoding 1.5rem.
 $gap = isset( $atts['gap'] ) ? trim( (string) $atts['gap'] ) : '';
 
-$background_color = ! empty( $atts['background_color'] ) ? $atts['background_color'] : '';
+// Background: prefer the background-pro value; fall back to the legacy
+// background_color (a hex) for masonry sections saved before the upgrade.
+$bgv      = ( ! empty( $atts['background'] ) && is_array( $atts['background'] ) ) ? $atts['background'] : null;
+$bg_style = function_exists( 'sc_bg_pro_style' ) ? sc_bg_pro_style( $bgv ) : '';
+if ( $bg_style === '' && ! empty( $atts['background_color'] ) ) {
+	$bg_style = 'background-color:' . $atts['background_color'] . ';';
+}
+$bg_video_attr    = function_exists( 'sc_bg_pro_video_attr' ) ? sc_bg_pro_video_attr( $bgv ) : array();
 $padding_top      = isset( $atts['padding_top'] ) ? trim( $atts['padding_top'] ) : '';
 $padding_bottom   = isset( $atts['padding_bottom'] ) ? trim( $atts['padding_bottom'] ) : '';
 
@@ -33,8 +40,8 @@ $style  = '';
 if ( $gap !== '' ) {
 	$style .= '--mc-gap:' . $gap . ';';
 }
-if ( $background_color ) {
-	$style .= 'background-color:' . $background_color . ';';
+if ( $bg_style !== '' ) {
+	$style .= $bg_style;
 }
 if ( $padding_top !== '' ) {
 	$style .= 'padding-top:' . $padding_top . ';';
@@ -46,6 +53,13 @@ if ( ! empty( $attr['style'] ) ) {
 	$style = rtrim( $attr['style'], '; ' ) . ';' . $style;
 }
 $attr['style'] = $style;
+
+// Background video (best-effort): emits the Formstone data-attr + class. Playback
+// relies on the section video script being present on the page.
+if ( ! empty( $bg_video_attr ) ) {
+	$attr = array_merge( $attr, $bg_video_attr );
+	$attr['class'] = trim( $attr['class'] . ' background-video' );
+}
 ?>
 <section <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="<?php echo esc_attr( $container_class ); ?>">

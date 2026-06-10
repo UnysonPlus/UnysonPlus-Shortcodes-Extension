@@ -257,6 +257,8 @@ class FW_Extension_Shortcodes extends FW_Extension
 	 */
 	public function _filter_disabled_from_settings( $disabled )
 	{
+		$option_id = 'fw_ext_settings_options:' . $this->get_name();
+
 		// Read RAW (not via fw_get_db_ext_settings_option). This runs on every
 		// request; the latter would load + process this extension's full settings
 		// schema (the preset libraries) just to read one key — firing
@@ -264,15 +266,45 @@ class FW_Extension_Shortcodes extends FW_Extension
 		// register their custom option types, which broke the Table editor) and
 		// dropping this non-schema key during option processing.
 		$enabled = class_exists( 'FW_WP_Option' )
-			? FW_WP_Option::get( 'fw_ext_settings_options:' . $this->get_name(), 'enabled_shortcodes', null )
+			? FW_WP_Option::get( $option_id, 'enabled_shortcodes', null )
 			: null;
 
 		if ( ! is_array( $enabled ) ) {
 			return $disabled; // never configured -> keep everything enabled
 		}
 
-		$all            = array_keys( $this->discover_all_shortcodes() );
-		$newly_disabled = array_diff( $all, $enabled );
+		$all = array_keys( $this->discover_all_shortcodes() );
+
+		// We store the ENABLED set, so "disabled = everything not enabled" would
+		// silently disable any shortcode shipped AFTER the user last saved their
+		// Shortcodes settings (e.g. the new Bleed Section) — it'd be missing from
+		// the builder palette. To distinguish a *newly-added* shortcode from one
+		// the user *explicitly* disabled, we also track the "known" universe (the
+		// tags the user has been presented with). A shortcode is disabled only if
+		// it is known but not enabled; genuinely new tags default to ENABLED.
+		$known = class_exists( 'FW_WP_Option' )
+			? FW_WP_Option::get( $option_id, 'known_shortcodes', null )
+			: null;
+		if ( ! is_array( $known ) ) {
+			// Legacy installs recorded only the enabled set. Seed `known` from it
+			// (one-time). A previously-disabled shortcode is unknowable from the
+			// stored data, so it re-enables once — an acceptable migration cost.
+			$known = $enabled;
+		}
+
+		// Fold genuinely-new tags into both sets (enabled + known) and persist
+		// once, so the management UI shows them on and a later explicit disable
+		// (which removes the tag from `enabled` only) still sticks.
+		$new = array_diff( $all, $known );
+		if ( ! empty( $new ) && class_exists( 'FW_WP_Option' ) ) {
+			$enabled = array_values( array_unique( array_merge( $enabled, $new ) ) );
+			$known   = array_values( array_unique( array_merge( $known, $new ) ) );
+			FW_WP_Option::set( $option_id, 'enabled_shortcodes', $enabled );
+			FW_WP_Option::set( $option_id, 'known_shortcodes', $known );
+		}
+
+		// Disabled = shortcodes the user has seen (known) but left un-enabled.
+		$newly_disabled = array_diff( $known, $enabled );
 
 		return array_values( array_unique( array_merge( (array) $disabled, $newly_disabled ) ) );
 	}

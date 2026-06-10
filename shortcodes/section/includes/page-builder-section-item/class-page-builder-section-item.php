@@ -1,5 +1,9 @@
 <?php
 
+// Shared legacy-background → background-pro migration helpers (used here to
+// pre-fill the unified Background control when editing pre-existing sections).
+require_once dirname( __DIR__ ) . '/migration.php';
+
 class Page_Builder_Section_Item extends Page_Builder_Item
 {
 	public function get_type()
@@ -74,6 +78,18 @@ class Page_Builder_Section_Item extends Page_Builder_Item
 				 * Add the values to $option['value']
 				 */
 				$options = fw_extract_only_options($options);
+
+				// Migrate atts saved under older option shapes → the current
+				// shapes so the modal can render them. Reusable runner
+				// (sc_migrate_atts) + small per-option migrators (migration.php):
+				//   - background : merged legacy color/image/video → background-pro
+				//   - min_height : legacy scalar (e.g. "40vh") → multi-picker shape
+				if ( function_exists( 'sc_migrate_atts' ) ) {
+					$attributes['atts'] = sc_migrate_atts( $attributes['atts'], array(
+						'background' => array( 'cb' => 'section_migrate_legacy_background', 'arg' => 'atts', 'when' => 'missing' ),
+						'min_height' => 'section_migrate_min_height',
+					) );
+				}
 
 				foreach ($attributes['atts'] as $option_id => $option_value) {
 					if (isset($options[$option_id])) {

@@ -1,0 +1,5 @@
+/* Bleed Section — editor canvas.
+ * The split (content side + full-bleed image) is a frontend-only layout; in the
+ * builder the inner rows/columns render normally inside the section box, so no
+ * special canvas styling is required here. Kept as a file so the section-like
+ * base class's static enqueue has something to load. */
