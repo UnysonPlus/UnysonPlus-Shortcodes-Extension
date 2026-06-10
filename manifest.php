@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.6.5';
+$manifest['version']     = '1.6.12';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,39 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.6.7 - Image-Content shortcode upgrades. The Layout control is now a visual
+ *          image-picker and gains a new "Image Top" stacked layout (image full
+ *          width above the content) alongside Left / Right. The image-vs-content
+ *          split is now a drag Slider on the familiar 1-12 column scale (the handle
+ *          is capped at 11 via ion.rangeSlider from_max so the content always keeps
+ *          at least one column; shown as "N / 12") instead of the 11-swatch picker;
+ *          the view still reads legacy "4-8" saves so existing blocks keep working. The rendered image now carries
+ *          loading="lazy" + decoding="async" (parity with media_image) and a
+ *          noopener rel on new-tab links, and the columns gained a base col-12 so
+ *          they stack cleanly on mobile. Added Layout-tab controls: Content
+ *          Alignment (a visual L/C/R image-picker via sc_alignment_field), Content
+ *          Max Width (a readability measure in ch/px/etc., auto-centred when the
+ *          content is centred), and a "Stack Below" breakpoint (sm/md/lg) making the
+ *          side-by-side collapse point configurable (was hardcoded to md). Vertical
+ *          Alignment also became a visual image-picker (top/center/bottom swatches).
+ *          The Gap option now draws from the Gap Scale presets (via
+ *          sc_get_gap_select_choices, with a "Use Default Gap" inherit option) so it
+ *          shares one vocabulary with section/column and respects a customized scale
+ *          — rendered as g-{slug} side by side and gy-{slug} on the stacked row
+ *          (legacy g-4 saves still read). Added an Image Aspect Ratio (1:1 / 4:3 /
+ *          3:2 / 16:9 / 3:4) for predictable cropping, and Stacked Image Max Width +
+ *          Alignment so the Image-Top layout is not forced full-bleed. Added a
+ *          Content Background + per-side Content Padding (the spacing composite in
+ *          padding mode — all/top/right/bottom/left + responsive, from the Spacing
+ *          Scale presets) so the text side can read as a tinted "card" panel, and the
+ *          Layout tab is now organized into three border-less groups (arrange /
+ *          align / responsive). Removed the per-instance Image Alt Text field — alt
+ *          now comes solely from the Media Library (matching media_image; one source
+ *          of truth), with the view's _wp_attachment_image_alt fallback unchanged.
+ *          Note: a leaf shortcode has no editor-load
+ *          JS hook to migrate a value-shape change, so the layout intentionally
+ *          stayed an image-picker (a multi-picker would have broken existing items).
+ *
  * 1.5.91 - New "Header/Footer Elements" builder tab with five navigation/site-chrome
  *          shortcodes: Navigation Menu ([nav_menu]), Site Logo ([site_logo]),
  *          Search ([site_search]), Social Icons ([social_icons]) and Menu Toggle
