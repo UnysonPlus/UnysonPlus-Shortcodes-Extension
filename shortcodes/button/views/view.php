@@ -6,6 +6,87 @@
  * @var array $atts
  */
 
+if ( ! function_exists( 'sc_button_kses_label' ) ) {
+    /**
+     * Sanitize a button label that may contain an inline <svg> icon (or basic
+     * inline formatting) without flattening it to escaped source text.
+     *
+     * Extends post-context kses with the SVG element + presentation attributes
+     * needed for a typical pasted icon (Feather / Lucide / Heroicons style),
+     * so the icon renders on the front end while scripts / event handlers /
+     * disallowed tags are still stripped. A label with no markup is returned
+     * effectively unchanged.
+     *
+     * @param string $label Raw label string from the option value.
+     * @return string Sanitized HTML safe to echo.
+     */
+    function sc_button_kses_label( $label ) {
+        $label = (string) $label;
+
+        // Fast path: no tags → behave exactly like the old esc_html().
+        if ( strpos( $label, '<' ) === false ) {
+            return esc_html( $label );
+        }
+
+        $svg_global = array(
+            'class'             => true,
+            'id'                => true,
+            'style'             => true,
+            'aria-hidden'       => true,
+            'aria-label'        => true,
+            'role'              => true,
+            'focusable'         => true,
+            'fill'              => true,
+            'stroke'            => true,
+            'stroke-width'      => true,
+            'stroke-linecap'    => true,
+            'stroke-linejoin'   => true,
+            'stroke-dasharray'  => true,
+            'stroke-dashoffset' => true,
+            'stroke-opacity'    => true,
+            'fill-opacity'      => true,
+            'fill-rule'         => true,
+            'clip-rule'         => true,
+            'opacity'           => true,
+            'transform'         => true,
+        );
+
+        $allowed = array(
+            'svg'      => array_merge( $svg_global, array(
+                'xmlns'               => true,
+                'xmlns:xlink'         => true,
+                'viewbox'             => true,
+                'width'               => true,
+                'height'              => true,
+                'preserveaspectratio' => true,
+                'version'             => true,
+            ) ),
+            'g'        => $svg_global,
+            'path'     => array_merge( $svg_global, array( 'd' => true ) ),
+            'circle'   => array_merge( $svg_global, array( 'cx' => true, 'cy' => true, 'r' => true ) ),
+            'ellipse'  => array_merge( $svg_global, array( 'cx' => true, 'cy' => true, 'rx' => true, 'ry' => true ) ),
+            'rect'     => array_merge( $svg_global, array( 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true ) ),
+            'line'     => array_merge( $svg_global, array( 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true ) ),
+            'polyline' => array_merge( $svg_global, array( 'points' => true ) ),
+            'polygon'  => array_merge( $svg_global, array( 'points' => true ) ),
+            'use'      => array_merge( $svg_global, array( 'href' => true, 'xlink:href' => true, 'x' => true, 'y' => true, 'width' => true, 'height' => true ) ),
+            'defs'     => $svg_global,
+            'title'    => $svg_global,
+            'desc'     => $svg_global,
+            // Basic inline formatting people occasionally put in a label.
+            'span'     => array( 'class' => true, 'style' => true ),
+            'i'        => array( 'class' => true, 'style' => true ),
+            'em'       => array( 'class' => true, 'style' => true ),
+            'strong'   => array( 'class' => true, 'style' => true ),
+            'b'        => array( 'class' => true, 'style' => true ),
+            'small'    => array( 'class' => true, 'style' => true ),
+            'br'       => array(),
+        );
+
+        return wp_kses( $label, $allowed );
+    }
+}
+
 // Enqueue the icon-v2 pack CSS on the front end when an icon is used. Without
 // this only globally-loaded packs (Font Awesome, Dashicons) render; Linecons /
 // Entypo / Linearicons / Typicons / Unycon have no global handle, so their
@@ -102,11 +183,21 @@ if (!empty($atts['icon']) && is_array($atts['icon'])) {
 
 $icon_position = !empty($atts['icon_position']) ? $atts['icon_position'] : 'before';
 
+// The label may contain inline markup — most commonly an inline <svg> icon
+// pasted as the label. esc_html() would render that as visible source text on
+// the front end (the page-builder canvas shows it fine because the JS
+// title_template doesn't escape). Run it through wp_kses with an allowed-tags
+// set that permits inline SVG + basic inline formatting so the icon renders,
+// while still stripping scripts / event handlers. Plain-text labels pass
+// through unchanged.
+$label_raw    = isset($atts['label']) ? (string) $atts['label'] : '';
+$label_output = sc_button_kses_label($label_raw);
+
 $button_content = '';
 if ($icon_html && $icon_position === 'before') {
     $button_content .= $icon_html . ' ';
 }
-$button_content .= esc_html($atts['label']);
+$button_content .= $label_output;
 if ($icon_html && $icon_position === 'after') {
     $button_content .= ' ' . $icon_html;
 }
