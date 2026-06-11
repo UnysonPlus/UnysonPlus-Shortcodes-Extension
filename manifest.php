@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.6.12';
+$manifest['version']     = '1.6.13';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,14 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.6.13 - Call-to-Action: new "Content / Button Split" using the column-split
+ *          option type — drag a divider to set how the row is shared between the
+ *          content and the button (shown as a lowest-form fraction). The layout moved
+ *          from a CSS table to flexbox (the split drives each side's flex-grow), and
+ *          the content + button now stack vertically on narrow screens (≤ 575.98px).
+ *          Existing CTAs with no saved split default to a 3/4 + 1/4 share. Second
+ *          adopter of the reusable column-split control (after Image Content).
+ *
  * 1.6.7 - Image-Content shortcode upgrades. The Layout control is now a visual
  *          image-picker and gains a new "Image Top" stacked layout (image full
  *          width above the content) alongside Left / Right. The image-vs-content

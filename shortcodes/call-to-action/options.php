@@ -64,6 +64,33 @@ $options = [
         ],
     ],
 
+    'tab_layout' => [
+        'title'   => __( 'Layout', 'fw' ),
+        'type'    => 'tab',
+        'options' => [
+            'group_layout' => [
+                'type'    => 'group',
+                'options' => [
+                    'column_split' => [
+                        'type'          => 'column-split',
+                        'label'         => __( 'Content / Button Split', 'fw' ),
+                        'desc'          => __( 'Drag the divider to set how the row is shared between the content and the button.', 'fw' ),
+                        'help'          => __( 'The content takes the left share, the button the right (shown as a fraction in lowest form). On narrow screens the two stack vertically.', 'fw' ),
+                        'value'         => 9,
+                        'denominator'   => 12,
+                        'min'           => 1,
+                        'max'           => 11,
+                        'show_fraction' => true,
+                        'panes'         => [
+                            [ 'label' => __( 'Content', 'fw' ), 'icon' => 'dashicons-text' ],
+                            [ 'label' => __( 'Button', 'fw' ),  'icon' => 'dashicons-button' ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'tab_styling' => [
         'title'   => __( 'Styling', 'fw' ),
         'type'    => 'tab',
