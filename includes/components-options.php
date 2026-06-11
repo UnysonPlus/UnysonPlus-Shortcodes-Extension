@@ -55,6 +55,8 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 				'desc'        => __( 'Swatches used by the Text Color / Background Color dropdowns in every shortcode\'s Styling tab, and by the Button / Border / Table preset color fields. Each becomes <code>.text-{slug}</code> / <code>.bg-{slug}</code> and a <code>--color-{slug}</code> CSS variable.', 'fw' ),
 				'sortable'    => true,
 				'box-duplicate' => true,
+				'attr'        => array( 'class' => 'fw-preset-2col' ),
+				'width'       => 'full',
 				'add-button-text' => __( 'Add another colour', 'fw' ),
 				'box-options' => array(
 					'name'  => array( 'label' => __( 'Color', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false ),
@@ -73,6 +75,8 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 				'desc'            => __( 'Font sizes offered by the Font Size Preset dropdown in shortcode Styling tabs. Each becomes a <code>.font-{slug}</code> (or your literal Class) utility.', 'fw' ),
 				'sortable'        => true,
 				'box-duplicate'   => true,
+				'attr'            => array( 'class' => 'fw-preset-2col' ),
+				'width'           => 'full',
 				'size'            => 'medium',
 				'add-button-text' => __( 'Add another preset', 'fw' ),
 				'box-options'     => array(
@@ -93,6 +97,8 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 				'desc'            => __( 'Values behind Bootstrap-style margin/padding classes. Each entry produces a complete set of utilities (<code>.m-NAME</code>, <code>.p-NAME</code>, <code>.mt-NAME</code>, <code>.mx-NAME</code>, etc.).', 'fw' ),
 				'sortable'        => true,
 				'box-duplicate'   => true,
+				'attr'            => array( 'class' => 'fw-preset-2col' ),
+				'width'           => 'full',
 				'add-button-text' => __( 'Add spacer', 'fw' ),
 				'box-options'     => array(
 					'name' => array( 'label' => __( 'Name', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false, 'desc' => __( 'Becomes the slot suffix (e.g. "3" → <code>.m-3</code> / <code>.p-3</code>). Avoid Bootstrap-reserved names: <code>sm md lg xl xxl n1–n5 auto</code>.', 'fw' ) ),
@@ -111,6 +117,8 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 						'desc'            => __( 'Values available in every column-gap dropdown (Default Gap below and the per-section Gap field on the Section shortcode).', 'fw' ),
 						'sortable'        => true,
 						'box-duplicate'   => true,
+						'attr'            => array( 'class' => 'fw-preset-2col' ),
+						'width'           => 'full',
 						'add-button-text' => __( 'Add gap', 'fw' ),
 						'box-options'     => array(
 							'name' => array( 'label' => __( 'Name', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false ),
