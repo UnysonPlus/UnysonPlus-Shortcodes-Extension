@@ -8,7 +8,7 @@ $cfg['page_builder'] = array(
 	'title'       => __( 'Call To Action', 'fw' ),
 	'description' => __( 'Add a Call to Action', 'fw' ),
 	'tab'         => __( 'Content Elements', 'fw' ),
-
+	'popup_size' => 'large',
 	'title_template' => '
 		{{ if ( o ) { }}
 			<div style="margin-top:.5rem; display:flex; align-items:center; gap:12px;">

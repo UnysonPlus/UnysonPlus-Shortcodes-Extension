@@ -29,15 +29,22 @@ $message_class     = trim( 'fw-action-message ' . implode( ' ', $message_extras 
 $title_style_attr  = $title_style   !== '' ? ' style="' . esc_attr( $title_style )   . '"' : '';
 $message_style_attr = $message_style !== '' ? ' style="' . esc_attr( $message_style ) . '"' : '';
 $needs_title_attrs = $title_class !== '' || $title_style !== '';
+
+// Content / Button split (column-split stores the content's column span of 12;
+// the button fills the rest). Drives the flex-grow of each side.
+$split        = isset( $atts['column_split'] ) ? (int) $atts['column_split'] : 9;
+$split        = max( 1, min( 11, $split ) );
+$content_grow = $split;
+$btn_grow     = 12 - $split;
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
-	<div class="fw-action-content">
+	<div class="fw-action-content" style="flex-grow:<?php echo esc_attr( $content_grow ); ?>">
 		<?php if (!empty($atts['title'])): ?>
 		<h2<?php echo $title_class !== '' ? ' class="' . esc_attr( $title_class ) . '"' : ''; ?><?php echo $title_style_attr; ?>><?php echo esc_html( $atts['title'] ); ?></h2>
 		<?php endif; ?>
 		<p class="<?php echo esc_attr( $message_class ); ?>"<?php echo $message_style_attr; ?>><?php echo wp_kses_post( $atts['message'] ); ?></p>
 	</div>
-	<div class="fw-action-btn">
+	<div class="fw-action-btn" style="flex-grow:<?php echo esc_attr( $btn_grow ); ?>">
 		<a href="<?php echo esc_url($atts['button_link']); ?>" class="btn btn-1" target="<?php echo esc_attr($atts['button_target']); ?>">
 			<span><?php echo esc_html( $atts['button_label'] ); ?></span>
 		</a>

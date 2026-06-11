@@ -19,7 +19,7 @@ trimmed message, and the button label on the canvas.
 
 ## Options schema (atts)
 
-Source of truth: `options.php`. Three tabs + Animations + Advanced.
+Source of truth: `options.php`. Content / Layout / Styling tabs + Animations + Advanced.
 
 ### Tab: Content
 
@@ -32,6 +32,14 @@ Wrapped in `group_content` (flattens).
 | `button_label` | `text` | `Click` | Button text |
 | `button_link` | `text` | `#` | Button href |
 | `button_target` | `switch` (`_blank` / `_self`) | `_self` | New window or same |
+
+### Tab: Layout
+
+Wrapped in `group_layout` (flattens).
+
+| Att | Type | Default | Description |
+|-----|------|---------|-------------|
+| `column_split` | **`column-split`** (Content \| Button) | `9` | Integer = the **content's** column span of 12 (button fills `12-N`); shown as a lowest-form fraction. Drives each side's `flex-grow`. Second adopter of the reusable `column-split` option type (after `image_content`) |
 
 ### Tab: Styling
 
@@ -51,10 +59,12 @@ Standard.
 
 ## Rendering
 
-`views/view.php` outputs a wrapper containing the title, message HTML
-(rendered with `wpautop`/shortcodes), and a button anchor. Layout is
-typically two-column flex (message left, button right) — check the view
-for canonical structure.
+`views/view.php` outputs a flex wrapper (`.fw-call-to-action`) with `.fw-action-content`
+(title + message HTML, rendered with `wpautop`/shortcodes) on the left and `.fw-action-btn`
+(the button anchor) on the right. Each side's **`flex-grow` is set inline from `column_split`**
+(content = `N`, button = `12-N`), so the divider ratio is the layout. Below `575.98px` the two
+**stack** (the CSS resets `flex` to `0 0 auto`). The layout CSS lives in `static/css/styles.css`
+(+ its **`.min`** sibling — served via `fw_min_uri()`, so edit both).
 
 ## Pitfalls
 
