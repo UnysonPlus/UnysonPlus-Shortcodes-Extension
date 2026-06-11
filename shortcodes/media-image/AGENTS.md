@@ -50,6 +50,24 @@ Wrapped in `group_colors` + `group_spacings` (both flatten).
 
 Standard.
 
+### Verified `atts` (real export)
+
+From `image-test-section-ca2a301e.json` (2 images, plugin 2.10.26). Confirms the tables above
+(no drift). Shared `spacing`/`animation` blocks + common keys per the page-builder playbook §3.
+Pinned shapes:
+
+- **`image`** = `{"attachment_id":"442","url":"//host/wp-content/uploads/2026/06/educator-3-….jpeg"}`
+  — the `url` is protocol-relative. This is the reference to a **Media Library item**, so the
+  conversion media phase closes here: import the source image via the Site Converter, then point
+  `image` at its new `attachment_id` + `url`.
+- **`width`/`height`** = `{"value":"299","unit":"px"}` (empty `value` ⇒ auto).
+- **`bg_color`** = compact picker — `{"predefined":"bg-secondary","custom":""}` (a `bg-{slug}` preset)
+  **or** `{"predefined":"","custom":"#cdbaba"}` (hex); mutually exclusive.
+- **`link`** = URL or `""`; **`target`** = `_blank|_self`.
+- Re-confirmed the §3 generals: `custom_css` uses the `selector` token
+  (`"selector {\r\n\tmax-width: 800px;\r\n}"`), `spacing.advanced` is a `{lg:{margin,padding},md:{…}}`
+  responsive-class map when set, `responsive_hide` = `{"hide-sm":true}`.
+
 ## Rendering
 
 `views/view.php` outputs `<img>` (or `<a><img></a>` when `link` is set)

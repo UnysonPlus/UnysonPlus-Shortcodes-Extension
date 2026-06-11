@@ -33,10 +33,10 @@ Wrapped in a `group_content` group (flattens on save).
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
-| `label` | `text` | `Submit` | Button label text |
+| `label` | `text` | `Submit` | Button label — **accepts inline HTML** (e.g. a trailing `<svg>`) |
 | `link` | `text` | `#` | Target URL (any href) |
 | `target` | `switch` | `_self` | `_blank` (new window) or `_self` (same window) |
-| `icon` | `icon-v2` | — | Icon class via the v2 icon picker (modal preview) |
+| `icon` | `icon-v2` | `{"type":"none"}` | Icon — an **object** (`{type:"none"}` / `{type:"icon-font",…}` / `{type:"custom-upload","attachment-id","url"}`), **never a plain string**. See verified snippet below |
 | `icon_position` | `select` | `after` | `before` or `after` — relative to the label |
 
 ### Tab: Styling
@@ -64,34 +64,29 @@ field). Both flatten on save.
 `sc_get_advanced_tab()` wrapped in `advanced_settings` group. Flattens to
 top-level `$atts` (`css_id`, `css_class`, `responsive_hide`, etc.).
 
-### Generator note
+### Verified `atts` (real export)
 
-For AI-generated `_fw_template_export` payloads, an `atts` object for a
-button should produce flat top-level keys for everything except the
-`width` multi-picker (preserves its nested shape) and the
-`icon` field (single string class). Example shape:
+From `button-test-section-6f2a34c9.json` (5 buttons, plugin 2.10.26). The shared
+`animation`/`spacing` blocks + common keys live in the page-builder playbook
+(`../../extensions/page-builder/AGENTS.md` §3). Button-specific serialized shapes:
+
+- **`label` accepts inline HTML** — e.g. text followed by an inline `<svg>…</svg>` (button[3]).
+- **`icon` is an OBJECT (icon-v2), never a plain string.** Three forms seen:
+  - none — `{"type":"none"}`
+  - font icon — `{"type":"icon-font","icon-class":"dashicons dashicons-arrow-right","icon-class-without-root":"dashicons-arrow-right","pack-name":"dashicons","pack-css-uri":"…/dashicons.min.css"}`
+  - uploaded image — `{"type":"custom-upload","attachment-id":"453","url":"https://…/img.jpeg"}`
+- **`style`** = a button **color-preset class** — `btn-{slug}` / `btn-{slug}-outline` / `btn-gradient` (seen: `btn-success`, `btn-gradient`, `btn-warning`, `btn-warning-outline`). **`size`** = `btn-{xs|sm|md|lg|xl}`.
+- **`width`** = `{"mode":"w-100"|"custom"|"","custom":{"custom_width":{"value":"80","unit":"%"}}}` (custom_width only meaningful when `mode:"custom"`).
+- **`target`** = `_blank|_self` · **`icon_position`** = `before|after` · **`alignment`** = `left|center|right|""`.
+- **`state`** = `active|disabled` (`""` = normal). **`hover_animation`** = a `.btnfx-*` class: built-in (`btnfx-glow`/`btnfx-meet`/`btnfx-sweep`) or custom `btnfx-c-{slug}` (e.g. `btnfx-c-pulse-ring`).
+- **`spacing.advanced`** is a **breakpoint map when set** (general — every `spacing` field): `{"lg":{"margin":{"top":"mt-lg-7","right":"me-lg-8","bottom":"mb-lg-8","left":"ms-lg-5"},"padding":{…}},"md":{…}}` — responsive spacing utility classes; `[]` when unused.
+- **`custom_attrs`** populated = `[{"name":"aria-label","value":"test"}]`; **`responsive_hide`** populated = `{"hide-xs":true}` (both general — §3).
+
+Minimal generated `atts` (defaults safe to omit — the builder fills them from `default_values`):
 
 ```json
-{
-  "label": "Get started",
-  "link": "https://example.com/signup",
-  "target": "_blank",
-  "icon": "fas fa-arrow-right",
-  "icon_position": "after",
-  "style": "primary",
-  "size": "lg",
-  "width": { "mode": "", "custom": { "custom_width": { "value": "", "unit": "px" } } },
-  "alignment": "center",
-  "state": "",
-  "hover_animation": "btnfx-shine",
-  "spacing": { "all": "", "top": "", "right": "", "bottom": "", "left": "" },
-  "css_id": "",
-  "css_class": ""
-}
+{"label":"Get started","link":"https://example.com/signup","target":"_blank","icon":{"type":"none"},"icon_position":"after","style":"btn-primary","size":"btn-lg","width":{"mode":"","custom":{"custom_width":{"value":"","unit":"px"}}},"alignment":"center","state":"","hover_animation":"","spacing":{"margin":{"all":"","top":"","right":"","bottom":"","left":""},"padding":{"all":"","top":"","right":"","bottom":"","left":""},"advanced":[]},"unique_id":"<32hex>","css_id":"","css_class":"","custom_css":"","responsive_hide":[],"custom_attrs":[]}
 ```
-
-Defaults are safe omissions — the page-builder fills them in from
-`default_values` on load.
 
 ## Rendering
 
