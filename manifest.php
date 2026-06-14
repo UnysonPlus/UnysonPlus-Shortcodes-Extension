@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.6.16';
+$manifest['version']     = '1.6.53';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,98 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.6.41 - Testimonials adds four more designs to the picker (11 total), each distinct from the
+ *          existing set: Spotlight Coverflow (center-focused slider — the active card is full
+ *          size while neighbours scale down and dim), Bento Featured Grid (asymmetric tiles with
+ *          one large featured testimonial + smaller cells), Zigzag Alternating (full-width rows
+ *          whose photo alternates left/right, with a First-Photo-Side option) and Pull-Quote
+ *          Editorial (one oversized, type-led statement crossfading between items). Spotlight and
+ *          Pull-Quote reuse the shared Splide mount (focus:center+padding, and type:fade
+ *          respectively) so they ship no extra JS; Bento and Zigzag are CSS-only. Added via the
+ *          registry, so existing designs and saved instances are unaffected.
+ *
+ * 1.6.39 - Testimonials options reorganised around the Design picker to cut clutter. The Design
+ *          selector is now a multi-picker (driven by the SVG image-picker): choosing a design
+ *          reveals ONLY that design's options, so the old always-visible Layout + Carousel tabs
+ *          are folded into the picker (Classic keeps Slider/Grid/Single + carousel controls;
+ *          Split/Thumbnail-Nav show the relevant carousel subset). New per-design controls:
+ *          Marquee scroll speed + direction, and Columns for the Masonry and Speech-Bubble walls
+ *          (these no longer borrow the Classic grid value). Tabs collapse 7→5 (Content, Design,
+ *          Style, Animations, Advanced) — the near-identical "Style"/"Styling" tabs are merged,
+ *          and cross-design appearance (container, text align, avatar shape/size, rating, colors,
+ *          spacing) lives on Style. Implemented as a new option id (design_settings) so legacy
+ *          saves never feed a scalar into the multi-picker (no blank-modal, no migration); the
+ *          frontend reads moved options new-path-then-legacy-flat-path, so existing testimonials
+ *          render unchanged. Note: an existing instance shows the moved options at their defaults
+ *          in the builder until it is re-opened and re-saved (the rendered page is unaffected).
+ *
+ * 1.6.38 - Testimonials quote field now allows light inline formatting. The Quote stays a
+ *          plain textarea, but is rendered through a wp_kses subset (<strong>, <em>, <a>,
+ *          <br>; newlines become <br>) instead of esc_html, so authors can bold/italicise,
+ *          link or line-break a quote without a full editor. Block-level and styling markup is
+ *          stripped on output to protect each design's typography. Applies to every design
+ *          (the shared sc_testimonial_quote_html helper + sc_render_card). Note: a pre-existing
+ *          quote that contained a literal "<" now has that fragment sanitised rather than shown
+ *          verbatim.
+ *
+ * 1.6.37 - Testimonials shortcode gains a registry-driven, swappable Design system. A new
+ *          "Design" SVG image-picker on the Layout tab lets you choose the whole layout/skin:
+ *          Classic (the original Slider/Grid/Single), Marquee Wall (CSS-only infinite scroll),
+ *          Masonry Wall, Image Split Slider, Speech Bubble, Stacked List, and Thumbnail Nav
+ *          Slider. Each design is a self-contained template under views/designs/ with its own
+ *          stylesheet (and JS where needed), and a single source of truth — views/designs/
+ *          registry.php — drives the picker choices, the view dispatcher, and the per-instance
+ *          asset enqueue. Only the chosen design's CSS/JS loads (via the
+ *          fw_ext_shortcodes_enqueue_static:testimonials action), so pages stay lean. Adding a
+ *          new design is one registry entry + a template + a CSS file + an SVG thumbnail; no
+ *          other file changes. Fully back-compatible: legacy saved testimonials have no `design`
+ *          att, so they resolve to Classic and render byte-identical with no migration.
+ *
+ * 1.6.33 - Progress shortcode gains two new styles beyond the horizontal bar: a circular
+ *          ring and a semi-circle gauge (a "Progress Style" multi-picker on the Bars tab,
+ *          each revealing its own diameter/width, stroke thickness and per-row column count).
+ *          Circles and gauges are inline SVG and animate their stroke-dashoffset into view on
+ *          scroll, mirroring the bar's fill animation. Also added: an optional per-bar icon
+ *          (icon-v2), a Gradient second colour that fills bars and rings with a linear gradient
+ *          (presets resolve to hex so they work on the SVG strokes too), a count-up animation of
+ *          the % number, a value-position toggle (beside the label or inside the bar), an
+ *          item-spacing control, and a prefers-reduced-motion guard that jumps to the final
+ *          state. Fully back-compatible — legacy saved bars default to the horizontal style and
+ *          prior behaviour, so no editor migration is required.
+ *
+ * 1.6.32 - New "Progress Bars" shortcode (tag `progress`). Labelled skill / progress bars
+ *          that fill to their percentage when scrolled into view (IntersectionObserver, no
+ *          dependencies). Bars are configured fields — label, a 0–100 percent slider and an
+ *          optional per-bar colour — over section-level Style controls: bar height, rounded
+ *          ends, striped texture, show/hide the % value, and an animate-on-scroll toggle
+ *          (off = bars render at their final width immediately). Fill / track / label colours
+ *          are preset-backed (theme Color Presets) or custom. Degrades gracefully without JS.
+ *
+ * 1.6.31 - New "Carousel / Slider" shortcode (tag `carousel`), built on Splide (vendored,
+ *          no jQuery). Slides are configured fields — image, heading, text and a button —
+ *          with an Image Mode per slide: Background (full-bleed image with the text overlaid,
+ *          for hero sliders) or Inline (image above the text). Background mode renders a real
+ *          absolutely-positioned <img> (not an inline CSS background) so the Pages importer
+ *          can re-point it to an imported attachment and it lazy-loads. Layout controls cover
+ *          slides-per-view per breakpoint (desktop / tablet / mobile), gap and a fixed slide
+ *          height; Behavior covers autoplay + interval, transition speed, loop, drag/swipe,
+ *          pause-on-hover and a Slide/Fade transition; Style adds a legibility overlay and
+ *          preset-backed heading/text colours. All runtime options serialize to the element's
+ *          data-splide JSON (Splide reads it natively on mount). splide-core supplies the
+ *          structural CSS; the shortcode skins the arrows/dots. Degrades to the first slide
+ *          with no JS.
+ *
+ * 1.6.23 - New "Countdown Timer" shortcode (tag `countdown`). A live count down to a
+ *          target date & time — days / hours / minutes / seconds, ticking once a second
+ *          in the browser. The target is a datetime-picker parsed in the site timezone
+ *          to an absolute UTC timestamp (data-target ms), so the deadline is the same for
+ *          every visitor. Each unit can be toggled and re-labelled; at zero it can show a
+ *          message, keep zeros, or hide. Numbers and labels each carry their own
+ *          Typography V2 (Script + Color sub-controls disabled) plus a preset-backed
+ *          colour, and the unit cards take an optional Box Color — the same option shapes
+ *          as the Animated Counter. Boxed (cards) or Plain layout, with image-picker
+ *          alignment. Degrades to `--` placeholders with no JS.
+ *
  * 1.6.13 - Call-to-Action: new "Content / Button Split" using the column-split
  *          option type — drag a divider to set how the row is shared between the
  *          content and the button (shown as a lowest-form fraction). The layout moved

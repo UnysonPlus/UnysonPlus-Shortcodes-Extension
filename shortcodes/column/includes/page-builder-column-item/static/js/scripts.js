@@ -100,16 +100,35 @@
 			render: function() {
 				this.defaultRender(this.initOptions.templateData);
 
-				this.$('.width-changer').append(this.widthChangerView.$el);
+				// Scope to THIS column's OWN width-changer slot. `this.$('.width-changer')`
+				// = this.$el.find('.width-changer'), which — now that a column can host
+				// other columns — also matches every NESTED column's width-changer. The
+				// jQuery .append() then clones the parent's width-changer into each child
+				// (the "extra width-changer appears in the child" bug). The panel is a
+				// direct child of .pb-item-type-column and never contains nested columns
+				// (those live in the sibling .builder-items), so finding within the panel
+				// targets only this column's own slot.
+				this.$el
+					.children('.pb-item-type-column')
+					.children('.panel')
+					.find('.width-changer')
+					.first()
+					.append(this.widthChangerView.$el);
 				this.widthChangerView.delegateEvents();
 
 				this.$el[this.model.get('fw-collapse') ? 'addClass' : 'removeClass']('pb-item-column-collapsed');
 
 				/**
-				 * Other scripts can append/prepend other control $elements
+				 * Other scripts can append/prepend other control $elements.
+				 * Scope to this column's own panel controls (direct children) so a
+				 * nested column's controls aren't matched by `.controls:first`.
 				 */
 				fwEvents.trigger('fw:page-builder:shortcode:column:controls', {
-					$controls: this.$('.controls:first'),
+					$controls: this.$el
+						.children('.pb-item-type-column')
+						.children('.panel')
+						.find('.controls')
+						.first(),
 					model: this.model,
 					builder: builder
 				});
@@ -176,7 +195,10 @@
 				// so Middle / Bottom / Space Between have room to show when the column is
 				// taller than its content (equal-height row). "Top / Default" applies no
 				// flex, so elements stay at the top and the drop area fills the column.
-				var $items     = this.$('.builder-items').first();
+				var $items     = this.$el
+					.children('.pb-item-type-column')
+					.children('.builder-items')
+					.first();
 				var justifyMap = { start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between' };
 				var alignMap   = { start: 'flex-start', center: 'center', end: 'flex-end' };
 				var cv = justifyMap[ atts.content_v ];
@@ -344,14 +366,48 @@
 				this.defaultInitialize();
 			},
 			allowIncomingType: function(type) {
+				var allow = _.indexOf(this.restrictedTypes, type) === -1;
+
+				// Never let a section-like item land inside a column. Each section's
+				// own allowDestinationType already blocks this, but mirroring it here
+				// keeps the drag-highlight correct even for a section-like type with a
+				// permissive allowDestinationType.
+				if (
+					allow
+					&& window.fwSectionLikeTypes
+					&& typeof window.fwSectionLikeTypes.isSectionLike === 'function'
+					&& window.fwSectionLikeTypes.isSectionLike(type)
+				) {
+					allow = false;
+				}
+
+				// One-level nesting cap. A column MAY host columns, but a column that
+				// is ITSELF already inside a column may not accept further columns.
+				// The owning item of this column's sibling collection is its parent
+				// (Backbone relational `collectionKey: '_item'`).
+				if (allow && type === 'column') {
+					var parent = this.collection && this.collection._item;
+					if (parent && parent.get && parent.get('type') === 'column') {
+						allow = false;
+					}
+				}
+
 				var data = {
-					allow: _.indexOf(this.restrictedTypes, type) === -1,
+					allow: allow,
 					type: type,
 					model: this
 				};
 
 				// in this event you can change data.allow by reference
 				fwEvents.trigger('fw:builder:page-builder:column:filter:allow-incomming-type', data);
+
+				if (window.fwNestedColDebug !== false) {
+					try {
+						var pt = (this.collection && this.collection._item && this.collection._item.get)
+							? this.collection._item.get('type') : 'root';
+						console.debug('[nested-col][backend] column.allowIncomingType("' + type + '") parent=' + pt + ' -> ' + data.allow);
+					} catch (e) {}
+				}
 
 				return data.allow;
 			}

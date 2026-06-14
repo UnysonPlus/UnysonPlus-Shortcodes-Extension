@@ -435,6 +435,20 @@ class FW_Extension_Shortcodes extends FW_Extension
 		foreach ($this->shortcodes as $tag => $instance) {
 			add_shortcode($tag, array($instance, 'render'));
 		}
+
+		// Nested-column support. WordPress' shortcode parser is NON-recursive for
+		// the same tag — [column]…[column]…[/column]…[/column] mis-pairs (the outer
+		// open binds to the FIRST inner close), truncating the content and leaking
+		// the trailing [/column][/row] as literal text. So the page-builder
+		// notation generator emits DISTINCT alias tags for a synthesized inner row
+		// and its nested columns; they render through the very same row / column
+		// instances (FW_Shortcode::render keys off $this, not the passed $tag).
+		if ( isset( $this->shortcodes['row'] ) ) {
+			add_shortcode( 'fw_inner_row', array( $this->shortcodes['row'], 'render' ) );
+		}
+		if ( isset( $this->shortcodes['column'] ) ) {
+			add_shortcode( 'fw_inner_column', array( $this->shortcodes['column'], 'render' ) );
+		}
 	}
 
 	/**
@@ -672,6 +686,22 @@ class FW_Extension_Shortcodes extends FW_Extension
 				($icon = $this->_locate_shortcode_icon($shortcode))
 			) {
 				$item_data['icon'] = $icon;
+			}
+
+			/**
+			 * Also expose the icon as a plain file URL. The classic-editor
+			 * "Unyson Shortcodes" popup/component-bar needs a real <img src="…">:
+			 * the inline-SVG `icon` gets its child nodes stripped in the modal and
+			 * turns into a broken blob: image once TinyMCE pulls it into the
+			 * editable body. A normal URL renders correctly in both places. The
+			 * Page Builder ignores this field (it uses `icon`).
+			 */
+			if ( ! isset( $item_data['image'] ) ) {
+				if ( $icon_uri = $shortcode->locate_URI( '/static/img/page_builder.svg' ) ) {
+					$item_data['image'] = $icon_uri;
+				} elseif ( $icon_uri = $shortcode->locate_URI( '/static/img/page_builder.png' ) ) {
+					$item_data['image'] = $icon_uri;
+				}
 			}
 
 			// if the shortcode has options we store them and then they are passed to the modal

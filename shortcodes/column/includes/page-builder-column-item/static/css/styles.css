@@ -154,6 +154,28 @@ body.rtl .pb-item-type-column > .panel .controls {
 }
 
 
+/* Nested columns (a column inside a column). The flex-canvas retag tags the
+   parent column's `.builder-items` as `.fw-pb-flex-row` and the child column
+   wrapper as `.fw-pb-flex-col` automatically, so the side-by-side layout is
+   already handled.
+
+   The PARENT column keeps the base #f8f8f8 (the rule above). A nested column
+   gets a slightly DARKER gray so the nesting reads as a contained card — same
+   neutral hue as the parent, just a step down in lightness.
+
+   CRITICAL: scope the ANCESTOR to a real column with `:not(.custom-section)`.
+   Sections (and all section-like items) ALSO render with `.pb-item-type-column`
+   (plus `.custom-section`), so a plain `.pb-item-type-column .pb-item-type-column`
+   selector would match EVERY top-level column inside a section and wrongly tint
+   it — the "parent's bg overridden by the child" bug. Excluding `.custom-section`
+   restricts the match to a column whose ancestor is another *column*. */
+.pb-item-type-column:not(.custom-section) .pb-item-type-column {
+	background-color: #f0f0f0;
+}
+.pb-item-type-column:not(.custom-section) .pb-item-type-column > .builder-items {
+	min-height: 60px;
+}
+
 /* collapsed */
 
 .builder-item.pb-item-column-collapsed > .pb-item-type-column > .panel .column-item-collapse:before {

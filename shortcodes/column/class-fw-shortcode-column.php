@@ -2,7 +2,13 @@
 
 class FW_Shortcode_Column extends FW_Shortcode
 {
-	private $restricted_types = array( 'column' );
+	// Was array( 'column' ) — which blocked nested columns. A column may now host
+	// other columns (one level deep; the depth cap is enforced JS-side in the
+	// column item's allowIncomingType, and section-like types are still kept out
+	// there + by each section's own allowDestinationType). Leaving this empty lets
+	// the editor offer column-into-column drops; the items-corrector synthesizes
+	// the inner row at save time.
+	private $restricted_types = array();
 
 	/**
 	 * @internal
