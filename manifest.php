@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.6.53';
+$manifest['version']     = '1.6.57';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,22 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.6.54 - Posts shortcode reworked around visual, registry-driven design. Card Style is now an
+ *          extensible REGISTRY (views/parts/registry.php): adding a card design is one entry + a
+ *          card-<part>.php template + an SVG thumbnail. Four new card designs ship with it —
+ *          Gradient Overlay (Magazine: image-fill + gradient scrim + hover zoom), Numbered
+ *          Listicle (big rank number beside a horizontal card), Compact News List (small thumb +
+ *          dense rows) and Editorial Big-Title (oversized title leads) — for 11 card designs
+ *          total. The options are reorganised around image-picker multi-pickers that reveal only
+ *          the chosen value's controls: a Design (layout-mode) picker, a Card Style picker, and a
+ *          Pagination picker (the old "Layout & Positioning"/Navigation sprawl + always-visible
+ *          slider/carousel options are folded in), plus a Read-More picker whose Button choice
+ *          reveals color/size reusing the theme button presets (no duplicated Button tabs). Every
+ *          tab is wrapped in group containers. Implemented with NEW option ids so legacy scalar
+ *          saves never feed a multi-picker (no blank-modal, no migration); view.php normalises
+ *          moved options new-path-then-legacy-flat so existing Posts render unchanged (the builder
+ *          shows moved options at defaults until re-saved).
+ *
  * 1.6.41 - Testimonials adds four more designs to the picker (11 total), each distinct from the
  *          existing set: Spotlight Coverflow (center-focused slider — the active card is full
  *          size while neighbours scale down and dim), Bento Featured Grid (asymmetric tiles with

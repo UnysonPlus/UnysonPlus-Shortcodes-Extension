@@ -203,7 +203,24 @@
 				var alignMap   = { start: 'flex-start', center: 'center', end: 'flex-end' };
 				var cv = justifyMap[ atts.content_v ];
 				var ch = alignMap[ atts.content_h ];
-				if ( cv || ch ) {
+
+				// If this column hosts NESTED COLUMNS, its `.builder-items` is a grid
+				// ROW (flex-canvas tags it `.fw-pb-flex-row`: display:flex; flex-wrap),
+				// NOT a vertical content stack. Forcing `flex-direction:column` +
+				// justify-content here would fight that row layout — the nested
+				// columns, sized with `flex:0 0 width%`, then collapse on the main
+				// axis into a thin sliver. Content alignment is a LEAF-content concept,
+				// so skip the override (and clear any stale inline flex) when child
+				// columns are present and let flex-canvas govern the row.
+				var hasChildColumn = false;
+				var childItems = this.model.get('_items');
+				if ( childItems && childItems.each ) {
+					childItems.each(function ( child ) {
+						if ( child.get('type') === 'column' ) { hasChildColumn = true; }
+					});
+				}
+
+				if ( ( cv || ch ) && ! hasChildColumn ) {
 					$items.css({
 						'display': 'flex',
 						'flex-direction': 'column',
