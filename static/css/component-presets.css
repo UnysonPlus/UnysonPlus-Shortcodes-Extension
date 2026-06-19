@@ -1,41 +1,31 @@
-/* Component Presets page — native-WordPress polish (nav-tabs + postbox cards).
-   No app-like chrome; just core WP furniture so the page reads as an intentional
-   settings screen. The fields themselves are rendered by Unyson's option framework. */
+/* Component Presets page — native WordPress furniture only.
+   Tabs are core .nav-tab (identical to the Convert page); each tab's options are
+   rendered by a Unyson `box` container, so they read as a standard metabox-holder
+   postbox — the same card the Post Types & Custom Fields settings use. No custom
+   tab/postbox chrome here on purpose: hand-styling it kept drifting out of sync
+   with the other settings pages. Only layout/utility rules the box container
+   doesn't provide live here. */
 
 .fw-component-presets__intro {
-	max-width: 820px;
 	margin: 4px 0 14px;
 	font-size: 13px;
 }
 
-/* Tabs use core .nav-tab styling; just give them a little space below. */
-.fw-component-presets .fw-cp-tabs {
-	margin-bottom: 16px;
+/* (The tab strip's .4em 0 1.4em margin is set inline on the <h2> — core's
+   `.wrap h2.nav-tab-wrapper` rule outranks a class selector here, so a CSS rule
+   would be ignored. Same approach as the Convert page.) */
+
+/* Rounded top corners on the tabs — no sharp edges. */
+.fw-component-presets .nav-tab {
+	border-radius: .25rem .25rem 0 0;
 }
 
-/* Only the active tab's panel is visible. */
+/* Only the active tab's panel is visible (JS toggles .is-active). */
 .fw-component-presets .fw-cp-panel {
 	display: none;
 }
 .fw-component-presets .fw-cp-panel.is-active {
 	display: block;
-}
-
-/* Section cards = standard WP postboxes. Full width (no max-width cap) so the
-   card fills the content area instead of leaving a gap on the right. */
-.fw-component-presets .postbox {
-	width: 100%;
-	max-width: none;
-}
-.fw-component-presets .postbox .inside {
-	margin: 0;
-	padding: 6px 16px 14px;
-}
-
-/* Match WP settings density for the option rows. */
-.fw-component-presets .fw-backend-option-design-default {
-	padding-top: 14px;
-	padding-bottom: 14px;
 }
 
 /* Action row: Save + "Reset this tab" on the left; the dangerous "Reset all"
@@ -57,53 +47,13 @@
 	text-decoration: underline;
 }
 
-/* --- Scoped WP-admin tweaks — only on this page, never global.
-   The active tab connects into the section card below it (classic "folder tab"):
-   inactive tabs are grey chips on the card's top edge; the active tab is white and
-   overlaps that edge by 1px so it merges into the panel.
-
-   NOTE: selectors are prefixed with `.wrap.fw-component-presets` (0,3,0) so they
-   outrank WordPress core's `.wrap h2.nav-tab-wrapper` (0,2,1) — that's why the
-   border-bottom removal now actually applies, no !important needed. --- */
-.wrap.fw-component-presets .nav-tab-wrapper {
-	border-bottom: none;        /* drop the full-width line under the tabs */
-	margin-bottom: 0;
-	padding-bottom: 0;
-}
-.wrap.fw-component-presets .nav-tab {
-	position: relative;
-	z-index: 1;                 /* keep the active tab above the card border */
-	margin-bottom: 0;           /* reset core's -1px so chips sit on the card edge */
-	background: #f0f0f1;
-	border: 1px solid #c3c4c7;
-	border-bottom: none;
-	border-radius: 4px 4px 0 0; /* rounded top corners */
-	color: #50575e;
-}
-.wrap.fw-component-presets .nav-tab-active,
-.wrap.fw-component-presets .nav-tab-active:hover,
-.wrap.fw-component-presets .nav-tab-active:focus {
-	margin-bottom: -1px;            /* overlap the card's top border … */
-	background: #fff;
-	border-bottom: 1px solid #fff;  /* … and paint over it in white → seamless join */
-	color: #1d2327;
-}
-/* Direct child only — style the SECTION card, never the addable-box items
-   (Unyson renders each sortable item as its own nested .postbox). */
-.fw-component-presets .fw-cp-panel > .postbox {
-	margin-top: 0;
-	border-radius: 0 0 4px 4px; /* square top to meet the tabs, rounded bottom */
-	box-shadow: none;
-}
-/* Section card header is a static heading, not a draggable handle. The "move"
-   cursor sits on .postbox-header itself (the bar), so override it there — and on
-   the title — but ONLY on the section card (direct child), so the addable-box
-   items keep their move cursor (they ARE sortable). The direct-child selector
-   (0,4,0) outranks core, so no !important is needed. */
-.fw-component-presets .fw-cp-panel > .postbox > .postbox-header {
-	cursor: default;
-}
-.fw-component-presets .fw-cp-card-title {
-	padding: 0 1rem;
-	cursor: default;
-}
+/* Export / Import tab. (The card content is wrapped in
+   .fw-backend-option-design-default in PHP, so it gets the same inset as the
+   other tabs' option rows — no extra padding rule needed here.) */
+.fw-cp-io .postbox{margin-bottom:16px}
+.fw-cp-io-list{margin:.5rem 0 1rem;list-style:none;padding:0}
+.fw-cp-io-list li{margin:.4rem 0}
+.fw-cp-io-list label{display:inline-flex;align-items:center;gap:.5rem;font-size:13px}
+.fw-cp-io-badge{font-size:11px;background:#d6f0e8;color:#0a6b54;border-radius:999px;padding:1px 8px;line-height:1.7}
+.fw-cp-io-dim{font-size:11px;color:#8a8f94}
+.fw-cp-io-warn{color:#b32d2e}

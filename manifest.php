@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.6.57';
+$manifest['version']     = '1.7.26';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,303 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.7.11 - "List style" button in the WYSIWYG editor (Text Block + any wp-editor
+ *          field). Turns a plain bullet / numbered list into a styled list by adding a
+ *          single, clean fw-list-* class to the <ul> / <ol> — Pros / Cons (check / cross
+ *          in plain, solid or outline), numbered Steps, or Arrow — with no wrapper divs
+ *          or per-item classes (better, leaner SEO markup). Marker colors come from the
+ *          Color Presets (--color-green / --color-red, the latter the Danger preset) and
+ *          are overridable in a child theme; the menu is extensible via the
+ *          `unysonplus_editor_list_formats` filter. Styles load on the front end and into
+ *          the editor iframe for a live preview.
+ *
+ * 1.7.9 - Export / Import for Component Presets. A new "Export / Import" tab on the
+ *         Component Presets page downloads selected component libraries (Color Presets,
+ *         Typography, Spacing, Buttons, Box Presets, Tables) as a portable .json, and
+ *         imports them back on another site — you tick exactly which libraries to apply,
+ *         with a pre-apply summary (file origin, date, plugin version, per-library set
+ *         count) and a version-mismatch warning. Import replaces a library wholesale
+ *         (not a merge); only known preset keys are written. Files carry a _meta block
+ *         (plugin version / site / date) so they're self-describing.
+ *
+ * 1.6.96 - New "Business Info" content element ([business_info]). Opening hours with
+ *          a live Open/Closed status computed from the site timezone (overnight
+ *          ranges supported), plus contact details (address, phone, email, website,
+ *          directions), in four layouts (hours table / card / split / compact). Hours
+ *          are an addable repeater (per-day open/close/closed/note); today's row is
+ *          highlighted and times render in 12- or 24-hour format.
+ *
+ * 1.6.95 - New "Newsletter" content element ([newsletter]). An AJAX email-signup form
+ *          wired to the site mail (the Mailer extension's SMTP via wp_mail) and to a
+ *          fw_newsletter_subscribe hook for list integrations (Mailchimp, etc.), in
+ *          three designs (inline / stacked / boxed). A dedicated shortcode class
+ *          registers the admin-ajax endpoint in _init(); the recipient is always the
+ *          site admin (filterable) so it can't be an open mail relay, and a nonce +
+ *          honeypot guard the endpoint.
+ *
+ * 1.6.94 - New "Author Box" content element ([author_box]). Avatar, name, bio, social
+ *          links and a "view all posts" link for the current post author, a chosen
+ *          user, or fully custom content, in four designs (card / centered / banner /
+ *          minimal). Name/bio/avatar fall back to the user's profile; a shared icon
+ *          catalog renders the profile links.
+ *
+ * 1.6.93 - New "Post Carousel" content element ([post_carousel]). A Splide slider of
+ *          posts (any post type, taxonomy/term filtered) with image, title, excerpt,
+ *          date, meta and read-more, in three card designs (standard / overlay /
+ *          minimal). Per-view / autoplay / loop / arrows / dots are configurable and
+ *          auto-disable when there are too few posts.
+ *
+ * 1.6.92 - New "Logo Grid" content element ([logo_grid]). Client / partner logos in
+ *          a grid, boxed grid, Splide carousel, or seamless marquee, with an
+ *          optional grayscale-to-color hover, configurable columns, Gap-Scale gap
+ *          and logo height. Each logo is an addable-popup entry (image + name +
+ *          link); the marquee renders the set twice for a seamless loop and the
+ *          carousel pulls in the vendored Splide only when used.
+ *
+ * 1.6.91 - New "Highlight Text" content element ([highlight_text]). A short text
+ *          styled with a typographic effect — marker highlight, gradient fill
+ *          (background-clip:text with a solid fallback), underline, outline
+ *          (text-stroke), glow, or a ::first-letter drop-cap — on any heading tag.
+ *
+ * 1.6.90 - New "Star Rating" content element ([star_rating]). A rating display with
+ *          partial (half / decimal) fill — stars, hearts, circles or a bar — plus an
+ *          optional label, value and count, on a 5- or 10-point scale.
+ *
+ * 1.6.89 - New "Feature List" content element ([feature_list]). An icon-led list
+ *          (checklist with available/unavailable rows, per-item icons, numbered,
+ *          bullets, or boxed badge icons) with optional sub-text and links, in 1–3
+ *          columns with optional dividers.
+ *
+ * 1.6.88 - New "Blockquote" content element ([blockquote]). A styled quote / pullquote
+ *          with optional author + source link, in six editorial designs (classic
+ *          accent border, large centered pullquote, boxed card, big background quote
+ *          mark, minimal italic, top-&-bottom rules). Distinct from testimonials.
+ *
+ * 1.6.87 - New "Modal / Popup" content element ([modal_popup]). A trigger (button /
+ *          text / icon / image) opens custom HTML content in a modal — centered
+ *          card (sm/md/lg), left/right drawer, or fullscreen — with fade/zoom/slide
+ *          open animations, optional open-on-load + delay, and overlay-click /
+ *          Esc / close-button dismissal. The overlay is reparented to <body> so its
+ *          position:fixed can't be clipped by a transformed ancestor; includes a
+ *          focus trap, scroll lock and focus return.
+ *
+ * 1.6.86 - New "Animated Heading" content element ([animated_heading]). A heading
+ *          with static before/after text and a rotating word set, animated with one
+ *          of six effects (typewriter / fade / slide / flip / zoom / clip), three
+ *          speeds and four highlight styles. Non-typewriter effects swap the word
+ *          and retrigger a CSS @keyframes; typewriter types/deletes. Honors
+ *          prefers-reduced-motion.
+ *
+ * 1.6.85 - New "Image Hotspots" media element ([image_hotspots]). An image with
+ *          positioned pins (x/y %) that each reveal a tooltip card (title, text,
+ *          link), in four pin styles (pulsing dot / dot / numbered / icon), hover
+ *          or click, with auto-flip so the tooltip never clips the top of the
+ *          viewport.
+ *
+ * 1.6.84 - New "Tooltip" content element ([tooltip]). An inline trigger (text /
+ *          button / icon) reveals a positioned tooltip on hover-focus or click, in
+ *          four positions (auto-flips on overflow) and four themes (dark / light /
+ *          accent / gradient).
+ *
+ * 1.6.83 - New "Video Popup" media element ([video_popup]). A poster + play button
+ *          that opens a YouTube / Vimeo / self-hosted video in a lightbox, in five
+ *          play-button designs (classic / pulse / outline / soft / minimal). URL is
+ *          parsed to an autoplay embed (iframe) or a <video>; the lightbox clears
+ *          the media on close to stop playback.
+ *
+ * 1.6.82 - New "Social Share" content element ([social_share]). Share-to buttons
+ *          (Facebook, X, LinkedIn, Pinterest, WhatsApp, Telegram, Reddit, Email,
+ *          Copy link) chosen + ordered via a multi-select, in five styles (brand /
+ *          mono / outline / soft / minimal) × three shapes × three sizes, inline or
+ *          stacked. Networks live in a single catalog (parts/networks.php: label,
+ *          brand color, inline SVG, share-URL template); the share URL defaults to
+ *          the current page (or a custom URL) and the text to the page title. A
+ *          tiny script opens networks in a centered popup and handles Copy-link via
+ *          the Clipboard API (textarea fallback + a "Copied!" flash). Distinct from
+ *          social-icons (profile links).
+ *
+ * 1.6.81 - New "Timeline" content element ([timeline]). A milestone sequence (date,
+ *          title, text, marker icon, image, link) in four layouts — vertical
+ *          alternating / left / right, and a horizontal scroll-snap rail. Marker
+ *          style (dot / per-item icon / auto number) and card style (card / outline
+ *          / plain) are options; the alternating layout collapses to a left rail on
+ *          phones. Registry-driven layout picker.
+ *
+ * 1.6.80 - New "Flip Box" content element ([flip_box]). A two-sided 3D card that
+ *          flips on hover or click (icon/title front, text + button back), in four
+ *          directions and four designs (solid / gradient / outline / image-front).
+ *          One CSS custom property (--fb-rot) drives the direction; click trigger is
+ *          keyboard-operable and lets a real back-side link work without re-flipping.
+ *
+ * 1.6.79 - New "Pricing Table" content element ([pricing_table]). Comparable plans
+ *          (icon, name, subtitle, currency/price/period, feature list with available/
+ *          unavailable rows, ribbon, CTA) as a responsive 2–5 column grid with a
+ *          featured highlight, in six card designs (classic / modern / minimal /
+ *          gradient / dark / outline). Gap from the Spacing → Gap Scale presets;
+ *          per-element colors as CSS vars on the Styling tab.
+ *
+ * 1.6.78 - New "Before / After" media element ([before_after]) in the Media
+ *          Elements tab. An interactive image-comparison slider: two stacked
+ *          images where the top "before" layer is clipped (clip-path) to reveal
+ *          the "after" beneath it, with a draggable handle. One shared structure +
+ *          a dependency-free engine drive three interactions (drag the handle /
+ *          follow the cursor on hover / click to crossfade), both orientations
+ *          (horizontal & vertical), keyboard accessibility (role="slider", arrows/
+ *          Home/End) and an optional one-time intro sweep when scrolled into view
+ *          (rAF + IntersectionObserver). Registry-driven Design picker offers six
+ *          handle skins (Classic, Circle, Arrows, Minimal line, Labeled, Framed),
+ *          and cross-design options cover start position, image crop ratio, max
+ *          width, corner radius, handle size and Before/After labels. The Styling
+ *          tab exposes custom divider / handle / label colors as CSS vars. Modeled
+ *          on image-box (registry + per-design CSS gating). See the shortcode's
+ *          AGENTS.md for the atts schema.
+ *
+ * 1.6.75 - New "Container" layout element. A section can now hold a SECOND container
+ *          (Boxed or Full-width) alongside its own, so one section can pair a
+ *          contained band (e.g. a heading) with a full-bleed band (e.g. a gallery)
+ *          — matching source markup that nests `.container` + `.container-fluid` in
+ *          one `<section>`. Drag a Container into a section and add columns to it; it
+ *          renders as a sibling injected after the section's default container (the
+ *          items-corrector lifts it out so it is never nested). Sections WITHOUT a
+ *          Container are completely unaffected — same code path, identical output.
+ *          Holds columns only; cannot nest in a column or another container.
+ *
+ * 1.6.74 - Gallery gains three more designs (18 total): Image Accordion (panels
+ *          that expand on hover, collapsing to a stacked column on mobile), Flip
+ *          Cards (each card flips in 3D on hover to reveal the caption + a "view"
+ *          cue on the back — the whole card is the lightbox trigger, built from
+ *          custom front/back faces), and Stack / Banners (full-width stacked
+ *          strips cropped to a wide cinematic ratio with a hover zoom). The ratio
+ *          helper learned the wide ratios (2:1 / 21:9 / 3:1 / 4:1) for the banner
+ *          crop. All reuse the shared tile/lightbox and Gap-Scale gap.
+ *
+ * 1.6.73 - Gallery gains eight more designs (15 total) via its registry: Cards
+ *          (shadowed card + caption panel), Slideshow / Fade (full-width crossfade
+ *          with optional Ken-Burns zoom), Thumbnail Slider (main slider synced to a
+ *          thumbnail nav), Coverflow (centred slide large, neighbours scaled back),
+ *          Marquee / Ticker (continuously scrolling row, seamless loop, pause on
+ *          hover), Filmstrip (native scroll-snap row, no library), Spotlight (first
+ *          image large + the rest in a grid), and Honeycomb (hexagon clip-path
+ *          tiles). The three extra slider designs reuse one shared Splide mount
+ *          (data-fw-splide) and the shared arrow/pagination chrome now in the base
+ *          stylesheet; Thumbnail Slider ships a small sync script. All reuse the
+ *          shared tile + dependency-free lightbox and the Gap-Scale gap option.
+ *
+ * 1.6.72 - Image Box gains five more designs (21 total) via the registry. Two add
+ *          their own structure: Split Panel (image + a solid accent content panel,
+ *          equal-height 50/50 feature row — new `split` part) and Flip Card (image
+ *          front that does a CSS-only 3D flip on hover to a colour back panel with
+ *          the title / text / button — new `flip` part). Three are CSS-only variants
+ *          of existing parts: Circle Side (round image beside text — team / author
+ *          row, on the `side` part), Photo Stack (layered offset photo frames behind
+ *          the image via pseudo-elements, on the `frame` part) and Editorial Cover
+ *          (full-bleed image with the title anchored at the TOP under a rule — the
+ *          inverse of the bottom scrim, on the `overlay` part). Split and Flip back
+ *          panels colour from the Accent Color (--imgbox-accent); the flip animation
+ *          is dropped under prefers-reduced-motion. Added purely through the design
+ *          registry (entry + thumbnail + reuse/add a part), so existing designs and
+ *          saved boxes are unaffected.
+ *
+ * 1.6.71 - New "Image Box" media element ([image_box]) in the Media Elements tab.
+ *          The Elementor-style image box: one image paired with an eyebrow, title,
+ *          text, optional icon and a call-to-action, rendered in one of 16 designs
+ *          across four families — structural (stacked / centered / feature / side
+ *          left+right), hover overlays (fade / slide-up / centered / frame-draw /
+ *          always-on scrim — the portfolio-tile look), captions & cards (bordered
+ *          card / clean caption / solid caption bar) and frames (polaroid / postcard
+ *          / badge). Built on the same registry-driven dispatcher as Posts / Gallery
+ *          (views/parts/registry.php → an image-picker of SVG thumbnails → a
+ *          box-<part>.php template), so adding a design is one entry + a thumbnail +
+ *          (maybe) a part + optional gated CSS. Three axes compose instead of
+ *          multiplying: the Design, a Hover Effect (zoom / grayscale→color / shine /
+ *          lift / 3D tilt / blur) that layers on any design, and a Link Behavior
+ *          (URL / image lightbox / video lightbox) served by a dependency-free
+ *          lightbox (YouTube / Vimeo / mp4). Per-element colors, crop ratio, side
+ *          media-width, content alignment, overlay tint/opacity and an accent color
+ *          (CSS custom properties) round it out. Per-design CSS auto-gates by
+ *          filename so pages stay lean. Self-contained leaf shortcode (no class /
+ *          no page-builder item) — auto-discovered by the loader. See the image-box
+ *          shortcode AGENTS.md for the full atts schema.
+ *
+ * 1.6.66 - New "Gallery" media element ([gallery]) in the Media Elements tab.
+ *          A flexible, multi-design image gallery built on the same registry-driven
+ *          design dispatcher as Testimonials / Posts: images are picked with the
+ *          multi-upload (images-only) option type and captions / alt / titles are
+ *          read from the Media Library. Ships seven self-contained designs — Grid,
+ *          Masonry, Justified Rows (computed server-side from each image's real
+ *          aspect ratio, so no layout shift), Metro / Bento, Carousel (vendored
+ *          Splide), Polaroid Scatter, and Showcase (featured stage + thumbnail
+ *          strip) — chosen via an image-picker multi-picker that reveals only the
+ *          active design's options. A dependency-free lightbox (keyboard, swipe,
+ *          counter, captions, prefers-reduced-motion) is shared by every design and
+ *          scoped per instance; the Showcase design reuses it through hidden source
+ *          anchors. Cross-design Style options cover the click action (lightbox /
+ *          file / attachment / none), caption placement + source, corner radius,
+ *          hover zoom, colors and spacing. Adding a new design stays a one-file-set
+ *          change (registry entry + template + css + thumbnail). See the gallery
+ *          shortcode AGENTS.md for the full atts schema.
+ *
+ * 1.6.65 - New "Table of Contents" content element ([toc]). Auto-builds a clickable
+ *          outline of the page's headings and anchor-jumps to each one. Because the
+ *          page builder scatters headings across many shortcodes/sections, the list
+ *          is assembled client-side: the view emits a config-only <nav> + empty list
+ *          carrying every setting as data-* attributes, and a vanilla-JS scanner
+ *          (static/js/scripts.js) resolves the scan scope (auto-detected content
+ *          area, whole page, or a custom CSS selector), collects the chosen heading
+ *          levels, assigns de-duplicated slug ids to them (preserving any existing
+ *          id so manual anchors keep working), and renders an optionally nested,
+ *          optionally numbered (decimal / nested-decimal / roman / alpha / bullets)
+ *          link list. Smooth-scroll honours a configurable top offset for sticky
+ *          headers; optional scrollspy highlights the in-view heading; the box can
+ *          be collapsible, floated, sticky, and width-constrained. Color picks
+ *          resolve to CSS custom properties on the wrapper so hover / active states
+ *          are stylable. SEO toggles add rel="nofollow" and a <!--noindex--> wrap.
+ *
+ * 1.6.62 - Classic-editor "Unyson Shortcodes" visual elements now render a live content
+ *          preview, not just the shortcode name. The inline TinyMCE element renders the
+ *          shortcode's page-builder title_template (the same one the Page Builder canvas
+ *          uses) against its saved values — so an inserted Accordion shows its tab titles
+ *          + text, a Button shows its label, etc. The rendered template is flattened to
+ *          inline-safe markup (headings/<strong> become bold, blocks become <br>-separated
+ *          lines, long content is length-capped) so it nests validly inside the inline,
+ *          contenteditable=false element without the browser hoisting block tags out of it.
+ *          The preview re-renders whenever the options modal is saved and after a freshly
+ *          inserted/duplicated shortcode's values resolve. Purely visual — serialization
+ *          still rebuilds each shortcode from its stored values, so saved content is
+ *          unchanged. Shortcodes without a title_template are unaffected.
+ *
+ * 1.6.60 - Posts Design-tab refinements. Column Gap / Row Gap now use the theme Gap Scale
+ *          presets (a select sourced from sc_get_gap_select_choices(), consistent with the
+ *          Section/Row/Column containers) instead of raw px inputs; the view resolves the chosen
+ *          preset slug to its size for the grid CSS vars, with a back-compat path that still
+ *          honours legacy numeric-px saves (empty = the base default gap). The Layout / Card
+ *          Style / Pagination image-pickers now show a native hover tooltip with each option's
+ *          name (a `title` rides through data-small-img-attr onto the rendered thumbnail). The
+ *          Card Style picker now sits ABOVE Layout on the Design tab so it's no longer buried
+ *          under Grid's column/gap options, with copy clarifying it applies to any layout.
+ *
+ * 1.6.59 - Posts card CSS is now loaded PER-DESIGN — only the card style actually used by each
+ *          instance loads its CSS. Each design's CSS moved out of the bundled styles.css into
+ *          static/css/card/<style>.css; the base keeps only shared/structural CSS (grid modes,
+ *          card base, side-layout, meta, pagination) used by every design. static.php's new
+ *          per-instance hook (fw_ext_shortcodes_enqueue_static:posts) auto-detects and enqueues
+ *          the used design's file by name — so pages stay lean no matter how many designs exist,
+ *          and adding a design with its own static/css/card/<key>.css needs no enqueue list.
+ *          Also adds six more card designs (23 total): Quote-Led (excerpt as a pull-quote),
+ *          Postcard (dashed perforation divider), Bordered Badge (corner ribbon notch), Filmstrip
+ *          (sprocket-hole frame), Diagonal Split (clip-path image edge) and Glassmorphism (frosted
+ *          blurred content panel with a solid fallback). Existing designs and saved instances
+ *          render unchanged.
+ *
+ * 1.6.58 - Posts shortcode gains six more card designs via the registry (17 total): Polaroid
+ *          (white-framed, slightly tilted photo that straightens on hover), Circular (round image
+ *          centered, centered text), Accent Bar (coloured top strip), Timeline (vertical rail +
+ *          dot marker, date-led — best in List mode), Magazine Cover (image-fill with a solid
+ *          title band) and Tile / Hover Reveal (square image whose content slides up over a scrim
+ *          on hover/focus). All are added purely through the card registry (one entry + a
+ *          card-<part>.php + an SVG thumbnail each); CSS-only, motion gated by
+ *          prefers-reduced-motion. No changes to existing designs or saved instances.
+ *
  * 1.6.54 - Posts shortcode reworked around visual, registry-driven design. Card Style is now an
  *          extensible REGISTRY (views/parts/registry.php): adding a card design is one entry + a
  *          card-<part>.php template + an SVG thumbnail. Four new card designs ship with it —

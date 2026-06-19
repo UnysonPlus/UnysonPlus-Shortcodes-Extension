@@ -33,6 +33,12 @@ class FW_Ext_Shortcodes_Settings_Page {
 	/** @var string|null Hook suffix for the Component Presets page */
 	private $presets_hook_suffix = null;
 
+	/** @var array|null Parsed import file awaiting a "which components to apply" choice (Export/Import tab). */
+	private $io_preview = null;
+
+	/** @var string Inline Export/Import error to surface on the Export/Import tab. */
+	private $io_error = '';
+
 	public function __construct( FW_Extension_Shortcodes $extension ) {
 		$this->extension = $extension;
 
@@ -137,6 +143,19 @@ class FW_Ext_Shortcodes_Settings_Page {
 			? preg_replace( '/[^a-z0-9_]/', '', (string) $_POST['fw_cp_active_tab'] )
 			: '';
 
+		// ---- Export / Import (own forms on the Export/Import tab) ----
+		if ( isset( $_POST['fw_cp_export'] ) ) {
+			$this->_io_export_download(); // streams a .json download + exit
+		}
+		if ( isset( $_POST['fw_cp_import_preview'] ) ) {
+			$this->_io_import_read_file(); // sets $this->io_preview / io_error; render shows the next step
+			return;
+		}
+		if ( isset( $_POST['fw_cp_import_apply'] ) ) {
+			wp_safe_redirect( $this->_io_import_apply() );
+			exit;
+		}
+
 		if ( isset( $_POST['fw_cp_reset_all'] ) ) {
 			// Reset every library: drop all preset keys so the getters return the
 			// built-in plugin defaults again.
@@ -201,6 +220,193 @@ class FW_Ext_Shortcodes_Settings_Page {
 		fw_set_db_ext_settings_option( $this->extension->get_name(), null, $store );
 	}
 
+	/* ---------------------------------------------------------------------- *
+	 * Export / Import (the last tab)
+	 * ---------------------------------------------------------------------- */
+
+	/** All leaf options across every tab (flattened) — used for export defaults. */
+	private function io_all_leaf_options() {
+		$all = array();
+		foreach ( $this->presets_options() as $tab ) {
+			if ( ! empty( $tab['options'] ) && is_array( $tab['options'] ) ) {
+				$all = array_merge( $all, $tab['options'] );
+			}
+		}
+		return fw_extract_only_options( $all );
+	}
+
+	/**
+	 * One row per component library (tab): id, title, its store keys, and whether
+	 * the user has actually customized it (vs. running on plugin defaults).
+	 */
+	private function io_components() {
+		$store = $this->presets_stored_values();
+		$leaf  = $this->io_all_leaf_options();
+		$out   = array();
+		foreach ( $this->presets_options() as $tab_id => $tab ) {
+			$keys = $this->preset_tab_keys( $tab_id );
+			if ( empty( $keys ) ) {
+				continue;
+			}
+			// "Customized" = a stored value that differs from the plugin default
+			// (a plain form Save stores every key, so existence alone isn't enough).
+			$custom = false;
+			foreach ( $keys as $k ) {
+				if ( ! isset( $store[ $k ] ) ) {
+					continue;
+				}
+				$default = isset( $leaf[ $k ]['value'] ) ? $leaf[ $k ]['value'] : null;
+				if ( wp_json_encode( $store[ $k ] ) !== wp_json_encode( $default ) ) {
+					$custom = true;
+					break;
+				}
+			}
+			$out[ $tab_id ] = array(
+				'title'      => isset( $tab['title'] ) ? $tab['title'] : $tab_id,
+				'keys'       => $keys,
+				'has_custom' => $custom,
+			);
+		}
+		return $out;
+	}
+
+	/** Map a list of tab ids to their human titles (for notices). */
+	private function io_titles_for( array $tab_ids ) {
+		$comps  = $this->io_components();
+		$titles = array();
+		foreach ( $tab_ids as $id ) {
+			$id = sanitize_key( $id );
+			if ( isset( $comps[ $id ] ) ) {
+				$titles[] = $comps[ $id ]['title'];
+			}
+		}
+		return $titles;
+	}
+
+	/** Build the export payload for the chosen component tabs (effective values: stored, else default). */
+	private function io_build_payload( array $tab_ids ) {
+		$store      = $this->presets_stored_values();
+		$leaf       = $this->io_all_leaf_options();
+		$comps      = $this->io_components();
+		$components = array();
+
+		foreach ( $tab_ids as $tab_id ) {
+			$tab_id = sanitize_key( $tab_id );
+			if ( ! isset( $comps[ $tab_id ] ) ) {
+				continue;
+			}
+			$kv = array();
+			foreach ( $comps[ $tab_id ]['keys'] as $k ) {
+				if ( isset( $store[ $k ] ) ) {
+					$kv[ $k ] = $store[ $k ];
+				} elseif ( isset( $leaf[ $k ]['value'] ) ) {
+					$kv[ $k ] = $leaf[ $k ]['value']; // ship the effective default so import is deterministic
+				}
+			}
+			$components[ $tab_id ] = array(
+				'title' => $comps[ $tab_id ]['title'],
+				'keys'  => $kv,
+			);
+		}
+
+		return array(
+			'_meta'      => array(
+				'type'           => 'unysonplus-component-presets',
+				'format'         => 1,
+				'plugin_version' => (string) $this->extension->manifest->get( 'version' ),
+				'site_url'       => home_url( '/' ),
+				'exported_at'    => gmdate( 'Y-m-d H:i:s' ) . ' UTC',
+			),
+			'components' => $components,
+		);
+	}
+
+	/** Stream the selected component libraries as a downloadable .json (then exit). */
+	private function _io_export_download() {
+		$sel = ( isset( $_POST['fw_cp_components'] ) && is_array( $_POST['fw_cp_components'] ) )
+			? array_map( 'sanitize_key', (array) $_POST['fw_cp_components'] )
+			: array();
+
+		if ( empty( $sel ) ) {
+			wp_safe_redirect( add_query_arg( array( 'page' => self::STYLING_SLUG, 'fw-io-error' => 'noexport' ), admin_url( 'admin.php' ) ) . '#tab_io' );
+			exit;
+		}
+
+		$json  = wp_json_encode( $this->io_build_payload( $sel ), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+		$fname = 'unysonplus-presets-' . gmdate( 'Ymd-His' ) . '.json';
+
+		nocache_headers();
+		header( 'Content-Type: application/json; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $fname . '"' );
+		header( 'Content-Length: ' . strlen( $json ) );
+		echo $json; // phpcs:ignore — raw JSON download, not HTML
+		exit;
+	}
+
+	/** Read + validate the uploaded export file; stash it for the "pick components" step. */
+	private function _io_import_read_file() {
+		if ( empty( $_FILES['fw_cp_import_file']['tmp_name'] ) || ! is_uploaded_file( $_FILES['fw_cp_import_file']['tmp_name'] ) ) {
+			$this->io_error = __( 'No file was uploaded.', 'fw' );
+			return;
+		}
+		if ( ! empty( $_FILES['fw_cp_import_file']['size'] ) && $_FILES['fw_cp_import_file']['size'] > 5 * 1024 * 1024 ) {
+			$this->io_error = __( 'That file is too large to be a presets export.', 'fw' );
+			return;
+		}
+		$raw  = file_get_contents( $_FILES['fw_cp_import_file']['tmp_name'] );
+		$data = json_decode( (string) $raw, true );
+
+		if (
+			! is_array( $data )
+			|| ! isset( $data['_meta']['type'] ) || 'unysonplus-component-presets' !== $data['_meta']['type']
+			|| empty( $data['components'] ) || ! is_array( $data['components'] )
+		) {
+			$this->io_error = __( 'That file is not a UnysonPlus Component Presets export.', 'fw' );
+			return;
+		}
+		$this->io_preview = $data;
+	}
+
+	/** Apply the chosen components from a previewed import; returns the redirect URL. */
+	private function _io_import_apply() {
+		$payload = isset( $_POST['fw_cp_import_payload'] )
+			? json_decode( base64_decode( (string) wp_unslash( $_POST['fw_cp_import_payload'] ) ), true )
+			: null;
+		$sel = ( isset( $_POST['fw_cp_components'] ) && is_array( $_POST['fw_cp_components'] ) )
+			? array_map( 'sanitize_key', (array) $_POST['fw_cp_components'] )
+			: array();
+
+		$imported = array();
+
+		if ( is_array( $payload ) && ! empty( $payload['components'] ) && ! empty( $sel ) ) {
+			$valid = array_flip( $this->preset_all_keys() ); // only ever write known preset keys
+			$store = $this->presets_stored_values();
+			foreach ( (array) $payload['components'] as $tab_id => $comp ) {
+				$tab_id = sanitize_key( $tab_id );
+				if ( ! in_array( $tab_id, $sel, true ) || empty( $comp['keys'] ) || ! is_array( $comp['keys'] ) ) {
+					continue;
+				}
+				foreach ( $comp['keys'] as $k => $v ) {
+					if ( isset( $valid[ $k ] ) ) {
+						$store[ $k ] = $v; // replace this preset library wholesale
+					}
+				}
+				$imported[] = $tab_id;
+			}
+			if ( ! empty( $imported ) ) {
+				fw_set_db_ext_settings_option( $this->extension->get_name(), null, $store );
+			}
+		}
+
+		$args = array( 'page' => self::STYLING_SLUG );
+		if ( ! empty( $imported ) ) {
+			$args['fw-imported'] = implode( ',', $imported );
+		} else {
+			$args['fw-io-error'] = 'noimport';
+		}
+		return add_query_arg( $args, admin_url( 'admin.php' ) ) . '#tab_io';
+	}
+
 	/**
 	 * @internal
 	 */
@@ -212,6 +418,9 @@ class FW_Ext_Shortcodes_Settings_Page {
 		$schema       = $this->presets_options();  // top-level 'tab' entries, one per library
 		$values       = $this->presets_stored_values();
 		$first_tab_id = ! empty( $schema ) ? (string) array_key_first( $schema ) : '';
+		// When an import is mid-flight (preview shown / error), open the Export/Import
+		// tab instead of the first library, so the user sees the result of their upload.
+		$io_active    = ( is_array( $this->io_preview ) || '' !== $this->io_error );
 		?>
 		<div class="wrap fw-component-presets">
 			<h1 class="wp-heading-inline"><?php esc_html_e( 'Component Presets', 'fw' ); ?></h1>
@@ -231,15 +440,35 @@ class FW_Ext_Shortcodes_Settings_Page {
 				</div>
 			<?php endif; ?>
 
-			<?php /* Native WordPress tabs */ ?>
-			<h2 class="nav-tab-wrapper fw-cp-tabs">
+			<?php
+			if ( isset( $_GET['fw-imported'] ) ) :
+				$imported_titles = $this->io_titles_for( explode( ',', sanitize_text_field( wp_unslash( $_GET['fw-imported'] ) ) ) );
+				?>
+				<div class="notice notice-success is-dismissible">
+					<p><?php
+						/* translators: %s = comma-separated component names */
+						printf( esc_html__( 'Imported: %s.', 'fw' ), esc_html( implode( ', ', $imported_titles ) ) );
+					?></p>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( isset( $_GET['fw-io-error'] ) ) : ?>
+				<div class="notice notice-error is-dismissible">
+					<p><?php esc_html_e( 'Nothing was exported / imported — check your selection or the file.', 'fw' ); ?></p>
+				</div>
+			<?php endif; ?>
+
+			<?php /* Native WordPress tabs. Inline margin (like the Convert page) because
+			         core's `.wrap h2.nav-tab-wrapper` rule outranks any class selector. */ ?>
+			<h2 class="nav-tab-wrapper fw-cp-tabs" style="margin:.4em 0 1.4em">
 				<?php $first = true; foreach ( $schema as $tab_id => $tab ) : ?>
 					<a href="#<?php echo esc_attr( $tab_id ); ?>"
-					   class="nav-tab<?php echo $first ? ' nav-tab-active' : ''; ?>"
+					   class="nav-tab<?php echo ( $first && ! $io_active ) ? ' nav-tab-active' : ''; ?>"
 					   data-tab="<?php echo esc_attr( $tab_id ); ?>">
 						<?php echo esc_html( isset( $tab['title'] ) ? $tab['title'] : $tab_id ); ?>
 					</a>
 				<?php $first = false; endforeach; ?>
+				<a href="#tab_io" class="nav-tab<?php echo $io_active ? ' nav-tab-active' : ''; ?>" data-tab="tab_io"><?php esc_html_e( 'Export / Import', 'fw' ); ?></a>
 			</h2>
 
 			<form method="post" action="">
@@ -250,30 +479,32 @@ class FW_Ext_Shortcodes_Settings_Page {
 					$inner = ( isset( $tab['options'] ) && is_array( $tab['options'] ) ) ? $tab['options'] : array();
 					$title = isset( $tab['title'] ) ? $tab['title'] : $tab_id;
 					?>
-					<div class="fw-cp-panel<?php echo $first ? ' is-active' : ''; ?>" id="panel-<?php echo esc_attr( $tab_id ); ?>">
-						<div class="postbox">
-							<div class="postbox-header"><h2 class="hndle fw-cp-card-title"><?php echo esc_html( $title ); ?></h2></div>
-							<div class="inside">
-								<?php
-								// Render this library's fields only; all panels are in the DOM
-								// (just CSS-hidden) so a Save submits every tab's values. The
-								// fields are wrapped in a border-less `group` so the rows read
-								// as one cohesive block (no inner separators) — matching the
-								// Breadcrumbs settings look. The group is a render-only
-								// container (no stored id), so the save handler — which reads
-								// the raw presets_options() schema — is unaffected.
-								echo fw()->backend->render_options(
-									array(
+					<div class="fw-cp-panel<?php echo ( $first && ! $io_active ) ? ' is-active' : ''; ?>" id="panel-<?php echo esc_attr( $tab_id ); ?>">
+						<?php
+						// Render this library's fields through a Unyson `box` container so the
+						// panel reads as a standard metabox-holder postbox — the same card the
+						// Post Types & Custom Fields settings use (titled header bar + collapse
+						// handle). Inside, a border-less `group` keeps the rows as one cohesive
+						// block (no inner separators). `box` + `group` are render-only
+						// containers (no stored id), so the save handler — which reads the raw
+						// presets_options() schema — is unaffected. All panels stay in the DOM
+						// (just CSS-hidden) so a Save submits every tab's values.
+						echo fw()->backend->render_options(
+							array(
+								$tab_id . '_box' => array(
+									'type'    => 'box',
+									'title'   => $title,
+									'options' => array(
 										'group_' . $tab_id => array(
 											'type'    => 'group',
 											'options' => $inner,
 										),
 									),
-									$values
-								);
-								?>
-							</div>
-						</div>
+								),
+							),
+							$values
+						);
+						?>
 					</div>
 				<?php $first = false; endforeach; ?>
 
@@ -283,6 +514,111 @@ class FW_Ext_Shortcodes_Settings_Page {
 					<button type="submit" name="fw_cp_reset_all" value="1" class="button-link fw-cp-reset-all"><?php esc_html_e( 'Reset all to defaults', 'fw' ); ?></button>
 				</p>
 			</form>
+
+			<?php /* Export / Import — own forms, kept OUTSIDE the presets form above (so they don't post the whole library). */ ?>
+			<div class="fw-cp-panel fw-cp-io<?php echo $io_active ? ' is-active' : ''; ?>" id="panel-tab_io">
+				<?php
+				/* Export + Import rendered through render_box() inside a
+				   metabox-holder, so the cards match the option-tab cards on the
+				   other tabs exactly (centered title, same spacing). The forms stay
+				   their own <form> elements, captured via output buffering. */
+				ob_start();
+				?>
+				<p class="description"><?php esc_html_e( 'Download selected component libraries as a .json file you can import on another site.', 'fw' ); ?></p>
+				<form method="post" action="">
+					<?php wp_nonce_field( self::PRESETS_NONCE ); ?>
+					<ul class="fw-cp-io-list">
+						<?php foreach ( $this->io_components() as $tab_id => $c ) : ?>
+							<li>
+								<label>
+									<input type="checkbox" name="fw_cp_components[]" value="<?php echo esc_attr( $tab_id ); ?>" checked />
+									<?php echo esc_html( $c['title'] ); ?>
+									<?php if ( $c['has_custom'] ) : ?>
+										<span class="fw-cp-io-badge"><?php esc_html_e( 'customized', 'fw' ); ?></span>
+									<?php else : ?>
+										<span class="fw-cp-io-dim"><?php esc_html_e( 'defaults', 'fw' ); ?></span>
+									<?php endif; ?>
+								</label>
+							</li>
+						<?php endforeach; ?>
+					</ul>
+					<p><button type="submit" name="fw_cp_export" value="1" class="button button-primary"><?php esc_html_e( 'Download .json', 'fw' ); ?></button></p>
+				</form>
+				<?php
+				// Wrap in the option framework's row class so the content gets the
+				// exact same inset as the other tabs' option rows (24px 27px 21px).
+				// fw-bottom-border-hidden drops the separator line (single block).
+				$cp_export_html = '<div class="fw-backend-option-design-default fw-bottom-border-hidden">' . ob_get_clean() . '</div>';
+
+				ob_start();
+				if ( '' !== $this->io_error ) :
+					?><div class="notice notice-error inline"><p><?php echo esc_html( $this->io_error ); ?></p></div><?php
+				endif;
+
+				if ( is_array( $this->io_preview ) ) :
+					$meta     = isset( $this->io_preview['_meta'] ) ? $this->io_preview['_meta'] : array();
+					$file_ver = isset( $meta['plugin_version'] ) ? $meta['plugin_version'] : '';
+					$this_ver = (string) $this->extension->manifest->get( 'version' );
+					?>
+					<p class="description">
+						<?php
+						printf(
+							/* translators: 1: site URL, 2: date, 3: version */
+							esc_html__( 'From %1$s — exported %2$s (plugin v%3$s).', 'fw' ),
+							esc_html( isset( $meta['site_url'] ) ? $meta['site_url'] : '?' ),
+							esc_html( isset( $meta['exported_at'] ) ? $meta['exported_at'] : '?' ),
+							esc_html( $file_ver ? $file_ver : '?' )
+						);
+						?>
+						<?php if ( $file_ver && $file_ver !== $this_ver ) : ?>
+							<br /><strong class="fw-cp-io-warn"><?php
+								/* translators: %s = this site's plugin version */
+								printf( esc_html__( 'Heads up: this file is from a different plugin version than this site (v%s).', 'fw' ), esc_html( $this_ver ) );
+							?></strong>
+						<?php endif; ?>
+					</p>
+					<p><em><?php esc_html_e( 'Importing replaces the selected library’s presets entirely (not a merge).', 'fw' ); ?></em></p>
+					<form method="post" action="">
+						<?php wp_nonce_field( self::PRESETS_NONCE ); ?>
+						<input type="hidden" name="fw_cp_import_payload" value="<?php echo esc_attr( base64_encode( wp_json_encode( $this->io_preview ) ) ); ?>" />
+						<ul class="fw-cp-io-list">
+							<?php foreach ( (array) $this->io_preview['components'] as $tab_id => $comp ) :
+								$n = ( isset( $comp['keys'] ) && is_array( $comp['keys'] ) ) ? count( $comp['keys'] ) : 0; ?>
+								<li>
+									<label>
+										<input type="checkbox" name="fw_cp_components[]" value="<?php echo esc_attr( sanitize_key( $tab_id ) ); ?>" checked />
+										<?php echo esc_html( isset( $comp['title'] ) ? $comp['title'] : $tab_id ); ?>
+										<span class="fw-cp-io-dim"><?php
+											/* translators: %d = number of preset keys */
+											printf( esc_html( _n( '(%d set)', '(%d sets)', $n, 'fw' ) ), (int) $n );
+										?></span>
+									</label>
+								</li>
+							<?php endforeach; ?>
+						</ul>
+						<p>
+							<button type="submit" name="fw_cp_import_apply" value="1" class="button button-primary"><?php esc_html_e( 'Import selected', 'fw' ); ?></button>
+							<a href="<?php echo esc_url( add_query_arg( array( 'page' => self::STYLING_SLUG ), admin_url( 'admin.php' ) ) . '#tab_io' ); ?>" class="button-link"><?php esc_html_e( 'Cancel', 'fw' ); ?></a>
+						</p>
+					</form>
+				<?php else : ?>
+					<p class="description"><?php esc_html_e( 'Upload a .json exported from another UnysonPlus site, then choose which libraries to apply.', 'fw' ); ?></p>
+					<form method="post" action="" enctype="multipart/form-data">
+						<?php wp_nonce_field( self::PRESETS_NONCE ); ?>
+						<p><input type="file" name="fw_cp_import_file" accept="application/json,.json" required /></p>
+						<p><button type="submit" name="fw_cp_import_preview" value="1" class="button"><?php esc_html_e( 'Upload &amp; preview', 'fw' ); ?></button></p>
+					</form>
+				<?php endif;
+				$cp_import_html = '<div class="fw-backend-option-design-default fw-bottom-border-hidden">' . ob_get_clean() . '</div>';
+
+				echo '<div class="fw-backend-postboxes metabox-holder">';
+				// `prevent-auto-close` keeps both boxes expanded on load — without it
+				// Unyson's JS auto-collapses every non-first .fw-postbox in a holder.
+				echo fw()->backend->render_box( 'fw-cp-export-box', __( 'Export', 'fw' ), $cp_export_html, array( 'attr' => array( 'class' => 'prevent-auto-close' ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+				echo fw()->backend->render_box( 'fw-cp-import-box', __( 'Import', 'fw' ), $cp_import_html, array( 'attr' => array( 'class' => 'prevent-auto-close' ) ) ); // phpcs:ignore WordPress.Security.EscapeOutput
+				echo '</div>';
+				?>
+			</div>
 		</div>
 		<?php
 	}
