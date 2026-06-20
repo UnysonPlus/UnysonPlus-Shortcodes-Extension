@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.7.26';
+$manifest['version']     = '1.7.32';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,22 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.7.32 - GSAP "Scroll Motion" engine — a second, independent animation engine
+ *          on every shortcode's Animations tab, sitting alongside the existing
+ *          Animate.css "Entrance Animation" block (separate saved-value key
+ *          `gsap_motion`, so no migration of existing animation saves). Adds
+ *          scroll-driven effects CSS keyframes cannot do: Reveal (fade + move in),
+ *          Stagger children (cascade), Parallax, Pin (sticky-while-scrolling) and
+ *          Scroll Scrub (progress tied to scroll). Authored entirely from option
+ *          dropdowns/sliders — no code. The shared `sc_build_wrapper_attr` filter
+ *          (priority 25) stamps clean `data-upw-g*` attributes; the bundled
+ *          GSAP 3.13.0 + ScrollTrigger + initializer (static/js/vendor/gsap/ +
+ *          upw-gsap.js) and the failsafe CSS are conditionally enqueued in
+ *          wp_footer only when a page actually uses an effect (sc_gsap_flag()),
+ *          so un-animated pages ship zero GSAP bytes. Effects that start hidden
+ *          carry an `.upw-g-pending` guard (mirrors `.sc-anim-pending`) for a
+ *          flash-free, JS-failure-safe, reduced-motion-aware reveal.
+ *
  * 1.7.11 - "List style" button in the WYSIWYG editor (Text Block + any wp-editor
  *          field). Turns a plain bullet / numbered list into a styled list by adding a
  *          single, clean fw-list-* class to the <ul> / <ol> — Pros / Cons (check / cross

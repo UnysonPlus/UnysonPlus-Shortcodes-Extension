@@ -207,7 +207,7 @@ function sc_get_animation_fields() {
         ],
     ];
 
-    return [
+    $fields = [
         'animation' => [
             'type'         => 'multi-picker',
             'label'        => false,
@@ -265,6 +265,14 @@ function sc_get_animation_fields() {
             ],
         ],
     ];
+
+    // Append the GSAP "Scroll Motion" block (separate engine, separate saved
+    // value key `gsap_motion` — no migration of existing `animation` saves).
+    if ( function_exists( 'sc_get_gsap_fields' ) ) {
+        $fields = array_merge( $fields, sc_get_gsap_fields() );
+    }
+
+    return $fields;
 }
 endif;
 
