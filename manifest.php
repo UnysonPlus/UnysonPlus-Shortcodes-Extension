@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.7.38';
+$manifest['version']     = '1.7.59';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,76 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.7.54 - New "Lottie Animation" media element ([lottie]). Plays a Lottie .json vector
+ *          via a bundled lottie-web (SVG / light build, ~168 KB, vendored and
+ *          enqueued only when used; src filterable via fw_shortcode_lottie_library_src).
+ *          Triggers: autoplay, play-in-viewport, hover (with optional rewind-on-out)
+ *          and click; plus loop, speed (0.25-2.5x), direction, max-width and alignment.
+ *
+ * 1.7.53 - Tabs: new "Segmented Toggle" nav style -- a compact pill switcher (e.g. a
+ *          Monthly / Yearly pricing toggle), full-width when Justified. Added an
+ *          optional per-tab Badge (e.g. "Save 20%") and upgraded the tab Content
+ *          field from a plain textarea to the WP visual editor (so the toolbar's
+ *          insert-shortcode button works); existing tabs are unaffected. This folds
+ *          the basic content switcher into Tabs.
+ *
+ * 1.7.51 - Progress: three new styles -- pie chart, vertical bars and a segmented
+ *          (stepped) bar -- added to the Progress Style picker, each with its own size/
+ *          per-row/segment-count controls. Pie reuses the animated SVG ring as a
+ *          full disc; vertical bars grow on scroll; segmented fills N blocks.
+ *
+ * 1.7.50 - Divider: new "Shape / SVG" ruler type. Renders a full-width decorative
+ *          silhouette (waves, single wave, curve, tilt, triangle, zigzag, arrow)
+ *          with adjustable height and horizontal/vertical flip; fill follows the
+ *          Line Color. Great as a section boundary.
+ *
+ * 1.7.49 - Notification: "Display Mode" -- render inline (default) or as a pinned
+ *          announcement bar (top/bottom) or floating toast, with an optional
+ *          "Remember Dismissal" that hides it on future visits (localStorage, keyed
+ *          to the message so edits re-show it). Pinned modes always get a close button.
+ *
+ * 1.7.48 - Accordion: optional "FAQ Rich Snippet (Schema)" toggle (Behaviour tab). When
+ *          on, the accordion emits FAQPage JSON-LD (each item title a Question, its
+ *          content the Answer, shortcodes expanded + tags stripped) so search engines
+ *          can show it as an FAQ rich result. Off by default; use on one accordion
+ *          per page.
+ *
+ * 1.7.47 - New "Scroll to Top & Progress" element ([scroll_to_top]). A fixed back-to-top
+ *          button (icon-v2 + arrow fallback, position/shape/size, fade-in after N
+ *          px) and/or a reading-progress bar (top or bottom) tied to page scroll.
+ *          One shared rAF-throttled scroll handler drives every instance.
+ *
+ * 1.7.46 - New "Comparison Table" element ([comparison_table]). A feature matrix with
+ *          plans as columns (name + price + badge + highlight + CTA button) and
+ *          features as rows; each row's cells are one-line-per-column tokens
+ *          (yes/no/dash/text) rendered as checks, crosses, dashes or values.
+ *          Supports section-heading rows, a highlighted featured column, sticky
+ *          header, and bordered/striped/minimal styles; scrolls horizontally.
+ *
+ * 1.7.45 - New "Steps / Process" element ([steps]). A numbered process flow in five
+ *          pure-CSS designs (horizontal, vertical timeline, alternating, cards,
+ *          circles) with number or icon markers, solid/dashed connectors and full
+ *          colour styling. Steps are an addable repeater (title + description + icon
+ *          + number override); collapses to one column on narrow screens.
+ *
+ * 1.7.43 - New "Audio Player" media element ([audio_player]). A custom HTML5 audio
+ *          player for self-hosted or remote tracks — single track or playlist with
+ *          cover art — in four designs (classic bar / card / minimal / playlist).
+ *          A self-contained controller handles play/pause, a draggable seek bar
+ *          (pointer + keyboard) with buffered progress, time, volume/mute, prev/next
+ *          and clickable playlist rows, advancing on track end (or looping). Tracks
+ *          are an addable repeater (audio file or URL + title + artist + cover).
+ *
+ * 1.7.39 - New "Tag List" element. Renders a list of short items as pills / chips
+ *          or an inline dot-separated list — one item per line in a single textarea,
+ *          with optional per-line links ("Label | URL"). Replaces the anti-pattern of
+ *          hand-coding pill spans inside a Text Block. Five designs (Soft / Outline /
+ *          Solid / Subtle / Inline) plus shape, size, alignment, gap, a leading-dot
+ *          marker and a hover lift; one Tag Color (a Color Preset or a custom hex)
+ *          drives the fill, border and text through a --tl-color variable + color-mix(),
+ *          so a single pick restyles the whole list. Clean .fw-tag markup, no per-item
+ *          classes. Tag: [tag_list].
+ *
  * 1.7.38 - Smooth Scroll: site-wide default. Added a "Smooth Scroll site-wide"
  *          switch to the Shortcodes extension Settings page (read via
  *          fw_get_db_ext_settings_option) so inertia scrolling can be enabled

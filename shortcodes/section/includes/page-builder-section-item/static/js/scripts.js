@@ -92,6 +92,23 @@
 
 				this.$el[this.model.get('fw-collapse') ? 'addClass' : 'removeClass']('pb-item-section-collapsed');
 
+				// Reflect "Columns Horizontal Alignment" (atts.column_halign) on the
+				// canvas so the builder preview matches the frontend, which routes it
+				// through .section--cols-{center,right} on the <section>. The matching
+				// rule in this item's styles.css justifies the section's own flex
+				// column row. Default (left) needs no class. render() re-runs on every
+				// atts change (ItemView listens to model 'change'), so this stays live.
+				{
+					var atts   = this.model.get('atts') || {},
+						halign = atts.column_halign ? String(atts.column_halign) : '';
+
+					this.$el.removeClass('section--cols-center section--cols-right');
+
+					if (halign === 'center' || halign === 'right') {
+						this.$el.addClass('section--cols-' + halign);
+					}
+				}
+
 				/**
 				 * Other scripts can append/prepend other control $elements
 				 */

@@ -21,3 +21,20 @@
 }
 
 /* end: collapsed */
+
+
+/* Columns Horizontal Alignment (atts.column_halign) — mirror the frontend on the
+   editor canvas. scripts.js adds .section--cols-{center,right} to the section item;
+   here we justify the section's OWN flex column row (the .fw-pb-flex-row container
+   that directly holds the column items, added by flex-canvas.js when Bootstrap-3
+   Legacy Mode is off — the same condition under which the frontend grid is flex).
+   Scoped to the DIRECT columns row (> child path) so a nested Container's own
+   column row is not affected. Default (left) needs no rule. */
+
+.builder-item.section--cols-center > .pb-item-type-column > .builder-items.fw-pb-flex-row {
+	justify-content: center;
+}
+
+.builder-item.section--cols-right > .pb-item-type-column > .builder-items.fw-pb-flex-row {
+	justify-content: flex-end;
+}
