@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.7.36';
+$manifest['version']     = '1.7.38';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,26 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.7.38 - Smooth Scroll: site-wide default. Added a "Smooth Scroll site-wide"
+ *          switch to the Shortcodes extension Settings page (read via
+ *          fw_get_db_ext_settings_option) so inertia scrolling can be enabled
+ *          for the whole site at once. The per-page control is now a 3-state
+ *          select — "Use site default" / On / Off — that overrides the global:
+ *          On/Off win per page, otherwise the page inherits the site default.
+ *          Migration-safe: existing per-page "yes"/"no" saves stay valid On/Off
+ *          choices; the new default "" means inherit.
+ *
+ * 1.7.37 - Smooth Scroll (Lenis), a per-page toggle. New "Smooth Scroll" switch
+ *          in the Page/Post editor (added via the fw_post_options filter,
+ *          default Off) that turns on buttery inertia scrolling for that page.
+ *          Bundles the Lenis library (static/js/vendor/lenis/) + an initializer
+ *          that bridges Lenis into GSAP's ticker and ScrollTrigger when present,
+ *          so pinned / scrubbed effects stay in sync; otherwise it runs on its
+ *          own RAF loop. Same-page anchor links scroll smoothly via lenis.scrollTo.
+ *          Loaded ONLY on singular pages where the switch is On
+ *          (sc_smooth_scroll_enqueue + fw_get_db_post_option), respects
+ *          prefers-reduced-motion, and is disabled inside the builder.
+ *
  * 1.7.36 - GSAP "Split Text" headline-reveal effect. New Scroll Motion option
  *          that splits an element's headings (or paragraphs) into characters,
  *          words or lines and reveals them in sequence as they scroll into view
