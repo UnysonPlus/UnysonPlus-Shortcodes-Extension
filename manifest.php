@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.7.32';
+$manifest['version']     = '1.7.36';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,29 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.7.36 - GSAP "Split Text" headline-reveal effect. New Scroll Motion option
+ *          that splits an element's headings (or paragraphs) into characters,
+ *          words or lines and reveals them in sequence as they scroll into view
+ *          — the signature "award-site" headline animation, no code. Bundles
+ *          GSAP's now-free SplitText plugin (static/js/vendor/gsap/SplitText.min.js)
+ *          and loads it ONLY on pages that use the effect: a new per-effect
+ *          registry (sc_gsap_used()) gates the conditional wp_footer enqueue, so
+ *          pages using only reveal/stagger never download SplitText. Reveal
+ *          direction + the shared Style preset (Subtle/Standard/Dramatic) drive
+ *          the per-piece motion; the split is reverted on completion to restore
+ *          clean, selectable, accessible markup.
+ *
+ * 1.7.35 - GSAP Reveal/Stagger "Premium" upgrade. Replaced the flat
+ *          duration + easing knobs with a single "Style" preset (Subtle /
+ *          Standard / Dramatic) that drives COMPOUND motion — the element now
+ *          rises AND scales up from a slightly smaller size AND clears a blur,
+ *          on a per-style refined ease + duration (e.g. Dramatic = expo.out,
+ *          1.2s, scale 0.90, 10px blur). Turns a basic fade into crafted,
+ *          "award-site" motion with one dropdown; the JS maps the style to the
+ *          tween (upw-gsap.js STYLES) and the PHP filter stamps data-upw-g-style.
+ *          Default travel distance nudged 40 -> 50px. Existing saves with the
+ *          old duration/ease keys simply fall back to the Standard style.
+ *
  * 1.7.32 - GSAP "Scroll Motion" engine — a second, independent animation engine
  *          on every shortcode's Animations tab, sitting alongside the existing
  *          Animate.css "Entrance Animation" block (separate saved-value key

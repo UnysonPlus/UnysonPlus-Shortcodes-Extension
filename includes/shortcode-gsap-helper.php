@@ -44,18 +44,13 @@ if ( ! defined( 'FW' ) ) die( 'Forbidden' );
 if ( ! function_exists( 'sc_get_gsap_fields' ) ) :
 function sc_get_gsap_fields() {
 
-    // Curated, sanitisation-friendly GSAP eases (no parenthesised configs, so
-    // the value passes a simple [a-z0-9.] allow-list on both PHP and JS sides).
-    $ease_choices = [
-        'power2.out' => __( 'Smooth (default)', 'fw' ),
-        'power1.out' => __( 'Gentle', 'fw' ),
-        'power3.out' => __( 'Strong', 'fw' ),
-        'power4.out' => __( 'Sharp', 'fw' ),
-        'back.out'   => __( 'Overshoot', 'fw' ),
-        'expo.out'   => __( 'Dramatic', 'fw' ),
-        'circ.out'   => __( 'Circular', 'fw' ),
-        'sine.out'   => __( 'Subtle', 'fw' ),
-        'none'       => __( 'Linear', 'fw' ),
+    // Reveal/Stagger "Style" presets. Each bundles a tasteful package of
+    // scale + blur + easing + duration (mapped JS-side in upw-gsap.js), so a
+    // single dropdown turns a flat fade into crafted, compound motion.
+    $style_choices = [
+        'subtle'   => __( 'Subtle', 'fw' ),
+        'standard' => __( 'Standard', 'fw' ),
+        'dramatic' => __( 'Dramatic', 'fw' ),
     ];
 
     // ScrollTrigger `start` positions (element edge vs viewport edge).
@@ -86,17 +81,10 @@ function sc_get_gsap_fields() {
         ];
     };
 
-    // Reusable timing fields shared by reveal / stagger.
-    $timing = function () use ( $ease_choices, $start_choices ) {
+    // Reusable "where / when" fields shared by reveal / stagger. The "how"
+    // (scale, blur, ease, duration) now lives in the Style preset above.
+    $timing = function () use ( $start_choices ) {
         return [
-            'duration' => [
-                'type'         => 'number',
-                'label'        => __( 'Duration (seconds)', 'fw' ),
-                'value'        => 0.8,
-                'min'          => 0.1,
-                'step'         => 0.1,
-                'numeric_type' => 'float',
-            ],
             'delay' => [
                 'type'         => 'number',
                 'label'        => __( 'Delay (seconds)', 'fw' ),
@@ -105,12 +93,6 @@ function sc_get_gsap_fields() {
                 'min'          => 0,
                 'step'         => 0.1,
                 'numeric_type' => 'float',
-            ],
-            'ease' => [
-                'type'    => 'select',
-                'label'   => __( 'Easing', 'fw' ),
-                'value'   => 'power2.out',
-                'choices' => $ease_choices,
             ],
             'start' => [
                 'type'    => 'select',
@@ -121,6 +103,15 @@ function sc_get_gsap_fields() {
             ],
         ];
     };
+
+    // The Style select, inserted into both reveal and stagger groups.
+    $style_field = [
+        'type'    => 'select',
+        'label'   => __( 'Style', 'fw' ),
+        'desc'    => __( 'Overall character — layers a scale + blur + refined easing so the motion feels crafted, not flat. Dramatic is the boldest.', 'fw' ),
+        'value'   => 'standard',
+        'choices' => $style_choices,
+    ];
 
     return [
         'gsap_heading' => [
@@ -145,12 +136,13 @@ function sc_get_gsap_fields() {
                     'label'   => __( 'Scroll Effect', 'fw' ),
                     'desc'    => __( 'Pick a scroll-driven effect. Leave on None for no GSAP motion (nothing loads).', 'fw' ),
                     'choices' => [
-                        'none'     => __( 'None', 'fw' ),
-                        'reveal'   => __( 'Reveal (fade + move in on scroll)', 'fw' ),
-                        'stagger'  => __( 'Stagger children (cascade in)', 'fw' ),
-                        'parallax' => __( 'Parallax (moves with scroll)', 'fw' ),
-                        'pin'      => __( 'Pin (sticks while you scroll past)', 'fw' ),
-                        'scrub'    => __( 'Scroll Scrub (progress tied to scroll)', 'fw' ),
+                        'none'      => __( 'None', 'fw' ),
+                        'reveal'    => __( 'Reveal (fade + move in on scroll)', 'fw' ),
+                        'stagger'   => __( 'Stagger children (cascade in)', 'fw' ),
+                        'splittext' => __( 'Split Text (headline reveal)', 'fw' ),
+                        'parallax'  => __( 'Parallax (moves with scroll)', 'fw' ),
+                        'pin'       => __( 'Pin (sticks while you scroll past)', 'fw' ),
+                        'scrub'     => __( 'Scroll Scrub (progress tied to scroll)', 'fw' ),
                     ],
                 ],
             ],
@@ -166,11 +158,12 @@ function sc_get_gsap_fields() {
                                     'value'   => 'up',
                                     'choices' => $direction_choices,
                                 ],
+                                'style' => $style_field,
                                 'distance' => [
                                     'type'         => 'number',
                                     'label'        => __( 'Distance (px)', 'fw' ),
                                     'desc'         => __( 'How far it travels as it fades in.', 'fw' ),
-                                    'value'        => 40,
+                                    'value'        => 50,
                                     'min'          => 0,
                                     'step'         => 1,
                                     'numeric_type' => 'integer',
@@ -202,10 +195,11 @@ function sc_get_gsap_fields() {
                                     'value'   => 'up',
                                     'choices' => $direction_choices,
                                 ],
+                                'style' => $style_field,
                                 'distance' => [
                                     'type'         => 'number',
                                     'label'        => __( 'Distance (px)', 'fw' ),
-                                    'value'        => 40,
+                                    'value'        => 50,
                                     'min'          => 0,
                                     'step'         => 1,
                                     'numeric_type' => 'integer',
@@ -234,6 +228,61 @@ function sc_get_gsap_fields() {
                             $timing(),
                             [ 'run_on_mobile' => $run_on_mobile( true ) ]
                         ),
+                    ],
+                ],
+                'splittext' => [
+                    'group_gsap_splittext' => [
+                        'type'    => 'group',
+                        'options' => [
+                            'split_by' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Split by', 'fw' ),
+                                'desc'    => __( 'What reveals in sequence — letters, words or lines.', 'fw' ),
+                                'value'   => 'chars',
+                                'choices' => [
+                                    'chars' => __( 'Characters', 'fw' ),
+                                    'words' => __( 'Words', 'fw' ),
+                                    'lines' => __( 'Lines', 'fw' ),
+                                ],
+                            ],
+                            'target' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Apply to', 'fw' ),
+                                'desc'    => __( 'Which text inside this element gets split and revealed.', 'fw' ),
+                                'value'   => 'headings',
+                                'choices' => [
+                                    'headings'   => __( 'Headings (H1–H6)', 'fw' ),
+                                    'paragraphs' => __( 'Paragraphs', 'fw' ),
+                                    'all'        => __( 'Headings + paragraphs', 'fw' ),
+                                ],
+                            ],
+                            'style'        => $style_field,
+                            'stagger_each' => [
+                                'type'         => 'number',
+                                'label'        => __( 'Time between pieces (seconds)', 'fw' ),
+                                'desc'         => __( 'Smaller = faster cascade. Characters look good around 0.02–0.04.', 'fw' ),
+                                'value'        => 0.03,
+                                'min'          => 0,
+                                'step'         => 0.01,
+                                'numeric_type' => 'float',
+                            ],
+                            'direction' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Direction', 'fw' ),
+                                'value'   => 'up',
+                                'choices' => [
+                                    'up'   => __( 'Rise up', 'fw' ),
+                                    'down' => __( 'Drop down', 'fw' ),
+                                ],
+                            ],
+                            'start' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Start animating', 'fw' ),
+                                'value'   => 'top 85%',
+                                'choices' => $start_choices,
+                            ],
+                            'run_on_mobile' => $run_on_mobile( true ),
+                        ],
                     ],
                 ],
                 'parallax' => [
@@ -335,6 +384,19 @@ endif;
 
 
 /**
+ * Records which GSAP effects rendered on this request, so wp_footer can load
+ * the heavier per-effect plugins (e.g. SplitText) ONLY when they're used.
+ */
+if ( ! function_exists( 'sc_gsap_used' ) ) :
+function sc_gsap_used( $effect = null ) {
+    static $set = [];
+    if ( $effect !== null ) { $set[ (string) $effect ] = true; }
+    return $set;
+}
+endif;
+
+
+/**
  * Stamp the GSAP data-attributes (and, for hidden-start effects, the
  * `upw-g-pending` guard class) onto the shortcode wrapper.
  *
@@ -346,7 +408,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     $g = ( isset( $atts['gsap_motion'] ) && is_array( $atts['gsap_motion'] ) ) ? $atts['gsap_motion'] : [];
 
     $effect  = isset( $g['effect'] ) ? (string) $g['effect'] : 'none';
-    $allowed = [ 'reveal', 'stagger', 'parallax', 'pin', 'scrub' ];
+    $allowed = [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub' ];
     if ( ! in_array( $effect, $allowed, true ) ) {
         return $attr;
     }
@@ -371,7 +433,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     };
 
     $dir_allow   = [ 'up', 'down', 'left', 'right', 'none' ];
-    $ease_allow  = [ 'power1.out', 'power2.out', 'power3.out', 'power4.out', 'back.out', 'expo.out', 'circ.out', 'sine.out', 'none' ];
+    $style_allow = [ 'subtle', 'standard', 'dramatic' ];
     $start_allow = [ 'top 85%', 'top 100%', 'top 70%', 'top center', 'top 40%' ];
 
     $pending = false; // effects that start hidden need the FOUC guard class
@@ -380,10 +442,9 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
         case 'reveal':
             $dir = $pick( 'direction', $dir_allow, 'up' );
             if ( $dir !== 'up' )    $data['data-upw-g-dir']      = $dir;
-            $data['data-upw-g-distance'] = $num( 'distance', 40 );
-            $data['data-upw-g-duration'] = $num( 'duration', 0.8 );
+            $data['data-upw-g-style']    = $pick( 'style', $style_allow, 'standard' );
+            $data['data-upw-g-distance'] = $num( 'distance', 50 );
             if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
-            $data['data-upw-g-ease']  = $pick( 'ease', $ease_allow, 'power2.out' );
             $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
             if ( ! $on( 'once', true ) ) $data['data-upw-g-once'] = '0';
             if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
@@ -393,12 +454,24 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
         case 'stagger':
             $dir = $pick( 'direction', $dir_allow, 'up' );
             if ( $dir !== 'up' )    $data['data-upw-g-dir']      = $dir;
-            $data['data-upw-g-distance'] = $num( 'distance', 40 );
-            $data['data-upw-g-duration'] = $num( 'duration', 0.8 );
+            $data['data-upw-g-style']    = $pick( 'style', $style_allow, 'standard' );
+            $data['data-upw-g-distance'] = $num( 'distance', 50 );
             $data['data-upw-g-each']     = $num( 'stagger_each', 0.12 );
             $data['data-upw-g-from']     = $pick( 'stagger_from', [ 'start', 'end', 'center', 'edges' ], 'start' );
-            $data['data-upw-g-ease']     = $pick( 'ease', $ease_allow, 'power2.out' );
+            if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
             $data['data-upw-g-start']    = $pick( 'start', $start_allow, 'top 85%' );
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            $pending = true;
+            break;
+
+        case 'splittext':
+            $data['data-upw-g-split']  = $pick( 'split_by', [ 'chars', 'words', 'lines' ], 'chars' );
+            $data['data-upw-g-target'] = $pick( 'target', [ 'headings', 'paragraphs', 'all' ], 'headings' );
+            $data['data-upw-g-style']  = $pick( 'style', $style_allow, 'standard' );
+            $data['data-upw-g-each']   = $num( 'stagger_each', 0.03 );
+            $dir = $pick( 'direction', [ 'up', 'down' ], 'up' );
+            if ( $dir !== 'up' ) $data['data-upw-g-dir'] = $dir;
+            $data['data-upw-g-start']  = $pick( 'start', $start_allow, 'top 85%' );
             if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
             $pending = true;
             break;
@@ -436,6 +509,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     }
 
     sc_gsap_flag( true );
+    sc_gsap_used( $effect );
 
     return $attr;
 }, 25, 2 );
@@ -471,10 +545,25 @@ add_action( 'wp_footer', function () {
         $gsap_ver,
         true
     );
+    $init_deps = [ 'upw-gsap-scrolltrigger' ];
+
+    // SplitText is only needed when a "Split Text" effect is on the page.
+    $used = function_exists( 'sc_gsap_used' ) ? sc_gsap_used() : [];
+    if ( isset( $used['splittext'] ) ) {
+        wp_enqueue_script(
+            'upw-gsap-splittext',
+            $ext->get_declared_URI( '/static/js/vendor/gsap/SplitText.min.js' ),
+            [ 'upw-gsap-core' ],
+            $gsap_ver,
+            true
+        );
+        $init_deps[] = 'upw-gsap-splittext';
+    }
+
     wp_enqueue_script(
         'upw-gsap-init',
         $ext->get_declared_URI( '/static/js/upw-gsap.js' ),
-        [ 'upw-gsap-scrolltrigger' ],
+        $init_deps,
         $ver,
         true
     );

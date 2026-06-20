@@ -50,20 +50,24 @@
             return;
         }
 
-        if (gsap.registerPlugin && window.ScrollTrigger) {
-            gsap.registerPlugin(window.ScrollTrigger);
+        if (gsap.registerPlugin) {
+            if (window.ScrollTrigger) gsap.registerPlugin(window.ScrollTrigger);
+            if (window.SplitText) gsap.registerPlugin(window.SplitText);
         }
 
         var isMobile = window.innerWidth < 768;
 
-        var EASES = {
-            'power1.out': 1, 'power2.out': 1, 'power3.out': 1, 'power4.out': 1,
-            'back.out': 1, 'expo.out': 1, 'circ.out': 1, 'sine.out': 1, 'none': 1
+        // Reveal/Stagger "Style" presets — the compound character (scale + blur
+        // + ease + duration) behind a single dropdown.
+        var STYLES = {
+            subtle:   { scale: 0.98, blur: 0,  ease: 'power2.out', duration: 0.6 },
+            standard: { scale: 0.96, blur: 4,  ease: 'power3.out', duration: 0.9 },
+            dramatic: { scale: 0.90, blur: 10, ease: 'expo.out',   duration: 1.2 }
         };
 
         function attr(el, name) { return el.getAttribute(name); }
         function num(v, d) { v = parseFloat(v); return isNaN(v) ? d : v; }
-        function ease(v) { return (v && EASES[v]) ? v : 'power2.out'; }
+        function styleOf(el) { return STYLES[attr(el, 'data-upw-g-style')] || STYLES.standard; }
         function startPos(v) {
             return (typeof v === 'string' && /^[a-z]+ [a-z0-9%]+$/i.test(v)) ? v : 'top 85%';
         }
@@ -78,24 +82,35 @@
             return o;
         }
 
-        function reveal(el) {
+        // Build the compound from/to vars shared by reveal + stagger.
+        function compound(el, st) {
             var dir = attr(el, 'data-upw-g-dir') || 'up';
-            var from = offsetFor(dir, num(attr(el, 'data-upw-g-distance'), 40));
+            var from = offsetFor(dir, num(attr(el, 'data-upw-g-distance'), 50));
             from.opacity = 0;
+            from.scale = st.scale;
+            if (st.blur) from.filter = 'blur(' + st.blur + 'px)';
 
-            gsap.fromTo(el, from, {
-                opacity: 1, x: 0, y: 0,
-                duration: num(attr(el, 'data-upw-g-duration'), 0.8),
+            var to = {
+                opacity: 1, x: 0, y: 0, scale: 1,
+                duration: st.duration,
                 delay: num(attr(el, 'data-upw-g-delay'), 0),
-                ease: ease(attr(el, 'data-upw-g-ease')),
-                scrollTrigger: {
-                    trigger: el,
-                    start: startPos(attr(el, 'data-upw-g-start')),
-                    toggleActions: attr(el, 'data-upw-g-once') === '0'
-                        ? 'play none none reverse'
-                        : 'play none none none'
-                }
-            });
+                ease: st.ease
+            };
+            if (st.blur) to.filter = 'blur(0px)';
+            return { from: from, to: to };
+        }
+
+        function reveal(el) {
+            var st = styleOf(el);
+            var c = compound(el, st);
+            c.to.scrollTrigger = {
+                trigger: el,
+                start: startPos(attr(el, 'data-upw-g-start')),
+                toggleActions: attr(el, 'data-upw-g-once') === '0'
+                    ? 'play none none reverse'
+                    : 'play none none none'
+            };
+            gsap.fromTo(el, c.from, c.to);
             el.classList.remove('upw-g-pending');
         }
 
@@ -103,23 +118,59 @@
             var kids = Array.prototype.slice.call(el.children);
             if (!kids.length) { el.classList.remove('upw-g-pending'); return; }
 
-            var dir = attr(el, 'data-upw-g-dir') || 'up';
-            var from = offsetFor(dir, num(attr(el, 'data-upw-g-distance'), 40));
-            from.opacity = 0;
+            var st = styleOf(el);
+            var c = compound(el, st);
 
             var fromWhich = attr(el, 'data-upw-g-from') || 'start';
             if (['start', 'end', 'center', 'edges'].indexOf(fromWhich) === -1) fromWhich = 'start';
 
-            gsap.fromTo(kids, from, {
-                opacity: 1, x: 0, y: 0,
-                duration: num(attr(el, 'data-upw-g-duration'), 0.8),
-                ease: ease(attr(el, 'data-upw-g-ease')),
-                stagger: { each: num(attr(el, 'data-upw-g-each'), 0.12), from: fromWhich },
-                scrollTrigger: {
-                    trigger: el,
-                    start: startPos(attr(el, 'data-upw-g-start')),
-                    toggleActions: 'play none none none'
-                }
+            c.to.stagger = { each: num(attr(el, 'data-upw-g-each'), 0.12), from: fromWhich };
+            c.to.scrollTrigger = {
+                trigger: el,
+                start: startPos(attr(el, 'data-upw-g-start')),
+                toggleActions: 'play none none none'
+            };
+            gsap.fromTo(kids, c.from, c.to);
+            el.classList.remove('upw-g-pending');
+        }
+
+        var TARGETS = {
+            headings: 'h1,h2,h3,h4,h5,h6',
+            paragraphs: 'p',
+            all: 'h1,h2,h3,h4,h5,h6,p'
+        };
+
+        function splittext(el) {
+            if (!window.SplitText) { el.classList.remove('upw-g-pending'); return; }
+
+            var st = styleOf(el);
+            var unit = attr(el, 'data-upw-g-split') || 'chars';
+            if (['chars', 'words', 'lines'].indexOf(unit) === -1) unit = 'chars';
+
+            var sel = TARGETS[attr(el, 'data-upw-g-target')] || TARGETS.headings;
+            var targets = el.querySelectorAll(sel);
+            if (!targets.length) { el.classList.remove('upw-g-pending'); return; }
+
+            var dirSign = attr(el, 'data-upw-g-dir') === 'down' ? -1 : 1;
+            var each = num(attr(el, 'data-upw-g-each'), 0.03);
+            var start = startPos(attr(el, 'data-upw-g-start'));
+
+            Array.prototype.forEach.call(targets, function (t) {
+                var split = new window.SplitText(t, { type: unit, linesClass: 'upw-g-line' });
+                var pieces = split[unit];
+                if (!pieces || !pieces.length) { return; }
+
+                if (unit !== 'lines') gsap.set(pieces, { display: 'inline-block' });
+                gsap.set(pieces, { opacity: 0, yPercent: 100 * dirSign });
+
+                gsap.to(pieces, {
+                    opacity: 1, yPercent: 0,
+                    duration: Math.max(0.4, st.duration * 0.7),
+                    ease: st.ease,
+                    stagger: each,
+                    scrollTrigger: { trigger: t, start: start },
+                    onComplete: function () { if (split.revert) split.revert(); }
+                });
             });
             el.classList.remove('upw-g-pending');
         }
@@ -172,7 +223,8 @@
         }
 
         var BUILDERS = {
-            reveal: reveal, stagger: stagger, parallax: parallax, pin: pin, scrub: scrub
+            reveal: reveal, stagger: stagger, splittext: splittext,
+            parallax: parallax, pin: pin, scrub: scrub
         };
 
         function build(el) {
