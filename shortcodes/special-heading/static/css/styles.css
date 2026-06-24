@@ -21,21 +21,31 @@
 	justify-content: flex-start;
 	font-size: 0.875rem;
 	line-height: 1.2;
+	font-weight: 500;
+	/* margin-top:0 resets the UA <p> top margin (the overline is a <p> for semantics);
+	   the heading block controls the gap below via margin-bottom. */
+	margin-top: 0;
 	margin-bottom: 0.5rem;
 	color: var(--color-muted, #6c757d);
 }
+/* Subtitle is a semantic <p>; zero its UA margins so spacing matches the old <div>
+   (the gap above comes from the title's own margin-bottom). */
+.heading-subtitle { margin-top: 0; margin-bottom: 0; }
 .heading-overline.text-center { justify-content: center; }
 .heading-overline.text-end    { justify-content: flex-end; }
 
+/* The label span (only present for markers / pills) is a flex row so markers can
+   flank the text; it inherits font-weight/size from .heading-overline. */
 .heading-overline__label {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.625rem;
-	font-weight: 500;
 }
 
-/* Case — small uppercase, letter-spaced, heavier kicker. */
-.heading-overline--kicker .heading-overline__label {
+/* Case — small uppercase, letter-spaced, heavier kicker. Applied to the OVERLINE
+   element so it works whether or not the inner span is present (markers/pills add
+   the span; a plain kicker doesn't need it). */
+.heading-overline--kicker {
 	text-transform: uppercase;
 	letter-spacing: 0.08em;
 	font-weight: 600;

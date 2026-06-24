@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="88" height="64" viewBox="0 0 88 64" fill="none">
+  <defs>
+    <linearGradient id="ib-edcover" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b3340" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#2b3340" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="88" height="64" rx="4" fill="#f5f7fa"/>
+  <rect x="6" y="6" width="76" height="52" rx="2" fill="#c3ccd6"/>
+  <path d="M6 58 L30 38 L46 50 L62 36 L82 58 Z" fill="#9aa7b4"/>
+  <rect x="6" y="6" width="76" height="28" rx="2" fill="url(#ib-edcover)"/>
+  <rect x="12" y="12" width="44" height="6" rx="2" fill="#ffffff"/>
+  <rect x="12" y="22" width="64" height="1.5" fill="#ffffff" fill-opacity="0.6"/>
+</svg>

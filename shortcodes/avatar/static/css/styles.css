@@ -1,0 +1,201 @@
+/* =========================================================================
+   Avatar shortcode
+   - One self-contained component; no Bootstrap / framework grid dependency.
+   - Sizing is driven by a single CSS custom property `--av-size` (set inline
+     on the root from the Size option) so the box, initials, status dot, ring
+     and group overlap all scale together.
+   ========================================================================= */
+
+.fw-avatar-sc {
+	/* Sensible fallbacks; the inline style overrides --av-size per instance. */
+	--av-size: 56px;
+	--av-ring: #ffffff;
+	--av-initials-bg: #6c757d;
+	--av-initials-fg: #ffffff;
+	--av-label: inherit;
+	--av-counter-bg: #e9ecef;
+	--av-counter-fg: #343a40;
+	display: inline-block;
+	line-height: 1.2;
+}
+
+/* ----------------------------- the avatar box ---------------------------- */
+.fw-avatar-sc .fw-avatar {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--av-size);
+	height: var(--av-size);
+	flex: 0 0 auto;
+	overflow: visible;            /* let the status dot sit on the edge */
+	background: var(--av-initials-bg);
+	color: var(--av-initials-fg);
+	font-weight: 600;
+	font-size: calc(var(--av-size) * 0.4);
+	user-select: none;
+	transition: transform .18s ease, box-shadow .18s ease;
+	vertical-align: middle;
+}
+
+.fw-avatar-sc .fw-avatar__img,
+.fw-avatar-sc .fw-avatar__initials {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.fw-avatar-sc .fw-avatar__img {
+	object-fit: cover;
+	display: block;
+}
+.fw-avatar-sc .fw-avatar__initials {
+	letter-spacing: .02em;
+	line-height: 1;
+	text-transform: uppercase;
+}
+
+/* The clip happens on an inner layer so the status dot/ring can overflow.
+   We clip the IMG / INITIALS to the shape, not the whole box. */
+.fw-avatar-sc .fw-avatar { border-radius: 50%; }                 /* circle (default) */
+.fw-avatar-sc.fw-avatar--shape-rounded .fw-avatar { border-radius: 22%; }
+.fw-avatar-sc.fw-avatar--shape-square  .fw-avatar { border-radius: 0; }
+
+.fw-avatar-sc .fw-avatar__img,
+.fw-avatar-sc .fw-avatar__initials { border-radius: inherit; }
+
+.fw-avatar-link { display: inline-flex; text-decoration: none; color: inherit; }
+
+/* ------------------------------- designs -------------------------------- */
+/* Plain = no extra chrome. */
+
+/* Bordered — solid ring in the ring color (defaults to white: great for
+   separating overlapping group avatars against a colored background). */
+.fw-avatar-sc.fw-avatar--bordered .fw-avatar {
+	box-shadow: 0 0 0 max(2px, calc(var(--av-size) * 0.06)) var(--av-ring);
+}
+
+/* Accent Ring — a gap between the avatar and the ring (Instagram-style). */
+.fw-avatar-sc.fw-avatar--ring .fw-avatar {
+	box-shadow:
+		0 0 0 max(2px, calc(var(--av-size) * 0.05)) #fff,
+		0 0 0 max(4px, calc(var(--av-size) * 0.10)) var(--av-ring);
+}
+.fw-avatar-sc.fw-avatar--ring { --av-ring: #4a90d9; }
+
+/* Soft Shadow — floats the avatar off the page. */
+.fw-avatar-sc.fw-avatar--shadow .fw-avatar {
+	box-shadow: 0 6px 16px rgba(16, 24, 40, .18), 0 2px 4px rgba(16, 24, 40, .10);
+}
+
+/* Soft Tint — muted initials chip + faint border (modern "no photo" look). */
+.fw-avatar-sc.fw-avatar--soft { --av-initials-bg: #eef2f7; --av-initials-fg: #475569; }
+.fw-avatar-sc.fw-avatar--soft .fw-avatar {
+	box-shadow: inset 0 0 0 1px rgba(2, 6, 23, .08);
+}
+
+/* ----------------------------- status dot -------------------------------- */
+.fw-avatar-sc .fw-avatar__status {
+	position: absolute;
+	right: 2%;
+	bottom: 2%;
+	width: calc(var(--av-size) * 0.28);
+	height: calc(var(--av-size) * 0.28);
+	min-width: 8px;
+	min-height: 8px;
+	border-radius: 50%;
+	box-shadow: 0 0 0 max(2px, calc(var(--av-size) * 0.05)) #fff;
+	background: #adb5bd;
+}
+/* Square / rounded avatars: nudge the dot toward the corner. */
+.fw-avatar-sc.fw-avatar--shape-square  .fw-avatar__status,
+.fw-avatar-sc.fw-avatar--shape-rounded .fw-avatar__status { right: -4%; bottom: -4%; }
+
+.fw-avatar-sc .fw-avatar__status--online  { background: #2fb344; }
+.fw-avatar-sc .fw-avatar__status--away    { background: #f59f00; }
+.fw-avatar-sc .fw-avatar__status--busy    { background: #e03131; }
+.fw-avatar-sc .fw-avatar__status--offline { background: #adb5bd; }
+
+/* --------------------------- single + label ------------------------------ */
+.fw-avatar-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: calc(var(--av-size) * 0.22);
+	text-decoration: none;
+	color: inherit;
+	max-width: 100%;
+}
+.fw-avatar-chip__text {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	line-height: 1.25;
+}
+.fw-avatar-chip__name {
+	font-weight: 600;
+	color: var(--av-label);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.fw-avatar-chip__sub {
+	font-size: .82em;
+	opacity: .7;
+	color: var(--av-label);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* ------------------------------- group ----------------------------------- */
+.fw-avatar-group {
+	display: inline-flex;
+	align-items: center;
+}
+.fw-avatar-group > * + * {
+	margin-left: calc(var(--av-size) * var(--av-overlap, .35) * -1);
+}
+/* First-on-top: earlier avatars sit above later ones (z-index set inline). */
+
+/* Lift on hover so a hovered avatar pops out of the stack. */
+.fw-avatar-group .fw-avatar:hover,
+.fw-avatar-group .fw-avatar-link:hover .fw-avatar {
+	transform: translateY(-3px);
+	z-index: 20 !important;
+}
+
+/* "+N" counter chip — styled like an avatar. */
+.fw-avatar-sc .fw-avatar__more {
+	background: var(--av-counter-bg);
+	color: var(--av-counter-fg);
+	font-weight: 600;
+	font-size: calc(var(--av-size) * 0.32);
+}
+.fw-avatar-sc .fw-avatar__more-text {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	padding: 0 .15em;
+}
+/* The bordered/ring designs also frame the counter so it matches the stack. */
+.fw-avatar-sc.fw-avatar--bordered .fw-avatar__more {
+	box-shadow: 0 0 0 max(2px, calc(var(--av-size) * 0.06)) var(--av-ring);
+}
+
+/* -------------------------- empty (editor only) -------------------------- */
+.fw-avatar-empty {
+	display: inline-block;
+	padding: .5rem .75rem;
+	border: 1px dashed #c5ccd6;
+	border-radius: 6px;
+	color: #6b7280;
+	font-size: 13px;
+}
+
+/* ------------------------------ a11y ------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+	.fw-avatar-sc .fw-avatar { transition: none; }
+}

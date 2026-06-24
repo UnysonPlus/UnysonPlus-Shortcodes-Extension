@@ -138,8 +138,10 @@ function sc_build_wrapper_attr( $atts ) {
         $attr['style'] = esc_attr( $atts['css_style'] );
     }
 
-    // Add class attribute if classes exist
+    // Add class attribute if classes exist (de-duplicated — e.g. a base_class of
+    // "heading" plus a user/converter css_class of "heading" collapse to one token).
     if ( ! empty( $classes ) ) {
+        $classes = array_values( array_unique( array_filter( $classes ) ) );
         $attr['class'] = esc_attr( implode( ' ', $classes ) );
     }
 

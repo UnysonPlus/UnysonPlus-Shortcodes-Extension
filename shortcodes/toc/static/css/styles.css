@@ -1,0 +1,155 @@
+/**
+ * Table of Contents shortcode.
+ *
+ * Colors are driven by CSS custom properties set inline on the wrapper (from
+ * the Styling tab); each falls back to a sensible default so an un-styled TOC
+ * still looks finished. Hover / active states have to live here (inline styles
+ * can't express :hover), which is why every color routes through a variable.
+ */
+
+.sc-toc {
+	--sc-toc-bg: #f8f9fa;
+	--sc-toc-border: #e6e8eb;
+	--sc-toc-title-color: inherit;
+	--sc-toc-link: #2c6ecb;
+	--sc-toc-link-hover: #174a99;
+	--sc-toc-link-active: #174a99;
+	--sc-toc-sticky-top: 20px;
+
+	display: block;
+	box-sizing: border-box;
+	margin: 0 0 1.5em;
+	padding: 1em 1.25em;
+	background: var(--sc-toc-bg);
+	border: 1px solid var(--sc-toc-border);
+	border-radius: 6px;
+	font-size: 0.95em;
+	line-height: 1.5;
+}
+
+.sc-toc *,
+.sc-toc *::before,
+.sc-toc *::after { box-sizing: inherit; }
+
+/* Hidden until JS confirms it has headings (avoids a flash of an empty box). */
+.sc-toc--empty { display: none; }
+
+/* ----- header / title -------------------------------------------------- */
+
+.sc-toc__header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.75em;
+	margin-bottom: 0.5em;
+}
+
+.sc-toc__title {
+	font-weight: 700;
+	color: var(--sc-toc-title-color);
+}
+
+.sc-toc__toggle {
+	flex: none;
+	background: none;
+	border: 0;
+	padding: 0;
+	font: inherit;
+	font-size: 0.85em;
+	color: var(--sc-toc-link);
+	cursor: pointer;
+	text-decoration: underline;
+}
+.sc-toc__toggle:hover { color: var(--sc-toc-link-hover); }
+
+/* ----- lists ----------------------------------------------------------- */
+
+.sc-toc__list,
+.sc-toc__sublist {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.sc-toc__sublist {
+	margin-left: 1.1em;
+}
+
+.sc-toc__item {
+	margin: 0.2em 0;
+}
+
+.sc-toc__link {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.4em;
+	color: var(--sc-toc-link);
+	text-decoration: none;
+}
+.sc-toc__link:hover,
+.sc-toc__link:focus {
+	color: var(--sc-toc-link-hover);
+	text-decoration: underline;
+}
+.sc-toc__link.is-active {
+	color: var(--sc-toc-link-active);
+	font-weight: 600;
+}
+
+.sc-toc__num {
+	flex: none;
+	opacity: 0.8;
+	font-variant-numeric: tabular-nums;
+}
+
+/* Bullets variant — show real list markers, drop the number spans. */
+.sc-toc--bullets .sc-toc__list,
+.sc-toc--bullets .sc-toc__sublist {
+	list-style: disc;
+	padding-left: 1.25em;
+}
+.sc-toc--bullets .sc-toc__sublist { list-style: circle; }
+
+/* When not nested, the (single) list reads as a flat column. */
+.sc-toc:not(.sc-toc--nested) .sc-toc__sublist { margin-left: 0; }
+
+/* ----- collapsible ----------------------------------------------------- */
+
+.sc-toc--collapsible.is-collapsed .sc-toc__list {
+	display: none;
+}
+.sc-toc--collapsible.is-collapsed .sc-toc__header {
+	margin-bottom: 0;
+}
+
+/* ----- width / float / sticky ------------------------------------------ */
+
+.sc-toc--auto { width: auto; display: inline-block; }
+
+.sc-toc--float-left {
+	float: left;
+	max-width: 50%;
+	margin-right: 1.5em;
+}
+.sc-toc--float-right {
+	float: right;
+	max-width: 50%;
+	margin-left: 1.5em;
+}
+
+.sc-toc--sticky {
+	position: -webkit-sticky;
+	position: sticky;
+	top: var(--sc-toc-sticky-top);
+}
+
+@media (max-width: 767px) {
+	.sc-toc--float-left,
+	.sc-toc--float-right {
+		float: none;
+		max-width: none;
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.sc-toc--sticky { position: static; }
+}

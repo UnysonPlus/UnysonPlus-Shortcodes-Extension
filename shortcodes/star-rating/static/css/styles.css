@@ -1,0 +1,46 @@
+/* =============================================================================
+ * Star Rating — stars / hearts / circles (partial fill) or a bar.
+ * ========================================================================== */
+.fw-sr {
+	--sr-fill: #f5a623;
+	--sr-empty: #d6dbe1;
+	--sr-text: inherit;
+	--sr-size: 1.4rem;
+	display: flex;
+	align-items: center;
+	gap: .55rem;
+	flex-wrap: wrap;
+	color: var(--sr-text);
+}
+.fw-sr--text-center { justify-content: center; }
+.fw-sr--text-end { justify-content: flex-end; }
+.fw-sr--size-sm { --sr-size: 1.05rem; }
+.fw-sr--size-md { --sr-size: 1.4rem; }
+.fw-sr--size-lg { --sr-size: 1.9rem; }
+.fw-sr--size-xl { --sr-size: 2.6rem; }
+
+.fw-sr__label { font-weight: 600; }
+.fw-sr__value { font-weight: 700; }
+.fw-sr__count { color: #6b7280; font-size: .85em; }
+
+/* Symbols ------------------------------------------------------------------ */
+.fw-sr__symbols { display: inline-flex; gap: .12em; font-size: var(--sr-size); line-height: 1; }
+.fw-sr__sym { position: relative; width: 1em; height: 1em; display: inline-block; }
+.fw-sr__sym-empty { color: var(--sr-empty); display: block; }
+.fw-sr__sym-fill { position: absolute; top: 0; left: 0; bottom: 0; overflow: hidden; color: var(--sr-fill); }
+/* max-width:none is REQUIRED — a theme's global `svg/img { max-width:100% }` would
+   otherwise clamp the fill star's SVG to its (e.g. 50%-wide) clip box, SHRINKING it
+   into a smaller star instead of letting overflow:hidden clip it to a HALF star. */
+.fw-sr__sym svg { width: 1em; height: 1em; max-width: none; display: block; fill: currentColor; }
+.fw-sr__sym-fill svg { width: 1em; max-width: none; }
+
+/* Bar ---------------------------------------------------------------------- */
+.fw-sr--design-bar .fw-sr__symbols {
+	display: block;
+	width: 180px;
+	height: calc(var(--sr-size) * .55);
+	background: var(--sr-empty);
+	border-radius: 1em;
+	overflow: hidden;
+}
+.fw-sr--design-bar .fw-sr__bar { height: 100%; background: var(--sr-fill); border-radius: 1em; }

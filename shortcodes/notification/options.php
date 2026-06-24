@@ -98,6 +98,28 @@ $options = [
                 'type'  => 'short-text',
                 'value' => '0',
             ],
+            'display_mode' => [
+                'label'   => __('Display Mode', 'fw'),
+                'desc'    => __('Render the notice in the normal page flow, or as a site-wide announcement bar / floating toast pinned to the viewport.', 'fw'),
+                'help'    => __('Bar modes stick to the top or bottom of the screen across the whole page; Floating shows a compact toast in the bottom corner. Any non-Inline mode gets a close button automatically. Place ONE bar per page.', 'fw'),
+                'type'    => 'select',
+                'value'   => 'inline',
+                'choices' => [
+                    'inline'     => __('Inline (in the page)', 'fw'),
+                    'bar-top'    => __('Announcement Bar — Top', 'fw'),
+                    'bar-bottom' => __('Announcement Bar — Bottom', 'fw'),
+                    'floating'   => __('Floating Toast (bottom corner)', 'fw'),
+                ],
+            ],
+            'persist_dismiss' => [
+                'label'        => __('Remember Dismissal', 'fw'),
+                'desc'         => __('Once a visitor closes the bar / toast, keep it hidden on future visits (stored in their browser).', 'fw'),
+                'help'         => __('Only applies to the Bar / Floating modes. The memory is keyed to the message content, so editing the text shows the notice again to everyone.', 'fw'),
+                'type'         => 'switch',
+                'right-choice' => [ 'value' => 'yes', 'label' => __('Yes', 'fw') ],
+                'left-choice'  => [ 'value' => 'no',  'label' => __('No',  'fw') ],
+                'value'        => 'no',
+            ],
         ],
     ],
 

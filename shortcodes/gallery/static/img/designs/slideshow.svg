@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Slideshow fade layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <rect x="20" y="16" width="80" height="50" rx="4" fill="#fff" stroke="#cfd6dd" stroke-width="2"/>
+  <rect x="26" y="22" width="68" height="38" rx="2" fill="#e9edf1"/>
+  <g fill="#cfd6dd">
+    <rect x="48" y="74" width="10" height="4" rx="2" fill="#9b9b9b"/>
+    <circle cx="66" cy="76" r="2.5"/>
+    <circle cx="74" cy="76" r="2.5"/>
+  </g>
+</svg>

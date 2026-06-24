@@ -1,0 +1,60 @@
+/* =============================================================================
+ * Business Info — opening hours (+ live status) and contact details.
+ * ========================================================================== */
+.fw-bi {
+	--bi-accent: #4a90d9;
+	--bi-card-bg: #ffffff;
+	--bi-text: inherit;
+	color: var(--bi-text);
+}
+.fw-bi__head { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.fw-bi__name { margin: 0; }
+.fw-bi__status { display: inline-flex; align-items: center; gap: .45em; font-weight: 700; font-size: .85rem; padding: .3em .8em; border-radius: 2rem; }
+.fw-bi__status.is-open { background: rgba(46, 158, 91, .14); color: #1e7d44; }
+.fw-bi__status.is-closed { background: rgba(192, 57, 43, .12); color: #b23a2c; }
+.fw-bi__dot { width: .55em; height: .55em; border-radius: 50%; background: currentColor; }
+.fw-bi__status.is-open .fw-bi__dot { animation: fw-bi-pulse 1.8s ease-out infinite; }
+@keyframes fw-bi-pulse { 0% { box-shadow: 0 0 0 0 rgba(46, 158, 91, .5); } 100% { box-shadow: 0 0 0 8px rgba(46, 158, 91, 0); } }
+
+.fw-bi__cols { display: block; }
+
+/* Hours table -------------------------------------------------------------- */
+.fw-bi__hours { width: 100%; border-collapse: collapse; }
+.fw-bi__hrow { border-bottom: 1px solid rgba(0, 0, 0, .07); }
+.fw-bi__hrow:last-child { border-bottom: 0; }
+.fw-bi__day { text-align: left; font-weight: 600; padding: .6rem 1rem .6rem 0; white-space: nowrap; }
+.fw-bi__time { text-align: right; padding: .6rem 0; color: var(--bi-text); }
+.fw-bi__hrow.is-closed .fw-bi__time { color: #b23a2c; }
+.fw-bi__closed-label { font-weight: 600; }
+.fw-bi__note { display: block; font-size: .8rem; opacity: .65; }
+.fw-bi__hrow.is-today { font-weight: 700; }
+.fw-bi__hrow.is-today .fw-bi__day { color: var(--bi-accent); }
+.fw-bi__hrow.is-today .fw-bi__day::before { content: "▸ "; color: var(--bi-accent); }
+
+/* Contact ------------------------------------------------------------------ */
+.fw-bi__contact { display: flex; flex-direction: column; gap: .65rem; }
+.fw-bi__row { display: flex; gap: .65rem; align-items: flex-start; line-height: 1.5; }
+.fw-bi__ico { flex: 0 0 auto; }
+.fw-bi__row a { color: var(--bi-accent); text-decoration: none; }
+.fw-bi__row a:hover { text-decoration: underline; }
+.fw-bi__maplink { font-size: .85rem; }
+
+.fw-bi__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }
+
+/* Designs ------------------------------------------------------------------ */
+.fw-bi--design-card { background: var(--bi-card-bg); border-radius: .8rem; padding: 1.75rem; box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
+.fw-bi--design-card .fw-bi__contact { margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(0, 0, 0, .08); }
+
+.fw-bi--design-split { background: var(--bi-card-bg); border-radius: .8rem; padding: 1.75rem; box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
+.fw-bi--design-split .fw-bi__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+
+.fw-bi--design-compact .fw-bi__day { padding: .3rem 1rem .3rem 0; }
+.fw-bi--design-compact .fw-bi__time { padding: .3rem 0; }
+.fw-bi--design-compact .fw-bi__contact { margin-top: 1rem; }
+
+@media (max-width: 600px) {
+	.fw-bi--design-split .fw-bi__cols { grid-template-columns: 1fr; gap: 1.25rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-bi__status.is-open .fw-bi__dot { animation: none; }
+}

@@ -1,110 +1,59 @@
 ---
 type: shortcode
 name: calendar
-since: original Unyson
-provides: leaf-shortcode + data-provider-extensible
+since: shortcodes 1.7.69 (modern rewrite)
+provides: leaf-shortcode
 ---
 
 # Calendar
 
-A daily / weekly / monthly calendar widget driven by a pluggable data
-provider system. Default `custom` provider lets the user add events
-inline (title + URL + date-range datetime picker). Third-party plugins
-can register additional providers (e.g. Events Calendar, FullCalendar
-integrations) via the `fw_shortcode_calendar_provider` filter.
+A clean, **dependency-free** events calendar: a **server-rendered month grid**
+with vanilla-JS month navigation, an optional upcoming-events list, and five
+designs. **Content Elements** tab.
 
-## Registration
+> Rewritten from the ground up (shortcodes 1.7.68). The old implementation was a
+> client-side `bootstrap-calendar` engine that pulled in **Bootstrap 3 + jQuery +
+> Underscore + jstimezonedetect** (~6,600 lines, class-file shortcode with AJAX).
+> All of that is **gone** — it's now a leaf shortcode with one CSS + one tiny JS
+> file. No jQuery, no Underscore, no Bootstrap, no AJAX.
 
-`class-fw-shortcode-calendar.php` declares
-`FW_Shortcode_Calendar extends FW_Shortcode`. **Unlike most leaf
-shortcodes**, this one has a custom class because it manages the data
-provider registry: `apply_filters('fw_shortcode_calendar_provider', …)`
-collects all providers at runtime; the options.php multi-picker
-populates its choices from `_get_picker_dropdown_choices()` and
-`_get_picker_choices()` on the class.
-
-No `_init()` hooks beyond what `FW_Shortcode` provides — the class
-exists purely to expose the data-provider API.
-
-## Options schema (atts)
-
-Source of truth: `options.php`. Two tabs + Animations + Advanced.
-
-### Tab: Content
-
-Wrapped in `group_content` (flattens).
-
-| Att | Type | Default | Description |
-|-----|------|---------|-------------|
-| `data_provider.population_method` | `multi-picker.short-select` (`custom` + any filter-registered providers) | `custom` | Which provider supplies events |
-| `data_provider.custom.custom_events` | `addable-popup` (sortable list) | — | Per-event entries (only when `population_method === 'custom'`) |
-| `data_provider.custom.custom_events[].title` | `text` | — | Event title |
-| `data_provider.custom.custom_events[].url` | `text` | — | Event detail URL |
-| `data_provider.custom.custom_events[].calendar_date_range` | `datetime-range` (`{ from, to }`, 1970–2038, defaultTime 08:00 / 18:00) | `{ from: '', to: '' }` | Event start + end datetime |
-| `template` | `short-select` (`day` / `week` / `month`) | `day` | Calendar view type |
-| `first_week_day` | `short-select` (`1` Monday / `2` Sunday) | `1` | First column of the weekly grid |
-
-### Tab: Styling
-
-Wrapped in `group_colors` + `group_spacings` (both flatten).
-
-| Att | Type | Default | Description |
-|-----|------|---------|-------------|
-| `text_color` | `sc_color_field_compact` (text) | — | Wrapper text color |
-| `bg_color` | `sc_color_field_compact` (bg) | — | Wrapper background |
-| `font_size_preset` | `sc_font_size_field` | — | Named size from theme presets |
-| `heading_color` | `sc_color_field_compact` | — | Calendar heading (month/week title) |
-| `buttons_color` | `sc_color_field_compact` | — | Prev / today / next navigation buttons |
-| `spacing` | `sc_spacing_field` | — | Wrapper margin/padding |
-
-### Tabs: Animations + Advanced
-
-Standard.
+## Options (atts)
+- **Content**: `events` (`addable-popup`) — per event: `title`, `date`
+  (`date-picker`), `end_date` (optional, multi-day), `time` (display string),
+  `all_day` (switch), `url`, `color` (`blue|green|amber|red|purple|teal`).
+- **Design**: `design` (`classic|minimal|cards|bordered|dark`), `start_week`
+  (`mon|sun`), `show_list` (upcoming list), `list_limit`.
+- **Styling**: `accent_color` (→ `--cal-accent`), `text_color` (→ `--cal-text`),
+  `font_size_preset`, `spacing`.
 
 ## Rendering
+`view.php` (`sc_cal_render`) normalises events (each date → `Y-m-d`, multi-day
+events span every day in range), then **server-renders the current month**
+(`sc_cal_render_grid`, in the site timezone/locale) so the markup is crawlable
+and there's no flash. The root `.fw-cal` carries `data-events` (JSON),
+`data-first-week`, `data-year/-month/-today`, and localized `data-wd` / `data-mo`
+name arrays. `scripts.js` is a small vanilla renderer that **mirrors
+`sc_cal_render_grid`** and re-draws the grid on prev/next/today only (the initial
+month stays server-rendered). Optional upcoming list (`show_list`) is also
+server-rendered.
 
-`views/view.php` outputs the calendar shell, with events fed by the
-selected data provider. `static/js/calendar.js` powers the grid (day /
-week / month views) + navigation. `static/libs/jstimezonedetect/` is a
-3rd-party library for timezone detection so events display in the
-user's local time regardless of the saved timezone.
+### Legacy data fallback
+Calendars saved under the OLD shape (`data_provider/custom/custom_events` with a
+`calendar_date_range` of timestamps) are still read by `sc_cal_events()`, so
+existing calendars keep their events after the rewrite.
+
+## Designs
+CSS skins keyed by `.fw-cal--design-<key>`: classic (bordered grid), minimal
+(borderless), cards (floating day cards), bordered (accent header band + strong
+grid), dark.
 
 ## Pitfalls
-
-1. **`data_provider` is a multi-picker** — generators must preserve the
-   nested shape. For default custom mode:
-   `{ data_provider: { population_method: 'custom', custom: { custom_events: [...] } } }`.
-2. **Date-range field is a structured value** — `{ from: 'YYYY-MM-DD HH:MM',
-   to: '...' }` for each event. Generators producing calendar payloads
-   must match this format. The range supports 1970-01-01 → 2038-01-19 (Y2K38).
-3. **Default times** — when adding events programmatically without an
-   explicit time, the picker defaults to `08:00` / `18:00` for start /
-   end. Generators producing all-day events should set both to `00:00`
-   for clarity.
-4. **Third-party data providers** — when a plugin registers a provider
-   via `fw_shortcode_calendar_provider`, its option shape lives in
-   `data_provider.{provider_id}.…` and is opaque to this shortcode.
-   Generators should default to `custom` unless they know the third-party
-   provider's option shape.
-
-## Verification
-
-1. Drag Calendar → modal opens.
-2. Add 2-3 events with date ranges → save → calendar renders with events.
-3. Switch `template: month` → monthly grid.
-4. Switch `first_week_day: 2` → Sunday becomes the first column.
-5. Set `heading_color` + `buttons_color` → calendar chrome recolors.
+1. The grid always opens on the **current month** (site timezone). Events outside
+   it appear when the visitor navigates (or in the upcoming list).
+2. Event colour tints use `color-mix` with `@supports` fallbacks.
+3. On ≤640px the event chips collapse to coloured dots (titles hidden) to fit.
 
 ## Files
-
-- `class-fw-shortcode-calendar.php` — main class with data-provider API
-- `config.php`, `options.php`, `static.php`, `views/view.php`
-- `static/js/calendar.js` — grid renderer
-- `static/js/scripts.js` — frontend init
-- `static/libs/jstimezonedetect/jstz.js` + `jstz.min.js` — timezone
-  detection
-- `static/css/{styles,calendar}.css` (via static.php)
-- `static/img/page_builder.png` — Layout Elements thumbnail
-
-Custom class exists because of the data-provider extensibility API, not
-because of registration hooks.
+`config.php`, `options.php`, `static.php`, `views/view.php`,
+`views/parts/registry.php`, `static/css/styles.css`, `static/js/scripts.js`,
+`static/img/page_builder.svg`, `static/img/design/<key>.svg`.

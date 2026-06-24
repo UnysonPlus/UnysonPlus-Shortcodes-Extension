@@ -1,0 +1,42 @@
+/* Testimonials — Design: Stacked List.
+   Minimal editorial list, hairline dividers, large quotes (no JS). */
+.testimonials.design-stacked .ts-stacked {
+	max-width: 760px;
+	margin: 0 auto;
+}
+.testimonials.design-stacked .ts-stacked__item {
+	margin: 0;
+	padding: 2rem 0;
+	border-bottom: 1px solid rgba(0, 0, 0, .1);
+}
+.testimonials.design-stacked .ts-stacked__item:first-child { padding-top: .5rem; }
+.testimonials.design-stacked .ts-stacked__item:last-child { border-bottom: 0; }
+.testimonials.design-stacked .ts-stacked__quote {
+	margin: 0 0 1.1rem;
+	font-size: 1.3rem;
+	line-height: 1.55;
+	font-weight: 500;
+}
+.testimonials.design-stacked .ts-stacked__author {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .65rem;
+}
+.testimonials.design-stacked .ts-stacked__avatar {
+	width: 40px;
+	height: 40px;
+	object-fit: cover;
+	flex: 0 0 auto;
+}
+.testimonials.design-stacked .ts-stacked__byline { display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: .4rem; }
+.testimonials.design-stacked .testimonial-author { font-weight: 700; }
+.testimonials.design-stacked .ts-stacked__meta { color: #6c757d; font-size: .9em; }
+.testimonials.design-stacked .ts-stacked__meta .sep { padding: 0 .35rem; color: rgba(0, 0, 0, .3); }
+.testimonials.design-stacked .ts-stacked__meta a { color: inherit; text-decoration: underline; }
+.testimonials.design-stacked .ts-stacked__rating { margin-left: auto; }
+
+@media (max-width: 540px) {
+	.testimonials.design-stacked .ts-stacked__quote { font-size: 1.12rem; }
+	.testimonials.design-stacked .ts-stacked__rating { margin-left: 0; width: 100%; }
+}

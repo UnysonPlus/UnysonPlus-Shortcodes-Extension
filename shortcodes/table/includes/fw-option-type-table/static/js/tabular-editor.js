@@ -345,7 +345,7 @@
 	};
 
 	TabularEditor.prototype.deleteCol = function ( idx ) {
-		if ( this.model.cols.length <= 1 ) { window.alert( t( 'cantDeleteLast', 'A table needs at least one row and one column.' ) ); return; }
+		if ( this.model.cols.length <= 1 ) { fw.notify( t( 'cantDeleteLast', 'A table needs at least one row and one column.' ), 'warning' ); return; }
 		this.model.cols.splice( idx, 1 );
 		this.model.content.forEach( function ( row ) { row.splice( idx, 1 ); } );
 		this.afterStructural();
@@ -381,7 +381,7 @@
 	};
 
 	TabularEditor.prototype.deleteRow = function ( idx ) {
-		if ( this.model.content.length <= 1 ) { window.alert( t( 'cantDeleteLast', 'A table needs at least one row and one column.' ) ); return; }
+		if ( this.model.content.length <= 1 ) { fw.notify( t( 'cantDeleteLast', 'A table needs at least one row and one column.' ), 'warning' ); return; }
 		this.model.content.splice( idx, 1 );
 		this.clampHeaderFooter();
 		this.afterStructural();

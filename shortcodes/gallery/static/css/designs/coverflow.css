@@ -1,0 +1,33 @@
+/* Gallery — Design: Coverflow. Centred slide full size; neighbours scale + fade
+   back. Arrow/pagination chrome is shared (styles.css). */
+.fw-gallery.design-coverflow .fw-gallery__coverflow { visibility: hidden; }
+.fw-gallery.design-coverflow .fw-gallery__coverflow.is-initialized { visibility: visible; }
+
+.fw-gallery.design-coverflow .fw-gallery__item { margin: 0; height: 100%; }
+.fw-gallery.design-coverflow .fw-gallery__media {
+	aspect-ratio: var(--gal-ratio, 4 / 3);
+	height: auto;
+}
+.fw-gallery.design-coverflow .fw-gallery__coverflow--natural .fw-gallery__media {
+	aspect-ratio: auto;
+	height: 100%;
+}
+
+/* Falloff: non-focused slides shrink + dim. */
+.fw-gallery.design-coverflow .splide__slide {
+	transition: transform .4s ease, opacity .4s ease;
+	transform: scale(.8);
+	opacity: .45;
+}
+.fw-gallery.design-coverflow .splide__slide.is-active {
+	transform: scale(1);
+	opacity: 1;
+	z-index: 2;
+}
+.fw-gallery.design-coverflow .splide__slide .fw-gallery__media {
+	box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery.design-coverflow .splide__slide { transition: none; }
+}

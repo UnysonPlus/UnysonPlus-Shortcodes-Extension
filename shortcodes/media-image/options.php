@@ -34,6 +34,21 @@ $options = [
                     ],
                 ],
             ],
+            'loading' => [
+                'type'    => 'group',
+                'options' => [
+                    'fetchpriority' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Loading Priority', 'fw' ),
+                        'desc'    => __( 'Use "High" for above-the-fold / hero images to improve LCP. "Auto" lazy-loads — best for images further down the page.', 'fw' ),
+                        'value'   => 'auto',
+                        'choices' => [
+                            'auto' => __( 'Auto (lazy load)', 'fw' ),
+                            'high' => __( 'High (above the fold)', 'fw' ),
+                        ],
+                    ],
+                ],
+            ],
             'image-link-group' => [
                 'type'    => 'group',
                 'options' => [

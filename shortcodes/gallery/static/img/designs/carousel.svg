@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Carousel slider layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <g fill="#fff" stroke="#cfd6dd" stroke-width="2">
+    <rect x="20" y="24" width="22" height="34" rx="3"/>
+    <rect x="46" y="18" width="28" height="46" rx="3"/>
+    <rect x="78" y="24" width="22" height="34" rx="3"/>
+  </g>
+  <g fill="#cfd6dd">
+    <circle cx="52" cy="74" r="3"/>
+    <circle cx="62" cy="74" r="3"/>
+    <circle cx="72" cy="74" r="3"/>
+  </g>
+  <g fill="none" stroke="#9b9b9b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 41l-4 0"/>
+    <path d="M12 37l-4 4 4 4"/>
+    <path d="M106 41l4 0"/>
+    <path d="M108 37l4 4-4 4"/>
+  </g>
+</svg>

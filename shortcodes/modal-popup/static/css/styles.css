@@ -1,0 +1,93 @@
+/* =============================================================================
+ * Modal / Popup — trigger + overlay (centered card / drawer / fullscreen).
+ * The overlay is moved to <body> by JS so position:fixed never gets clipped.
+ * ========================================================================== */
+.fw-mp { --mp-accent: #4a90d9; display: inline-block; }
+.fw-mp--trig-text, .fw-mp--trig-icon, .fw-mp--trig-image { display: inline-block; }
+
+.fw-mp__trigger { font: inherit; cursor: pointer; border: 0; background: none; padding: 0; color: inherit; }
+.fw-mp--trig-button .fw-mp__trigger { background: var(--mp-accent); color: #fff; padding: .7em 1.4em; border-radius: .45rem; font-weight: 600; transition: filter .2s ease, transform .2s ease; }
+.fw-mp--trig-button .fw-mp__trigger:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.fw-mp--trig-text .fw-mp__trigger { color: var(--mp-accent); text-decoration: underline; font-weight: 600; }
+.fw-mp--trig-icon .fw-mp__trigger { font-size: 1.6rem; color: var(--mp-accent); line-height: 1; }
+.fw-mp--trig-image .fw-mp__trigger { display: block; }
+.fw-mp--trig-image .fw-mp__trigger img { max-width: 100%; height: auto; display: block; border-radius: .4rem; cursor: pointer; }
+.fw-mp__trigger:focus-visible { outline: 2px solid var(--mp-accent); outline-offset: 3px; }
+
+/* Overlay (in <body>) ------------------------------------------------------ */
+.fw-mp__overlay {
+	--mp-overlay: rgba(10, 11, 13, .6);
+	--mp-bg: #ffffff;
+	--mp-color: #222831;
+	--mp-accent: #4a90d9;
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	background: var(--mp-overlay);
+	-webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity .28s ease, visibility .28s ease;
+}
+.fw-mp__overlay.is-open { opacity: 1; visibility: visible; }
+
+.fw-mp__dialog {
+	position: relative;
+	background: var(--mp-bg);
+	color: var(--mp-color);
+	box-shadow: 0 30px 80px rgba(0, 0, 0, .35);
+	overflow: auto;
+	transition: transform .3s cubic-bezier(.2, .8, .2, 1), opacity .3s ease;
+	-webkit-overflow-scrolling: touch;
+}
+.fw-mp__title { margin: 0 0 1rem; padding-right: 2rem; color: var(--mp-color); }
+.fw-mp__body { line-height: 1.6; }
+.fw-mp__body a { color: var(--mp-accent); }
+.fw-mp__body :last-child { margin-bottom: 0; }
+.fw-mp__body img { max-width: 100%; height: auto; }
+
+.fw-mp__close {
+	position: absolute; top: 12px; right: 12px;
+	width: 40px; height: 40px; border: 0; border-radius: 50%;
+	background: rgba(0, 0, 0, .06); color: inherit; cursor: pointer;
+	display: flex; align-items: center; justify-content: center;
+	transition: background .2s ease;
+}
+.fw-mp__close:hover { background: rgba(0, 0, 0, .14); }
+.fw-mp__close svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+/* Centered card ------------------------------------------------------------ */
+.fw-mp--design-center { align-items: center; justify-content: center; padding: 5vh 1rem; }
+.fw-mp--design-center .fw-mp__dialog { width: 100%; max-height: 90vh; border-radius: .8rem; padding: 2rem; }
+.fw-mp--design-center.fw-mp--size-sm .fw-mp__dialog { max-width: 420px; }
+.fw-mp--design-center.fw-mp--size-md .fw-mp__dialog { max-width: 620px; }
+.fw-mp--design-center.fw-mp--size-lg .fw-mp__dialog { max-width: 880px; }
+
+/* Drawers ------------------------------------------------------------------ */
+.fw-mp--design-drawer-right { justify-content: flex-end; }
+.fw-mp--design-drawer-left  { justify-content: flex-start; }
+.fw-mp--design-drawer-right .fw-mp__dialog,
+.fw-mp--design-drawer-left  .fw-mp__dialog { width: min(440px, 92vw); height: 100%; max-height: 100%; border-radius: 0; padding: 2rem; }
+
+/* Fullscreen --------------------------------------------------------------- */
+.fw-mp--design-fullscreen .fw-mp__dialog { width: 100%; height: 100%; max-height: 100%; border-radius: 0; padding: 6vh 1.5rem; }
+.fw-mp--design-fullscreen .fw-mp__body { max-width: 760px; margin: 0 auto; }
+
+/* Open animations (resting transform on the dialog; cleared when .is-open) -- */
+.fw-mp--anim-zoom  .fw-mp__dialog { transform: scale(.92); opacity: 0; }
+.fw-mp--anim-fade  .fw-mp__dialog { opacity: 0; }
+.fw-mp--anim-slide .fw-mp__dialog { transform: translateY(30px); opacity: 0; }
+.fw-mp--design-drawer-right .fw-mp__dialog { transform: translateX(100%); opacity: 1; }
+.fw-mp--design-drawer-left  .fw-mp__dialog { transform: translateX(-100%); opacity: 1; }
+.fw-mp__overlay.is-open .fw-mp__dialog { transform: none; opacity: 1; }
+
+.fw-mp__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-mp__overlay, .fw-mp__dialog { transition: opacity .2s ease, visibility .2s ease; }
+	.fw-mp--anim-zoom .fw-mp__dialog,
+	.fw-mp--anim-slide .fw-mp__dialog,
+	.fw-mp--design-drawer-right .fw-mp__dialog,
+	.fw-mp--design-drawer-left .fw-mp__dialog { transform: none; }
+}

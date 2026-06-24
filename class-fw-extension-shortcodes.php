@@ -87,6 +87,11 @@ class FW_Extension_Shortcodes extends FW_Extension
 		// Resolve Dynamic Content {{tokens}} in shortcode/page-builder atts at render time.
 		require_once dirname( __FILE__ ) . '/includes/dynamic-content-resolver.php';
 
+		// WYSIWYG editor enhancements (the "List style" toolbar button + its front-end
+		// CSS). Instantiated always — the front-end style enqueue runs outside admin.
+		require_once dirname( __FILE__ ) . '/includes/class-fw-shortcodes-editor.php';
+		new FW_Ext_Shortcodes_Editor( $this );
+
 		// Feed the disable filter from the saved settings (Shortcodes settings page).
 		add_filter(
 			'fw_ext_shortcodes_disable_shortcodes',
@@ -448,6 +453,11 @@ class FW_Extension_Shortcodes extends FW_Extension
 		}
 		if ( isset( $this->shortcodes['column'] ) ) {
 			add_shortcode( 'fw_inner_column', array( $this->shortcodes['column'], 'render' ) );
+		}
+		// Same reason for nested Flexbox: a flexbox directly inside another flexbox
+		// is emitted as fw_inner_flexbox so the repeated [flexbox] tags don't collide.
+		if ( isset( $this->shortcodes['flexbox'] ) ) {
+			add_shortcode( 'fw_inner_flexbox', array( $this->shortcodes['flexbox'], 'render' ) );
 		}
 	}
 

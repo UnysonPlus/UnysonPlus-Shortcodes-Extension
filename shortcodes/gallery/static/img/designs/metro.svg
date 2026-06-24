@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Metro bento layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <g fill="#fff" stroke="#cfd6dd" stroke-width="2">
+    <rect x="14" y="16" width="40" height="40" rx="3"/>
+    <rect x="58" y="16" width="20" height="19" rx="3"/>
+    <rect x="82" y="16" width="24" height="19" rx="3"/>
+    <rect x="58" y="37" width="48" height="19" rx="3"/>
+    <rect x="14" y="60" width="24" height="16" rx="3"/>
+    <rect x="42" y="60" width="36" height="16" rx="3"/>
+    <rect x="82" y="60" width="24" height="16" rx="3"/>
+  </g>
+</svg>

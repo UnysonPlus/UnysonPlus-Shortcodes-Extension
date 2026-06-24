@@ -1,20 +1,45 @@
 (function($, localized){
 	var eventsNamespace = '.templates-column',
 		loadingId = 'fw-builder-templates-type-column',
+		genUid = function () {
+			var s = '', i;
+			if (window.crypto && window.crypto.getRandomValues) {
+				var a = new Uint8Array(16);
+				window.crypto.getRandomValues(a);
+				for (i = 0; i < a.length; i++) { s += ('0' + a[i].toString(16)).slice(-2); }
+				return s;
+			}
+			for (i = 0; i < 32; i++) { s += Math.floor(Math.random() * 16).toString(16); }
+			return s;
+		},
 		modal,
 		lazyInitModal = function () {
 			lazyInitModal = function (){};
 
+			var options = [
+				{
+					'template_name': {
+						'type': 'text',
+						'label': localized.l10n.template_name
+					}
+				}
+			];
+
+			// Only offer the Global Template switch when snippets is active. Default OFF.
+			if (localized.globalTemplatesEnabled) {
+				options.push({
+					'save_as_global': {
+						'type': 'switch',
+						'label': localized.l10n.save_as_global_label,
+						'desc': localized.l10n.save_as_global_desc,
+						'value': false
+					}
+				});
+			}
+
 			modal = new fw.OptionsModal({
 				title: localized.l10n.save_template,
-				options: [
-					{
-						'template_name': {
-							'type': 'text',
-							'label': localized.l10n.template_name
-						}
-					}
-				],
+				options: options,
 				values: ''
 			});
 		};
@@ -27,6 +52,86 @@
 
 		data.$elements.find('.fw-builder-templates-type-column')
 			.off(eventsNamespace)
+			.on('click'+ eventsNamespace, 'a[data-load-global-column]', function(){
+				// Global Template: insert a real [column] (saved width) whose only
+				// child is a [snippet] REFERENCE (synced) — NOT a content copy.
+				// The column keeps native width + row-grouping; the snippet supplies
+				// the (bare) inner elements. Editing the snippet updates every page.
+				var snippetId = $(this).attr('data-load-global-column'),
+					width = $(this).attr('data-global-width') || '1_1';
+
+				// A bare column dropped at ROOT can't be dragged into a section
+				// afterwards (a jQuery-UI sortable empty-sibling limitation). So place
+				// it INSIDE the last Section — creating one if the page has none —
+				// exactly like the builder's own click-to-add smart placement.
+				var section = null;
+				builder.rootItems.each(function(item){
+					if (item.get('type') === 'section') { section = item; }
+				});
+
+				if (!section) {
+					var SectionCls = builder.getRegisteredItemClassByType('section');
+					if (SectionCls) {
+						section = new SectionCls({});
+						builder.rootItems.add(section);
+					}
+				}
+
+				var columnObj = {
+					type: 'column',
+					width: width,
+					atts: { unique_id: genUid() },
+					_items: [
+						{
+							type: 'simple',
+							shortcode: 'snippet',
+							atts: { id: String(snippetId), unique_id: genUid() }
+						}
+					]
+				};
+
+				if (section && section.get('_items')) {
+					section.get('_items').add(columnObj);
+				} else {
+					builder.rootItems.add(columnObj); // fallback (no section class)
+				}
+
+				tooltipHideCallback();
+			})
+			.on('click'+ eventsNamespace, 'a[data-delete-global]', function(){
+				// Delete a Global Template (→ Trash, reversible). Confirm because it
+				// affects every page that embeds it.
+				var snippetId = $(this).attr('data-delete-global');
+
+				fw.confirm(localized.l10n.global_delete_confirm, function () {
+
+				loading.show();
+
+				$.ajax({
+					type: 'post',
+					dataType: 'json',
+					url: ajaxurl,
+					data: {
+						'action': 'fw_global_template_delete',
+						'_nonce': localized.globalTemplatesDeleteNonce,
+						'snippet_id': snippetId
+					}
+				})
+					.done(function(json){
+						loading.hide();
+						if (!json.success) {
+							fw.notify(localized.l10n.global_delete_failed, 'error', {id: 'fw-global-template'});
+							return;
+						}
+						tooltipRefreshCallback();
+					})
+					.fail(function(xhr, status, error){
+						loading.hide();
+						console.error('Ajax global delete error', error);
+						fw.notify(localized.l10n.global_delete_failed, 'error', {id: 'fw-global-template'});
+					});
+				});
+			})
 			.on('click'+ eventsNamespace, 'a[data-load-template]', function(){
 				var templateId = $(this).attr('data-load-template');
 
@@ -186,7 +291,7 @@
 							var msg = (json.data && json.data.message)
 								? json.data.message
 								: (localized.l10n.import_failed || 'Failed to import template');
-							window.alert(msg);
+							fw.notify(msg, 'error');
 							return;
 						}
 
@@ -195,7 +300,7 @@
 					.fail(function (xhr, status, error) {
 						loading.hide();
 						console.error('Ajax import error', error);
-						window.alert(localized.l10n.import_failed || 'Failed to import template');
+						fw.notify(localized.l10n.import_failed || 'Failed to import template', 'error');
 					});
 			});
 	});
@@ -218,6 +323,47 @@
 
 					modal.on('change:values', function (modal, values) {
 						fw.loading.show(loadingId);
+
+						// Global Template: store the column as a synced `snippet`
+						// (its inner elements + width), reused by reference via the
+						// Templates manager. Otherwise the normal local (copy) save.
+						if (values.save_as_global) {
+							$.ajax({
+								type: 'post',
+								dataType: 'json',
+								url: ajaxurl,
+								data: {
+									'action': 'fw_builder_global_template_save',
+									'_nonce': localized.globalTemplatesNonce,
+									'kind': 'column',
+									'template_name': values.template_name,
+									'model_json': JSON.stringify(data.model),
+									'builder_type': data.builder.get('type')
+								}
+							})
+								.done(function (json) {
+									fw.loading.hide(loadingId);
+
+									if (!json.success) {
+										console.error('Failed to save global template', json);
+										fw.notify(localized.l10n.global_save_failed, 'error', {id: 'fw-global-template'});
+										return;
+									}
+
+									if (window.fwSnippetTitles && json.data && json.data.id) {
+										window.fwSnippetTitles[String(json.data.id)] = json.data.title;
+									}
+
+									fw.notify(localized.l10n.global_saved, 'success', {id: 'fw-global-template'});
+								})
+								.fail(function (xhr, status, error) {
+									fw.loading.hide(loadingId);
+									console.error('Ajax global save error', error);
+									fw.notify(localized.l10n.global_save_failed, 'error', {id: 'fw-global-template'});
+								});
+
+							return;
+						}
 
 						$.ajax({
 							type: 'post',

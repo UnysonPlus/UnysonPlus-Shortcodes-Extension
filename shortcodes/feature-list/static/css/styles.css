@@ -1,0 +1,62 @@
+/* =============================================================================
+ * Feature List — icon-led list (checklist / icons / numbered / bullets / badge).
+ * ========================================================================== */
+.fw-fl {
+	--fl-marker: #4a90d9;
+	--fl-text: inherit;
+	--fl-sub: #6b7280;
+	--fl-gap: .7rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(var(--fl-cols, 1), minmax(0, 1fr));
+	column-gap: 2rem;
+}
+.fw-fl--gap-sm { --fl-gap: .4rem; }
+.fw-fl--gap-md { --fl-gap: .7rem; }
+.fw-fl--gap-lg { --fl-gap: 1.1rem; }
+
+.fw-fl__item {
+	display: flex;
+	align-items: flex-start;
+	gap: .75rem;
+	padding: var(--fl-gap) 0;
+}
+.fw-fl--dividers .fw-fl__item { border-bottom: 1px solid rgba(0, 0, 0, .08); }
+.fw-fl--dividers .fw-fl__item:last-child { border-bottom: 0; }
+
+.fw-fl__marker { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; color: var(--fl-marker); }
+.fw-fl__marker svg { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.fw-fl__marker img { width: 1.25em; height: 1.25em; object-fit: contain; }
+
+.fw-fl__body { text-decoration: none; color: inherit; display: flex; flex-direction: column; }
+a.fw-fl__body:hover .fw-fl__text { text-decoration: underline; }
+.fw-fl__text { color: var(--fl-text); font-weight: 500; }
+.fw-fl__sub { color: var(--fl-sub); font-size: .85rem; margin-top: .1rem; }
+.fw-fl__item.is-off .fw-fl__text { opacity: .6; text-decoration: line-through; }
+
+.fw-fl__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }
+
+/* Designs ------------------------------------------------------------------ */
+.fw-fl__marker--off { color: #c0392b; }
+.fw-fl__marker--num {
+	width: 1.7em; height: 1.7em; border-radius: 50%;
+	background: var(--fl-marker); color: #fff;
+	font-size: .8rem; font-weight: 700;
+}
+.fw-fl__marker--bullet { width: .55em; height: .55em; border-radius: 50%; background: var(--fl-marker); margin-top: .45em; }
+
+/* Badge — boxed icon. */
+.fw-fl--design-badge .fw-fl__marker--icon {
+	width: 2.2em; height: 2.2em; border-radius: .55rem;
+	background: color-mix(in srgb, var(--fl-marker) 14%, #fff);
+}
+@supports not (background: color-mix(in srgb, red 10%, white)) {
+	.fw-fl--design-badge .fw-fl__marker--icon { background: rgba(74, 144, 217, .12); }
+}
+.fw-fl--design-badge .fw-fl__item { align-items: center; }
+
+@media (max-width: 768px) {
+	.fw-fl { grid-template-columns: 1fr; }
+}

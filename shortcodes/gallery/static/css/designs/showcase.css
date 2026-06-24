@@ -1,0 +1,105 @@
+/* Gallery — Design: Showcase. Large featured image + thumbnail strip; the strip
+   can sit below (column) or to the left/right (row) of the stage. */
+.fw-gallery.design-showcase .fw-gallery__showcase {
+	display: flex;
+	gap: var(--gal-gap, 16px);
+}
+.fw-gallery.design-showcase .fw-gallery__showcase--bottom { flex-direction: column; }
+.fw-gallery.design-showcase .fw-gallery__showcase--right  { flex-direction: row; align-items: stretch; }
+.fw-gallery.design-showcase .fw-gallery__showcase--left   { flex-direction: row-reverse; align-items: stretch; }
+
+/* Stage (featured image). */
+.fw-gallery.design-showcase .fw-gallery__stage {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: block;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: zoom-in;
+}
+.fw-gallery.design-showcase a.fw-gallery__stage,
+.fw-gallery.design-showcase div.fw-gallery__stage { cursor: default; }
+.fw-gallery.design-showcase a.fw-gallery__stage { cursor: pointer; }
+.fw-gallery.design-showcase .fw-gallery__stage-media {
+	position: relative;
+	overflow: hidden;
+	aspect-ratio: var(--gal-ratio, 4 / 3);
+	background: rgba(0, 0, 0, .04);
+}
+.fw-gallery.design-showcase .fw-gallery__showcase--natural .fw-gallery__stage-media { aspect-ratio: auto; }
+.fw-gallery.design-showcase .fw-gallery__stage-img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: transform .45s cubic-bezier(.2, .7, .2, 1), opacity .25s ease;
+}
+.fw-gallery.design-showcase .fw-gallery--zoom:hover .fw-gallery__stage-img { transform: scale(1.05); }
+.fw-gallery.design-showcase .fw-gallery__stage-img.is-swapping { opacity: 0; }
+
+/* Hover caption on the stage. */
+.fw-gallery.design-showcase .fw-gallery__stage-caption {
+	position: absolute;
+	left: 0; right: 0; bottom: 0;
+	padding: 1.5rem 1rem .9rem;
+	color: #fff;
+	font-size: .95rem;
+	background: linear-gradient(to top, rgba(0, 0, 0, .68), rgba(0, 0, 0, 0));
+	opacity: 0;
+	transition: opacity .3s ease;
+}
+.fw-gallery.design-showcase .fw-gallery__stage:hover .fw-gallery__stage-caption { opacity: 1; }
+
+/* Thumbnail strip. */
+.fw-gallery.design-showcase .fw-gallery__thumbs {
+	display: flex;
+	gap: 10px;
+	flex: 0 0 auto;
+}
+.fw-gallery.design-showcase .fw-gallery__showcase--bottom .fw-gallery__thumbs {
+	overflow-x: auto;
+	padding-bottom: 4px;
+}
+.fw-gallery.design-showcase .fw-gallery__showcase--left .fw-gallery__thumbs,
+.fw-gallery.design-showcase .fw-gallery__showcase--right .fw-gallery__thumbs {
+	flex-direction: column;
+	overflow-y: auto;
+	width: 96px;
+}
+.fw-gallery.design-showcase .fw-gallery__thumb {
+	flex: 0 0 auto;
+	width: 88px;
+	height: 64px;
+	padding: 0;
+	border: 2px solid transparent;
+	border-radius: 6px;
+	overflow: hidden;
+	background: none;
+	cursor: pointer;
+	opacity: .65;
+	transition: opacity .2s ease, border-color .2s ease;
+}
+.fw-gallery.design-showcase .fw-gallery__showcase--left .fw-gallery__thumb,
+.fw-gallery.design-showcase .fw-gallery__showcase--right .fw-gallery__thumb { width: 100%; height: 70px; }
+.fw-gallery.design-showcase .fw-gallery__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fw-gallery.design-showcase .fw-gallery__thumb:hover { opacity: 1; }
+.fw-gallery.design-showcase .fw-gallery__thumb.is-active { opacity: 1; border-color: currentColor; }
+.fw-gallery.design-showcase .fw-gallery__thumb:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+
+@media (max-width: 576px) {
+	.fw-gallery.design-showcase .fw-gallery__showcase--left,
+	.fw-gallery.design-showcase .fw-gallery__showcase--right { flex-direction: column; align-items: stretch; }
+	.fw-gallery.design-showcase .fw-gallery__showcase--left .fw-gallery__thumbs,
+	.fw-gallery.design-showcase .fw-gallery__showcase--right .fw-gallery__thumbs {
+		flex-direction: row;
+		width: auto;
+		overflow-x: auto;
+		overflow-y: visible;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery.design-showcase .fw-gallery__stage-img { transition: opacity .25s ease; }
+	.fw-gallery.design-showcase .fw-gallery--zoom:hover .fw-gallery__stage-img { transform: none; }
+}

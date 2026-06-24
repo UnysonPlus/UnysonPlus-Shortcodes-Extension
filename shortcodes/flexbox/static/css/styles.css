@@ -1,0 +1,16 @@
+/**
+ * Flexbox — front-end layout helper.
+ *
+ * In a ROW flexbox, a direct child WITHOUT a column width is made full-width, so it
+ * wraps onto its own line (STACKS). A child WITH a width (col-* class) keeps that
+ * width and flows side-by-side. Net behavior: content/elements stack by default and
+ * you opt INTO side-by-side columns by giving children a Width.
+ *
+ * Scoped to flex-row / flex-row-reverse so it never sets a 100% main-size (height)
+ * in a Column-direction flexbox — there, children already stack full-width.
+ */
+.fw-flexbox.flex-row > :not([class*="col-"]),
+.fw-flexbox.flex-row-reverse > :not([class*="col-"]) {
+	flex: 0 0 100%;
+	max-width: 100%;
+}

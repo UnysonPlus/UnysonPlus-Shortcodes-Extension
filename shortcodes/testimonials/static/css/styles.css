@@ -1,4 +1,13 @@
-/* Testimonials (Bootstrap 5 optimized) */
+/* =========================================================================
+ * Testimonials — self-contained (no Bootstrap dependency).
+ *
+ * Layout/utility classes the markup uses (grid is the plugin's .fw- grid; the
+ * carousel is Splide). The handful of Bootstrap-style utility + card classes
+ * the view/sc_render_card still emit are ported here, scoped under
+ * `.testimonials` so they don't leak globally. The Theme Settings color
+ * presets (`.bg-{slug}` / `.text-{slug}`) still win the cascade when set
+ * (presets-css loads later).
+ * ========================================================================= */
 .testimonials {
     position: relative;
     margin: 2.5rem 0;
@@ -7,6 +16,56 @@
     font-weight: 600;
     margin-bottom: 1.75rem;
 }
+
+/* --- Ported utility classes (scoped) ------------------------------------- */
+.testimonials .d-flex            { display: flex; }
+.testimonials .d-inline-flex     { display: inline-flex; }
+.testimonials .flex-column       { flex-direction: column; }
+.testimonials .align-items-center { align-items: center; }
+.testimonials .align-items-start { align-items: flex-start; }
+.testimonials .justify-content-center { justify-content: center; }
+.testimonials .flex-shrink-0     { flex-shrink: 0; }
+.testimonials .flex-grow-1       { flex-grow: 1; }
+.testimonials .w-100             { width: 100%; }
+.testimonials .mx-auto           { margin-left: auto; margin-right: auto; }
+.testimonials .text-center       { text-align: center; }
+.testimonials .gap-3             { gap: 1rem; }
+.testimonials .mb-0              { margin-bottom: 0; }
+.testimonials .mt-2              { margin-top: 0.5rem; }
+.testimonials .mb-3              { margin-bottom: 1rem; }
+.testimonials .mb-4              { margin-bottom: 1.5rem; }
+.testimonials .small             { font-size: 0.875em; }
+.testimonials .fw-semibold       { font-weight: 600; }
+.testimonials .text-muted        { color: #6c757d; }
+.testimonials .text-warning      { color: #ffc107; }
+.testimonials .text-light        { color: #f8f9fa; }
+.testimonials .img-fluid         { max-width: 100%; height: auto; }
+.testimonials .rounded-circle    { border-radius: 50%; }
+.testimonials .rounded           { border-radius: 0.375rem; }
+.testimonials .rounded-0         { border-radius: 0; }
+
+@media (min-width: 768px) {
+    .testimonials .flex-md-row         { flex-direction: row; }
+    .testimonials .flex-md-row-reverse { flex-direction: row-reverse; }
+    .testimonials .text-md-start       { text-align: left; }
+}
+
+/* --- Card styles (card_style option) ------------------------------------- */
+.testimonials .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: #fff;
+    background-clip: border-box;
+    border-radius: 0.5rem;
+}
+.testimonials .card-body { flex: 1 1 auto; padding: 1.5rem 1.25rem; }
+.testimonials .border    { border: 1px solid rgba(0, 0, 0, .175); }
+.testimonials .shadow    { box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15); }
+.testimonials .bg-light  { background-color: #f8f9fa; }
+.testimonials .bg-dark   { background-color: #212529; }
+
 /* Card base (when card utilities not used) */
 .testimonial-item {
     position: relative;
@@ -31,12 +90,21 @@
 .avatar-pos-right .testimonial-body {
     text-align: left;
 }
-/* Rating */
-.testimonial-rating i {
-    margin-right: .15rem;
-    font-size: .95rem;
+/* Rating — inline SVG stars (no Font Awesome). Color via currentColor. */
+.testimonial-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: .12rem;
+    color: #f5b50a;
+    font-size: 1rem;
+    line-height: 1;
 }
-.testimonial-rating i:last-child { margin-right: 0; }
+.testimonial-rating .ts-star {
+    width: 1em;
+    height: 1em;
+    flex: 0 0 auto;
+    display: inline-block;
+}
 /* Meta */
 .testimonial-meta {
     margin-top: .25rem;
@@ -44,32 +112,6 @@
 .testimonial-meta .sep {
     color: rgba(0,0,0,.35);
     padding: 0 .4rem;
-}
-/* Carousel adjustments */
-.testimonials .carousel {
-    padding-bottom: 2.25rem;
-}
-.testimonials .carousel-indicators [data-bs-target] {
-    background-color: rgba(0,0,0,.28);
-}
-.testimonials .carousel-indicators .active {
-    background-color: #212529;
-}
-.testimonials .carousel-indicators.indicators-lines [data-bs-target] {
-    width: 42px;
-    height: 4px;
-    border-radius: 2px;
-}
-.testimonials .carousel-indicators.indicators-dots [data-bs-target] {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-}
-/* Accessibility focus states */
-.testimonials .carousel-control-prev:focus .fa,
-.testimonials .carousel-control-next:focus .fa,
-.testimonials .carousel-indicators [data-bs-target]:focus {
-    outline: 0;
 }
 /* Utility (optional soft shadow for plain style) */
 .testimonial-item:not(.card):not(.bg-dark):not(.bg-light) {
@@ -85,15 +127,74 @@
     }
 }
 
-/* Show carousel prev/next only on hover/focus */
-.testimonials .carousel-control-prev,
-.testimonials .carousel-control-next {
-    opacity: 0;
-    transition: opacity .25s ease;
+/* --- Splide carousel (replaces the old Bootstrap carousel) ---------------
+   IMPORTANT: the vendored splide-core.min.css is STRUCTURAL ONLY — it does NOT
+   position or theme the arrows, and only flex-centers the pagination. So the
+   arrow + pagination skin below is required, or arrows fall into normal flow
+   (unstyled, prev not flipped) and the dots render as default buttons. */
+.testimonials-splide {
+    position: relative;
+    padding-bottom: 0.5rem;
 }
-.testimonials .carousel:hover .carousel-control-prev,
-.testimonials .carousel:hover .carousel-control-next,
-.testimonials .carousel-control-prev:focus,
-.testimonials .carousel-control-next:focus {
+/* Room in the side gutters for the arrows on wider screens. */
+@media (min-width: 768px) {
+    .testimonials-splide { padding-left: 3rem; padding-right: 3rem; }
+}
+/* Make slides equal height so cards line up. */
+.testimonials-splide .splide__slide { height: auto; }
+.testimonials-splide .splide__slide > .testimonial-item { height: 100%; }
+
+/* Arrows — positioned + themed here (core CSS provides neither). */
+.testimonials-splide .splide__arrows { line-height: 0; }
+.testimonials-splide .splide__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .5);
+    cursor: pointer;
     opacity: 1;
+    transition: background .15s ease, opacity .15s ease;
+}
+.testimonials-splide .splide__arrow svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: #fff;
+}
+.testimonials-splide .splide__arrow--prev { left: 0; }
+.testimonials-splide .splide__arrow--next { right: 0; }
+.testimonials-splide .splide__arrow--prev svg { transform: scaleX(-1); }
+.testimonials-splide .splide__arrow:hover:not(:disabled) { background: rgba(0, 0, 0, .72); }
+.testimonials-splide .splide__arrow:disabled { opacity: .3; cursor: default; }
+
+/* Pagination — theme the dot/line buttons (core only flex-centers them). */
+.testimonials-splide .splide__pagination {
+    position: relative;
+    margin-top: 1rem;
+    padding: 0;
+}
+.testimonials-splide .splide__pagination__page {
+    display: block;
+    margin: 0 4px;
+    padding: 0;
+    border: 0;
+    background: rgba(0, 0, 0, .25);
+    cursor: pointer;
+    transition: transform .15s ease, background .15s ease;
+}
+.testimonials-splide .splide__pagination__page.is-active { background: #111; }
+.testimonials-splide--dots .splide__pagination__page {
+    width: 10px; height: 10px; border-radius: 50%;
+}
+.testimonials-splide--dots .splide__pagination__page.is-active { transform: scale(1.3); }
+.testimonials-splide--lines .splide__pagination__page {
+    width: 28px; height: 4px; border-radius: 2px;
 }

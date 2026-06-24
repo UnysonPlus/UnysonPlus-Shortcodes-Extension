@@ -1,3 +1,88 @@
+/* =========================================================================
+ * Button base — self-contained port of Bootstrap 5.3's `.btn` so the plugin
+ * no longer depends on a bundled Bootstrap stylesheet. The Theme Settings
+ * button COLOR / SIZE presets (framework/includes/css-tokens.php) emit
+ * `.btn-{slug}` rules at priority 20 WITH `!important`, so on a configured
+ * site they override the baseline variants below and nothing changes
+ * visually. These baselines simply guarantee buttons are never unstyled
+ * (e.g. when styling presets are disabled), the way Bootstrap used to.
+ * ========================================================================= */
+.btn {
+	display: inline-block;
+	padding: 0.375rem 0.75rem;
+	font-family: inherit;
+	font-size: 1rem;
+	font-weight: 400;
+	line-height: 1.5;
+	color: #212529;
+	text-align: center;
+	text-decoration: none;
+	white-space: nowrap;
+	vertical-align: middle;
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+	/* A neutral fill + border so a BARE .btn (no color preset / no .btn-primary)
+	   clearly reads as a solid button, not a link. Color variants (.btn-primary, …)
+	   override the background + border with their own. */
+	background-color: #f1f3f5;
+	border: 1px solid #ced4da;
+	border-radius: 0.375rem;
+	transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+.btn:hover { color: #212529; background-color: #e2e6ea; border-color: #adb5bd; }
+.btn:focus-visible { outline: 0; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25); }
+.btn:disabled,
+.btn.disabled { pointer-events: none; opacity: 0.65; }
+
+/* Size modifiers */
+.btn-lg { padding: 0.5rem 1rem;     font-size: 1.25rem;  border-radius: 0.5rem; }
+.btn-sm { padding: 0.25rem 0.5rem;  font-size: 0.875rem; border-radius: 0.25rem; }
+
+/* Full-width modifier (Button "Width → Full Width") */
+.btn.w-100 { width: 100%; }
+
+/* --- Baseline solid variants -------------------------------------------- */
+.btn-primary   { color:#fff; background-color:#0d6efd; border-color:#0d6efd; }
+.btn-primary:hover   { color:#fff; background-color:#0b5ed7; border-color:#0a58ca; }
+.btn-secondary { color:#fff; background-color:#6c757d; border-color:#6c757d; }
+.btn-secondary:hover { color:#fff; background-color:#5c636a; border-color:#565e64; }
+.btn-success   { color:#fff; background-color:#198754; border-color:#198754; }
+.btn-success:hover   { color:#fff; background-color:#157347; border-color:#146c43; }
+.btn-danger    { color:#fff; background-color:#dc3545; border-color:#dc3545; }
+.btn-danger:hover    { color:#fff; background-color:#bb2d3b; border-color:#b02a37; }
+.btn-warning   { color:#000; background-color:#ffc107; border-color:#ffc107; }
+.btn-warning:hover   { color:#000; background-color:#ffca2c; border-color:#ffc720; }
+.btn-info      { color:#000; background-color:#0dcaf0; border-color:#0dcaf0; }
+.btn-info:hover      { color:#000; background-color:#31d2f2; border-color:#25cff2; }
+.btn-light     { color:#000; background-color:#f8f9fa; border-color:#f8f9fa; }
+.btn-light:hover     { color:#000; background-color:#d3d4d5; border-color:#c6c7c8; }
+.btn-dark      { color:#fff; background-color:#212529; border-color:#212529; }
+.btn-dark:hover      { color:#fff; background-color:#1c1f23; border-color:#1a1e21; }
+.btn-link {
+	color:#0d6efd; background-color:transparent; border-color:transparent;
+	text-decoration:underline;
+}
+.btn-link:hover { color:#0a58ca; }
+
+/* --- Baseline outline variants ------------------------------------------ */
+.btn-outline-primary   { color:#0d6efd; border-color:#0d6efd; }
+.btn-outline-primary:hover   { color:#fff; background-color:#0d6efd; border-color:#0d6efd; }
+.btn-outline-secondary { color:#6c757d; border-color:#6c757d; }
+.btn-outline-secondary:hover { color:#fff; background-color:#6c757d; border-color:#6c757d; }
+.btn-outline-success   { color:#198754; border-color:#198754; }
+.btn-outline-success:hover   { color:#fff; background-color:#198754; border-color:#198754; }
+.btn-outline-danger    { color:#dc3545; border-color:#dc3545; }
+.btn-outline-danger:hover    { color:#fff; background-color:#dc3545; border-color:#dc3545; }
+.btn-outline-warning   { color:#ffc107; border-color:#ffc107; }
+.btn-outline-warning:hover   { color:#000; background-color:#ffc107; border-color:#ffc107; }
+.btn-outline-info      { color:#0dcaf0; border-color:#0dcaf0; }
+.btn-outline-info:hover      { color:#000; background-color:#0dcaf0; border-color:#0dcaf0; }
+.btn-outline-light     { color:#f8f9fa; border-color:#f8f9fa; }
+.btn-outline-light:hover     { color:#000; background-color:#f8f9fa; border-color:#f8f9fa; }
+.btn-outline-dark      { color:#212529; border-color:#212529; }
+.btn-outline-dark:hover      { color:#fff; background-color:#212529; border-color:#212529; }
+
 .btn-black {
 	background-color:#000;
 	color:#fff;

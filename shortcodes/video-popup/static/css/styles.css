@@ -1,0 +1,160 @@
+/* =============================================================================
+ * Video Popup — poster + play button; the lightbox is built/styled by the JS.
+ * ========================================================================== */
+.fw-vp {
+	--vp-accent: #ffffff;
+	--vp-icon: #1a1a1a;
+	--vp-overlay: rgba(0, 0, 0, .35);
+	--vp-label: #ffffff;
+	--vp-play: 70px;
+}
+.fw-vp--play-sm { --vp-play: 56px; }
+.fw-vp--play-md { --vp-play: 70px; }
+.fw-vp--play-lg { --vp-play: 90px; }
+
+.fw-vp__trigger {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: .9rem;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+	color: inherit;
+}
+.fw-vp__media {
+	position: relative;
+	display: block;
+	width: 100%;
+	overflow: hidden;
+	border-radius: inherit;
+	background: #111;
+}
+.fw-vp.rounded    .fw-vp__media { border-radius: .6rem; }
+.fw-vp.rounded-lg .fw-vp__media { border-radius: 1.1rem; }
+.fw-vp.rounded-0  .fw-vp__media { border-radius: 0; }
+
+.fw-vp--ratio-16-9 .fw-vp__media { aspect-ratio: 16 / 9; }
+.fw-vp--ratio-4-3  .fw-vp__media { aspect-ratio: 4 / 3; }
+.fw-vp--ratio-1-1  .fw-vp__media { aspect-ratio: 1 / 1; }
+.fw-vp--ratio-21-9 .fw-vp__media { aspect-ratio: 21 / 9; }
+
+.fw-vp__poster { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+.fw-vp--ratio-original .fw-vp__poster { height: auto; }
+.fw-vp--zoom .fw-vp__trigger:hover .fw-vp__poster { transform: scale(1.05); }
+
+.fw-vp__media::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: var(--vp-overlay);
+	opacity: 0;
+	transition: opacity .3s ease;
+	pointer-events: none;
+}
+.fw-vp--overlay .fw-vp__media::after { opacity: 1; }
+
+/* Play button -------------------------------------------------------------- */
+.fw-vp__btn {
+	position: absolute;
+	left: 50%; top: 50%;
+	transform: translate(-50%, -50%);
+	width: var(--vp-play);
+	height: var(--vp-play);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background: var(--vp-accent);
+	color: var(--vp-icon);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, .42), 0 3px 8px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255, 255, 255, .5);
+	transition: transform .28s cubic-bezier(.2, .8, .2, 1), box-shadow .28s ease, background .2s ease;
+}
+/* Subtle separating ring so the button reads clearly over busy footage. */
+.fw-vp__btn::before {
+	content: "";
+	position: absolute;
+	left: 50%; top: 50%;
+	width: 100%; height: 100%;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	box-shadow: 0 0 0 6px rgba(255, 255, 255, .16);
+	transition: box-shadow .3s ease;
+	pointer-events: none;
+}
+.fw-vp__trigger:hover .fw-vp__btn {
+	transform: translate(-50%, -50%) scale(1.1);
+	box-shadow: 0 16px 42px rgba(0, 0, 0, .5), 0 4px 10px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.fw-vp__trigger:hover .fw-vp__btn::before { box-shadow: 0 0 0 13px rgba(255, 255, 255, .1); }
+.fw-vp__trigger:active .fw-vp__btn { transform: translate(-50%, -50%) scale(1.04); }
+.fw-vp__trigger:focus-visible .fw-vp__btn { outline: 3px solid var(--vp-accent); outline-offset: 4px; }
+.fw-vp__icon { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+.fw-vp__triangle { width: 38%; height: 38%; transform: translateX(6%); }
+.fw-vp__pulse { position: absolute; inset: 0; border-radius: 50%; }
+
+/* The separating ring doesn't suit the borderless / pre-ringed skins. */
+.fw-vp--design-minimal .fw-vp__btn::before,
+.fw-vp--design-outline .fw-vp__btn::before,
+.fw-vp--design-pulse   .fw-vp__btn::before { display: none; }
+
+.fw-vp__label { color: var(--vp-label); font-weight: 600; font-size: 1.05rem; }
+.fw-vp__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
+
+/* Design skins ------------------------------------------------------------- */
+.fw-vp--design-outline .fw-vp__btn { background: transparent; border: 3px solid var(--vp-accent); color: var(--vp-accent); }
+.fw-vp--design-soft .fw-vp__btn { background: rgba(255, 255, 255, .25); color: #fff; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid rgba(255, 255, 255, .5); }
+.fw-vp--design-minimal .fw-vp__btn { background: transparent; box-shadow: none; color: #fff; }
+.fw-vp--design-minimal .fw-vp__triangle { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); width: 70%; height: 70%; }
+
+.fw-vp--design-pulse .fw-vp__pulse { box-shadow: 0 0 0 0 var(--vp-accent); animation: fw-vp-pulse 2.2s ease-out infinite; }
+.fw-vp--design-pulse .fw-vp__pulse::before { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 0 var(--vp-accent); animation: fw-vp-pulse 2.2s ease-out infinite 1.1s; }
+@keyframes fw-vp-pulse {
+	0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, .55); }
+	100% { box-shadow: 0 0 0 26px rgba(255, 255, 255, 0); }
+}
+
+/* =============================================================================
+ * Lightbox (built by JS)
+ * ========================================================================== */
+.fw-vp-lb {
+	position: fixed; inset: 0; z-index: 100000;
+	display: flex; align-items: center; justify-content: center;
+	background: rgba(8, 9, 11, .92);
+	-webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+	opacity: 0; visibility: hidden;
+	transition: opacity .25s ease, visibility .25s ease;
+}
+.fw-vp-lb.is-open { opacity: 1; visibility: visible; }
+.fw-vp-lb__frame {
+	position: relative;
+	width: min(92vw, 1100px);
+	aspect-ratio: 16 / 9;
+	max-height: 86vh;
+	background: #000;
+	border-radius: 6px;
+	overflow: hidden;
+	box-shadow: 0 20px 70px rgba(0, 0, 0, .6);
+	transform: scale(.96);
+	transition: transform .28s cubic-bezier(.2, .8, .2, 1);
+}
+.fw-vp-lb.is-open .fw-vp-lb__frame { transform: scale(1); }
+.fw-vp-lb__frame iframe,
+.fw-vp-lb__frame video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
+.fw-vp-lb__close {
+	position: absolute; top: 16px; right: 16px;
+	width: 46px; height: 46px; border: 0; border-radius: 50%;
+	background: rgba(255, 255, 255, .12); color: #fff; cursor: pointer;
+	display: flex; align-items: center; justify-content: center;
+	transition: background .2s ease;
+}
+.fw-vp-lb__close:hover { background: rgba(255, 255, 255, .25); }
+.fw-vp-lb__close svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-vp__poster, .fw-vp__btn, .fw-vp-lb, .fw-vp-lb__frame { transition: none; }
+	.fw-vp--design-pulse .fw-vp__pulse,
+	.fw-vp--design-pulse .fw-vp__pulse::before { animation: none; }
+}

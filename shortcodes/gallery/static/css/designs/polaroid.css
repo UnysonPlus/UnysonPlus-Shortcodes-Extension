@@ -1,0 +1,52 @@
+/* Gallery — Design: Polaroid Scatter. White-framed photo cards with a caption
+   plate and an optional slight random tilt (--gal-tilt) that straightens on
+   hover. */
+.fw-gallery.design-polaroid .fw-gallery__polaroid {
+	display: grid;
+	grid-template-columns: repeat(var(--gal-cols, 4), minmax(0, 1fr));
+	gap: calc(var(--gal-gap, 1rem) + 6px);
+	align-items: start;
+	/* Breathing room so the tilt + shadow are never clipped by the section
+	   edges (the cards rotate and their corners swing past the grid box). */
+	padding: 16px 10px 22px;
+}
+.fw-gallery.design-polaroid .fw-gallery__item {
+	background: #fff;
+	/* Classic polaroid: thin top/sides, thick bottom plate. */
+	padding: .7rem .7rem .5rem;
+	border-radius: 3px;
+	box-shadow: 0 6px 18px rgba(0, 0, 0, .14);
+	transition: transform .3s ease, box-shadow .3s ease;
+	transform: rotate(var(--gal-tilt, 0deg));
+	transform-origin: center center;
+}
+.fw-gallery.design-polaroid .fw-gallery__polaroid--tilt .fw-gallery__item:hover {
+	transform: rotate(0deg) translateY(-4px) scale(1.02);
+	box-shadow: 0 14px 32px rgba(0, 0, 0, .22);
+	z-index: 2;
+}
+.fw-gallery.design-polaroid .fw-gallery__media {
+	aspect-ratio: 1 / 1;
+	background: #f3f3f3;
+}
+.fw-gallery.design-polaroid .fw-gallery__caption {
+	margin: 0;
+	padding: .75rem .25rem .85rem;
+	font-family: "Caveat", "Segoe Script", "Bradley Hand", cursive, sans-serif;
+	font-size: 1.15rem;
+	color: #3a3a3a;
+	text-align: center;
+	min-height: 1.2em;
+}
+
+@media (max-width: 992px) {
+	.fw-gallery.design-polaroid .fw-gallery__polaroid {
+		grid-template-columns: repeat(var(--gal-cols-t, 2), minmax(0, 1fr));
+	}
+}
+@media (max-width: 576px) {
+	.fw-gallery.design-polaroid .fw-gallery__polaroid { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery.design-polaroid .fw-gallery__item { transition: none; }
+}

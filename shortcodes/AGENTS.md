@@ -36,6 +36,38 @@ After you create a new shortcode, write a sibling `AGENTS.md` in its folder
 following the structure described at the bottom of this guide. The worked
 example is `hero-section/AGENTS.md`.
 
+## Builder icon — REQUIRED for every new shortcode
+
+**Always ship a `static/img/page_builder.svg`** when you create a shortcode — the
+page-builder auto-detects it (preferred over a `.png`) and inlines it as the item's
+icon (see `class-fw-extension-shortcodes.php::_locate_shortcode_icon`). No PNGs:
+the whole set is SVG.
+
+House style for **simple content + Header/Footer element** icons (the small item icons) —
+a crisp, monochrome **16×16 pixel** glyph, displayed 1:1 at 16px:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="#b3b3b3" shape-rendering="crispEdges" aria-hidden="true">
+	<!-- pixel-aligned rects / paths representing the shortcode's purpose -->
+</svg>
+```
+
+Rules: `viewBox="0 0 16 16"` (the icons render at **16px**, so 16-grid = 1:1 crisp pixels —
+do NOT use a 20-grid; scaling 16-native art to 20px renders the 1px rows unevenly), fixed
+`fill="#b3b3b3"` (NOT `currentColor` — it resolves too dark in the editor),
+`shape-rendering="crispEdges"`, integer coordinates. The 16px sizing + `> svg` styling is
+global (in the page-builder simple-item CSS), so you only add the file. Keep diagonals as
+paths (`crispEdges` stair-steps them, which reads as pixel art); use `fill-rule="evenodd"`
+for holes (e.g. a search ring or map pin). Match an existing icon's density — `text-block`,
+`accordion`, `site-search` are good references. The current set was produced by tracing the
+original 16×16 PNGs pixel-for-pixel (each ink pixel → a rect), so a new icon should sit at
+the same weight.
+
+**Layout Elements** (section / column / row and other section-like containers) use a
+DIFFERENT, larger thumbnail style (`viewBox="0 0 60 40"`, outlined `#9b9b9b` strokes on
+`#f8fdff`) — see `section/`, `masonry-section/`, `bleed-section/`. Don't apply the 16×16
+pixel style to those.
+
 ## Step 1 — folder structure
 
 Mirror the canonical reference implementation at `hero-section/`:

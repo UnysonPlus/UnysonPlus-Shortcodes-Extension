@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'Call To Action', 'fw' ),
 	'description' => __( 'Add a Call to Action', 'fw' ),
-	'tab'         => __( 'Content Elements', 'fw' ),
+	'tab'         => __( 'Components', 'fw' ),
 	'popup_size' => 'large',
 	'title_template' => '
 		{{ if ( o ) { }}

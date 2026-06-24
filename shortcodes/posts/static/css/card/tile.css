@@ -1,0 +1,15 @@
+/* Posts card design: Tile (Hover Reveal). */
+.posts__card--tile { display: block; position: relative; aspect-ratio: 1 / 1; }
+.posts__card--tile .posts__image { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.posts__card--tile .posts__image img { transition: transform .5s ease; }
+.posts__card--tile:hover .posts__image img { transform: scale(1.07); }
+.posts__tile-scrim { position: absolute; inset: 0; z-index: 1; background: rgba(0,0,0,.45); opacity: 0; transition: opacity .3s ease; pointer-events: none; }
+.posts__tile-body { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: flex-end; padding: var(--posts-card-pad); color: #fff; opacity: 0; transform: translateY(12px); transition: opacity .3s ease, transform .3s ease; }
+.posts__tile-body > * + * { margin-top: .4em; }
+.posts__tile-body a, .posts__tile-body .posts__title a { color: #fff; }
+.posts__card--tile:hover .posts__tile-scrim, .posts__card--tile:focus-within .posts__tile-scrim { opacity: 1; }
+.posts__card--tile:hover .posts__tile-body, .posts__card--tile:focus-within .posts__tile-body { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+    .posts__card--tile .posts__tile-body { transition: none; }
+    .posts__card--tile .posts__image img { transition: none; }
+}

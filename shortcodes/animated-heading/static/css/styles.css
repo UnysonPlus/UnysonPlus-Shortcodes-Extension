@@ -1,0 +1,47 @@
+/* =============================================================================
+ * Animated Heading — a rotating-word span inside a heading. JS swaps the word
+ * and retriggers an enter animation (per design); typewriter is JS-driven.
+ * ========================================================================== */
+.fw-ah {
+	--ah-text: inherit;
+	--ah-accent: #4a90d9;
+	--ah-dur: .55s;
+	color: var(--ah-text);
+}
+.fw-ah--speed-slow   { --ah-dur: .8s; }
+.fw-ah--speed-normal { --ah-dur: .55s; }
+.fw-ah--speed-fast   { --ah-dur: .35s; }
+
+.fw-ah__rotate { display: inline-flex; align-items: baseline; position: relative; }
+.fw-ah__word { display: inline-block; white-space: nowrap; }
+
+/* Highlight of the rotating word. */
+.fw-ah--hl-color .fw-ah__word { color: var(--ah-accent); }
+.fw-ah--hl-underline .fw-ah__word { text-decoration: underline; text-decoration-color: var(--ah-accent); text-underline-offset: .12em; }
+.fw-ah--hl-marker .fw-ah__word { background: var(--ah-accent); color: #fff; padding: 0 .25em; border-radius: .15em; }
+
+/* Caret (typewriter only). */
+.fw-ah__caret { display: none; width: .08em; min-width: 2px; align-self: stretch; margin-left: .06em; background: currentColor; animation: fw-ah-blink 1s steps(1) infinite; }
+.fw-ah--anim-typewriter .fw-ah__caret { display: inline-block; }
+@keyframes fw-ah-blink { 50% { opacity: 0; } }
+
+/* Enter animations (retriggered by JS adding .run). */
+.fw-ah__word.run { animation-duration: var(--ah-dur); animation-fill-mode: both; }
+.fw-ah--anim-fade  .fw-ah__word.run { animation-name: fw-ah-fade; }
+.fw-ah--anim-slide .fw-ah__word.run { animation-name: fw-ah-slide; }
+.fw-ah--anim-flip  .fw-ah__word.run { animation-name: fw-ah-flip; transform-origin: top center; }
+.fw-ah--anim-zoom  .fw-ah__word.run { animation-name: fw-ah-zoom; }
+.fw-ah--anim-clip  .fw-ah__word.run { animation-name: fw-ah-clip; }
+
+@keyframes fw-ah-fade  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fw-ah-slide { from { opacity: 0; transform: translateY(.55em); } to { opacity: 1; transform: none; } }
+@keyframes fw-ah-flip  { from { opacity: 0; transform: rotateX(-90deg); } to { opacity: 1; transform: none; } }
+@keyframes fw-ah-zoom  { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+@keyframes fw-ah-clip  { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+
+.fw-ah__empty { color: #6c757d; font-style: italic; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-ah__word.run { animation: none; }
+	.fw-ah__caret { animation: none; }
+}

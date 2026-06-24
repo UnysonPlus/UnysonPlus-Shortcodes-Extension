@@ -30,7 +30,7 @@ FW_Shortcode`. The `_init()` method hooks:
 | Hook | Purpose |
 |------|---------|
 | `fw_option_type_builder:page-builder:register_items` action → `_action_register_builder_item_types()` | Loads `Page_Builder_Column_Item` when the editor renders |
-| `fw_ext:shortcodes:collect_shortcodes_data` filter → `_filter_add_column_data()` | Exposes column's options + item widths + `restrictedTypes: ['column']` (columns can't nest inside columns) to the frontend collector |
+| `fw_ext:shortcodes:collect_shortcodes_data` filter → `_filter_add_column_data()` | Exposes column's options + item widths + `restrictedTypes: ['column']` (blocks column-into-column **drag-drop** in the editor only — the data model / corrector / renderer support nesting; see Pitfall 4) to the frontend collector |
 
 The class also exposes `get_item_data()` for the page-builder item data
 bundle — same shape as `section`'s but adds:
@@ -145,10 +145,16 @@ preserving option order (PHP arrays preserve insertion order).
 3. **No typography in Styling** — text color / font size / weight aren't
    on the column. Set those on the inner leaf shortcodes (text-block,
    special-heading) instead.
-4. **`restrictedTypes` enforces column-can't-nest-column** — defined on
-   the class, exposed via `get_item_data()`. The page-builder editor
-   prevents column-into-column drops. Generators must respect this
-   hierarchy: columns hold leaves only, never other columns.
+4. **`restrictedTypes` is an EDITOR-only guard, not a data-model limit** —
+   defined on the class, exposed via `get_item_data()`, it only stops
+   column-into-column **drag-and-drop** in the editor UI. The data model,
+   the items-corrector (`correct_nested_columns()` synthesizes an inner
+   `.fw-row` around child columns at **any depth**), and the renderer all
+   handle column-in-column fine. So **imported / hand-authored / converter-
+   emitted JSON may nest columns** (a `7_12` column whose `_items` are four
+   `1_2` columns is valid and renders correctly). Don't read this guard as
+   "never emit nested columns" — that's the mistake that flattens a
+   Bootstrap `.col > .row > .col` sub-grid into one column with one leaf.
 5. **Width is part of `Page_Builder_Column_Item`, not options.php** —
    the width fraction (1/12 through 12/12) is set via the column item's
    width-picker UI in the editor, not as an `atts` field in

@@ -4,7 +4,10 @@
  * @var array $atts
  */
 
-$ruler_type = $atts['style']['ruler_type'];
+// Default to a line when ruler_type is missing/empty (legacy saves or content
+// stored before the multi-picker had a default value). An empty value used to
+// fall through to the invisible whitespace branch, so the divider showed nothing.
+$ruler_type = ! empty( $atts['style']['ruler_type'] ) ? $atts['style']['ruler_type'] : 'line';
 
 // Per-element color picks (extracted before any wrapper-class composition).
 // sc_extract_styling_atts gives us both preset classes AND custom-hex
@@ -36,14 +39,60 @@ $id_attr   = $css_id !== '' ? ' id="' . esc_attr( $css_id ) . '"' : '';
 $classes = [ 'fw-divider' ];
 
 if ( $ruler_type === 'line' ) {
-    $line = $atts['style']['line'];
+    $line = wp_parse_args(
+        isset( $atts['style']['line'] ) && is_array( $atts['style']['line'] ) ? $atts['style']['line'] : array(),
+        array(
+            'line_design'  => 'std',
+            'content_type' => 'none',
+            'alignment'    => 'center',
+            'title'        => '',
+            'icon'         => '',
+        )
+    );
     $classes[] = "divider-{$line['line_design']}";
 
     if ( $line['content_type'] !== 'none' ) {
         $classes[] = "has-content alignment-{$line['alignment']}";
     }
+} elseif ( $ruler_type === 'shape' ) {
+    $shape = wp_parse_args(
+        isset( $atts['style']['shape'] ) && is_array( $atts['style']['shape'] ) ? $atts['style']['shape'] : array(),
+        array(
+            'shape_style'  => 'waves',
+            'shape_height' => '60',
+            'shape_flip_x' => 'no',
+            'shape_flip_y' => 'no',
+        )
+    );
+    $classes[] = 'divider-shape';
+    $classes[] = 'divider-shape--' . sanitize_html_class( $shape['shape_style'] );
+    if ( $shape['shape_flip_x'] === 'yes' ) { $classes[] = 'is-flip-x'; }
+    if ( $shape['shape_flip_y'] === 'yes' ) { $classes[] = 'is-flip-y'; }
 } else {
     $classes[] = 'divider-space';
+}
+
+if ( ! function_exists( 'sc_divider_shape_path' ) ) {
+    /** Filled SVG path (viewBox 0 0 1200 120) for each shape style. */
+    function sc_divider_shape_path( $style ) {
+        switch ( $style ) {
+            case 'wave':
+                return 'M0,80 C400,20 800,120 1200,60 L1200,120 L0,120 Z';
+            case 'curve':
+                return 'M0,120 Q600,0 1200,120 L1200,120 L0,120 Z';
+            case 'tilt':
+                return 'M0,120 L1200,0 L1200,120 L0,120 Z';
+            case 'triangle':
+                return 'M0,120 L600,0 L1200,120 L0,120 Z';
+            case 'zigzag':
+                return 'M0,120 L150,40 L300,120 L450,40 L600,120 L750,40 L900,120 L1050,40 L1200,120 L1200,120 L0,120 Z';
+            case 'arrow':
+                return 'M0,0 L600,90 L1200,0 L1200,120 L0,120 Z';
+            case 'waves':
+            default:
+                return 'M0,64 C150,8 350,120 600,64 C850,8 1050,120 1200,56 L1200,120 L0,120 Z';
+        }
+    }
 }
 
 // Merge responsive-hide classes and custom user class.
@@ -109,5 +158,10 @@ $class_output = ' class="' . implode( ' ', array_unique( $classes ) ) . '"';
                 <?php echo esc_html( $line['title'] ); ?>
             <?php endif; ?>
         </span>
+    <?php elseif ( $ruler_type === 'shape' ) : ?>
+        <?php $shape_h = max( 1, (int) $shape['shape_height'] ); ?>
+        <svg class="fw-divider__shape-svg" viewBox="0 0 1200 120" preserveAspectRatio="none" style="height:<?php echo esc_attr( $shape_h ); ?>px" aria-hidden="true" focusable="false">
+            <path d="<?php echo esc_attr( sc_divider_shape_path( $shape['shape_style'] ) ); ?>" fill="currentColor"></path>
+        </svg>
     <?php endif; ?>
 </div>

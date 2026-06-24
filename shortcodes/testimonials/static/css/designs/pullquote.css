@@ -1,0 +1,47 @@
+/* Testimonials — Design: Pull-Quote Editorial.
+   One oversized type-led statement at a time, crossfading. Built on the base
+   .testimonials-splide skin (Splide type:fade). */
+.testimonials.design-pullquote .ts-pullquote {
+	max-width: 820px;
+	margin: 0 auto;
+}
+.testimonials.design-pullquote .ts-pullquote__item {
+	margin: 0;
+	text-align: center;
+	padding: 1rem 1.5rem 0.5rem;
+}
+.testimonials.design-pullquote .ts-pullquote__quote {
+	position: relative;
+	margin: 0 0 1.5rem;
+	font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.4rem);
+	line-height: 1.35;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+}
+.testimonials.design-pullquote .ts-pullquote__quote::before {
+	content: "\201C";
+	display: block;
+	font-family: Georgia, "Times New Roman", serif;
+	font-size: 4.5rem;
+	line-height: .4;
+	color: rgba(0, 0, 0, .14);
+	margin-bottom: 1rem;
+}
+.testimonials.design-pullquote .ts-pullquote__rating { margin-bottom: 1rem; }
+.testimonials.design-pullquote .ts-pullquote__author {
+	display: inline-flex;
+	align-items: center;
+	gap: .65rem;
+}
+.testimonials.design-pullquote .ts-pullquote__avatar {
+	width: 48px;
+	height: 48px;
+	object-fit: cover;
+	flex: 0 0 auto;
+}
+.testimonials.design-pullquote .ts-pullquote__byline { display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: .4rem; }
+.testimonials.design-pullquote .testimonial-author { font-weight: 700; }
+.testimonials.design-pullquote .ts-pullquote__meta { color: #6c757d; font-size: .9em; }
+.testimonials.design-pullquote .ts-pullquote__meta .sep { padding: 0 .35rem; color: rgba(0, 0, 0, .3); }
+.testimonials.design-pullquote .ts-pullquote__meta a { color: inherit; text-decoration: underline; }
+

@@ -14,13 +14,15 @@ $subtitle_class = trim( $atts['subtitle_class'] ?? '' );
 // Capture user's original css_class for the css_class composition below
 $user_class = $atts['css_class'] ?? '';
 
-// Master alignment (Layout tab). The `alignment` image-picker (left/center/right)
+// Master alignment (Layout tab). The `alignment` image-picker (inherit/left/center/right)
 // supersedes the legacy `centered` switch, still honored for content saved before
-// this option existed (centered:"yes" → center). The per-element pickers below may
-// override per line; an empty per-element value ("Inherit") falls back to this master.
+// this option existed (centered:"yes" → center). An empty master ("Inherit") forces
+// nothing — the heading follows the theme / parent alignment. The per-element pickers
+// below may override per line; an empty per-element value ("Inherit") falls back to
+// this master (which may itself be empty, i.e. no forced text-* class anywhere).
 $alignment = $atts['alignment'] ?? '';
-if ( $alignment === '' ) {
-    $alignment = ( ! empty( $atts['centered'] ) && $atts['centered'] === 'yes' ) ? 'center' : 'left';
+if ( $alignment === '' && ! empty( $atts['centered'] ) && $atts['centered'] === 'yes' ) {
+    $alignment = 'center';
 }
 $resolve_align = function ( $key ) use ( $atts, $alignment ) {
     $v = $atts[ $key ] ?? '';
@@ -51,7 +53,13 @@ $block_max_width = $css_len( $atts['block_max_width'] ?? '' );
 // it never forces the wrapper; per-element Color picks route to the inner elements
 // too. Element spacing and a block max-width DO need the wrapper (they style the
 // container). Mirrors text-block: with no such option set, the heading renders bare.
-$should_wrap = sc_needs_wrapper( $atts ) || $element_spacing !== '' || $block_max_width !== '';
+// A user-provided CSS Class or CSS ID must ALWAYS produce the wrapper div (so the
+// class/id has an element to land on) — stated explicitly here so the trigger doesn't
+// depend on sc_needs_wrapper's internals. Element spacing / block max-width also need it.
+$user_css_id = $atts['css_id'] ?? '';
+$should_wrap = sc_needs_wrapper( $atts )
+	|| $element_spacing !== '' || $block_max_width !== ''
+	|| $user_class !== '' || $user_css_id !== '';
 
 // Set base + unique-id-prefix before sc_build_wrapper_attr
 $atts['base_class']       = 'heading';
@@ -140,11 +148,22 @@ $ov_cont_map = array( 'pill' => 'heading-overline--pill', 'pill-outline' => 'hea
 if ( isset( $ov_cont_map[ $ov_cont ] ) ) {
     $overline_classes[] = $ov_cont_map[ $ov_cont ];
 }
+// The inner .heading-overline__label span only exists to (a) carry the flanking
+// markers and (b) shrink-wrap a pill / underline around the text. With NEITHER a
+// marker NOR a container it's redundant, so the text renders bare (one fewer node).
+// Base + kicker styling lives on .heading-overline itself, so no extra class is
+// needed — a plain eyebrow is just <p class="heading-overline">Eyebrow</p>.
+$overline_needs_label = isset( $ov_marker_map[ $ov_marker ] ) || isset( $ov_cont_map[ $ov_cont ] );
 if ( ( $oa = sc_alignment_class( $overline_align ) ) !== '' ) {
     $overline_classes[] = $oa;
 }
+// User class(es) — space-separated; sanitize each token (sc_sanitize_class strips spaces, so a
+// multi-class value like "text-uppercase text-sm letter-spacing" must be split first).
 if ( $overline_class !== '' ) {
-    $overline_classes[] = sc_sanitize_class( $overline_class );
+    foreach ( preg_split( '/\s+/', $overline_class ) as $oc ) {
+        $oc = sc_sanitize_class( $oc );
+        if ( $oc !== '' ) { $overline_classes[] = $oc; }
+    }
 }
 $overline_classes = array_merge( $overline_classes, $overline_extras );
 
@@ -158,7 +177,10 @@ if ( ( $ta = sc_alignment_class( $title_align ) ) !== '' ) {
     $title_classes[] = $ta;
 }
 if ( $title_class !== '' ) {
-    $title_classes[] = sc_sanitize_class( $title_class );
+    foreach ( preg_split( '/\s+/', $title_class ) as $tc ) {
+        $tc = sc_sanitize_class( $tc );
+        if ( $tc !== '' ) { $title_classes[] = $tc; }
+    }
 }
 $title_classes = array_merge( $title_classes, $title_extras );
 
@@ -172,7 +194,10 @@ if ( ( $sa = sc_alignment_class( $subtitle_align ) ) !== '' ) {
     $subtitle_classes[] = $sa;
 }
 if ( $subtitle_class !== '' ) {
-    $subtitle_classes[] = sc_sanitize_class( $subtitle_class );
+    foreach ( preg_split( '/\s+/', $subtitle_class ) as $sc_cl ) {
+        $sc_cl = sc_sanitize_class( $sc_cl );
+        if ( $sc_cl !== '' ) { $subtitle_classes[] = $sc_cl; }
+    }
 }
 $subtitle_classes = array_merge( $subtitle_classes, $subtitle_extras );
 
@@ -197,23 +222,27 @@ $overline_style_attr = $overline_style !== '' ? ' style="' . esc_attr( $overline
 $title_style_attr    = $title_style    !== '' ? ' style="' . esc_attr( $title_style ) . '"'    : '';
 $subtitle_style_attr = $subtitle_style !== '' ? ' style="' . esc_attr( $subtitle_style ) . '"' : '';
 ?>
-<?php if ( ! empty( $atts['overline'] ) ) : ?>
-    <div class="<?php echo esc_attr( implode( ' ', $overline_classes ) ); ?>"<?php echo $overline_style_attr; ?>>
-        <span class="heading-overline__label"><?php echo wp_kses_post( $atts['overline'] ); ?></span>
-    </div>
-<?php endif; ?>
+<?php
+// Each line is emitted as a single string with NO whitespace between the tag and
+// its text, so the markup is genuinely clean (no leading/trailing space inside the
+// element). Content is trimmed for the same reason.
+if ( ! empty( $atts['overline'] ) ) {
+    $overline_inner = $overline_needs_label
+        ? '<span class="heading-overline__label">' . wp_kses_post( trim( (string) $atts['overline'] ) ) . '</span>'
+        : wp_kses_post( trim( (string) $atts['overline'] ) );
+    echo '<p class="' . esc_attr( implode( ' ', $overline_classes ) ) . '"' . $overline_style_attr . '>' . $overline_inner . '</p>';
+}
 
-<?php if ( ! empty( $atts['title'] ) ) : ?>
-    <<?php echo esc_attr( $atts['heading'] ); ?> class="<?php echo esc_attr( implode( ' ', $title_classes ) ); ?>"<?php echo $title_style_attr; ?>>
-        <?php echo wp_kses_post( $atts['title'] ); ?>
-    </<?php echo esc_attr( $atts['heading'] ); ?>>
-<?php endif; ?>
+if ( ! empty( $atts['title'] ) ) {
+    // Whitelist the tag so a missing/stale value can never emit a broken <  > tag.
+    $hd_tag = ( isset( $atts['heading'] ) && in_array( $atts['heading'], array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' ), true ) ) ? $atts['heading'] : 'h2';
+    echo '<' . $hd_tag . ' class="' . esc_attr( implode( ' ', $title_classes ) ) . '"' . $title_style_attr . '>' . wp_kses_post( trim( (string) $atts['title'] ) ) . '</' . $hd_tag . '>';
+}
 
-<?php if ( ! empty( $atts['subtitle'] ) ) : ?>
-    <div class="<?php echo esc_attr( implode( ' ', $subtitle_classes ) ); ?>"<?php echo $subtitle_style_attr; ?>>
-        <?php echo wp_kses_post( $atts['subtitle'] ); ?>
-    </div>
-<?php endif; ?>
+if ( ! empty( $atts['subtitle'] ) ) {
+    echo '<p class="' . esc_attr( implode( ' ', $subtitle_classes ) ) . '"' . $subtitle_style_attr . '>' . wp_kses_post( trim( (string) $atts['subtitle'] ) ) . '</p>';
+}
+?>
 
 <?php if ( $should_wrap ) : ?>
     </div>

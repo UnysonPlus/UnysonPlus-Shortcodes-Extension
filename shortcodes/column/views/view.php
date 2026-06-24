@@ -128,14 +128,41 @@ if ( in_array( $align_self, array( 'start','center','end','stretch' ), true ) ) 
 // them below, once we know whether an inner wrapper is needed.
 $content_v = (string) fw_akg( 'content_v', $atts, '' );
 $content_h = (string) fw_akg( 'content_h', $atts, '' );
+$direction = (string) fw_akg( 'content_direction', $atts, 'column' );
+$is_row    = ( $direction === 'row' );
 $cv_ok = in_array( $content_v, array( 'start','center','end','between' ), true );
 $ch_ok = in_array( $content_h, array( 'start','center','end' ), true );
+
+// Gap between elements → flex `gap` via the theme-aware `--gap-{slug}` CSS
+// variable (generated from the Gap Scale in css-tokens.php). Slug is
+// sanitised so a tampered att can't inject anything into the var() ref.
+$gap_slug = preg_replace( '/[^a-z0-9_-]/i', '', (string) fw_akg( 'content_gap', $atts, '' ) );
+$gap_ok   = ( $gap_slug !== '' );
+
 $content_align_tokens = array();
-if ( $cv_ok || $ch_ok ) {
+$content_align_style  = '';
+if ( $cv_ok || $ch_ok || $is_row || $gap_ok ) {
     $content_align_tokens[] = 'd-flex';
-    $content_align_tokens[] = 'flex-column';
-    if ( $cv_ok ) { $content_align_tokens[] = 'justify-content-' . $content_v; }
-    if ( $ch_ok ) { $content_align_tokens[] = 'align-items-' . $content_h; }
+    $content_align_tokens[] = $is_row ? 'flex-row' : 'flex-column';
+    if ( $is_row ) { $content_align_tokens[] = 'flex-wrap'; }
+
+    // Axis-aware mapping: a row swaps the flex axes, so "Content Alignment"
+    // (always meaning horizontal) drives justify-content in a row but
+    // align-items in a column — and vice-versa for "Content Vertical
+    // Alignment" — keeping both option labels honest in either direction.
+    // `between` exists only on the main axis (justify-content), so it's
+    // ignored when Content Vertical Alignment lands on the cross axis (a row).
+    if ( $is_row ) {
+        if ( $ch_ok ) { $content_align_tokens[] = 'justify-content-' . $content_h; }
+        if ( in_array( $content_v, array( 'start','center','end' ), true ) ) {
+            $content_align_tokens[] = 'align-items-' . $content_v;
+        }
+    } else {
+        if ( $cv_ok ) { $content_align_tokens[] = 'justify-content-' . $content_v; }
+        if ( $ch_ok ) { $content_align_tokens[] = 'align-items-' . $content_h; }
+    }
+
+    if ( $gap_ok ) { $content_align_style = 'gap:var(--gap-' . $gap_slug . ');'; }
 }
 
 // Position (sticky also gets top-0 so it actually sticks).
@@ -150,8 +177,12 @@ if ( ! empty( $outer_extra ) ) {
 }
 
 // Z-index → inline style on the outer column (no general z-index utility).
+// Skip 0: the `number` option type casts an empty field to 0 on save
+// (intval('')/floatval('') === 0), so an untouched Z-Index would otherwise
+// stamp every column with a meaningless `style="z-index:0;"`. z-index:0 has no
+// practical effect anyway, so treat it as unset and keep the DOM clean.
 $z_index = fw_akg( 'z_index', $atts, '' );
-if ( $z_index !== '' && is_numeric( $z_index ) ) {
+if ( $z_index !== '' && is_numeric( $z_index ) && (int) $z_index !== 0 ) {
     $existing_style = isset( $attr['style'] ) ? rtrim( trim( $attr['style'] ), ';' ) : '';
     $attr['style']  = ( $existing_style !== '' ? $existing_style . '; ' : '' ) . 'z-index:' . (int) $z_index . ';';
 }
@@ -217,13 +248,13 @@ if ( in_array( $shadow, array( 'shadow-sm','shadow','shadow-lg' ), true ) ) {
     $inner_tokens[] = $shadow;
 }
 
-// Border Preset (Styling tab) → a reusable `.colb-{name}` class on the inner
-// card wrapper (border + corners + shadow + hover; CSS generated in
-// css-tokens.php from Theme Settings → General → Borders). This is the modern
-// replacement for the manual border fields above, which still render for any
-// column saved before this feature (back-compat).
+// Box Preset (Styling tab) → a reusable `.boxp-{name}` class on the inner
+// card wrapper (border + corners + shadow + background fill + hover; CSS generated
+// in css-tokens.php from Theme Settings → Components → Box Presets). This is the
+// modern replacement for the manual border fields above, which still render for any
+// column saved before this feature (back-compat). The option key stays `border_preset`.
 $border_preset = (string) fw_akg( 'border_preset', $atts, '' );
-if ( $border_preset !== '' && preg_match( '/^colb-[a-z0-9_-]+$/i', $border_preset ) ) {
+if ( $border_preset !== '' && preg_match( '/^boxp-[a-z0-9_-]+$/i', $border_preset ) ) {
     $inner_tokens[] = $border_preset;
 }
 
@@ -240,21 +271,33 @@ $inner_class  = implode( ' ', $inner_tokens );
 ?>
 
 <?php
-$inner_style_attr = $styling_style !== '' ? ' style="' . esc_attr( $styling_style ) . '"' : '';
-$needs_inner      = $inner_class !== '' || $styling_style !== '';
+$needs_inner = $inner_class !== '' || $styling_style !== '';
 
-// Route content alignment onto whichever element directly holds the content.
+// Route content alignment (classes) + gap (inline style) onto whichever
+// element directly holds the content — the inner wrapper if one exists,
+// otherwise the outer column.
 if ( ! empty( $content_align_tokens ) ) {
     if ( $needs_inner ) {
         // Distribute / position the REAL elements inside the wrapper. h-100 lets the
         // wrapper fill the column height so vertical alignment (incl. Space Between)
         // has room to work — without it the wrapper is only as tall as its content.
-        if ( $cv_ok ) { $content_align_tokens[] = 'h-100'; }
+        // Only needed in column mode, where Content Vertical Alignment drives the
+        // main axis; a row doesn't need the column's full height to align.
+        if ( $cv_ok && ! $is_row ) { $content_align_tokens[] = 'h-100'; }
         $inner_class = trim( $inner_class . ' ' . implode( ' ', $content_align_tokens ) );
+        if ( $content_align_style !== '' ) {
+            $styling_style = ( $styling_style !== '' ? rtrim( $styling_style, '; ' ) . '; ' : '' ) . $content_align_style;
+        }
     } else {
         $attr['class'] = trim( $attr['class'] . ' ' . implode( ' ', $content_align_tokens ) );
+        if ( $content_align_style !== '' ) {
+            $existing      = isset( $attr['style'] ) ? rtrim( trim( $attr['style'] ), ';' ) : '';
+            $attr['style'] = ( $existing !== '' ? $existing . '; ' : '' ) . $content_align_style;
+        }
     }
 }
+
+$inner_style_attr = $styling_style !== '' ? ' style="' . esc_attr( $styling_style ) . '"' : '';
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
     <?php if ( $needs_inner ) : ?>

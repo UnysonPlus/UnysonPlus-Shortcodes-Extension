@@ -1,0 +1,76 @@
+/* =============================================================================
+ * Newsletter — AJAX signup form (inline / stacked / boxed).
+ * ========================================================================== */
+.fw-nl {
+	--nl-accent: #4a90d9;
+	--nl-field-bg: #ffffff;
+	--nl-bg: #f3f5f8;
+	--nl-text: inherit;
+	color: var(--nl-text);
+}
+.fw-nl__title { margin: 0 0 .4rem; }
+.fw-nl__desc { margin: 0 0 1rem; opacity: .9; }
+.fw-nl__desc :last-child { margin-bottom: 0; }
+
+.fw-nl__fields { display: flex; gap: .55rem; }
+.fw-nl__input {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: .8em 1em;
+	border: 1px solid rgba(0, 0, 0, .15);
+	background: var(--nl-field-bg);
+	color: inherit;
+	font: inherit;
+	border-radius: .45rem;
+}
+.fw-nl__input:focus { outline: none; border-color: var(--nl-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--nl-accent) 25%, transparent); }
+@supports not (box-shadow: 0 0 0 3px color-mix(in srgb, red 25%, transparent)) {
+	.fw-nl__input:focus { box-shadow: 0 0 0 3px rgba(74, 144, 217, .25); }
+}
+.fw-nl__btn {
+	flex: 0 0 auto;
+	padding: .8em 1.5em;
+	border: 0;
+	background: var(--nl-accent);
+	color: #fff;
+	font: inherit;
+	font-weight: 600;
+	border-radius: .45rem;
+	cursor: pointer;
+	transition: filter .2s ease, transform .2s ease;
+}
+.fw-nl__btn:hover { filter: brightness(1.08); }
+.fw-nl__btn:disabled { opacity: .65; cursor: default; }
+.fw-nl__btn.is-loading { color: transparent; position: relative; }
+.fw-nl__btn.is-loading::after { content: ""; position: absolute; left: 50%; top: 50%; width: 1em; height: 1em; margin: -.5em 0 0 -.5em; border: 2px solid rgba(255, 255, 255, .4); border-top-color: #fff; border-radius: 50%; animation: fw-nl-spin .7s linear infinite; }
+@keyframes fw-nl-spin { to { transform: rotate(360deg); } }
+
+/* Roundness ---------------------------------------------------------------- */
+.fw-nl--round-rounded-0 .fw-nl__input, .fw-nl--round-rounded-0 .fw-nl__btn { border-radius: 0; }
+.fw-nl--round-pill .fw-nl__input, .fw-nl--round-pill .fw-nl__btn { border-radius: 2rem; }
+
+/* Honeypot — visually hidden. */
+.fw-nl__hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; opacity: 0; }
+
+.fw-nl__consent { margin-top: .6rem; font-size: .8rem; opacity: .75; }
+.fw-nl__consent a { color: var(--nl-accent); }
+.fw-nl__msg { margin-top: .7rem; font-weight: 600; min-height: 1.2em; }
+.fw-nl__msg.is-success { color: #2e9e5b; }
+.fw-nl__msg.is-error { color: #c0392b; }
+
+/* Designs ------------------------------------------------------------------ */
+.fw-nl--design-stacked .fw-nl__fields { flex-direction: column; }
+.fw-nl--design-stacked .fw-nl__btn { width: 100%; }
+
+.fw-nl--design-boxed { background: var(--nl-bg); border-radius: .9rem; padding: 2rem; }
+.fw-nl--text-center { text-align: center; }
+.fw-nl--text-center .fw-nl__fields { justify-content: center; }
+.fw-nl--text-center.fw-nl--design-stacked .fw-nl__fields { max-width: 420px; margin: 0 auto; }
+
+@media (max-width: 540px) {
+	.fw-nl--design-inline .fw-nl__fields { flex-direction: column; }
+	.fw-nl--design-inline .fw-nl__btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-nl__btn { transition: none; }
+}

@@ -1,0 +1,66 @@
+/* Testimonials — Design: Zigzag Alternating.
+   Full-width rows; photo alternates left/right (CSS, no JS). */
+.testimonials.design-zigzag .ts-zigzag {
+	display: flex;
+	flex-direction: column;
+	gap: 2.5rem;
+	max-width: 980px;
+	margin: 0 auto;
+}
+.testimonials.design-zigzag .ts-zigzag__row {
+	display: flex;
+	align-items: center;
+	gap: 2.5rem;
+}
+/* Alternation. Default: first photo LEFT, then every even row flips. */
+.testimonials.design-zigzag .ts-zigzag--start-left .ts-zigzag__row:nth-child(even) { flex-direction: row-reverse; }
+/* Start RIGHT: flip the parity. */
+.testimonials.design-zigzag .ts-zigzag--start-right .ts-zigzag__row:nth-child(odd) { flex-direction: row-reverse; }
+.testimonials.design-zigzag .ts-zigzag--start-right .ts-zigzag__row:nth-child(even) { flex-direction: row; }
+
+.testimonials.design-zigzag .ts-zigzag__media {
+	flex: 0 0 42%;
+	max-width: 42%;
+}
+.testimonials.design-zigzag .ts-zigzag__media img {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	border-radius: 1rem;
+	box-shadow: 0 .75rem 1.75rem rgba(0, 0, 0, .12);
+	display: block;
+}
+.testimonials.design-zigzag .ts-zigzag__body { flex: 1 1 auto; }
+.testimonials.design-zigzag .ts-zigzag__rating { margin-bottom: .75rem; }
+.testimonials.design-zigzag .ts-zigzag__body .testimonial-quote {
+	margin: 0 0 1.1rem;
+	font-size: 1.3rem;
+	line-height: 1.5;
+	font-weight: 500;
+}
+.testimonials.design-zigzag .ts-zigzag__body .testimonial-quote::before {
+	content: "\201C";
+	display: block;
+	font-size: 2.75rem;
+	line-height: .5;
+	color: rgba(0, 0, 0, .12);
+	margin-bottom: .4rem;
+}
+.testimonials.design-zigzag .ts-zigzag__author { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem; }
+.testimonials.design-zigzag .testimonial-author { font-weight: 700; }
+.testimonials.design-zigzag .ts-zigzag__meta { color: #6c757d; font-size: .9em; }
+.testimonials.design-zigzag .ts-zigzag__meta .sep { padding: 0 .35rem; color: rgba(0, 0, 0, .3); }
+.testimonials.design-zigzag .ts-zigzag__meta a { color: inherit; text-decoration: underline; }
+
+@media (max-width: 768px) {
+	/* Stack: photo always on top, no alternation. */
+	.testimonials.design-zigzag .ts-zigzag__row,
+	.testimonials.design-zigzag .ts-zigzag--start-right .ts-zigzag__row:nth-child(odd),
+	.testimonials.design-zigzag .ts-zigzag--start-right .ts-zigzag__row:nth-child(even),
+	.testimonials.design-zigzag .ts-zigzag--start-left .ts-zigzag__row:nth-child(even) {
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+	.testimonials.design-zigzag .ts-zigzag__media { flex-basis: auto; max-width: 100%; width: 100%; }
+	.testimonials.design-zigzag .ts-zigzag__body .testimonial-quote { font-size: 1.12rem; }
+}

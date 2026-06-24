@@ -1,0 +1,64 @@
+/* Tag List — pills / chips / inline list.
+   Colour comes from --tl-color (a Color Preset var or a custom hex set inline by the view),
+   defaulting to a neutral grey when unset. color-mix() derives the soft/outline tints from it. */
+.fw-taglist {
+	--tl-color: #5f6266;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: .45rem;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.fw-taglist.tl-align-center { justify-content: center; }
+.fw-taglist.tl-align-end    { justify-content: flex-end; }
+.fw-taglist.tl-gap-sm { gap: .45rem; }
+.fw-taglist.tl-gap-md { gap: .65rem; }
+.fw-taglist.tl-gap-lg { gap: 1rem; }
+
+.fw-taglist .fw-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: .4rem;
+	font-weight: 600;
+	line-height: 1.25;
+	text-decoration: none;
+	white-space: nowrap;
+	border: 1px solid transparent;
+	transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease, box-shadow .16s ease;
+}
+
+/* size */
+.fw-taglist.tl-sm .fw-tag { font-size: .72rem; padding: .22rem .62rem; }
+.fw-taglist.tl-md .fw-tag { font-size: .82rem; padding: .32rem .8rem; }
+.fw-taglist.tl-lg .fw-tag { font-size: .95rem; padding: .44rem 1.05rem; }
+
+/* shape */
+.fw-taglist.tl-shape-pill .fw-tag    { border-radius: 999px; }
+.fw-taglist.tl-shape-rounded .fw-tag { border-radius: 8px; }
+.fw-taglist.tl-shape-square .fw-tag  { border-radius: 0; }
+
+/* leading dot marker */
+.fw-taglist .fw-tag__dot { width: .42em; height: .42em; border-radius: 50%; background: currentColor; opacity: .8; flex: 0 0 auto; }
+
+/* ---- designs ---- */
+.fw-taglist.tl-soft .fw-tag    { background: color-mix(in srgb, var(--tl-color) 13%, transparent); color: var(--tl-color); }
+.fw-taglist.tl-outline .fw-tag { background: transparent; color: var(--tl-color); border-color: color-mix(in srgb, var(--tl-color) 38%, transparent); }
+.fw-taglist.tl-solid .fw-tag   { background: var(--tl-color); border-color: var(--tl-color); color: #fff; }
+.fw-taglist.tl-subtle .fw-tag  { background: #eef1f4; color: #5b636b; }
+
+/* inline design: plain coloured text with a dot separator, no pill box */
+.fw-taglist.tl-line { gap: 0; }
+.fw-taglist.tl-line .fw-tag { padding: 0; border: 0; background: none; color: var(--tl-color); }
+.fw-taglist.tl-line .fw-tag + .fw-tag::before { content: "\2022"; margin: 0 .55em; opacity: .45; font-weight: 700; }
+
+/* hover lift (mainly for linked tags) */
+.fw-taglist.tl-hover a.fw-tag:hover            { transform: translateY(-1px); }
+.fw-taglist.tl-hover.tl-soft a.fw-tag:hover    { background: color-mix(in srgb, var(--tl-color) 22%, transparent); }
+.fw-taglist.tl-hover.tl-outline a.fw-tag:hover { border-color: var(--tl-color); }
+.fw-taglist.tl-hover.tl-solid a.fw-tag:hover   { box-shadow: 0 4px 12px color-mix(in srgb, var(--tl-color) 35%, transparent); }
+.fw-taglist.tl-hover.tl-line a.fw-tag:hover    { text-decoration: underline; }
+
+/* editor empty-state hint */
+.fw-taglist__empty { color: #8a8a8a; font-style: italic; }

@@ -66,7 +66,12 @@ if ( is_array( $mh ) ) {
 	$min_height = trim( $mh ); // legacy: min_height saved as a plain string
 }
 
-$valign     = isset( $atts['content_valign'] ) ? (string) $atts['content_valign'] : '';
+// Columns Vertical Alignment (id: column_valign; the now-renamed old key
+// content_valign is tolerated as a fallback). Positions the whole content block
+// vertically within a tall (min-height) section via the section flex column.
+$valign = isset( $atts['column_valign'] )
+	? (string) $atts['column_valign']
+	: ( isset( $atts['content_valign'] ) ? (string) $atts['content_valign'] : '' );
 if ( $min_height !== '' ) {
 	$section_style .= 'min-height:' . esc_attr( $min_height ) . ';';
 }
@@ -76,9 +81,23 @@ if ( $min_height !== '' || $valign === 'center' || $valign === 'bottom' ) {
 	$section_style .= 'display:flex;flex-direction:column;justify-content:' . $justify . ';';
 }
 
+// Columns Horizontal Alignment (id: column_halign). Routed through a modifier
+// class so it can reach this section's auto-generated .fw-row(s) — same pattern
+// as the section--gap-* classes above. Default (left) needs no class.
+$halign = isset( $atts['column_halign'] ) ? (string) $atts['column_halign'] : '';
+if ( $halign === 'center' || $halign === 'right' ) {
+	$section_extra_classes .= ' section--cols-' . $halign;
+}
+
 $container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] )
 	? 'fw-container-fluid'
 	: 'fw-container';
+
+// When this section holds one or more Container elements, the items-corrector has already
+// lifted the section's OWN columns into a default .fw-container item and kept the Container
+// elements as siblings — so we render the corrected content directly and DON'T add our own
+// .fw-container (that would nest them). Sections without a Container keep the original markup.
+$has_inner_containers = ! empty( $atts['has_inner_containers'] );
 
 $attr = sc_build_wrapper_attr( $atts );
 
@@ -95,7 +114,11 @@ if ( ! empty( $section_extra_classes ) ) {
 }
 ?>
 <section <?php echo fw_attr_to_html( $attr ); ?>>
+<?php if ( $has_inner_containers ) : // content is already a set of .fw-container[-fluid] sibling bands ?>
+	<?php echo do_shortcode( $content ); ?>
+<?php else : ?>
 	<div class="<?php echo esc_attr( $container_class ); ?>">
 		<?php echo do_shortcode( $content ); ?>
 	</div>
+<?php endif; ?>
 </section>

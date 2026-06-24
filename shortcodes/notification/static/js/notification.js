@@ -3,11 +3,36 @@
 
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    function persistKey(alert) {
+        return alert && alert.getAttribute ? alert.getAttribute('data-persist-key') : null;
+    }
+
+    function isDismissed(key) {
+        if (!key) return false;
+        try { return window.localStorage.getItem(key) === '1'; } catch (e) { return false; }
+    }
+
+    function rememberDismissed(alert) {
+        var key = persistKey(alert);
+        if (!key) return;
+        try { window.localStorage.setItem(key, '1'); } catch (e) {}
+    }
+
+    function initPersisted() {
+        var alerts = document.querySelectorAll('.alert[data-persist-key]');
+        for (var i = 0; i < alerts.length; i++) {
+            if (isDismissed(persistKey(alerts[i]))) {
+                removeAlert(alerts[i]);
+            }
+        }
+    }
+
     function dismiss(alert) {
         if (!alert || alert.dataset.dismissing === '1') {
             return;
         }
         alert.dataset.dismissing = '1';
+        rememberDismissed(alert);
 
         if (reduceMotion) {
             removeAlert(alert);
@@ -58,6 +83,7 @@
     }
 
     function init() {
+        initPersisted();
         document.addEventListener('click', onClick, false);
         initAutoDismiss();
     }

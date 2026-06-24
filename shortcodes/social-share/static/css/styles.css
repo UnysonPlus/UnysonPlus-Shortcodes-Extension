@@ -1,0 +1,95 @@
+/* =============================================================================
+ * Social Share — buttons (brand / mono / outline / soft / text) × shapes × sizes.
+ * Each button carries its brand color in --ss-color (set inline).
+ * ========================================================================== */
+.fw-ss { --ss-size: 42px; --ss-icon: #fff; }
+.fw-ss--size-sm { --ss-size: 34px; }
+.fw-ss--size-md { --ss-size: 42px; }
+.fw-ss--size-lg { --ss-size: 52px; }
+
+.fw-ss__heading { display: block; font-weight: 600; margin-bottom: .6rem; }
+.fw-ss__list { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; }
+.fw-ss--text-center .fw-ss__list { justify-content: center; }
+.fw-ss--text-end .fw-ss__list    { justify-content: flex-end; }
+.fw-ss--layout-stacked .fw-ss__list { flex-direction: column; align-items: stretch; }
+
+.fw-ss__btn {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: .55em;
+	min-width: var(--ss-size);
+	height: var(--ss-size);
+	padding: 0;
+	border: 2px solid transparent;
+	border-radius: 50%;
+	color: #fff;
+	text-decoration: none;
+	cursor: pointer;
+	transition: transform .15s ease, filter .15s ease, background .15s ease, color .15s ease;
+	-webkit-tap-highlight-color: transparent;
+}
+.fw-ss__btn:hover { transform: translateY(-2px); }
+.fw-ss__btn:focus-visible { outline: 2px solid var(--ss-color); outline-offset: 2px; }
+.fw-ss__icon { display: inline-flex; line-height: 0; }
+.fw-ss__icon svg { width: calc(var(--ss-size) * .45); height: calc(var(--ss-size) * .45); }
+.fw-ss__label { display: none; font-weight: 600; font-size: .9rem; }
+
+/* Shapes ------------------------------------------------------------------- */
+.fw-ss--shape-rounded .fw-ss__btn { border-radius: .55rem; }
+.fw-ss--shape-square  .fw-ss__btn { border-radius: 0; }
+
+/* Labeled / stacked: pill buttons with text. */
+.fw-ss--labeled .fw-ss__btn { width: auto; padding: 0 1em; border-radius: 2rem; }
+.fw-ss--labeled.fw-ss--shape-square .fw-ss__btn   { border-radius: 0; }
+.fw-ss--labeled.fw-ss--shape-rounded .fw-ss__btn  { border-radius: .55rem; }
+.fw-ss--labeled .fw-ss__label { display: inline; }
+.fw-ss--layout-stacked .fw-ss__btn { width: 100%; justify-content: flex-start; padding: 0 1.1em; }
+
+/* "Copied!" flash for the copy-link button. */
+.fw-ss__copied {
+	position: absolute;
+	left: 50%; bottom: calc(100% + 6px);
+	transform: translateX(-50%) scale(.9);
+	background: #111; color: #fff; font-size: .72rem; font-weight: 600;
+	padding: .25em .6em; border-radius: .35rem; white-space: nowrap;
+	opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+}
+.fw-ss__btn.is-copied .fw-ss__copied { opacity: 1; transform: translateX(-50%) scale(1); }
+
+.fw-ss__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
+
+/* =============================================================================
+ * Designs
+ * ========================================================================== */
+/* Brand — filled with the brand color. */
+.fw-ss--design-brand .fw-ss__btn { background: var(--ss-color); color: #fff; }
+.fw-ss--design-brand .fw-ss__btn:hover { filter: brightness(1.08); }
+
+/* Monochrome — dark filled buttons. */
+.fw-ss--design-mono .fw-ss__btn { background: #2b2f36; color: #fff; }
+.fw-ss--design-mono .fw-ss__btn:hover { background: var(--ss-color); }
+
+/* Outline — bordered, brand-colored icon; fills on hover. */
+.fw-ss--design-outline .fw-ss__btn { background: transparent; border-color: var(--ss-color); color: var(--ss-color); }
+.fw-ss--design-outline .fw-ss__btn:hover { background: var(--ss-color); color: #fff; }
+
+/* Soft — light tint of the brand color. */
+.fw-ss--design-soft .fw-ss__btn { background: color-mix(in srgb, var(--ss-color) 14%, #fff); color: var(--ss-color); }
+.fw-ss--design-soft .fw-ss__btn:hover { background: var(--ss-color); color: #fff; }
+
+/* Minimal — icon + label, no button chrome. */
+.fw-ss--design-text .fw-ss__btn { background: transparent; color: var(--ss-icon, inherit); width: auto; height: auto; padding: .2em .2em; border-radius: 0; }
+.fw-ss--design-text .fw-ss__btn:hover { color: var(--ss-color); transform: none; }
+.fw-ss--design-text .fw-ss__icon svg { width: 20px; height: 20px; }
+
+/* Fallback for browsers without color-mix (soft design). */
+@supports not (background: color-mix(in srgb, red 10%, white)) {
+	.fw-ss--design-soft .fw-ss__btn { background: rgba(0, 0, 0, .06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-ss__btn, .fw-ss__copied { transition: none; }
+	.fw-ss__btn:hover { transform: none; }
+}

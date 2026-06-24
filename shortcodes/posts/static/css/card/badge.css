@@ -1,0 +1,4 @@
+/* Posts card design: Bordered Badge. */
+.posts__card--badge { border: 1px solid rgba(0,0,0,.12); border-radius: .4rem; }
+.posts__badge-notch { position: absolute; top: 0; right: 1rem; z-index: 3; width: 22px; height: 30px; background: currentColor; opacity: .9; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 76%, 0 100%); }
+.posts__card--badge .posts__body { padding: var(--posts-card-pad); }

@@ -1,0 +1,36 @@
+/* Gallery — Design: Justified Rows. Flexbox grow with a per-item aspect ratio
+   (--ar = width/height, set server-side from each image's real dimensions) so
+   each row fills the width at ~the target row height (--gal-row). No JS, no
+   layout shift. */
+.fw-gallery.design-justified .fw-gallery__justified {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--gal-gap, 16px);
+}
+.fw-gallery.design-justified .fw-gallery__item {
+	position: relative;
+	height: var(--gal-row, 220px);
+	/* Grow proportionally to the image's aspect ratio; basis keeps the intended
+	   shape before growth distributes the leftover row width. */
+	flex: var(--ar, 1.5) 1 calc(var(--gal-row, 220px) * var(--ar, 1.5));
+	min-width: 0;
+}
+.fw-gallery.design-justified .fw-gallery__media {
+	height: 100%;
+	width: 100%;
+	aspect-ratio: auto;
+}
+.fw-gallery.design-justified .fw-gallery__media img { height: 100%; }
+
+/* Below-caption variant: reserve room so the row heights still line up. */
+.fw-gallery.design-justified .fw-gallery__item:has(.fw-gallery__caption) {
+	height: auto;
+}
+.fw-gallery.design-justified .fw-gallery__item:has(.fw-gallery__caption) .fw-gallery__media {
+	height: var(--gal-row, 220px);
+}
+
+@media (max-width: 576px) {
+	/* On small screens, relax the target so very wide panoramas don't get tiny. */
+	.fw-gallery.design-justified .fw-gallery__item { height: calc(var(--gal-row, 220px) * .8); }
+}

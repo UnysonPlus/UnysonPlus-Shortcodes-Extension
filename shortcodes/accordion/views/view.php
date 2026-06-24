@@ -442,4 +442,36 @@ $accordion_id = $attr['id'];
                         </div><!-- /.accordion-item -->
                 <?php endforeach; ?>
         </div>
+        <?php
+        // FAQ Rich Snippet — emit FAQPage JSON-LD when enabled. Each item title
+        // becomes a Question, its content (shortcodes expanded, tags stripped)
+        // the accepted Answer. Skipped on empty Q/A pairs.
+        $faq_schema = ( ! empty( $atts['faq_schema'] ) && $atts['faq_schema'] === 'yes' );
+        if ( $faq_schema ) :
+            $faq_entities = array();
+            foreach ( $tabs as $tab ) {
+                $q = isset( $tab['tab_title'] ) ? trim( wp_strip_all_tags( (string) $tab['tab_title'] ) ) : '';
+                $a_raw = isset( $tab['tab_content'] ) ? (string) $tab['tab_content'] : '';
+                $a = trim( wp_strip_all_tags( strip_shortcodes( do_shortcode( $a_raw ) ), true ) );
+                $a = preg_replace( '/\s+/u', ' ', $a );
+                if ( $q === '' || $a === '' ) { continue; }
+                $faq_entities[] = array(
+                    '@type'          => 'Question',
+                    'name'           => $q,
+                    'acceptedAnswer' => array(
+                        '@type' => 'Answer',
+                        'text'  => $a,
+                    ),
+                );
+            }
+            if ( ! empty( $faq_entities ) ) {
+                $faq_ld = array(
+                    '@context'   => 'https://schema.org',
+                    '@type'      => 'FAQPage',
+                    'mainEntity' => $faq_entities,
+                );
+                echo '<script type="application/ld+json">' . wp_json_encode( $faq_ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+            }
+        endif;
+        ?>
 <?php endif; ?>

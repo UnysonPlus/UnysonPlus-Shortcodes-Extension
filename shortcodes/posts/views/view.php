@@ -24,6 +24,127 @@ if ( ! function_exists( 'sc_get' ) ) {
 
 /*
 |--------------------------------------------------------------------------
+| Back-compat reader: prefer the new multi-picker nested path, fall back to
+| the legacy flat path, then the default. Used to normalise atts whose storage
+| location moved when Layout Mode / Card Style / Pagination became pickers.
+|--------------------------------------------------------------------------
+*/
+if ( ! function_exists( 'sc_posts_dp' ) ) {
+    function sc_posts_dp( $atts, $new_path, $old_flat, $default = '' ) {
+        if ( function_exists( 'fw_akg' ) ) {
+            $v = fw_akg( $new_path, $atts, null );
+            if ( $v !== null ) return $v;
+        }
+        return sc_get( $old_flat, $atts, $default );
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Resolve a gap value to a CSS size. Accepts a Gap Scale preset slug (resolved
+| to its size from unysonplus_get_gap_scale()) or a legacy numeric px value.
+| Returns '' for empty / unknown → caller falls back to the base default gap.
+|--------------------------------------------------------------------------
+*/
+if ( ! function_exists( 'sc_posts_gap_size' ) ) {
+    function sc_posts_gap_size( $val ) {
+        if ( $val === '' || $val === null ) {
+            return '';
+        }
+        $val = (string) $val;
+        // Match a Gap Scale preset slug FIRST — preset slugs are numeric ("0"–"5"),
+        // so this must run before the legacy-px numeric check below.
+        if ( function_exists( 'unysonplus_get_gap_scale' ) ) {
+            foreach ( unysonplus_get_gap_scale() as $e ) {
+                if ( ! is_array( $e ) || ! isset( $e['name'] ) || $e['name'] === '' ) {
+                    continue;
+                }
+                $slug = function_exists( 'sc_sanitize_class' )
+                    ? strtolower( sc_sanitize_class( $e['name'] ) )
+                    : strtolower( preg_replace( '/[^a-zA-Z0-9_-]+/', '-', $e['name'] ) );
+                if ( $slug === $val && isset( $e['size'] ) ) {
+                    return preg_replace( '/[^0-9a-zA-Z%.\s-]/', '', (string) $e['size'] );
+                }
+            }
+        }
+        // Legacy numeric px value (e.g. "24" / "32" from before gap presets).
+        if ( is_numeric( $val ) ) {
+            return (int) $val . 'px';
+        }
+        return '';
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Card-design registry loader (single source of truth, loaded once)
+|--------------------------------------------------------------------------
+*/
+if ( ! function_exists( 'sc_posts_card_registry' ) ) {
+    function sc_posts_card_registry() {
+        static $registry = null;
+        if ( $registry === null ) {
+            $registry = require __DIR__ . '/parts/registry.php';
+            if ( ! is_array( $registry ) ) $registry = [];
+        }
+        return $registry;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Normalise atts: resolve options that moved INTO the Design / Card /
+| Pagination multi-pickers back to their original flat keys, so every existing
+| read below (and in the card parts) keeps working unchanged. Legacy saved
+| instances (flat keys, no pickers) pass straight through via the fallback.
+|--------------------------------------------------------------------------
+*/
+if ( ! function_exists( 'sc_posts_normalize_atts' ) ) {
+    function sc_posts_normalize_atts( $atts ) {
+        /* Layout mode (was `layout_mode` → now `design/mode`). */
+        $mode = sc_get( 'design/mode', $atts, sc_get( 'layout_mode', $atts, 'grid' ) );
+        $atts['layout_mode'] = $mode;
+
+        /* Card style (was `card_style` → now `card/style`). */
+        $style = sc_get( 'card/style', $atts, sc_get( 'card_style', $atts, 'standard' ) );
+        $atts['card_style'] = $style;
+
+        /* Grid/Masonry sub-options live under design/<mode>/. */
+        $atts['columns_desktop']    = sc_posts_dp( $atts, "design/$mode/columns_desktop", 'columns_desktop', '3' );
+        $atts['columns_tablet']     = sc_posts_dp( $atts, "design/$mode/columns_tablet",  'columns_tablet',  '2' );
+        $atts['columns_mobile']     = sc_posts_dp( $atts, "design/$mode/columns_mobile",  'columns_mobile',  '1' );
+        $atts['column_gap']         = sc_posts_dp( $atts, "design/$mode/column_gap",       'column_gap',      '24' );
+        $atts['row_gap']            = sc_posts_dp( $atts, "design/$mode/row_gap",          'row_gap',         '32' );
+        $atts['equal_height']       = sc_posts_dp( $atts, "design/$mode/equal_height",     'equal_height',    'yes' );
+        $atts['featured_treatment'] = sc_posts_dp( $atts, "design/$mode/featured_treatment", 'featured_treatment', 'none' );
+
+        /* Slider sub-options live under design/slider/. */
+        $atts['slider_arrows_position'] = sc_posts_dp( $atts, 'design/slider/slider_arrows_position', 'slider_arrows_position', 'outside' );
+        $atts['slider_dots_position']   = sc_posts_dp( $atts, 'design/slider/slider_dots_position',   'slider_dots_position',   'below' );
+        $atts['slider_autoplay']        = sc_posts_dp( $atts, 'design/slider/slider_autoplay',        'slider_autoplay',        'no' );
+        $atts['slider_interval']        = sc_posts_dp( $atts, 'design/slider/slider_interval',        'slider_interval',        '5000' );
+        $atts['slider_loop']            = sc_posts_dp( $atts, 'design/slider/slider_loop',            'slider_loop',            'yes' );
+
+        /* Card side-layout sub-options live under card/<style>/. */
+        $atts['image_width_ratio']      = sc_posts_dp( $atts, "card/$style/image_width_ratio",      'image_width_ratio',      '40-60' );
+        $atts['image_vertical_align']   = sc_posts_dp( $atts, "card/$style/image_vertical_align",   'image_vertical_align',   'stretch' );
+        $atts['content_vertical_align'] = sc_posts_dp( $atts, "card/$style/content_vertical_align", 'content_vertical_align', 'top' );
+
+        /* Pagination (was `pagination_type` → now `pagination/type`). */
+        $ptype = sc_get( 'pagination/type', $atts, sc_get( 'pagination_type', $atts, 'none' ) );
+        $atts['pagination_type']     = $ptype;
+        $atts['pagination_position'] = sc_posts_dp( $atts, "pagination/$ptype/pagination_position", 'pagination_position', 'below-grid' );
+        $atts['pagination_align']    = sc_posts_dp( $atts, "pagination/$ptype/pagination_align",    'pagination_align',    'center' );
+
+        /* Read-more style (was `readmore_style` → now `readmore/style`). */
+        $atts['readmore_style'] = sc_get( 'readmore/style', $atts, sc_get( 'readmore_style', $atts, 'text-link' ) );
+
+        return $atts;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | Helper: resolve a template part — child theme → parent theme → bundled
 |--------------------------------------------------------------------------
 */
@@ -335,9 +456,22 @@ if ( ! function_exists( 'sc_posts_render_readmore' ) ) {
                 esc_attr( $aria )
             );
         }
+
+        /* Button style → reuse the theme button preset classes (color + size),
+           gated under the Button choice in the Read-More picker. Empty values are
+           a no-op, so the .posts__readmore--button base styling still applies. */
+        $extra_classes = '';
+        if ( $style === 'button' ) {
+            $btn_style = trim( (string) sc_get( 'readmore/button/readmore_btn_style', $atts, '' ) );
+            $btn_size  = trim( (string) sc_get( 'readmore/button/readmore_btn_size',  $atts, '' ) );
+            $extra = array_filter( [ 'btn', $btn_style, $btn_size ] );
+            if ( $extra ) $extra_classes = ' ' . implode( ' ', array_map( 'sanitize_html_class', $extra ) );
+        }
+
         return sprintf(
-            '<a class="posts__readmore posts__readmore--%s" href="%s" aria-label="%s">%s</a>',
+            '<a class="posts__readmore posts__readmore--%s%s" href="%s" aria-label="%s">%s</a>',
             esc_attr( $style ),
+            $extra_classes,
             esc_url( get_permalink( $post_id ) ),
             esc_attr( $aria ),
             esc_html( $text )
@@ -417,17 +551,9 @@ if ( ! function_exists( 'sc_posts_get_ordered_slugs' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_card' ) ) {
-    function sc_posts_render_card( $atts, $post_id, $card_style ) {
-        $part_map = [
-            'standard'   => 'standard',
-            'side-left'  => 'side',
-            'side-right' => 'side',
-            'overlay'    => 'overlay',
-            'minimal'    => 'minimal',
-            'hero-split' => 'standard', // hero-split uses standard for non-first cards
-            'alternating'=> 'side',
-        ];
-        $part = isset( $part_map[ $card_style ] ) ? $part_map[ $card_style ] : 'standard';
+    function sc_posts_render_card( $atts, $post_id, $card_style, $index = 0 ) {
+        $registry = sc_posts_card_registry();
+        $part = isset( $registry[ $card_style ]['part'] ) ? $registry[ $card_style ]['part'] : 'standard';
         $part_file = sc_posts_locate_part( $part );
 
         if ( ! file_exists( $part_file ) ) {
@@ -439,6 +565,7 @@ if ( ! function_exists( 'sc_posts_render_card' ) ) {
         $sc_atts  = $atts;
         $sc_post  = get_post( $post_id );
         $sc_style = $card_style;
+        $sc_index = (int) $index;
         include $part_file;
         return ob_get_clean();
     }
@@ -452,13 +579,16 @@ if ( ! function_exists( 'sc_posts_render_card' ) ) {
 if ( ! function_exists( 'sc_posts_render' ) ) {
     function sc_posts_render( $atts ) {
 
+        /* Resolve picker-moved options back to flat keys so all reads below work. */
+        $atts = sc_posts_normalize_atts( $atts );
+
         $card_style    = sc_get( 'card_style',   $atts, 'standard' );
         $layout_mode   = sc_get( 'layout_mode',  $atts, 'grid' );
         $cols_d        = (int) sc_get( 'columns_desktop', $atts, 3 );
         $cols_t        = (int) sc_get( 'columns_tablet',  $atts, 2 );
         $cols_m        = (int) sc_get( 'columns_mobile',  $atts, 1 );
-        $col_gap       = (int) sc_get( 'column_gap', $atts, 24 );
-        $row_gap       = (int) sc_get( 'row_gap',    $atts, 32 );
+        $col_gap_size  = sc_posts_gap_size( sc_get( 'column_gap', $atts, '' ) );
+        $row_gap_size  = sc_posts_gap_size( sc_get( 'row_gap',    $atts, '' ) );
         $card_padding  = sc_get( 'card_padding', $atts, 'regular' );
         $equal_height  = sc_get( 'equal_height',  $atts, 'yes' ) === 'yes';
         $text_align    = sc_get( 'text_align',    $atts, 'left' );
@@ -515,11 +645,16 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
 
         $attr = sc_build_wrapper_attr( $atts );
 
-        /* Build CSS custom properties for gaps + columns (positioning concern). */
+        /* Build CSS custom properties for gaps + columns (positioning concern).
+           Gaps come from the theme Gap Scale presets (resolved to a size) — only
+           set the var when a preset is chosen, so an empty value falls back to the
+           base default gap in styles.css. */
         $style_var = sprintf(
-            '--posts-col-gap:%dpx;--posts-row-gap:%dpx;--posts-cols-d:%d;--posts-cols-t:%d;--posts-cols-m:%d;',
-            $col_gap, $row_gap, $cols_d, $cols_t, $cols_m
+            '--posts-cols-d:%d;--posts-cols-t:%d;--posts-cols-m:%d;',
+            $cols_d, $cols_t, $cols_m
         );
+        if ( $col_gap_size !== '' ) $style_var .= '--posts-col-gap:' . $col_gap_size . ';';
+        if ( $row_gap_size !== '' ) $style_var .= '--posts-row-gap:' . $row_gap_size . ';';
         $attr['style'] = isset( $attr['style'] ) ? $attr['style'] . ';' . $style_var : $style_var;
 
         /* Query */
@@ -566,16 +701,19 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
 
                         <div class="posts__grid" role="list">
                             <?php
+                            $registry = sc_posts_card_registry();
+                            $style_meta = isset( $registry[ $card_style ] ) ? $registry[ $card_style ] : [];
                             $index = 0;
                             foreach ( $posts_list as $p ) :
                                 $effective_style = $card_style;
 
-                                // Hero-split: first post uses overlay
-                                if ( $card_style === 'hero-split' && $index === 0 ) {
-                                    $effective_style = 'overlay';
+                                // Composition driven by registry meta:
+                                // first_style → the first post uses a different style (hero-split).
+                                if ( ! empty( $style_meta['first_style'] ) && $index === 0 ) {
+                                    $effective_style = $style_meta['first_style'];
                                 }
-                                // Alternating: flip for odd cards
-                                if ( $card_style === 'alternating' ) {
+                                // alternate → flip side-left / side-right per row (zig-zag).
+                                if ( ! empty( $style_meta['alternate'] ) ) {
                                     $effective_style = ( $index % 2 === 0 ) ? 'side-left' : 'side-right';
                                 }
                                 // Featured first-post treatments
@@ -588,7 +726,7 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
                                     $extra_card_class = ' posts__card--span-2 posts__card--featured';
                                 }
 
-                                $card_html = sc_posts_render_card( $atts, $p->ID, $effective_style );
+                                $card_html = sc_posts_render_card( $atts, $p->ID, $effective_style, $index );
                                 if ( $extra_card_class !== '' ) {
                                     // splice class into the outermost article
                                     $card_html = preg_replace(

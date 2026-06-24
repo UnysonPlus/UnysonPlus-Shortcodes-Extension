@@ -1,0 +1,73 @@
+/* =============================================================================
+ * Logo Grid — grid / boxed / carousel / marquee of logos.
+ * ========================================================================== */
+.fw-lg {
+	--lg-cols: 4;
+	--lg-h: 48px;
+	--lg-gap: 1.5rem;
+	--lg-box-bg: #ffffff;
+}
+.fw-lg__item { display: flex; align-items: center; justify-content: center; padding: .5rem 1rem; }
+.fw-lg__img {
+	max-height: var(--lg-h);
+	width: auto;
+	max-width: 100%;
+	object-fit: contain;
+	display: block;
+	transition: filter .3s ease, opacity .3s ease, transform .3s ease;
+}
+.fw-lg--grayscale .fw-lg__img { filter: grayscale(1); opacity: .65; }
+.fw-lg--grayscale .fw-lg__item:hover .fw-lg__img { filter: grayscale(0); opacity: 1; }
+a.fw-lg__item:hover .fw-lg__img { transform: translateY(-2px); }
+
+.fw-lg__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
+
+/* Grid / boxed ------------------------------------------------------------- */
+.fw-lg__grid {
+	display: grid;
+	grid-template-columns: repeat(var(--lg-cols, 4), minmax(0, 1fr));
+	gap: var(--lg-gap, 1.5rem);
+	align-items: center;
+}
+.fw-lg--design-boxed .fw-lg__item {
+	background: var(--lg-box-bg, #fff);
+	border: 1px solid rgba(0, 0, 0, .08);
+	border-radius: .6rem;
+	padding: 1.25rem 1rem;
+	min-height: calc(var(--lg-h) + 2.5rem);
+	transition: box-shadow .25s ease, transform .25s ease;
+}
+.fw-lg--design-boxed .fw-lg__item:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, .08); transform: translateY(-2px); }
+
+/* Carousel ----------------------------------------------------------------- */
+.fw-lg--design-carousel .fw-lg__carousel { visibility: hidden; }
+.fw-lg--design-carousel .fw-lg__carousel.is-initialized { visibility: visible; }
+.fw-lg--design-carousel .splide__slide { display: flex; align-items: center; justify-content: center; }
+
+/* Marquee ------------------------------------------------------------------ */
+.fw-lg--design-marquee .fw-lg__marquee {
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+	mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.fw-lg--design-marquee .fw-lg__track {
+	display: flex;
+	width: max-content;
+	align-items: center;
+	animation: fw-lg-marquee var(--lg-dur, 28s) linear infinite;
+}
+.fw-lg--design-marquee .fw-lg__marquee--right .fw-lg__track { animation-direction: reverse; }
+.fw-lg--design-marquee .fw-lg__marquee:hover .fw-lg__track { animation-play-state: paused; }
+.fw-lg--design-marquee .fw-lg__item { flex: 0 0 auto; }
+@keyframes fw-lg-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+@media (max-width: 768px) {
+	.fw-lg__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+	.fw-lg__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-lg--design-marquee .fw-lg__track { animation: none; }
+	.fw-lg__img { transition: none; }
+}

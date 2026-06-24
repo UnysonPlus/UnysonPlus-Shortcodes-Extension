@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Image split slider layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <rect x="20" y="22" width="80" height="46" rx="5" fill="#fff" stroke="#cfd6dd" stroke-width="2"/>
+  <path d="M20 27 a5 5 0 0 1 5 -5 h26 v46 h-26 a5 5 0 0 1 -5 -5 z" fill="#cfd6dd"/>
+  <circle cx="38" cy="40" r="9" fill="#b9c2cb"/>
+  <path d="M27 62 q11 -12 22 0 z" fill="#b9c2cb"/>
+  <g fill="#dfe4e9">
+    <rect x="60" y="32" width="32" height="4" rx="2"/>
+    <rect x="60" y="41" width="32" height="4" rx="2"/>
+    <rect x="60" y="50" width="20" height="4" rx="2"/>
+  </g>
+  <rect x="60" y="59" width="14" height="4" rx="2" fill="#5b9bd5"/>
+</svg>

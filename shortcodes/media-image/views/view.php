@@ -13,50 +13,11 @@ if ( empty( $atts['image'] ) ) {
 
 $attachment_id = ! empty( $atts['image']['attachment_id'] ) ? $atts['image']['attachment_id'] : 0;
 
-// Width & height are unit-inputs. For each, compile a CSS length string and —
-// when the unit is px — an integer used for server-side cropping and the HTML
-// width/height attributes (those accept unitless pixels only). Non-px units
-// (%, vw, …) only affect display via inline CSS. Legacy bare numbers = px.
-$dim = function ( $raw ) {
-	$css = '';
-	$px  = 0;
-	if ( is_array( $raw ) ) {
-		$val  = isset( $raw['value'] ) ? trim( (string) $raw['value'] ) : '';
-		$unit = isset( $raw['unit'] ) ? $raw['unit'] : 'px';
-		if ( $val !== '' && is_numeric( $val ) ) {
-			$css = $val . $unit;
-			if ( $unit === 'px' ) {
-				$px = (int) $val;
-			}
-		}
-	} else {
-		$raw = trim( (string) $raw );
-		if ( $raw !== '' && is_numeric( $raw ) ) {
-			$css = $raw . 'px';
-			$px  = (int) $raw;
-		}
-	}
-	return array( $css, max( 0, $px ) );
-};
-
-list( $width_css, $width_px )   = $dim( isset( $atts['width'] ) ? $atts['width'] : '' );
-list( $height_css, $height_px ) = $dim( isset( $atts['height'] ) ? $atts['height'] : '' );
-
-// Crop to an exact size only when BOTH dimensions are concrete pixels.
-if ( $width_px && $height_px && $attachment_id ) {
-	$image = fw_resize( $attachment_id, $width_px, $height_px, true );
-} else {
-	$image = $atts['image']['url'];
-}
-
-if ( empty( $image ) ) {
+// Image source: attachment ID (enables responsive srcset + exact-crop) or URL.
+$image_url = ! empty( $atts['image']['url'] ) ? $atts['image']['url'] : '';
+if ( empty( $image_url ) && empty( $attachment_id ) ) {
 	return;
 }
-
-// Alt text from the media library. Never fall back to the URL — a URL as alt
-// text is meaningless to screen readers and hurts SEO; an empty alt is correct
-// for a decorative image.
-$alt = $attachment_id ? (string) get_post_meta( $attachment_id, '_wp_attachment_image_alt', true ) : '';
 
 // Wrapper attributes. The sc_build_wrapper_attr filter chain folds the Styling
 // tab (background color, margin & padding) and Animations into $attr as classes
@@ -84,48 +45,34 @@ if ( $should_wrap ) {
 	}
 }
 
-// Build the <img>. fw_html_tag escapes every attribute value, so raw strings
-// are safe here; esc_url additionally strips unsafe protocols from the src.
-$img_attributes = array(
-	'src'      => esc_url( $image ),
-	'alt'      => $alt,
-	'class'    => implode( ' ', $img_classes ),
-	'loading'  => 'lazy',
-	'decoding' => 'async',
-);
-
-// HTML width/height attributes accept unitless pixels only (and help reserve
-// layout space → less CLS). Emit them only for px values.
-if ( $width_px ) {
-	$img_attributes['width'] = $width_px;
-}
-if ( $height_px ) {
-	$img_attributes['height'] = $height_px;
-}
-
-// Apply the chosen dimensions as inline CSS so non-pixel units (%, vw, …) work.
-// Inline width/height win over the img-fluid helper (which has no !important).
-$img_style = '';
-if ( $width_css !== '' ) {
-	$img_style .= 'width:' . $width_css . ';';
-}
-if ( $height_css !== '' ) {
-	$img_style .= 'height:' . $height_css . ';';
-}
-if ( $img_style !== '' ) {
-	$img_attributes['style'] = $img_style;
-}
-
 $link     = ! empty( $atts['link'] ) ? $atts['link'] : '';
 $has_link = ( '' !== $link );
 
-// Where the CSS ID lands when there is no wrapper to hold it: on the link if the
-// image is linked, otherwise on the image itself (so it is never lost).
+// CSS id lands on the <img> only when no wrapper / link will carry it.
+$extra_attr = array();
 if ( ! $should_wrap && ! $has_link && $css_id ) {
-	$img_attributes['id'] = $css_id;
+	$extra_attr['id'] = $css_id;
 }
 
-$img_html = fw_html_tag( 'img', $img_attributes );
+// Modern <img>: responsive srcset (or exact-crop + 2x), width/height attrs for
+// CLS, fetchpriority/eager for above-the-fold, lazy otherwise — via fw_image_tag.
+$fetchpriority = ( ! empty( $atts['fetchpriority'] ) && 'high' === $atts['fetchpriority'] ) ? 'high' : '';
+
+$img_html = fw_image_tag(
+	$attachment_id ? $attachment_id : $image_url,
+	array(
+		'width'         => isset( $atts['width'] ) ? $atts['width'] : '',
+		'height'        => isset( $atts['height'] ) ? $atts['height'] : '',
+		'class'         => implode( ' ', $img_classes ),
+		'fetchpriority' => $fetchpriority,
+		'fallback_size' => 'large',
+		'extra_attr'    => $extra_attr,
+	)
+);
+
+if ( '' === $img_html ) {
+	return;
+}
 
 if ( $has_link ) {
 	$target = ( ! empty( $atts['target'] ) && in_array( $atts['target'], array( '_self', '_blank' ), true ) )

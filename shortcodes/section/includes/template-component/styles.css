@@ -7,3 +7,15 @@
 	height: 14px;
 	margin: 0 4px 0 0;
 }
+
+/* Global Template entries in the Templates tooltip — the native bullet (a :before
+ * on a.template-title) is tinted violet + a violet "(Global)" tag, so synced
+ * references read apart from local (copy) templates. (No extra dot element — that
+ * caused a double bullet.) */
+.fw-builder-templates-type-section ul.std li.template-global a.template-title:before {
+	color: #6d4aff !important;
+}
+.fw-builder-templates-type-section li.template-global .template-global-tag {
+	color: #6d4aff;
+	font-size: 11px;
+}

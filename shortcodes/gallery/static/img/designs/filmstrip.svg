@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Filmstrip scroll layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <g fill="#fff" stroke="#cfd6dd" stroke-width="2">
+    <rect x="10" y="22" width="30" height="40" rx="3"/>
+    <rect x="45" y="22" width="30" height="40" rx="3"/>
+    <rect x="80" y="22" width="30" height="40" rx="3"/>
+  </g>
+  <g fill="#e9edf1">
+    <rect x="14" y="26" width="22" height="32" rx="2"/>
+    <rect x="49" y="26" width="22" height="32" rx="2"/>
+    <rect x="84" y="26" width="22" height="32" rx="2"/>
+  </g>
+  <rect x="14" y="70" width="92" height="5" rx="2.5" fill="#e3e7eb"/>
+  <rect x="34" y="70" width="38" height="5" rx="2.5" fill="#9b9b9b"/>
+</svg>

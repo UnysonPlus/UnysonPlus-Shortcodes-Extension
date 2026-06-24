@@ -1,0 +1,10 @@
+/* Posts card design: Glassmorphism. */
+.posts__card--glass { position: relative; justify-content: flex-end; min-height: 320px; }
+.posts__card--glass .posts__image { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.posts__glass-panel { position: relative; z-index: 1; margin: .9rem; padding: var(--posts-card-pad); border-radius: .6rem; color: #fff; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.3); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.posts__glass-panel > * + * { margin-top: .5em; }
+.posts__glass-panel a, .posts__glass-panel .posts__title a { color: #fff; }
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+    .posts__glass-panel { background: rgba(20,23,28,.72); }
+}
+.posts__card--glass.posts__card--no-image { background: #2a2f36; }

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Pull-quote editorial layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <text x="60" y="34" font-family="Georgia, serif" font-size="34" fill="#cfd6dd" text-anchor="middle">&#8220;</text>
+  <rect x="24" y="36" width="72" height="5" rx="2.5" fill="#c2cad2"/>
+  <rect x="32" y="46" width="56" height="5" rx="2.5" fill="#c2cad2"/>
+  <rect x="42" y="60" width="36" height="3.5" rx="1.75" fill="#5b9bd5"/>
+  <circle cx="50" cy="76" r="2.5" fill="#5b9bd5"/>
+  <circle cx="60" cy="76" r="2.5" fill="#cfd6dd"/>
+  <circle cx="70" cy="76" r="2.5" fill="#cfd6dd"/>
+</svg>

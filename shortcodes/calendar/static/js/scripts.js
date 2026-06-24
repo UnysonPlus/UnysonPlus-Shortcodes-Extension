@@ -1,179 +1,111 @@
-(function($,_) {
+/**
+ * Calendar — dependency-free month navigation. The initial month is rendered
+ * server-side (SEO-friendly); this re-renders the grid on prev/next/today.
+ * Mirrors sc_cal_render_grid() in view.php.
+ */
+(function () {
+	'use strict';
 
-	"use strict";
-	var init = function($calendarWrapper){
-		var ajaxParams      = $calendarWrapper.data('extends-ajax-params'),
-			template = $calendarWrapper.data('template'),
-			ajaxUrl         = $calendarWrapper.data('ajax-url'),
-			templatePath    = $calendarWrapper.data('template-path'),
-			firstDay        = $calendarWrapper.data('first-day'),
-			hasEventSources = $calendarWrapper.get(0).hasAttribute('data-event-source'),
-			eventSource     = [],
-			gmtOffset       = new Date().getTimezoneOffset()*60, //signed int
-			avaibleClasses  = ['event-warning', 'event-success', 'event-info', 'event-inverse', 'event-special', 'event-important'];
+	function pad( n ) { return ( n < 10 ? '0' : '' ) + n; }
 
-		//Set random event styling class. Also convert GMT datetime dates to browser timezone.
-		var prepareEventSources = function(events) {
-			events.forEach(function(element, index, events_array){
+	function initOne( root ) {
+		if ( root.__calReady ) { return; }
+		root.__calReady = true;
 
-				//disable offset for all_day event
-				{
-					var e = new Date(parseInt(element.end + '000')),
-						offset = gmtOffset;
-					if ( e.getUTCHours() == 23 && e.getUTCMinutes() == 59 && e.getUTCMinutes() == 59 && gmtOffset < 0 ) {
-						offset = 0;
-					}
+		var events, wd, mo;
+		try {
+			events = JSON.parse( root.getAttribute( 'data-events' ) || '[]' );
+			wd     = JSON.parse( root.getAttribute( 'data-wd' ) || '[]' );
+			mo     = JSON.parse( root.getAttribute( 'data-mo' ) || '[]' );
+		} catch ( e ) { return; }
+
+		var firstMon = root.getAttribute( 'data-first-week' ) !== 'sun';
+		var today    = root.getAttribute( 'data-today' ) || '';
+		var moreTxt  = root.getAttribute( 'data-more' ) || 'more';
+		var evLabel  = root.getAttribute( 'data-event-label' ) || 'Event';
+		var year     = parseInt( root.getAttribute( 'data-year' ), 10 );
+		var month    = parseInt( root.getAttribute( 'data-month' ), 10 ); // 1-based
+
+		var monthEl = root.querySelector( '[data-cal-month]' );
+		var titleEl = root.querySelector( '[data-cal-title]' );
+		if ( ! monthEl ) { return; }
+
+		function parse( s ) { var p = String( s ).split( '-' ); return Date.UTC( +p[0], +p[1] - 1, +p[2] ); }
+		function key( ts ) { var d = new Date( ts ); return d.getUTCFullYear() + '-' + pad( d.getUTCMonth() + 1 ) + '-' + pad( d.getUTCDate() ); }
+		function esc( s ) { var d = document.createElement( 'div' ); d.textContent = s == null ? '' : s; return d.innerHTML; }
+
+		// Per-day index (multi-day events span each day in their range).
+		var byDay = {};
+		events.forEach( function ( ev ) {
+			var cur = parse( ev.start ), end = parse( ev.end || ev.start ), guard = 0;
+			while ( cur <= end && guard < 400 ) { ( byDay[ key( cur ) ] = byDay[ key( cur ) ] || [] ).push( ev ); cur += 86400000; guard++; }
+		} );
+
+		function renderGrid( y, m ) { // m = 1-based
+			var firstDow = new Date( Date.UTC( y, m - 1, 1 ) ).getUTCDay(); // 0=Sun
+			var offset   = firstMon ? ( ( firstDow + 6 ) % 7 ) : firstDow;
+			var startTs  = Date.UTC( y, m - 1, 1 - offset );
+
+			var html = '<div class="fw-cal__weekdays">';
+			for ( var i = 0; i < 7; i++ ) {
+				var dow = firstMon ? ( ( i + 1 ) % 7 ) : i;
+				html += '<div class="fw-cal__wd">' + esc( wd[ dow ] || '' ) + '</div>';
+			}
+			html += '</div><div class="fw-cal__grid">';
+
+			for ( var cell = 0; cell < 42; cell++ ) {
+				var ts   = startTs + cell * 86400000;
+				var dt   = new Date( ts );
+				var k    = key( ts );
+				var dnum = dt.getUTCDate();
+				var dow2 = dt.getUTCDay();
+				var cls  = 'fw-cal__cell';
+				if ( dt.getUTCMonth() + 1 !== m ) { cls += ' is-out'; }
+				if ( k === today ) { cls += ' is-today'; }
+				if ( dow2 === 0 || dow2 === 6 ) { cls += ' is-weekend'; }
+				var evs = byDay[ k ] || [];
+				if ( evs.length ) { cls += ' has-events'; }
+
+				html += '<div class="' + cls + '" data-date="' + k + '"><span class="fw-cal__num">' + dnum + '</span>';
+				if ( evs.length ) {
+					html += '<div class="fw-cal__events">';
+					evs.slice( 0, 3 ).forEach( function ( ev ) {
+						var open  = ev.url ? '<a href="' + esc( ev.url ) + '"' : '<span';
+						var close = ev.url ? '</a>' : '</span>';
+						var tip   = ( ev.time ? ev.time + ' · ' : '' ) + ( ev.title || '' );
+						html += open + ' class="fw-cal__ev fw-cal__ev--' + esc( ev.color || 'blue' ) + '" title="' + esc( tip ) + '">'
+							+ ( ev.time ? '<span class="fw-cal__ev-time">' + esc( ev.time ) + '</span>' : '' )
+							+ '<span class="fw-cal__ev-title">' + esc( ev.title || evLabel ) + '</span>' + close;
+					} );
+					if ( evs.length > 3 ) { html += '<span class="fw-cal__more">+' + ( evs.length - 3 ) + ' ' + esc( moreTxt ) + '</span>'; }
+					html += '</div>';
 				}
-
-				events_array[index].start = ( parseInt(element.start) + offset ) * 1000;
-				events_array[index].end   = ( parseInt(element.end) + gmtOffset ) * 1000;
-
-				if ($.type(element.class) == 'undefined') {
-					var eventClass = '';
-					if ($.type(element.id) == 'number') {
-						var key = element.id%(avaibleClasses.length);
-						if (key >= avaibleClasses.length) {key = 0;}
-						eventClass = avaibleClasses[key];
-					}
-					events_array[index].class = eventClass;
-				}
-			});
-
-			return events;
+				html += '</div>';
+			}
+			monthEl.innerHTML = html + '</div>';
+			if ( titleEl ) { titleEl.textContent = ( mo[ m - 1 ] || '' ) + ' ' + y; }
 		}
 
-
-		if (hasEventSources) {
-			eventSource = prepareEventSources( $calendarWrapper.data('event-source') );
-			//save updated events list
-			$calendarWrapper.data('event-source', eventSource );
+		function go( delta ) {
+			month += delta;
+			while ( month > 12 ) { month -= 12; year++; }
+			while ( month < 1 ) { month += 12; year--; }
+			renderGrid( year, month );
 		}
 
-		var ajaxRequestFunction = function(start_date, end_date){
-				var events = [],
-					params = {
-						from: (Math.floor(start_date.getTime()/1000) - 86400),
-						to: (Math.floor(end_date.getTime()/1000) + 86400 ),
-						action: 'shortcode_calendar_get_events',
-						template: template,
-						'fw_load_shortcodes': true
-					};
-
-				if (ajaxParams !== false) {
-					params = _.extend(params, ajaxParams);
-				}
-
-				$.ajax({
-					url:      ajaxUrl,
-					data:     params,
-					dataType: 'json',
-					type:     'POST',
-					async:    false
-				}).done(function(json) {
-					if(!json.success) {
-						console.log(json);
-					}
-					if(json.data) {
-						events = prepareEventSources(json.data);
-					}
-				});
-
-				return events;
-			};
-
-		//available options https://github.com/Serhioromano/bootstrap-calendar
-		var options = {
-				language: fwShortcodeCalendarLocalize.locale,
-				events_source: hasEventSources ? eventSource : ajaxRequestFunction,
-				view: template,
-				tmpl_path: templatePath,
-				first_day: firstDay,
-				//time_start:         '06:00',
-				//time_end:           '22:00',
-				time_split:          '30', //minutes
-				tmpl_cache: false,
-				day: (function(){
-					var today = new Date(),
-						month = (today.getMonth()+1) < 10 ? '0' + (today.getMonth()+1) : (today.getMonth()+1),
-						date  = today.getDate() < 10 ? '0' + today.getDate() : today.getDate();
-					return today.getFullYear() + '-' + month + '-' + date;
-				})(), //allowed only YYYY-MM-DD format
-				onAfterViewLoad: function(view) {
-					$calendarWrapper.find('.page-header h3').text(this.getTitle());
-					$calendarWrapper.find('.btn-group button').removeClass('active');
-
-					//disable calendar events, which load specific view
-					{
-						$('*[data-cal-date]').off('click');
-						$('.cal-cell').off('dblclick');
-						$('.cal-month-box .cal-row-fluid').off('mouseenter mouseleave');
-					}
-
-					$calendarWrapper.find('.hidden-header').removeClass('hidden-header');
-
-					//Background-color preset: applied to the inner day/week/month
-					//box rather than the wrapper, so the calendar grid is the
-					//tinted surface (not the page-header / nav area above it).
-					//Survives prev/next/today re-renders because this fires
-					//after each view load.
-					{
-						var bgClass = $calendarWrapper.data('bg-class');
-						if (typeof bgClass === 'string' && bgClass.length) {
-							var $box = null;
-							if (view === 'day') {
-								$box = $calendarWrapper.find('#cal-day-box');
-							} else if (view === 'week') {
-								$box = $calendarWrapper.find('.cal-week-box');
-							} else if (view === 'month') {
-								$box = $calendarWrapper.find('.cal-month-box');
-							}
-							if ($box && $box.length) {
-								$box.addClass(bgClass);
-							}
-						}
-					}
-
-					if ( view === 'day' )
-					{
-						//set height for timeblocks container
-						$calendarWrapper.find('.cal-day-panel-class').css('height', $calendarWrapper.find('.cal-day-panel-hour-class').css('height'));
-
-						//calculate timeblock's width for daily calendar
-						{
-							var $dayEventsBlocks = $calendarWrapper.find('.cal-day-panel-class .day-event'),
-								rowWidth = $calendarWrapper.find('.cal-day-hour-part').width();
-							//set middle width max for 3 block
-							$dayEventsBlocks.css('width', Math.floor( (rowWidth-(rowWidth/100)*20)/$dayEventsBlocks.length));
-
-							var width_content = $calendarWrapper.parent().outerWidth();
-							if(width_content < 701){
-								$calendarWrapper.find('.day-event').css('max-width','100px');
-							}
-						}
-					}
-
-				}
-			},
-
-			calendar = $calendarWrapper.find('.fw-shortcode-calendar').calendar(options);
-			$calendarWrapper.data('fw-shortcode-calendar.calendar', calendar);
-
-		//navigation buttons
-		{
-			$calendarWrapper.find('.btn-group button[data-calendar-nav]').each(function() {
-				var $this = $(this);
-				$this.click(function() {
-					calendar.navigate($this.data('calendar-nav'));
-				});
-			});
-		}
-
+		root.addEventListener( 'click', function ( e ) {
+			var btn = e.target.closest ? e.target.closest( '[data-cal-nav]' ) : null;
+			if ( ! btn || ! root.contains( btn ) ) { return; }
+			var nav = btn.getAttribute( 'data-cal-nav' );
+			if ( nav === 'prev' ) { go( -1 ); }
+			else if ( nav === 'next' ) { go( 1 ); }
+			else if ( nav === 'today' ) {
+				var p = ( today || '' ).split( '-' );
+				if ( p.length === 3 ) { year = +p[0]; month = +p[1]; renderGrid( year, month ); }
+			}
+		} );
 	}
 
-	$(document).ready(function(){
-		$('.fw-shortcode-calendar-wrapper:not(fw-initialized)').each(function(){
-			init($(this));
-		}).addClass('fw-initialized');
-	});
-
-}(jQuery, _));
+	function init() { Array.prototype.forEach.call( document.querySelectorAll( '.fw-cal[data-events]' ), initOne ); }
+	if ( document.readyState === 'loading' ) { document.addEventListener( 'DOMContentLoaded', init ); } else { init(); }
+})();

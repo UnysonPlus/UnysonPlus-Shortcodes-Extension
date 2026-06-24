@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Stacked banners layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <g fill="#fff" stroke="#cfd6dd" stroke-width="2">
+    <rect x="16" y="18" width="88" height="16" rx="3"/>
+    <rect x="16" y="37" width="88" height="16" rx="3"/>
+    <rect x="16" y="56" width="88" height="16" rx="3"/>
+  </g>
+  <g fill="#e0e5ea">
+    <rect x="20" y="22" width="80" height="8" rx="2"/>
+    <rect x="20" y="41" width="80" height="8" rx="2"/>
+    <rect x="20" y="60" width="80" height="8" rx="2"/>
+  </g>
+</svg>

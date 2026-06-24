@@ -165,9 +165,7 @@
 	}
 
 	function del( $btn ) {
-		if ( ! window.confirm( i18n.confirmDelete ) ) {
-			return;
-		}
+		fw.confirm( i18n.confirmDelete, function () {
 
 		var tag = $btn.data( 'tag' );
 		$btn.prop( 'disabled', true );
@@ -180,6 +178,7 @@
 				$btn.prop( 'disabled', false );
 				notify( ( res && res.data && res.data.message ) || i18n.genericError, true );
 			}
+		} );
 		} );
 	}
 

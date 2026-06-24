@@ -26,9 +26,12 @@ if ( ! $profiles ) {
 
 $size = ! empty( $atts['size'] ) ? $atts['size'] : 'md';
 
-// Enqueue icon-v2 pack CSS so non-global packs (Linecons, Entypo, …) render.
+// Resolve the icon-v2 pack loader once; each profile enqueues only the pack its
+// own icon needs (in the loop below), so non-global packs (Linecons, Entypo, …)
+// load without pulling every pack onto the page.
+$upw_social_icon_loader = null;
 if ( isset( fw()->backend->option_type( 'icon-v2' )->packs_loader ) ) {
-	fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_frontend_css();
+	$upw_social_icon_loader = fw()->backend->option_type( 'icon-v2' )->packs_loader;
 }
 
 $atts['base_class']       = 'sc-social';
@@ -48,6 +51,7 @@ $classes[] = 'sc-social--' . sanitize_html_class( $size );
 			continue;
 		}
 		$icon_class = ! empty( $p['icon']['icon-class'] ) ? $p['icon']['icon-class'] : '';
+			if ( $icon_class !== '' && $upw_social_icon_loader ) { $upw_social_icon_loader->enqueue_pack_for_icon( $p['icon'] ); }
 		$sr         = ! empty( $p['label'] ) ? $p['label'] : $link;
 		?>
 		<li class="sc-social__item">

@@ -10,11 +10,55 @@ provides: leaf-shortcode
 The data-driven shortcode. Queries the WordPress post DB with full
 `WP_Query`-equivalent control (post type, taxonomy filters, includes /
 excludes, authors, date range, sticky handling, custom field sorting),
-then renders results through one of seven card layouts (`standard`,
-`side-left`, `side-right`, `overlay`, `minimal`, `hero-split`,
-`alternating`) inside one of four layout modes (`grid`, `list`,
-`masonry`, `slider`). Supports AJAX pagination / infinite scroll / live
-filters, plus transient-cached HTML output.
+then renders results through one of **twenty-three registry-driven card
+designs** (`standard`, `side-left`, `side-right`, `overlay`, `minimal`,
+`hero-split`, `alternating`, `gradient`, `listicle`, `newslist`,
+`editorial`, `polaroid`, `timeline`, `tile`, `circular`, `accent`,
+`cover`, `quote`, `postcard`, `badge`, `filmstrip`, `diagonal`, `glass`)
+inside one of four layout modes (`grid`, `list`, `masonry`, `slider`).
+Each design's CSS loads **only when that design is used** (per-instance
+enqueue keyed on `static/css/card/<style>.css`); the base `styles.css`
+carries only the shared/structural CSS. Supports AJAX pagination / infinite scroll / live filters,
+plus transient-cached HTML output.
+
+## Card-design registry (extensible) — read before editing rendering
+
+Card styles are a **registry** at `views/parts/registry.php` — the single
+source of truth. Each entry maps a card-style key → `{ label, thumb (svg),
+part, first_style?, alternate?, needs_ratio? }`. Three places read it:
+`options.php` (builds the **Card Style** image-picker choices), `view.php`
+(`sc_posts_render_card` dispatches to `parts/card-<part>.php`; the main loop
+reads `first_style`/`alternate` for composition), and the thumbnails under
+`static/img/card/`. **Adding a card design = one registry entry +
+`views/parts/card-<part>.php` + `static/img/card/<thumb>.svg`** (+ any CSS).
+`needs_ratio` reveals the image-ratio / vertical-align sub-options in the
+picker; `first_style` makes the first post use a different style (hero-split);
+`alternate` flips side-left/right per row (zig-zag).
+
+## Options UX — pickers + option-gating (since the Design rework)
+
+The options are organised around **image-picker multi-pickers** that reveal
+only the chosen value's sub-options (mirrors the Testimonials Design picker):
+
+- **`design`** (new id) — Layout mode image-picker (`grid`/`list`/`masonry`/
+  `slider`). Reveals columns/gaps/equal-height/featured for grid, columns/gaps
+  for masonry, row-gap for list, and the five **slider** controls for slider
+  (the slider options moved here out of the Navigation tab).
+- **`card`** (new id) — Card Style image-picker (choices from the registry).
+  `needs_ratio` styles reveal image ratio + vertical aligns.
+- **`pagination`** (new id) — Pagination image-picker; numeric/prev_next reveal
+  position + align, load-more reveals align.
+- **`readmore`** (new id) — Read-More select-picker; the **Button** choice
+  reveals `readmore_btn_style` + `readmore_btn_size` (reusing the theme button
+  preset helpers `sc_get_button_*_choices()` — no duplicated Button options).
+
+**Back-compat:** these are **new option ids** (legacy scalar `layout_mode` /
+`card_style` / `pagination_type` / `readmore_style` are never fed into a
+multi-picker → no blank-modal). `view.php`'s `sc_posts_normalize_atts()`
+resolves every moved option back to its original flat key (new nested path →
+legacy flat path → default), so existing saved instances render unchanged; the
+builder shows the moved options at defaults until the instance is re-saved.
+Every tab is wrapped in `group` containers.
 
 ## Registration
 

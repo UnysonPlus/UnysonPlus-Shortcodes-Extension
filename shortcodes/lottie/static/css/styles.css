@@ -1,0 +1,22 @@
+/* =============================================================================
+ * Lottie Animation shortcode.
+ * ========================================================================== */
+.fw-lottie { display: block; }
+.fw-lottie__canvas {
+	width: 100%;
+	max-width: var(--lt-max, none);
+	margin: 0;
+}
+.fw-lottie__canvas svg { display: block; width: 100%; height: auto; }
+
+.fw-lottie--align-center .fw-lottie__canvas { margin-left: auto; margin-right: auto; }
+.fw-lottie--align-right  .fw-lottie__canvas { margin-left: auto; margin-right: 0; }
+.fw-lottie--align-left   .fw-lottie__canvas { margin-left: 0; margin-right: auto; }
+
+.fw-lottie__empty {
+	padding: 1.25rem;
+	border: 1px dashed rgba(0, 0, 0, .2);
+	border-radius: .5rem;
+	color: #6c757d;
+	text-align: center;
+}

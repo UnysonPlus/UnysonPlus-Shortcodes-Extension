@@ -20,6 +20,78 @@ No custom class file — leaf shortcode auto-instantiated. No item class.
 `config.php` declares a `title_template` that previews every testimonial's
 title (section heading) + quote + author on the canvas.
 
+## Design system (swappable layouts) — REQUIRED reading before editing rendering
+
+This shortcode uses a **registry-driven design dispatcher**. The renderer is split:
+
+- **`views/designs/registry.php`** — the **single source of truth**. One entry per
+  selectable design: `key => [ 'label', 'thumb' (svg), 'css' (or null), 'js' (or null) ]`.
+  Three places read it: `options.php` (builds the image-picker `choices`),
+  `views/view.php` (whitelists which `designs/<key>.php` to include), and `static.php`
+  (conditionally enqueues the design's css/js). **Adding a design = one registry entry +
+  `views/designs/<key>.php` + `static/css/designs/<key>.css` (+ optional
+  `static/js/designs/<key>.js`) + `static/img/designs/<key>.svg`.** No other file changes.
+- **`views/view.php`** — thin **dispatcher**. Does ALL shared data-prep (styling atts,
+  `sc_get(...)` values, wrapper attr) then `include`s `designs/<design>.php`, which inherits
+  every variable by scope. It resolves the design with a **default fallback**
+  (`sc_get('design', $atts, 'default')` + `isset($registry[...])` + `file_exists`) — never
+  `include` the raw saved value. It appends `design-<key>` to the wrapper class for CSS scoping.
+- **`views/designs/<key>.php`** — one self-contained template per design. `default.php` is the
+  original Slider/Grid/Single output verbatim. Others: `marquee`, `masonry`, `split`, `bubble`,
+  `stacked`, `thumbnav`, `spotlight` (coverflow), `bento` (featured grid), `zigzag` (alternating
+  rows), `pullquote` (oversized crossfade). `spotlight` and `pullquote` reuse the base
+  `.testimonials-splide` mount (no own JS) — coverflow via `focus:center`+padding, pullquote via
+  `type:fade`.
+- **`static.php`** — base `styles.css` + `scripts.js` (Splide) always enqueue (cover Classic +
+  shared avatars/ratings). Per-design css/js enqueue via the **per-instance**
+  `fw_ext_shortcodes_enqueue_static:testimonials` action (which, unlike the body of static.php,
+  receives the instance atts), reading the same registry. Shared per-item helpers live here:
+  `sc_render_card`, `sc_render_rating`, `sc_testimonial_fields`.
+
+### Design picker = a `multi-picker` keyed by an `image-picker` (option-gating)
+
+The design is chosen by a **`multi-picker`** named **`design_settings`** whose picker sub-option
+`design` is an **`image-picker`** (SVG thumbnail per design, choices built from the registry). Each
+design's **choice** reveals ONLY that design's options, so the user never sees irrelevant controls.
+Saved shape: `design_settings => { design: '<key>', '<key>': { …that design's options… } }`.
+
+**The old Layout + Carousel tabs are folded into the picker choices:**
+- `default` (Classic): `layout_type` (nested multi-picker carousel/grid/single; grid reveals
+  `grid_columns` + `gutter`), `items_per_slide`, `card_style`, `avatar_position`, and the seven
+  `carousel_*` options.
+- `marquee`: `marquee_speed`, `marquee_direction`. `masonry`/`bubble`: `*_columns`.
+- `split`/`spotlight`: the `carousel_*` subset. `thumbnav`/`pullquote`: `carousel_*` subset.
+- `zigzag`: `zigzag_start` (which side the first photo sits on).
+- `stacked`/`bento`: no design-specific options (intentionally omitted from `choices`).
+
+**Cross-design** appearance stays top-level on the **Style** tab (no path change): `container_type`,
+`text_align`, `avatar_shape`, `avatar_size`, `show_rating`, plus colors + spacing.
+
+**Tabs (5):** Content · Design · Style · Animations · Advanced. (The near-identical "Style"/"Styling"
+tabs were merged; "Layout"/"Carousel" folded into "Design".)
+
+**Why `design_settings` (not `design`) is the multi-picker id — REQUIRED rationale:** leaf
+shortcodes open their builder modal with **raw saved atts** (`simple` item:
+`new fw.OptionsModal({ values: model.get('atts') })`), so a legacy **scalar** `design` value fed
+into a multi-picker would hit `$value['design']`-on-a-string → blank `error:` modal (fatal on PHP 8).
+Using a **new** option id means any legacy scalar `design` att is simply orphaned/ignored — **no
+migration, no error.**
+
+**Back-compat (frontend):** `view.php` resolves the design via
+`sc_get('design_settings/design', $atts, sc_get('design', $atts, 'default'))`, and every option that
+**moved into** the picker is read with a `$ts_dp('<new sub>', '<old flat path>', <default>)` helper
+(new nested path → legacy flat path → default). So pre-existing saved instances keep rendering
+correctly; only the **builder UI** shows defaults for those moved options until the instance is
+re-opened and re-saved (cross-design options are unaffected — they never moved).
+
+`split` reuses the base `.testimonials-splide` Splide mount (no extra JS). `thumbnav` ships its
+own `designs/thumbnav.js` (syncs a main + avatar-thumbnail Splide). The rest are CSS-only and
+gate continuous motion behind `prefers-reduced-motion`.
+
+The Layout tab's Slider/Grid/Single + the whole Carousel tab apply to **Classic** (`default`);
+`masonry`/`bubble` reuse the Grid Columns value for their column count; other designs bring their
+own arrangement. Options are stored regardless of design and ignored by designs that don't use them.
+
 ## Options schema (atts)
 
 Source of truth: `options.php`. Five tabs + Animations + Advanced.

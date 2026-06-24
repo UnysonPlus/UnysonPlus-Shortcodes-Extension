@@ -70,7 +70,7 @@ $caption     = trim( (string) $opt( 'caption', '' ) );
 $caption_top = 'top' === $opt( 'caption_position', 'bottom' );
 
 // Presets (Theme Settings → Components). table_preset styles the table itself
-// (.tbl-{slug} on the wrapper); frame_preset wraps the table in a .colb-{slug}
+// (.tbl-{slug} on the wrapper); frame_preset wraps the table in a .boxp-{slug}
 // box so the two stack on different elements without conflicting.
 $table_preset = preg_replace( '/[^a-z0-9_-]/i', '', (string) $opt( 'table_preset', '' ) );
 $frame_preset = preg_replace( '/[^a-z0-9_-]/i', '', (string) $opt( 'frame_preset', '' ) );
@@ -152,7 +152,7 @@ $render_cell = function ( $cell, $col, $tag ) {
 	$a = '';
 	if ( $colspan > 1 ) { $a .= ' colspan="' . $colspan . '"'; }
 	if ( $rowspan > 1 ) { $a .= ' rowspan="' . $rowspan . '"'; }
-	if ( ! empty( $col['name'] ) ) { $a .= ' class="' . esc_attr( $col['name'] ) . '"'; }
+	if ( ! empty( $col['name'] ) && 'default-col' !== $col['name'] ) { $a .= ' class="' . esc_attr( $col['name'] ) . '"'; }
 	if ( ! empty( $col['align'] ) ) { $a .= ' style="text-align:' . esc_attr( $col['align'] ) . '"'; }
 
 	$val = isset( $cell['textarea'] ) ? $cell['textarea'] : '';

@@ -1,0 +1,315 @@
+/* =============================================================================
+ * Gallery shortcode — base styles (always enqueued).
+ * Covers the shared item/figure, captions, hover effects, the empty-state note,
+ * and the self-contained lightbox. Per-design layout lives in css/designs/*.css.
+ * ========================================================================== */
+
+.fw-gallery { margin: 0; }
+.fw-gallery__title { margin: 0 0 1rem; }
+
+/* Reset the <figure> the tile renderer uses. */
+.fw-gallery__item {
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+/* Media box — the click target wrapping each image. */
+.fw-gallery__media {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	line-height: 0;
+	background: rgba(0, 0, 0, .04);
+	aspect-ratio: var(--gal-ratio, 4 / 3);
+}
+.fw-gallery__media img,
+.fw-gallery__img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+	transition: transform .45s cubic-bezier(.2, .7, .2, 1);
+}
+
+/* Natural-height media (masonry, "Original" ratio) — no crop. */
+.fw-gallery__media--natural { aspect-ratio: auto; }
+.fw-gallery__media--natural img { height: auto; }
+
+/* Fill media (justified / metro / carousel) — fills the cell the layout sizes. */
+.fw-gallery__media--fill { aspect-ratio: auto; height: 100%; }
+.fw-gallery__media--fill img { height: 100%; }
+
+/* Auto-width media (marquee) — fixed-height row, natural width. */
+.fw-gallery__media--auto { aspect-ratio: auto; height: 100%; width: auto; }
+.fw-gallery__media--auto img { height: 100%; width: auto; }
+
+/* Make a clickable media show it is interactive. */
+a.fw-gallery__media { cursor: zoom-in; }
+a.fw-gallery__media[href]:not([data-fw-lightbox]) { cursor: pointer; }
+
+/* Hover zoom. */
+.fw-gallery--zoom:hover img { transform: scale(1.07); }
+
+/* Hover caption overlay. */
+.fw-gallery__overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: flex-end;
+	padding: 1rem;
+	color: #fff;
+	background: linear-gradient(to top, rgba(0, 0, 0, .68) 0%, rgba(0, 0, 0, .15) 45%, rgba(0, 0, 0, 0) 75%);
+	opacity: 0;
+	transition: opacity .3s ease;
+	pointer-events: none;
+}
+.fw-gallery__media--has-overlay:hover .fw-gallery__overlay,
+.fw-gallery__media--has-overlay:focus-within .fw-gallery__overlay { opacity: 1; }
+.fw-gallery__overlay-text {
+	font-size: .9rem;
+	line-height: 1.35;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+/* Below-image caption. */
+.fw-gallery__caption {
+	margin: .5rem 0 0;
+	font-size: .875rem;
+	line-height: 1.4;
+	color: #6c757d;
+	text-align: center;
+}
+
+/* Builder empty-state note (only shown in the editor). */
+.fw-gallery__empty {
+	padding: 1.5rem;
+	border: 1px dashed rgba(0, 0, 0, .2);
+	border-radius: .5rem;
+	color: #6c757d;
+	text-align: center;
+	font-size: .9rem;
+}
+
+/* Rounded helpers (in case the frontend-grid sheet doesn't define them). */
+.fw-gallery .rounded    { border-radius: .375rem; }
+.fw-gallery .rounded-lg { border-radius: .75rem; }
+.fw-gallery .rounded-0  { border-radius: 0; }
+.fw-gallery .rounded-circle { border-radius: 50%; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery__media img,
+	.fw-gallery__img { transition: none; }
+	.fw-gallery--zoom:hover img { transform: none; }
+}
+
+/* =============================================================================
+ * Slider designs — shared Splide chrome (arrows + pagination). We load Splide
+ * CORE (structure only), which doesn't skin/position these, so we style them
+ * here once for every slider design (Carousel, Slideshow, Coverflow, Thumbnail
+ * Slider). Scoped to .fw-gallery so it never bleeds onto other Splide instances.
+ * ========================================================================== */
+.fw-gallery .splide { position: relative; }
+.fw-gallery .splide__arrows { line-height: 0; }
+.fw-gallery .splide__arrow {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 5;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, .55);
+	cursor: pointer;
+	opacity: 1;
+	transition: background .2s ease, opacity .2s ease, transform .2s ease;
+}
+.fw-gallery .splide__arrow--prev { left: 12px; }
+.fw-gallery .splide__arrow--next { right: 12px; }
+.fw-gallery .splide__arrow svg { width: 18px; height: 18px; fill: #fff; transition: none; }
+.fw-gallery .splide__arrow:hover:not(:disabled) { background: rgba(0, 0, 0, .85); transform: translateY(-50%) scale(1.08); }
+.fw-gallery .splide__arrow:disabled { opacity: .3; cursor: default; }
+.fw-gallery .splide__arrow:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+.fw-gallery .splide__pagination {
+	position: static;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 7px;
+	margin: 14px 0 0;
+	padding: 0;
+}
+.fw-gallery .splide__pagination__page {
+	width: 8px;
+	height: 8px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: rgba(0, 0, 0, .25);
+	opacity: 1;
+	cursor: pointer;
+	transition: background .2s ease, transform .2s ease;
+}
+.fw-gallery .splide__pagination__page.is-active { background: #333; transform: scale(1.3); }
+
+@media (max-width: 576px) {
+	.fw-gallery .splide__arrow { width: 38px; height: 38px; }
+	.fw-gallery .splide__arrow--prev { left: 6px; }
+	.fw-gallery .splide__arrow--next { right: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery .splide__arrow,
+	.fw-gallery .splide__pagination__page { transition: none; }
+}
+
+/* =============================================================================
+ * Lightbox — fast (neighbour preload, JS) + nice (fade + scale-in + crossfade).
+ * ========================================================================== */
+.fw-lightbox {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(10, 11, 13, .9);
+	-webkit-backdrop-filter: blur(6px);
+	backdrop-filter: blur(6px);
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity .28s ease, visibility .28s ease;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+.fw-lightbox.is-open { opacity: 1; visibility: visible; }
+
+.fw-lightbox__stage {
+	position: relative;
+	margin: 0;
+	max-width: 94vw;
+	max-height: 88vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.fw-lightbox__img {
+	max-width: 94vw;
+	max-height: 88vh;
+	width: auto;
+	height: auto;
+	display: block;
+	object-fit: contain;
+	border-radius: 5px;
+	box-shadow: 0 24px 70px rgba(0, 0, 0, .6);
+	opacity: 0;
+	transform: scale(.94);
+	transition: opacity .26s ease, transform .32s cubic-bezier(.2, .8, .2, 1);
+	cursor: pointer;
+}
+.fw-lightbox__img.is-ready { opacity: 1; transform: scale(1); }
+.fw-lightbox.is-single .fw-lightbox__img { cursor: default; }
+
+.fw-lightbox__caption {
+	position: absolute;
+	left: 50%;
+	bottom: -2.6rem;
+	transform: translateX(-50%);
+	max-width: 90vw;
+	text-align: center;
+	color: #e9ecef;
+	font-size: .92rem;
+	line-height: 1.45;
+	padding: 0 1rem;
+	text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+}
+.fw-lightbox__caption[hidden] { display: none; }
+
+.fw-lightbox__btn {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 50px;
+	height: 50px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, .08);
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+	color: #fff;
+	cursor: pointer;
+	transition: background .2s ease, transform .2s ease, opacity .2s ease;
+	z-index: 2;
+}
+.fw-lightbox__btn:hover { background: rgba(255, 255, 255, .2); }
+.fw-lightbox__btn:active { transform: scale(.94); }
+.fw-lightbox__btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.fw-lightbox__btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.fw-lightbox__close { top: 20px; right: 20px; }
+.fw-lightbox__prev  { left: 22px;  top: 50%; transform: translateY(-50%); }
+.fw-lightbox__next  { right: 22px; top: 50%; transform: translateY(-50%); }
+.fw-lightbox__prev:hover { transform: translateY(-50%) scale(1.08); }
+.fw-lightbox__next:hover { transform: translateY(-50%) scale(1.08); }
+.fw-lightbox__prev:active { transform: translateY(-50%) scale(.94); }
+.fw-lightbox__next:active { transform: translateY(-50%) scale(.94); }
+
+.fw-lightbox__counter {
+	position: absolute;
+	top: 26px;
+	left: 24px;
+	color: #d6d9dd;
+	font-size: .85rem;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: .04em;
+	z-index: 2;
+}
+
+.fw-lightbox__spinner {
+	position: absolute;
+	width: 40px;
+	height: 40px;
+	border: 3px solid rgba(255, 255, 255, .22);
+	border-top-color: #fff;
+	border-radius: 50%;
+	animation: fw-lightbox-spin .8s linear infinite;
+	opacity: 0;
+	transition: opacity .2s ease .1s;
+	pointer-events: none;
+}
+.fw-lightbox.is-loading .fw-lightbox__spinner { opacity: 1; }
+
+@keyframes fw-lightbox-spin { to { transform: rotate(360deg); } }
+
+.fw-lightbox.is-single .fw-lightbox__prev,
+.fw-lightbox.is-single .fw-lightbox__next,
+.fw-lightbox.is-single .fw-lightbox__counter { display: none; }
+
+@media (max-width: 576px) {
+	.fw-lightbox__btn { width: 42px; height: 42px; }
+	.fw-lightbox__btn svg { width: 20px; height: 20px; }
+	.fw-lightbox__prev { left: 8px; }
+	.fw-lightbox__next { right: 8px; }
+	.fw-lightbox__close { top: 12px; right: 12px; }
+	.fw-lightbox__counter { top: 18px; left: 14px; }
+	.fw-lightbox__caption { bottom: -2.2rem; font-size: .85rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-lightbox,
+	.fw-lightbox__img,
+	.fw-lightbox__btn { transition: opacity .2s ease, visibility .2s ease; }
+	.fw-lightbox__img { transform: none; }
+	.fw-lightbox__img.is-ready { transform: none; }
+	.fw-lightbox__spinner { animation-duration: 1.6s; }
+}

@@ -1,0 +1,87 @@
+/* =============================================================================
+ * Tooltip — inline trigger + positioned bubble (4 positions, hover/click).
+ * ========================================================================== */
+.fw-tt {
+	--tt-bg: #1f2530;
+	--tt-color: #ffffff;
+	--tt-accent: #4a90d9;
+	--tt-maxw: 240px;
+	position: relative;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+/* Triggers ----------------------------------------------------------------- */
+.fw-tt__trigger { font: inherit; cursor: pointer; border: 0; background: none; padding: 0; color: inherit; }
+.fw-tt--trig-text .fw-tt__trigger { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+.fw-tt--trig-button .fw-tt__trigger { background: var(--tt-accent); color: #fff; padding: .5em 1em; border-radius: .4rem; font-weight: 600; }
+.fw-tt--trig-icon .fw-tt__trigger {
+	width: 1.6em; height: 1.6em; border-radius: 50%;
+	display: inline-flex; align-items: center; justify-content: center;
+	background: var(--tt-accent); color: #fff; font-size: 1em; line-height: 1;
+}
+.fw-tt--trig-icon .fw-tt__q { font-weight: 700; }
+.fw-tt__trigger:focus-visible { outline: 2px solid var(--tt-accent); outline-offset: 2px; }
+
+/* Bubble ------------------------------------------------------------------- */
+.fw-tt__bubble {
+	position: absolute;
+	z-index: 60;
+	width: max-content;
+	max-width: var(--tt-maxw, 240px);
+	padding: .6rem .8rem;
+	border-radius: .5rem;
+	background: var(--tt-bg);
+	color: var(--tt-color);
+	font-size: .85rem;
+	line-height: 1.45;
+	text-align: left;
+	box-shadow: 0 8px 26px rgba(0, 0, 0, .2);
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transform: var(--tt-hide);
+	transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+}
+.fw-tt__title { display: block; font-weight: 700; margin-bottom: .2rem; }
+.fw-tt__body a { color: inherit; text-decoration: underline; }
+
+.fw-tt--hover:hover .fw-tt__bubble,
+.fw-tt--hover:focus-within .fw-tt__bubble,
+.fw-tt--click.is-open .fw-tt__bubble {
+	opacity: 1;
+	visibility: visible;
+	pointer-events: auto;
+	transform: var(--tt-show);
+}
+
+/* Positions ---------------------------------------------------------------- */
+.fw-tt--pos-top    { --tt-hide: translateX(-50%) translateY(6px);  --tt-show: translateX(-50%) translateY(0); }
+.fw-tt--pos-bottom { --tt-hide: translateX(-50%) translateY(-6px); --tt-show: translateX(-50%) translateY(0); }
+.fw-tt--pos-left   { --tt-hide: translateY(-50%) translateX(6px);  --tt-show: translateY(-50%) translateX(0); }
+.fw-tt--pos-right  { --tt-hide: translateY(-50%) translateX(-6px); --tt-show: translateY(-50%) translateX(0); }
+
+.fw-tt--pos-top    .fw-tt__bubble { bottom: 100%; left: 50%; margin-bottom: 10px; }
+.fw-tt--pos-bottom .fw-tt__bubble { top: 100%;    left: 50%; margin-top: 10px; }
+.fw-tt--pos-left   .fw-tt__bubble { right: 100%;  top: 50%;  margin-right: 10px; }
+.fw-tt--pos-right  .fw-tt__bubble { left: 100%;   top: 50%;  margin-left: 10px; }
+
+/* Arrow -------------------------------------------------------------------- */
+.fw-tt__arrow { display: none; position: absolute; width: 10px; height: 10px; background: var(--tt-bg); }
+.fw-tt--arrow .fw-tt__arrow { display: block; }
+.fw-tt--pos-top    .fw-tt__arrow { bottom: -4px; left: 50%; transform: translateX(-50%) rotate(45deg); }
+.fw-tt--pos-bottom .fw-tt__arrow { top: -4px;    left: 50%; transform: translateX(-50%) rotate(45deg); }
+.fw-tt--pos-left   .fw-tt__arrow { right: -4px;  top: 50%;  transform: translateY(-50%) rotate(45deg); }
+.fw-tt--pos-right  .fw-tt__arrow { left: -4px;   top: 50%;  transform: translateY(-50%) rotate(45deg); }
+
+/* Themes ------------------------------------------------------------------- */
+.fw-tt--design-light { --tt-bg: #ffffff; --tt-color: #1f2530; }
+.fw-tt--design-light .fw-tt__bubble { border: 1px solid rgba(0, 0, 0, .1); }
+.fw-tt--design-accent { --tt-bg: var(--tt-accent); --tt-color: #fff; }
+.fw-tt--design-gradient .fw-tt__bubble { background: linear-gradient(135deg, var(--tt-accent), #7a4bd8); }
+
+.fw-tt__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-tt__bubble { transition: opacity .18s ease, visibility .18s ease; }
+}

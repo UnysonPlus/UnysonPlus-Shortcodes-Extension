@@ -1,0 +1,51 @@
+/* Gallery — Design: Metro / Bento. A dense square grid where some cells span 2×.
+   Square rows are achieved with the classic `1fr` auto-rows + a padding-bottom
+   pseudo that sizes the first row to a column square. */
+.fw-gallery.design-metro .fw-gallery__metro {
+	display: grid;
+	grid-template-columns: repeat(var(--gal-cols, 4), 1fr);
+	grid-auto-rows: 1fr;
+	grid-auto-flow: dense;
+	gap: var(--gal-gap, 16px);
+}
+/* Size the implicit `1fr` rows to a square of one column. */
+.fw-gallery.design-metro .fw-gallery__metro::before {
+	content: "";
+	width: 0;
+	padding-bottom: 100%;
+	grid-row: 1 / 1;
+	grid-column: 1 / 1;
+}
+.fw-gallery.design-metro .fw-gallery__item {
+	height: 100%;
+	margin: 0;
+}
+.fw-gallery.design-metro .fw-gallery__media { height: 100%; }
+
+/* Featured / spanning pattern (repeats every 8 tiles). */
+.fw-gallery.design-metro .fw-gallery__item:first-child {
+	grid-row: 1 / span 2;
+	grid-column: 1 / span 2;
+}
+.fw-gallery.design-metro .fw-gallery__item:nth-child(8n + 1):not(:first-child) {
+	grid-row: span 2;
+	grid-column: span 2;
+}
+.fw-gallery.design-metro .fw-gallery__item:nth-child(8n + 4) { grid-column: span 2; }
+.fw-gallery.design-metro .fw-gallery__item:nth-child(8n + 6) { grid-row: span 2; }
+
+@media (max-width: 768px) {
+	.fw-gallery.design-metro .fw-gallery__metro { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+	.fw-gallery.design-metro .fw-gallery__metro { grid-template-columns: 1fr; }
+	/* Single column — drop all spans so nothing overflows. */
+	.fw-gallery.design-metro .fw-gallery__item,
+	.fw-gallery.design-metro .fw-gallery__item:first-child,
+	.fw-gallery.design-metro .fw-gallery__item:nth-child(8n + 1),
+	.fw-gallery.design-metro .fw-gallery__item:nth-child(8n + 4),
+	.fw-gallery.design-metro .fw-gallery__item:nth-child(8n + 6) {
+		grid-row: auto;
+		grid-column: auto;
+	}
+}

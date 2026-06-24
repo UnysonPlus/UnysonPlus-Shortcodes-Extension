@@ -1,0 +1,149 @@
+/* =============================================================================
+ * Pricing Table — base + all design skins.
+ * ========================================================================== */
+.fw-pt {
+	--pt-accent: #4a90d9;
+	--pt-card-bg: #ffffff;
+	--pt-title: inherit;
+	--pt-price: inherit;
+	--pt-text: #5a6772;
+	--pt-gap: 1.5rem;
+}
+.fw-pt__title { text-align: center; margin: 0 0 1.5rem; }
+.fw-pt__grid {
+	display: grid;
+	grid-template-columns: repeat(var(--pt-cols, 3), minmax(0, 1fr));
+	gap: var(--pt-gap, 1.5rem);
+	align-items: stretch;
+}
+.fw-pt--text-center .fw-pt__plan { text-align: center; }
+.fw-pt--text-end .fw-pt__plan    { text-align: right; }
+
+/* Plan card ---------------------------------------------------------------- */
+.fw-pt__plan {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	background: var(--pt-card-bg);
+	border-radius: .75rem;
+	padding: 2rem 1.5rem;
+	transition: transform .25s ease, box-shadow .25s ease;
+}
+.fw-pt__ribbon {
+	position: absolute;
+	top: 14px;
+	right: -2px;
+	background: var(--pt-accent);
+	color: #fff;
+	font-size: .72rem;
+	font-weight: 700;
+	letter-spacing: .04em;
+	text-transform: uppercase;
+	padding: .3em .8em;
+	border-radius: .3rem 0 0 .3rem;
+}
+.fw-pt__head { margin-bottom: 1rem; }
+.fw-pt__icon { font-size: 2rem; line-height: 1; color: var(--pt-accent); display: inline-block; margin-bottom: .5rem; }
+.fw-pt__icon img { width: 48px; height: 48px; object-fit: contain; }
+.fw-pt__name { margin: 0; font-size: 1.25rem; color: var(--pt-title); }
+.fw-pt__subtitle { font-size: .85rem; color: var(--pt-text); margin-top: .25rem; }
+
+.fw-pt__price { display: flex; align-items: baseline; justify-content: inherit; gap: .12em; margin: .5rem 0 1.25rem; color: var(--pt-price); }
+.fw-pt--text-center .fw-pt__price { justify-content: center; }
+.fw-pt--text-end .fw-pt__price    { justify-content: flex-end; }
+.fw-pt__currency { font-size: 1.4rem; font-weight: 600; align-self: flex-start; margin-top: .2em; }
+.fw-pt__amount   { font-size: 3rem; font-weight: 800; line-height: 1; }
+.fw-pt__period   { font-size: .9rem; color: var(--pt-text); font-weight: 500; }
+
+.fw-pt__features { list-style: none; margin: 0 0 1.5rem; padding: 0; flex: 1 1 auto; }
+.fw-pt__feature {
+	display: flex;
+	align-items: flex-start;
+	gap: .6em;
+	padding: .45rem 0;
+	font-size: .94rem;
+	color: var(--pt-text);
+	border-bottom: 1px solid rgba(0, 0, 0, .06);
+}
+.fw-pt--text-center .fw-pt__feature { justify-content: center; }
+.fw-pt__feature:last-child { border-bottom: 0; }
+.fw-pt__tick { color: var(--pt-accent); font-weight: 700; flex: 0 0 auto; }
+.fw-pt__feature.is-off { opacity: .55; text-decoration: line-through; }
+.fw-pt__feature.is-off .fw-pt__tick { color: #c0392b; text-decoration: none; }
+
+.fw-pt__cta { margin-top: auto; }
+.fw-pt__btn {
+	display: inline-block;
+	width: 100%;
+	box-sizing: border-box;
+	padding: .8em 1.4em;
+	border-radius: .5rem;
+	background: var(--pt-accent);
+	color: #fff;
+	font-weight: 600;
+	text-align: center;
+	text-decoration: none;
+	border: 2px solid var(--pt-accent);
+	transition: filter .2s ease, transform .2s ease;
+}
+.fw-pt__btn:hover { filter: brightness(1.08); transform: translateY(-1px); color: #fff; }
+
+/* Featured + raise --------------------------------------------------------- */
+.fw-pt__plan.is-featured { z-index: 2; }
+.fw-pt--raise .fw-pt__plan.is-featured { transform: scale(1.04); }
+.fw-pt--raise .fw-pt__plan.is-featured:hover { transform: scale(1.05); }
+
+/* Empty state -------------------------------------------------------------- */
+.fw-pt__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
+
+/* =============================================================================
+ * Design skins
+ * ========================================================================== */
+/* Classic — bordered cards, featured accent border. */
+.fw-pt--design-classic .fw-pt__plan { border: 1px solid rgba(0, 0, 0, .12); }
+.fw-pt--design-classic .fw-pt__plan.is-featured { border-color: var(--pt-accent); box-shadow: 0 0 0 1px var(--pt-accent); }
+
+/* Modern — soft shadow, no border. */
+.fw-pt--design-modern .fw-pt__plan { box-shadow: 0 8px 30px rgba(0, 0, 0, .08); }
+.fw-pt--design-modern .fw-pt__plan.is-featured { box-shadow: 0 18px 50px rgba(0, 0, 0, .16); }
+
+/* Minimal — borderless with divider lines. */
+.fw-pt--design-minimal .fw-pt__plan { background: transparent; border-right: 1px solid rgba(0, 0, 0, .08); border-radius: 0; }
+.fw-pt--design-minimal .fw-pt__grid > .fw-pt__plan:last-child { border-right: 0; }
+.fw-pt--design-minimal .fw-pt__plan.is-featured { background: rgba(0, 0, 0, .03); }
+
+/* Gradient header — colored top with the plan name + price over the accent. */
+.fw-pt--design-gradient .fw-pt__plan { border: 1px solid rgba(0, 0, 0, .08); overflow: hidden; padding-top: 0; }
+.fw-pt--design-gradient .fw-pt__head { margin: 0 -1.5rem 0; padding: 1.75rem 1.5rem 1rem; background: linear-gradient(135deg, var(--pt-accent), rgba(0, 0, 0, .15)); color: #fff; }
+.fw-pt--design-gradient .fw-pt__name,
+.fw-pt--design-gradient .fw-pt__subtitle,
+.fw-pt--design-gradient .fw-pt__icon { color: #fff; }
+.fw-pt--design-gradient .fw-pt__price { margin-top: 1.25rem; }
+
+/* Dark cards. */
+.fw-pt--design-dark .fw-pt__plan { background: #1f2530; color: #cfd6df; }
+.fw-pt--design-dark .fw-pt__name,
+.fw-pt--design-dark .fw-pt__amount,
+.fw-pt--design-dark .fw-pt__currency { color: #fff; }
+.fw-pt--design-dark .fw-pt__feature { border-bottom-color: rgba(255, 255, 255, .1); }
+.fw-pt--design-dark .fw-pt__plan.is-featured { box-shadow: 0 0 0 2px var(--pt-accent); }
+
+/* Outline — transparent cards with an accent outline on featured. */
+.fw-pt--design-outline .fw-pt__plan { background: transparent; border: 2px solid rgba(0, 0, 0, .12); }
+.fw-pt--design-outline .fw-pt__plan.is-featured { border-color: var(--pt-accent); }
+.fw-pt--design-outline .fw-pt__btn { background: transparent; color: var(--pt-accent); }
+.fw-pt--design-outline .fw-pt__plan.is-featured .fw-pt__btn,
+.fw-pt--design-outline .fw-pt__btn:hover { background: var(--pt-accent); color: #fff; }
+
+/* Responsive --------------------------------------------------------------- */
+@media (max-width: 992px) {
+	.fw-pt__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.fw-pt--raise .fw-pt__plan.is-featured { transform: none; }
+}
+@media (max-width: 576px) {
+	.fw-pt__grid { grid-template-columns: 1fr; }
+	.fw-pt--design-minimal .fw-pt__plan { border-right: 0; border-bottom: 1px solid rgba(0, 0, 0, .08); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-pt__plan, .fw-pt__btn { transition: none; }
+}

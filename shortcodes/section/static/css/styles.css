@@ -21,4 +21,17 @@
 	color: var(--color-section-dark-link, #93c5fd);
 }
 
+/* Columns Horizontal Alignment — justify-content on this section's row(s).
+   Scoped to descendant .row / .fw-row, mirroring the .section--gap-* rules in
+   framework/includes/css-tokens.php. "Left / Default" emits no class. */
+.section--cols-center .row,
+.section--cols-center .fw-row {
+	justify-content: center;
+}
+
+.section--cols-right .row,
+.section--cols-right .fw-row {
+	justify-content: flex-end;
+}
+
 /* Bleed layout moved to its own `bleed-section` shortcode. */

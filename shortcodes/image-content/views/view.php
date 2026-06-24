@@ -155,11 +155,11 @@ if ( $layout === 'image-top' ) {
 	$stack_img_attr = $stack_img_styles ? ' style="' . esc_attr( implode( ';', $stack_img_styles ) ) . '"' : '';
 	?>
 	<div <?php echo fw_attr_to_html( $attr ); ?>>
-		<div class="image-content__stack row<?php echo $gap_y_class ? ' ' . esc_attr( $gap_y_class ) : ''; ?>">
+		<div class="image-content__stack fw-row<?php echo $gap_y_class ? ' ' . esc_attr( $gap_y_class ) : ''; ?>">
 			<?php if ( $image_html ) : ?>
-				<div class="the-image col-12"<?php echo $stack_img_attr; ?>><?php echo $image_html; ?></div>
+				<div class="the-image fw-col-12"<?php echo $stack_img_attr; ?>><?php echo $image_html; ?></div>
 			<?php endif; ?>
-			<div class="<?php echo esc_attr( $content_cls ); ?> col-12"<?php echo $content_attr; ?>><?php echo $content_html; ?></div>
+			<div class="<?php echo esc_attr( $content_cls ); ?> fw-col-12"<?php echo $content_attr; ?>><?php echo $content_html; ?></div>
 		</div>
 	</div>
 	<?php
@@ -173,22 +173,22 @@ $content_order_classes = '';
 
 if ( $layout === 'image-left' ) {
 	if ( $mobile_order === 'content-first' ) {
-		$image_order_classes   = ' order-2 order-' . $bp . '-1';
-		$content_order_classes = ' order-1 order-' . $bp . '-2';
+		$image_order_classes   = ' fw-order-2 fw-order-' . $bp . '-1';
+		$content_order_classes = ' fw-order-1 fw-order-' . $bp . '-2';
 	}
 } else { // image-right
 	if ( $mobile_order === 'content-first' ) {
-		$image_order_classes   = ' order-2';
-		$content_order_classes = ' order-1';
+		$image_order_classes   = ' fw-order-2';
+		$content_order_classes = ' fw-order-1';
 	} else {
-		$image_order_classes   = ' order-' . $bp . '-2';
-		$content_order_classes = ' order-' . $bp . '-1';
+		$image_order_classes   = ' fw-order-' . $bp . '-2';
+		$content_order_classes = ' fw-order-' . $bp . '-1';
 	}
 }
 
-$row_class         = trim( 'row ' . $vertical_align . ( $gap_class ? ' ' . $gap_class : '' ) );
-$image_col_class   = 'the-image col-12 col-' . $bp . '-' . $image_col . $image_order_classes;
-$content_col_class = $content_cls . ' col-12 col-' . $bp . '-' . $content_col . $content_order_classes;
+$row_class         = trim( 'fw-row ' . $vertical_align . ( $gap_class ? ' ' . $gap_class : '' ) );
+$image_col_class   = 'the-image fw-col-12 fw-col-' . $bp . '-' . $image_col . $image_order_classes;
+$content_col_class = $content_cls . ' fw-col-12 fw-col-' . $bp . '-' . $content_col . $content_order_classes;
 ?>
 
 <div <?php echo fw_attr_to_html( $attr ); ?>>

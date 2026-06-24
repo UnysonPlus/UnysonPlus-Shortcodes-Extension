@@ -1,0 +1,103 @@
+/**
+ * Text Block — layout / typography options.
+ *
+ * All options emit CLASSES on the .text-block wrapper (alignment uses Bootstrap text-* utilities,
+ * which the theme already provides, so they are intentionally absent here). The only inline style
+ * the shortcode ever writes is the drop-cap letter's font-family, on the .tb-dropcap__cap span.
+ *
+ * Accent color is themeable: override --fw-dropcap-accent to match your brand.
+ */
+
+/* ---- Max width (reading measure) — constrained blocks center themselves ---- */
+.text-block.tb-mw-narrow { max-width: 45ch;  margin-inline: auto; }
+.text-block.tb-mw-read   { max-width: 65ch;  margin-inline: auto; }
+.text-block.tb-mw-medium { max-width: 720px; margin-inline: auto; }
+.text-block.tb-mw-wide   { max-width: 960px; margin-inline: auto; }
+
+/* ---- Newspaper columns ---- */
+.text-block.tb-cols-2 { column-count: 2; column-gap: 2.5rem; }
+.text-block.tb-cols-3 { column-count: 3; column-gap: 2.5rem; }
+@media (max-width: 782px) {
+	.text-block.tb-cols-2,
+	.text-block.tb-cols-3 { column-count: 1; }
+}
+/* Drop the leading top margin on column paragraphs so column 1's first paragraph lines up with the
+   tops of the other columns (their column-start margins are truncated by the browser, the first
+   column's isn't). margin-block-start matches the UA paragraph margin and is writing-mode safe;
+   inter-paragraph spacing is preserved by each paragraph's block-end margin. */
+.text-block.tb-cols-2 p,
+.text-block.tb-cols-3 p { margin-block-start: 0; }
+
+/* ---- Balanced wrapping ---- */
+.text-block.tb-balance,
+.text-block.tb-balance p,
+.text-block.tb-balance li,
+.text-block.tb-balance h1, .text-block.tb-balance h2,
+.text-block.tb-balance h3, .text-block.tb-balance h4 { text-wrap: balance; }
+
+/* ---- Line height ---- */
+.text-block.tb-lh-tight   { line-height: 1.25; }
+.text-block.tb-lh-snug    { line-height: 1.4; }
+.text-block.tb-lh-normal  { line-height: 1.6; }
+.text-block.tb-lh-relaxed { line-height: 1.85; }
+.text-block.tb-lh-loose   { line-height: 2.1; }
+
+/* ---- Paragraph spacing (gap between paragraphs) ---- */
+.text-block.tb-pspace-sm p { margin-bottom: 0.6em; }
+.text-block.tb-pspace-md p { margin-bottom: 1em; }
+.text-block.tb-pspace-lg p { margin-bottom: 1.7em; }
+
+/* ---- Lead paragraph (enlarge the first paragraph) ---- */
+.text-block.tb-lead > p:first-of-type { font-size: 1.25em; line-height: 1.55; }
+
+/* ---- Link styling — color is gated by .tb-linkcolor so the theme link color is
+   untouched unless one is picked; underline behavior is independent. ---- */
+.text-block.tb-linkcolor a { color: var(--tb-link); }
+.text-block.tb-links-always a       { text-decoration: underline; }
+.text-block.tb-links-none a         { text-decoration: none; }
+.text-block.tb-links-hover a        { text-decoration: none; }
+.text-block.tb-links-hover a:hover  { text-decoration: underline; }
+
+/* ---- Drop cap (pure CSS — no JavaScript) ----
+ * The cap font-size is computed so the floated cap's box spans exactly "Lines to Drop" (N) text
+ * lines: box-height = N × line-height, and box-height = font-size × (cap line-height + padding +
+ * margins) [= the per-style ratio]. So font-size = (N × line-height − ε) / ratio, where:
+ *   --dc-lines : N, set inline on the cap from the "Lines to Drop" number.
+ *   --fw-line  : the body line-height as a unitless number; themes set it to their value (the demos
+ *                theme sets 1.65). Default 1.6 — adjust per theme for pixel-exact line snapping.
+ *   ε = 0.15   : lands the cap a hair UNDER N so a sub-pixel rounding never wraps one extra line.
+ * The ratio cancels out of the line count, so every style drops the SAME N. Boxed/outline keep
+ * their box proportional (outline uses an inset box-shadow ring, not a fixed-px border, so it adds
+ * no layout height). */
+.text-block.tb-dropcap .tb-dropcap__cap {
+	float: left;
+	font-weight: 700;
+	line-height: 0.8;
+	color: inherit;
+	margin: 0.05em 0.16em 0 0; /* slight top nudge + default ("Normal") distance from text */
+	font-size: calc( ( var(--dc-lines, 3) * var(--fw-line, 1.6) - 0.15 ) / 0.85 * 1em );
+}
+
+/* Distance from text */
+.text-block.tb-dropcap--gap-none .tb-dropcap__cap { margin-right: 0; }
+.text-block.tb-dropcap--gap-sm   .tb-dropcap__cap { margin-right: 0.08em; }
+.text-block.tb-dropcap--gap-md   .tb-dropcap__cap { margin-right: 0.16em; }
+.text-block.tb-dropcap--gap-lg   .tb-dropcap__cap { margin-right: 0.3em; }
+/* Styles (each re-states font-size with its own box ratio so it still drops N lines) */
+.text-block.tb-dropcap--accent  .tb-dropcap__cap { color: var(--fw-dropcap-accent, #1a8f74); }
+.text-block.tb-dropcap--outline .tb-dropcap__cap {
+	color: var(--fw-dropcap-accent, #1a8f74);
+	box-shadow: inset 0 0 0 2px currentColor; /* ring without adding box height */
+	padding: 0.04em 0.12em;
+	border-radius: 0.08em;
+	line-height: 0.86;
+	font-size: calc( ( var(--dc-lines, 3) * var(--fw-line, 1.6) - 0.15 ) / 0.99 * 1em );
+}
+.text-block.tb-dropcap--boxed .tb-dropcap__cap {
+	background: var(--fw-dropcap-accent, #1a8f74);
+	color: #fff;
+	padding: 0.06em 0.16em;
+	border-radius: 0.08em;
+	line-height: 0.86;
+	font-size: calc( ( var(--dc-lines, 3) * var(--fw-line, 1.6) - 0.15 ) / 1.03 * 1em );
+}

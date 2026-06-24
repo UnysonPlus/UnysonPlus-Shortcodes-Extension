@@ -1,0 +1,8 @@
+/* Posts card design: Timeline. */
+.posts__card--timeline { overflow: visible; position: relative; padding-left: 1.75rem; }
+.posts__card--timeline::before { content: ""; position: absolute; left: .65rem; top: 0; bottom: 0; width: 2px; background: rgba(0,0,0,.12); }
+.posts__timeline-marker { position: absolute; left: .25rem; top: .5rem; z-index: 1; width: 12px; height: 12px; border-radius: 50%; background: currentColor; }
+.posts__timeline-inner { display: flex; gap: 1rem; align-items: flex-start; }
+.posts__timeline-media { flex: 0 0 28%; max-width: 28%; }
+.posts__card--timeline .posts__body { flex: 1 1 auto; padding: 0 0 1.25rem; }
+.posts__card--timeline .posts__body > * + * { margin-top: .5em; }

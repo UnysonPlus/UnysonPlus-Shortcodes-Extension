@@ -1,34 +1,139 @@
 <?php if (!defined('FW')) die('Forbidden');
 
 $shortcodes_extension = fw_ext('shortcodes');
+
+// Splide (vendored under the Carousel shortcode, already minified — enqueue as-is).
+// The carousel layout repoints the old Bootstrap-JS carousel at Splide so the
+// plugin no longer depends on Bootstrap's JS.
 wp_enqueue_style(
-	'fw-shortcode-testimonials',
-	fw_min_uri($shortcodes_extension->get_declared_URI('/shortcodes/testimonials/static/css/styles.css')),
-	array('font-awesome')
+	'splide',
+	$shortcodes_extension->get_declared_URI( '/shortcodes/carousel/static/vendor/splide-core.min.css' )
 );
 wp_enqueue_script(
-	'fw-shortcode-testimonials-caroufredsel',
-	fw_min_uri($shortcodes_extension->get_declared_URI('/shortcodes/testimonials/static/js/jquery.carouFredSel-6.2.1-packed.js')),
-	array('jquery'),
-	false,
+	'splide',
+	$shortcodes_extension->get_declared_URI( '/shortcodes/carousel/static/vendor/splide.min.js' ),
+	array(),
+	'4.1.4',
 	true
 );
 
+wp_enqueue_style(
+	'fw-shortcode-testimonials',
+	fw_min_uri($shortcodes_extension->get_declared_URI('/shortcodes/testimonials/static/css/styles.css')),
+	array('splide', 'fw-ext-builder-frontend-grid') // ratings are inline SVG now — no Font Awesome dependency
+);
+wp_enqueue_script(
+	'fw-shortcode-testimonials',
+	fw_min_uri($shortcodes_extension->get_declared_URI('/shortcodes/testimonials/static/js/scripts.js')),
+	array('splide'),
+	$shortcodes_extension->manifest->get_version(),
+	true
+);
 
-/* Utility helpers */
-if ( ! function_exists( 'sc_chunk' ) ) {
-    function sc_chunk( $array, $size ) { return array_chunk( $array, $size ?: 1 ); }
+/* ---------------------------------------------------------------------------
+ * Per-design assets (registry-driven). The base styles.css / scripts.js above
+ * always load (they cover the Classic/default design + shared avatars, ratings
+ * and Splide). A design's OWN css/js is enqueued only for instances that pick
+ * it — via the per-instance `fw_ext_shortcodes_enqueue_static:testimonials`
+ * action, which (unlike this file) receives the instance atts.
+ *
+ * Legacy instances have no `design` att → resolve to 'default' → no extra
+ * asset is enqueued, so they keep loading exactly the base set as before.
+ * ------------------------------------------------------------------------- */
+if ( ! function_exists( '_fw_testimonials_enqueue_design_static' ) ) :
+	function _fw_testimonials_enqueue_design_static( $data ) {
+		$atts = shortcode_parse_atts( $data['atts_string'] );
+		if ( ! is_array( $atts ) ) {
+			return;
+		}
+		$post_id = ( isset( $data['post'] ) && isset( $data['post']->ID ) ) ? $data['post']->ID : 0;
+		$atts    = fw_ext_shortcodes_decode_attr( $atts, 'testimonials', $post_id );
+		if ( is_wp_error( $atts ) || ! is_array( $atts ) ) {
+			return;
+		}
+
+		$design = fw_akg( 'design_settings/design', $atts, null ); // new multi-picker path
+		if ( ! is_string( $design ) || $design === '' ) {
+			$design = ( isset( $atts['design'] ) && is_string( $atts['design'] ) ) ? $atts['design'] : 'default'; // legacy scalar fallback
+		}
+		$registry = require dirname( __FILE__ ) . '/views/designs/registry.php';
+		if ( ! isset( $registry[ $design ] ) ) {
+			$design = 'default';
+		}
+
+		$ext     = fw_ext( 'shortcodes' );
+		$base     = '/shortcodes/testimonials/static';
+		$version  = $ext->manifest->get_version();
+		$design_d = $registry[ $design ];
+
+		if ( ! empty( $design_d['css'] ) ) {
+			wp_enqueue_style(
+				'fw-shortcode-testimonials-' . $design,
+				$ext->get_declared_URI( $base . '/css/designs/' . $design_d['css'] ),
+				array( 'fw-shortcode-testimonials' ),
+				$version
+			);
+		}
+		if ( ! empty( $design_d['js'] ) ) {
+			wp_enqueue_script(
+				'fw-shortcode-testimonials-' . $design,
+				$ext->get_declared_URI( $base . '/js/designs/' . $design_d['js'] ),
+				array( 'splide', 'fw-shortcode-testimonials' ),
+				$version,
+				true
+			);
+		}
+	}
+	add_action( 'fw_ext_shortcodes_enqueue_static:testimonials', '_fw_testimonials_enqueue_design_static' );
+endif;
+
+
+/* Quote renderer — allows a SAFE INLINE subset only (bold / italic / link /
+   line-break) so authors can lightly format a quote without a full editor,
+   while block-level + styling markup is stripped to protect each design's
+   typography. Bare newlines (plain textarea input) become <br>. Use this in
+   place of esc_html() for the quote body in every design. */
+if ( ! function_exists( 'sc_testimonial_quote_html' ) ) {
+	function sc_testimonial_quote_html( $content ) {
+		$allowed = array(
+			'strong' => array(),
+			'b'      => array(),
+			'em'     => array(),
+			'i'      => array(),
+			'br'     => array(),
+			'a'      => array(
+				'href'   => true,
+				'title'  => true,
+				'target' => true,
+				'rel'    => true,
+			),
+		);
+		$content = wp_kses( (string) $content, $allowed );
+		return nl2br( $content, false );
+	}
 }
-if ( ! function_exists( 'sc_col_class' ) ) {
-    function sc_col_class( $n ) {
-        switch ( (int) $n ) {
-            case 3: return 'col-12 col-md-4';
-            case 2: return 'col-12 col-md-6';
-            default: return 'col-12';
-        }
-    }
+
+/* Shared per-item field extractor for the design templates (escaping happens
+   at output in each template). Returns raw values with safe defaults. */
+if ( ! function_exists( 'sc_testimonial_fields' ) ) {
+	function sc_testimonial_fields( $t ) {
+		return array(
+			'content'     => isset( $t['content'] ) ? $t['content'] : '',
+			'author_name' => isset( $t['author_name'] ) ? $t['author_name'] : '',
+			'author_job'  => isset( $t['author_job'] ) ? $t['author_job'] : '',
+			'site_name'   => isset( $t['site_name'] ) ? $t['site_name'] : '',
+			'site_url'    => isset( $t['site_url'] ) ? $t['site_url'] : '',
+			'rating'      => isset( $t['rating'] ) ? $t['rating'] : '',
+			'avatar'      => ! empty( $t['author_avatar']['url'] ) ? $t['author_avatar']['url'] : '',
+		);
+	}
 }
-/* Rating renderer (Font Awesome 6) */
+
+
+/* Rating renderer — self-contained inline SVG stars (no Font Awesome
+   dependency, so ratings render on any theme). Full = filled, half = 50%
+   gradient fill + outline, empty = outline. Stars inherit color via
+   currentColor (see .testimonial-rating in styles.css). */
 if ( ! function_exists( 'sc_render_rating' ) ) {
     function sc_render_rating( $rating ) {
         if ($rating === '' || $rating === null) return '';
@@ -38,13 +143,33 @@ if ( ! function_exists( 'sc_render_rating' ) ) {
 
         $full  = (int) floor($rating);
         $half  = ($rating - $full) >= 0.5 ? 1 : 0;
-        if ($full === 5) $half = 0;
+        if ($full >= 5) { $full = 5; $half = 0; }
         $empty = 5 - $full - $half;
 
-        $out  = '<span class="testimonial-rating d-inline-flex" aria-label="' . esc_attr( sprintf( __( 'Rated %s out of 5', 'fw' ), number_format($rating,1) ) ) . '">';
-        for ($i=0; $i<$full; $i++)  $out .= '<i class="fa-solid fa-star text-warning" aria-hidden="true"></i>';
-        if ($half) $out .= '<i class="fa-solid fa-star-half-stroke text-warning" aria-hidden="true"></i>';
-        for ($i=0; $i<$empty; $i++) $out .= '<i class="fa-regular fa-star text-warning" aria-hidden="true"></i>';
+        static $uid = 0;
+        $path = 'M12 .587l3.668 7.431 8.2 1.192-5.934 5.784 1.401 8.169L12 18.896l-7.335 3.867 1.401-8.169L.132 9.21l8.2-1.192z';
+
+        $star = function ( $type ) use ( $path, &$uid ) {
+            $svg = '<svg class="ts-star ts-star--' . $type . '" viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true" focusable="false">';
+            if ( $type === 'half' ) {
+                $gid  = 'ts-star-h' . ( ++$uid );
+                $svg .= '<defs><linearGradient id="' . $gid . '">'
+                      . '<stop offset="50%" stop-color="currentColor" stop-opacity="1"/>'
+                      . '<stop offset="50%" stop-color="currentColor" stop-opacity="0"/>'
+                      . '</linearGradient></defs>'
+                      . '<path d="' . $path . '" fill="url(#' . $gid . ')" stroke="currentColor" stroke-width="1"/>';
+            } elseif ( $type === 'full' ) {
+                $svg .= '<path d="' . $path . '" fill="currentColor"/>';
+            } else {
+                $svg .= '<path d="' . $path . '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
+            }
+            return $svg . '</svg>';
+        };
+
+        $out = '<span class="testimonial-rating" role="img" aria-label="' . esc_attr( sprintf( __( 'Rated %s out of 5', 'fw' ), number_format($rating,1) ) ) . '">';
+        for ($i=0; $i<$full; $i++)  $out .= $star('full');
+        if ($half)                  $out .= $star('half');
+        for ($i=0; $i<$empty; $i++) $out .= $star('empty');
         $out .= '</span>';
         return $out;
     }
@@ -128,7 +253,7 @@ if ( ! function_exists( 'sc_render_card' ) ) {
 
         $quote_class = trim( 'testimonial-quote mb-3 ' . $quote_color_class );
         $quote_html  = '<blockquote class="' . esc_attr( $quote_class ) . '"' . $maybe_style( $quote_color_style ) . '><p class="mb-0">'
-            . esc_html( $content ) . '</p></blockquote>' . $author_block;
+            . sc_testimonial_quote_html( $content ) . '</p></blockquote>' . $author_block;
 
         $classes = trim( 'testimonial-item ' . $card_style . ' ' . $text_align . ' avatar-pos-' . $avatar_position );
         $classes = preg_replace( '/\s+/', ' ', $classes );

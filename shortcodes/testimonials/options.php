@@ -2,6 +2,93 @@
     die( 'Forbidden' );
 }
 
+/* Build the `design` image-picker choices from the single-source-of-truth
+   registry, so adding a design there automatically lists it here. SVG
+   thumbnails live under static/img/designs/. */
+$ts_uri          = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/testimonials' );
+$ts_designs      = require dirname( __FILE__ ) . '/views/designs/registry.php';
+$ts_design_choices = [];
+foreach ( $ts_designs as $ts_key => $ts_def ) {
+    $ts_design_choices[ $ts_key ] = [
+        'small' => [
+            'src' => $ts_uri . '/static/img/designs/' . $ts_def['thumb'],
+            'alt' => $ts_def['label'],
+        ],
+        'label' => $ts_def['label'],
+    ];
+}
+
+/* ---------------------------------------------------------------------------
+ * Reusable Carousel sub-options. Shared by the designs that run on a slider
+ * (Classic, Image Split, Thumbnail Nav) — each design's choice picks the
+ * subset it actually uses, so the user only ever sees relevant controls.
+ * ------------------------------------------------------------------------- */
+$ts_opt_autoplay = [
+    'label' => __('Autoplay', 'fw'),
+    'type'  => 'switch',
+    'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
+    'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
+    'value' => 'yes',
+    'desc'  => __('Auto cycle slides.', 'fw'),
+];
+$ts_opt_interval = [
+    'label' => __('Autoplay Interval (ms)', 'fw'),
+    'type'  => 'text',
+    'value' => '5000',
+    'desc'  => __('Delay between auto slides, in milliseconds.', 'fw'),
+];
+$ts_opt_pause_hover = [
+    'label' => __('Pause on Hover', 'fw'),
+    'type'  => 'switch',
+    'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
+    'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
+    'value' => 'yes',
+    'desc'  => __('Stop cycling while hovered.', 'fw'),
+];
+$ts_opt_controls = [
+    'label' => __('Show Prev/Next', 'fw'),
+    'type'  => 'switch',
+    'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
+    'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
+    'value' => 'yes',
+    'desc'  => __('Display navigation arrows.', 'fw'),
+];
+$ts_opt_indicators = [
+    'label' => __('Show Indicators', 'fw'),
+    'type'  => 'switch',
+    'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
+    'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
+    'value' => 'yes',
+    'desc'  => __('Display slide markers.', 'fw'),
+];
+$ts_opt_indicator_style = [
+    'label' => __('Indicator Style', 'fw'),
+    'type'  => 'select',
+    'value' => 'dots',
+    'choices' => [
+        'none'  => __('None', 'fw'),
+        'dots'  => __('Dots', 'fw'),
+        'lines' => __('Lines', 'fw'),
+    ],
+    'desc' => __('Indicator appearance.', 'fw'),
+];
+$ts_opt_wrap = [
+    'label' => __('Wrap Around (Loop)', 'fw'),
+    'type'  => 'switch',
+    'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
+    'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
+    'value' => 'yes',
+    'desc'  => __('Loop from last slide back to the first.', 'fw'),
+];
+
+/* Reusable column-count select (1–4) for the grid-like designs. */
+$ts_columns_choices = [
+    '1' => '1',
+    '2' => '2',
+    '3' => '3',
+    '4' => '4',
+];
+
 $options = [
     'tab_content' => [
         'title'   => __('Content', 'fw'),
@@ -26,14 +113,14 @@ $options = [
                         'popup-options' => [
                             'content' => [
                                 'label' => __('Quote', 'fw'),
-                                'desc'  => __('Main testimonial text.', 'fw'),
-                                'help'  => __('Core content shown inside the blockquote element.', 'fw'),
+                                'desc'  => __('Main testimonial text. Light inline formatting is allowed.', 'fw'),
+                                'help'  => __('Shown inside the blockquote. You may use a safe inline subset — &lt;strong&gt;, &lt;em&gt;, &lt;a&gt;, &lt;br&gt; — for bold, italic, links and line breaks; block-level/styling markup is stripped to protect each design’s typography.', 'fw'),
                                 'type'  => 'textarea',
                             ],
                             'author_avatar' => [
                                 'label' => __('Image', 'fw'),
                                 'desc'  => __('Upload or choose an image.', 'fw'),
-                                'help'  => __('Avatar shown using Bootstrap responsive image utilities.', 'fw'),
+                                'help'  => __('Avatar shown using responsive image utilities.', 'fw'),
                                 'type'  => 'upload',
                             ],
                             'author_name' => [
@@ -79,76 +166,249 @@ $options = [
         ],
     ],
 
-    'tab_layout' => [
-        'title'   => __('Layout', 'fw'),
+    /* ----------------------------------------------------------------------
+     * DESIGN — the design image-picker drives a multi-picker that reveals
+     * ONLY the chosen design's options (Layout + Carousel folded in here).
+     * `design_settings` is a NEW option id (the old scalar `design` att is
+     * harmless/ignored), so no migration and no blank-modal on legacy saves.
+     * -------------------------------------------------------------------- */
+    'tab_design' => [
+        'title'   => __('Design', 'fw'),
         'type'    => 'tab',
         'options' => [
             'group' => [
                 'type'    => 'group',
                 'options' => [
-                    'layout_type' => [
+                    'design_settings' => [
                         'type'         => 'multi-picker',
                         'label'        => false,
                         'desc'         => false,
-                        'help'         => __('Choose overall presentation: Bootstrap carousel, responsive grid, or a single centered item.', 'fw'),
-                        'picker'       => [
-                            'layout_choice' => [
-                                'label'   => __('Layout Type', 'fw'),
-                                'type'    => 'select',
-                                'choices' => [
-                                    'carousel' => __('Carousel', 'fw'),
-                                    'grid'     => __('Grid', 'fw'),
-                                    'single'   => __('Single', 'fw'),
-                                ],
-                                'desc' => __('Select the structural layout.', 'fw'),
-                                'help' => __('Carousel uses Bootstrap 5 .carousel; Grid uses row + row-cols-* utilities; Single shows the first item only.', 'fw'),
-                            ]
-                        ],
-                        'choices'      => [
-                            'grid'  => [
-                                'grid_columns' => [
-                                    'label' => __('Grid Columns (Desktop)', 'fw'),
-                                    'type'  => 'select',
-                                    'value' => 'row-cols-3',
-                                    'choices' => [
-                                        'row-cols-1' => '1',
-                                        'row-cols-2' => '2',
-                                        'row-cols-3' => '3',
-                                        'row-cols-4' => '4',
-                                    ],
-                                    'desc' => __('Columns per row ≥ md.', 'fw'),
-                                    'help' => __('Applies Bootstrap row-cols-* utility to control automatic column count.', 'fw'),
-                                ],
-                            ]
-                        ],
                         'show_borders' => false,
-                    ],
-                    'gutter' => [
-                        'label' => __('Gutter Size', 'fw'),
-                        'type'  => 'select',
-                        'choices' => [
-                            ''    => __('Default', 'fw'),
-                            'g-0' => 'g-0',
-                            'g-1' => 'g-1',
-                            'g-2' => 'g-2',
-                            'g-3' => 'g-3',
-                            'g-4' => 'g-4',
-                            'g-5' => 'g-5',
+                        'picker'       => [
+                            'design' => [
+                                'label'   => __('Design', 'fw'),
+                                'type'    => 'image-picker',
+                                'choices' => $ts_design_choices,
+                                'desc'    => __('Pick the testimonial layout/design.', 'fw'),
+                                'help'    => __('Each design is a self-contained layout with its own positioning and animation. Only the chosen design’s options appear below. Cross-design appearance (avatars, colors, spacing) lives on the Style tab.', 'fw'),
+                            ],
                         ],
-                        'desc' => __('Spacing between columns.', 'fw'),
-                        'help' => __('Bootstrap g-* utilities apply horizontal & vertical column gutters.', 'fw'),
-                    ],
-                    'text_align' => [
-                        'label' => __('Text Align', 'fw'),
-                        'type'  => 'select',
-                        'choices' => [
-                            ''            => __('Left', 'fw'),
-                            'text-center' => __('Center', 'fw'),
-                            'text-end'    => __('Right', 'fw'),
+                        'value'        => [ 'design' => 'default' ],
+                        'choices'      => [
+
+                            /* Classic — Slider / Grid / Single + Carousel controls. */
+                            'default' => [
+                                'layout_type' => [
+                                    'type'         => 'multi-picker',
+                                    'label'        => false,
+                                    'desc'         => false,
+                                    'show_borders' => false,
+                                    'picker'       => [
+                                        'layout_choice' => [
+                                            'label'   => __('Layout Type', 'fw'),
+                                            'type'    => 'select',
+                                            'choices' => [
+                                                'carousel' => __('Carousel', 'fw'),
+                                                'grid'     => __('Grid', 'fw'),
+                                                'single'   => __('Single', 'fw'),
+                                            ],
+                                            'desc' => __('Carousel uses the bundled Splide slider; Grid tiles cards; Single shows the first item only.', 'fw'),
+                                        ],
+                                    ],
+                                    'value'   => [ 'layout_choice' => 'carousel' ],
+                                    'choices' => [
+                                        'grid' => [
+                                            'grid_columns' => [
+                                                'label'   => __('Grid Columns (Desktop)', 'fw'),
+                                                'type'    => 'select',
+                                                'value'   => 'row-cols-3',
+                                                'choices' => [
+                                                    'row-cols-1' => '1',
+                                                    'row-cols-2' => '2',
+                                                    'row-cols-3' => '3',
+                                                    'row-cols-4' => '4',
+                                                ],
+                                                'desc' => __('Columns per row on desktop.', 'fw'),
+                                            ],
+                                            'gutter' => [
+                                                'label' => __('Gutter Size', 'fw'),
+                                                'type'  => 'select',
+                                                'choices' => [
+                                                    ''    => __('Default', 'fw'),
+                                                    'g-0' => 'g-0', 'g-1' => 'g-1', 'g-2' => 'g-2',
+                                                    'g-3' => 'g-3', 'g-4' => 'g-4', 'g-5' => 'g-5',
+                                                ],
+                                                'desc' => __('Spacing between columns.', 'fw'),
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                                'items_per_slide' => [
+                                    'label' => __('Items per Slide (Carousel)', 'fw'),
+                                    'type'  => 'select',
+                                    'value' => '1',
+                                    'choices' => [ '1' => '1', '2' => '2', '3' => '3' ],
+                                    'desc'  => __('Cards shown simultaneously per carousel slide.', 'fw'),
+                                ],
+                                'card_style' => [
+                                    'label' => __('Card Style', 'fw'),
+                                    'type'  => 'select',
+                                    'choices' => [
+                                        ''                                  => __('Plain', 'fw'),
+                                        'card card-body'                    => __('Card', 'fw'),
+                                        'card card-body border'             => __('Card Bordered', 'fw'),
+                                        'card card-body shadow'             => __('Card Shadow', 'fw'),
+                                        'card card-body bg-light'           => __('Card Light', 'fw'),
+                                        'card card-body bg-dark text-light' => __('Card Dark', 'fw'),
+                                    ],
+                                    'desc' => __('Visual container style for each item.', 'fw'),
+                                ],
+                                'avatar_position' => [
+                                    'label' => __('Avatar Position', 'fw'),
+                                    'type'  => 'select',
+                                    'value' => 'top',
+                                    'choices' => [
+                                        'top'   => __('Top (Above Content)', 'fw'),
+                                        'left'  => __('Left of Content', 'fw'),
+                                        'right' => __('Right of Content', 'fw'),
+                                        'none'  => __('Hide Avatar', 'fw'),
+                                    ],
+                                    'desc' => __('Placement of the avatar relative to the quote.', 'fw'),
+                                ],
+                                'carousel_autoplay'        => $ts_opt_autoplay,
+                                'carousel_interval'        => $ts_opt_interval,
+                                'carousel_pause_hover'     => $ts_opt_pause_hover,
+                                'carousel_controls'        => $ts_opt_controls,
+                                'carousel_indicators'      => $ts_opt_indicators,
+                                'carousel_indicator_style' => $ts_opt_indicator_style,
+                                'carousel_wrap'            => $ts_opt_wrap,
+                            ],
+
+                            /* Marquee Wall — scroll speed + direction. */
+                            'marquee' => [
+                                'marquee_speed' => [
+                                    'label' => __('Scroll Speed', 'fw'),
+                                    'type'  => 'select',
+                                    'value' => 'normal',
+                                    'choices' => [
+                                        'slow'   => __('Slow', 'fw'),
+                                        'normal' => __('Normal', 'fw'),
+                                        'fast'   => __('Fast', 'fw'),
+                                    ],
+                                    'desc' => __('How fast the row scrolls.', 'fw'),
+                                ],
+                                'marquee_direction' => [
+                                    'label' => __('Direction', 'fw'),
+                                    'type'  => 'select',
+                                    'value' => 'left',
+                                    'choices' => [
+                                        'left'  => __('Right → Left', 'fw'),
+                                        'right' => __('Left → Right', 'fw'),
+                                    ],
+                                    'desc' => __('Scroll direction.', 'fw'),
+                                ],
+                            ],
+
+                            /* Masonry Wall — column count. */
+                            'masonry' => [
+                                'masonry_columns' => [
+                                    'label'   => __('Columns (Desktop)', 'fw'),
+                                    'type'    => 'select',
+                                    'value'   => '3',
+                                    'choices' => $ts_columns_choices,
+                                    'desc'    => __('Masonry column count on desktop.', 'fw'),
+                                ],
+                            ],
+
+                            /* Speech Bubble — column count. */
+                            'bubble' => [
+                                'bubble_columns' => [
+                                    'label'   => __('Columns (Desktop)', 'fw'),
+                                    'type'    => 'select',
+                                    'value'   => '3',
+                                    'choices' => $ts_columns_choices,
+                                    'desc'    => __('Bubble grid column count on desktop.', 'fw'),
+                                ],
+                            ],
+
+                            /* Image Split Slider — carousel controls. */
+                            'split' => [
+                                'carousel_autoplay'        => $ts_opt_autoplay,
+                                'carousel_interval'        => $ts_opt_interval,
+                                'carousel_pause_hover'     => $ts_opt_pause_hover,
+                                'carousel_controls'        => $ts_opt_controls,
+                                'carousel_indicators'      => $ts_opt_indicators,
+                                'carousel_indicator_style' => $ts_opt_indicator_style,
+                                'carousel_wrap'            => $ts_opt_wrap,
+                            ],
+
+                            /* Thumbnail Nav Slider — carousel controls (its own nav, no indicators). */
+                            'thumbnav' => [
+                                'carousel_autoplay'    => $ts_opt_autoplay,
+                                'carousel_interval'    => $ts_opt_interval,
+                                'carousel_pause_hover' => $ts_opt_pause_hover,
+                                'carousel_controls'    => $ts_opt_controls,
+                                'carousel_wrap'        => $ts_opt_wrap,
+                            ],
+
+                            /* Spotlight Coverflow — full carousel controls. */
+                            'spotlight' => [
+                                'carousel_autoplay'        => $ts_opt_autoplay,
+                                'carousel_interval'        => $ts_opt_interval,
+                                'carousel_pause_hover'     => $ts_opt_pause_hover,
+                                'carousel_controls'        => $ts_opt_controls,
+                                'carousel_indicators'      => $ts_opt_indicators,
+                                'carousel_indicator_style' => $ts_opt_indicator_style,
+                                'carousel_wrap'            => $ts_opt_wrap,
+                            ],
+
+                            /* Zigzag Alternating — which side the first photo sits on. */
+                            'zigzag' => [
+                                'zigzag_start' => [
+                                    'label'   => __('First Photo Side', 'fw'),
+                                    'type'    => 'select',
+                                    'value'   => 'left',
+                                    'choices' => [
+                                        'left'  => __('Left', 'fw'),
+                                        'right' => __('Right', 'fw'),
+                                    ],
+                                    'desc' => __('Which side the first row’s photo starts on (rows then alternate).', 'fw'),
+                                ],
+                            ],
+
+                            /* Pull-Quote Editorial — crossfade carousel controls. */
+                            'pullquote' => [
+                                'carousel_autoplay'    => $ts_opt_autoplay,
+                                'carousel_interval'    => $ts_opt_interval,
+                                'carousel_pause_hover' => $ts_opt_pause_hover,
+                                'carousel_controls'    => $ts_opt_controls,
+                                'carousel_indicators'  => $ts_opt_indicators,
+                                'carousel_wrap'        => $ts_opt_wrap,
+                            ],
+
+                            /* Bento Featured Grid & Stacked List have no design-specific
+                               options — intentionally omitted so the picker reveals nothing
+                               extra for them. */
                         ],
-                        'desc' => __('Alignment of text content.', 'fw'),
-                        'help' => __('Uses Bootstrap text alignment utilities (text-center, text-end).', 'fw'),
                     ],
+                ],
+            ],
+        ],
+    ],
+
+    /* ----------------------------------------------------------------------
+     * STYLE — cross-design appearance + colors + spacing (the old "Style" and
+     * "Styling" tabs merged; their names were near-identical and confusing).
+     * These options apply across designs, so they stay top-level (no path
+     * change vs. before).
+     * -------------------------------------------------------------------- */
+    'tab_style' => [
+        'title'   => __('Style', 'fw'),
+        'type'    => 'tab',
+        'options' => [
+            'group_appearance' => [
+                'type'    => 'group',
+                'options' => [
                     'container_type' => [
                         'label' => __('Container', 'fw'),
                         'type'  => 'select',
@@ -159,58 +419,16 @@ $options = [
                             'container-fluid' => __('Fluid', 'fw'),
                         ],
                         'desc' => __('Outer width wrapper.', 'fw'),
-                        'help' => __('Bootstrap layout container for responsive fixed width or full-width (container-fluid).', 'fw'),
                     ],
-                    'items_per_slide' => [
-                        'label' => __('Items per Slide (Carousel)', 'fw'),
-                        'type'  => 'select',
-                        'value' => '1',
-                        'choices' => [
-                            '1' => '1',
-                            '2' => '2',
-                            '3' => '3',
-                        ],
-                        'desc' => __('Cards shown simultaneously in each slide.', 'fw'),
-                        'help' => __('Determines how many testimonial cards are grouped per carousel slide.', 'fw'),
-                    ],
-                ],
-            ],
-        ],
-    ],
-
-    'tab_style' => [
-        'title'   => __('Style', 'fw'),
-        'type'    => 'tab',
-        'options' => [
-            'group' => [
-                'type'    => 'group',
-                'options' => [
-                    'card_style' => [
-                        'label' => __('Card Style', 'fw'),
+                    'text_align' => [
+                        'label' => __('Text Align', 'fw'),
                         'type'  => 'select',
                         'choices' => [
-                            ''                               => __('Plain', 'fw'),
-                            'card card-body'                 => __('Card', 'fw'),
-                            'card card-body border'          => __('Card Bordered', 'fw'),
-                            'card card-body shadow'          => __('Card Shadow', 'fw'),
-                            'card card-body bg-light'        => __('Card Light', 'fw'),
-                            'card card-body bg-dark text-light' => __('Card Dark', 'fw'),
+                            ''            => __('Left', 'fw'),
+                            'text-center' => __('Center', 'fw'),
+                            'text-end'    => __('Right', 'fw'),
                         ],
-                        'desc' => __('Visual container style.', 'fw'),
-                        'help' => __('Applies Bootstrap card utility classes plus optional border, shadow, or background contextual class.', 'fw'),
-                    ],
-                    'avatar_position' => [
-                        'label' => __('Avatar Position', 'fw'),
-                        'type'  => 'select',
-                        'value' => 'top',
-                        'choices' => [
-                            'top'   => __('Top (Above Content)', 'fw'),
-                            'left'  => __('Left of Content', 'fw'),
-                            'right' => __('Right of Content', 'fw'),
-                            'none'  => __('Hide Avatar', 'fw'),
-                        ],
-                        'desc' => __('Placement of avatar relative to text.', 'fw'),
-                        'help' => __('Controls flex / column layout for avatar vs quote (adds helper classes).', 'fw'),
+                        'desc' => __('Alignment of text content (where the design honours it).', 'fw'),
                     ],
                     'avatar_shape' => [
                         'label' => __('Avatar Shape', 'fw'),
@@ -221,8 +439,7 @@ $options = [
                             'rounded'        => __('Rounded', 'fw'),
                             'rounded-0'      => __('Square', 'fw'),
                         ],
-                        'desc' => __('Corner radius style.', 'fw'),
-                        'help' => __('Uses Bootstrap radius utilities (rounded, rounded-circle, rounded-0).', 'fw'),
+                        'desc' => __('Avatar corner radius.', 'fw'),
                     ],
                     'avatar_size' => [
                         'label' => __('Avatar Size', 'fw'),
@@ -233,103 +450,18 @@ $options = [
                             'avatar-md' => __('Medium', 'fw'),
                             'avatar-lg' => __('Large', 'fw'),
                         ],
-                        'desc' => __('Predefined size class.', 'fw'),
-                        'help' => __('Custom classes you define in CSS to set width/height (e.g. 64/96/128px).', 'fw'),
+                        'desc' => __('Avatar size (mainly affects the Classic design).', 'fw'),
                     ],
                     'show_rating' => [
                         'label' => __('Show Rating Stars', 'fw'),
                         'type'  => 'switch',
                         'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
                         'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
-                        'value'=>'yes',
-                        'desc' => __('Toggle star display.', 'fw'),
-                        'help' => __('If enabled and rating value present, renders Font Awesome stars (solid / half / regular).', 'fw'),
+                        'value' => 'yes',
+                        'desc'  => __('Toggle star display across all designs.', 'fw'),
                     ],
                 ],
             ],
-        ],
-    ],
-
-    'tab_carousel' => [
-        'title'   => __('Carousel', 'fw'),
-        'type'    => 'tab',
-        'options' => [
-            'group' => [
-                'type'    => 'group',
-                'options' => [
-                    'carousel_autoplay' => [
-                        'label' => __('Autoplay', 'fw'),
-                        'type'  => 'switch',
-                        'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
-                        'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
-                        'value'=>'yes',
-                        'desc' => __('Auto cycle slides.', 'fw'),
-                        'help' => __('Controls data-bs-ride to trigger automatic sliding.', 'fw'),
-                    ],
-                    'carousel_interval' => [
-                        'label' => __('Autoplay Interval (ms)', 'fw'),
-                        'type'  => 'text',
-                        'value' => '5000',
-                        'desc'  => __('Delay between auto slides.', 'fw'),
-                        'help'  => __('Maps to data-bs-interval (milliseconds).', 'fw'),
-                    ],
-                    'carousel_pause_hover' => [
-                        'label' => __('Pause on Hover', 'fw'),
-                        'type'  => 'switch',
-                        'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
-                        'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
-                        'value'=>'yes',
-                        'desc' => __('Stop cycling while hovered.', 'fw'),
-                        'help' => __('Maps to data-bs-pause="hover" behavior.', 'fw'),
-                    ],
-                    'carousel_controls' => [
-                        'label' => __('Show Prev/Next', 'fw'),
-                        'type'  => 'switch',
-                        'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
-                        'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
-                        'value'=>'yes',
-                        'desc' => __('Display navigation arrows.', 'fw'),
-                        'help' => __('Adds Bootstrap .carousel-control-prev / -next buttons.', 'fw'),
-                    ],
-                    'carousel_indicators' => [
-                        'label' => __('Show Indicators', 'fw'),
-                        'type'  => 'switch',
-                        'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
-                        'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
-                        'value'=>'yes',
-                        'desc' => __('Display slide markers.', 'fw'),
-                        'help' => __('Adds Bootstrap .carousel-indicators button list.', 'fw'),
-                    ],
-                    'carousel_indicator_style' => [
-                        'label' => __('Indicator Style', 'fw'),
-                        'type'  => 'select',
-                        'value' => 'dots',
-                        'choices' => [
-                            'none'  => __('None', 'fw'),
-                            'dots'  => __('Dots', 'fw'),
-                            'lines' => __('Lines', 'fw'),
-                        ],
-                        'desc' => __('Indicator appearance.', 'fw'),
-                        'help' => __('Dots (default), line bars, or none (no custom styling; use with indicators on).', 'fw'),
-                    ],
-                    'carousel_wrap' => [
-                        'label' => __('Wrap Around (Loop)', 'fw'),
-                        'type'  => 'switch',
-                        'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
-                        'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
-                        'value'=>'yes',
-                        'desc' => __('Loop from last to first.', 'fw'),
-                        'help' => __('Maps to data-bs-wrap controlling cyclic behavior.', 'fw'),
-                    ],
-                ],
-            ],
-        ],
-    ],
-
-    'tab_styling' => [
-        'title'   => __( 'Styling', 'fw' ),
-        'type'    => 'tab',
-        'options' => [
             'group_colors' => [
                 'type'    => 'group',
                 'options' => [
@@ -373,6 +505,7 @@ $options = [
             ],
         ],
     ],
+
     'tab_animation' => [
         'title'   => __( 'Animations', 'fw' ),
         'type'    => 'tab',
@@ -384,21 +517,7 @@ $options = [
         'options' => [
             'advanced_settings' => [
                 'type'    => 'group',
-                'options' => array_merge(
-                    sc_get_advanced_tab(),
-                    [
-                        /* 'title_extra' => [
-                            'type'  => 'text',
-                            'label' => __('Some Title', 'fw'),
-                            'desc'  => __('Write some heading title content', 'fw'),
-                        ],
-                        'title_extra_2' => [
-                            'type'  => 'text',
-                            'label' => __('Some Title2', 'fw'),
-                            'desc'  => __('Write some heading title content', 'fw'),
-                        ],*/
-                    ]
-                ),
+                'options' => sc_get_advanced_tab(),
             ],
         ],
     ],

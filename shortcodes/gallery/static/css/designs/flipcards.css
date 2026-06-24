@@ -1,0 +1,72 @@
+/* Gallery — Design: Flip Cards. Each card flips on hover (3D) to reveal the
+   caption + a "view" cue on the back. */
+.fw-gallery.design-flipcards .fw-gallery__flip-grid {
+	display: grid;
+	grid-template-columns: repeat(var(--gal-cols, 3), minmax(0, 1fr));
+	gap: var(--gal-gap, 1rem);
+}
+.fw-gallery.design-flipcards .fw-gallery__flip {
+	display: block;
+	perspective: 1100px;
+	cursor: pointer;
+	text-decoration: none;
+}
+.fw-gallery.design-flipcards .fw-gallery__flip-inner {
+	position: relative;
+	width: 100%;
+	aspect-ratio: var(--gal-ratio, 4 / 3);
+	transform-style: preserve-3d;
+	transition: transform .6s cubic-bezier(.2, .7, .2, 1);
+}
+.fw-gallery.design-flipcards .fw-gallery__flip:hover .fw-gallery__flip-inner,
+.fw-gallery.design-flipcards .fw-gallery__flip:focus-visible .fw-gallery__flip-inner {
+	transform: rotateY(180deg);
+}
+.fw-gallery.design-flipcards .fw-gallery__flip-face {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+}
+.fw-gallery.design-flipcards .fw-gallery__flip-front img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+.fw-gallery.design-flipcards .fw-gallery__flip-back {
+	transform: rotateY(180deg);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: .9rem;
+	padding: 1.25rem;
+	text-align: center;
+	color: #fff;
+	background: linear-gradient(135deg, #2b2b32, #16161a);
+}
+.fw-gallery.design-flipcards .fw-gallery__flip-caption {
+	font-size: 1rem;
+	line-height: 1.4;
+	font-weight: 500;
+}
+.fw-gallery.design-flipcards .fw-gallery__flip-cue {
+	font-size: .72rem;
+	letter-spacing: .18em;
+	text-transform: uppercase;
+	padding: .4rem .9rem;
+	border: 1px solid rgba(255, 255, 255, .55);
+	border-radius: 2rem;
+}
+
+@media (max-width: 992px) {
+	.fw-gallery.design-flipcards .fw-gallery__flip-grid { grid-template-columns: repeat(var(--gal-cols-t, 2), minmax(0, 1fr)); }
+}
+@media (max-width: 576px) {
+	.fw-gallery.design-flipcards .fw-gallery__flip-grid { grid-template-columns: repeat(var(--gal-cols-m, 1), minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery.design-flipcards .fw-gallery__flip-inner { transition: none; }
+}

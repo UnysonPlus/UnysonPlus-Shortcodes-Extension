@@ -1,0 +1,250 @@
+/* =============================================================================
+ * Before / After comparison slider — base + all design skins.
+ * One structure (two stacked image layers + handle + labels); designs are CSS
+ * skins keyed off .fw-bac--design-<key>; behaviour keyed off --int-* / --vertical.
+ * ========================================================================== */
+.fw-bac {
+	--bac-knob: 42px;
+	--bac-divider: #fff;
+	--bac-handle: #fff;
+	--bac-handle-icon: #2b2b2b;
+	--bac-label-bg: rgba(0, 0, 0, .58);
+	--bac-label-text: #fff;
+	position: relative;
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+.fw-bac:focus { outline: none; }
+.fw-bac:focus-visible { outline: 2px solid var(--bac-handle); outline-offset: 3px; }
+
+.fw-bac--knob-sm { --bac-knob: 32px; }
+.fw-bac--knob-md { --bac-knob: 42px; }
+.fw-bac--knob-lg { --bac-knob: 54px; }
+
+/* Media frame ------------------------------------------------------------- */
+.fw-bac__media {
+	position: relative;
+	overflow: hidden;
+	line-height: 0;
+	border-radius: inherit;
+	background: rgba(0, 0, 0, .05);
+}
+.fw-bac.rounded    .fw-bac__media { border-radius: .5rem; }
+.fw-bac.rounded-lg .fw-bac__media { border-radius: 1rem; }
+.fw-bac.rounded-0  .fw-bac__media { border-radius: 0; }
+
+/* Ratio: the media is sized by aspect-ratio; the sizer is only for "original". */
+.fw-bac__sizer { display: none; width: 100%; height: auto; }
+.fw-bac--original .fw-bac__media { aspect-ratio: auto; }
+.fw-bac--original .fw-bac__sizer { display: block; visibility: hidden; }
+.fw-bac--ratio-1-1  .fw-bac__media { aspect-ratio: 1 / 1; }
+.fw-bac--ratio-4-3  .fw-bac__media { aspect-ratio: 4 / 3; }
+.fw-bac--ratio-3-2  .fw-bac__media { aspect-ratio: 3 / 2; }
+.fw-bac--ratio-16-9 .fw-bac__media { aspect-ratio: 16 / 9; }
+.fw-bac--ratio-3-4  .fw-bac__media { aspect-ratio: 3 / 4; }
+.fw-bac--ratio-2-3  .fw-bac__media { aspect-ratio: 2 / 3; }
+
+/* Image layers ------------------------------------------------------------ */
+.fw-bac__layer { position: absolute; inset: 0; }
+.fw-bac__layer img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* The top (before) layer is clipped to reveal the after layer beneath it. */
+.fw-bac__before { clip-path: inset(0 calc(100% - var(--bac-pos, 50%)) 0 0); }
+.fw-bac--vertical .fw-bac__before { clip-path: inset(0 0 calc(100% - var(--bac-pos, 50%)) 0); }
+
+/* Smooth the reveal except while actively dragging. */
+.fw-bac__before,
+.fw-bac__handle { transition: clip-path .12s linear, left .12s linear, top .12s linear; }
+.fw-bac.is-dragging .fw-bac__before,
+.fw-bac.is-dragging .fw-bac__handle { transition: none; }
+
+/* Cursors. */
+.fw-bac--int-drag  .fw-bac__media { cursor: ew-resize; }
+.fw-bac--int-drag.fw-bac--vertical .fw-bac__media { cursor: ns-resize; }
+.fw-bac--int-hover .fw-bac__media { cursor: ew-resize; }
+.fw-bac--int-hover.fw-bac--vertical .fw-bac__media { cursor: ns-resize; }
+.fw-bac--int-toggle .fw-bac__media { cursor: pointer; }
+
+/* Handle ------------------------------------------------------------------ */
+.fw-bac__handle {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: var(--bac-pos, 50%);
+	transform: translateX(-50%);
+	width: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+}
+.fw-bac--vertical .fw-bac__handle {
+	left: 0;
+	right: 0;
+	top: var(--bac-pos, 50%);
+	bottom: auto;
+	transform: translateY(-50%);
+	width: auto;
+	height: 48px;
+}
+.fw-bac__line {
+	position: absolute;
+	background: var(--bac-divider, #fff);
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, .12), 0 0 8px rgba(0, 0, 0, .25);
+	width: 3px;
+	height: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+}
+.fw-bac--vertical .fw-bac__line {
+	width: 100%;
+	height: 3px;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+}
+.fw-bac__knob {
+	position: relative;
+	width: var(--bac-knob, 42px);
+	height: var(--bac-knob, 42px);
+	border-radius: 50%;
+	background: var(--bac-handle, #fff);
+	color: var(--bac-handle-icon, #2b2b2b);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
+}
+.fw-bac--vertical .fw-bac__knob { transform: rotate(90deg); }
+.fw-bac__chev { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.fw-bac.is-dragging .fw-bac__knob { box-shadow: 0 2px 12px rgba(0, 0, 0, .45); }
+
+/* Labels ------------------------------------------------------------------ */
+.fw-bac__label {
+	position: absolute;
+	top: 14px;
+	z-index: 3;
+	padding: .28em .7em;
+	font-size: .8rem;
+	line-height: 1.2;
+	font-weight: 600;
+	letter-spacing: .02em;
+	border-radius: 2rem;
+	background: var(--bac-label-bg);
+	color: var(--bac-label-text);
+	pointer-events: none;
+	max-width: 45%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.fw-bac__label--before { left: 14px; }
+.fw-bac__label--after  { right: 14px; }
+.fw-bac--vertical .fw-bac__label--before { top: 14px; left: 14px; right: auto; }
+.fw-bac--vertical .fw-bac__label--after  { top: auto; bottom: 14px; left: 14px; right: auto; }
+.fw-bac--no-labels .fw-bac__label { display: none; }
+
+/* Toggle (crossfade) interaction ----------------------------------------- */
+.fw-bac--int-toggle .fw-bac__before {
+	clip-path: none;
+	transition: opacity .5s ease;
+}
+.fw-bac--int-toggle.is-after .fw-bac__before { opacity: 0; }
+.fw-bac--int-toggle .fw-bac__handle { display: none; }
+.fw-bac__hint {
+	position: absolute;
+	left: 50%;
+	bottom: 14px;
+	transform: translateX(-50%);
+	z-index: 3;
+	padding: .3em .85em;
+	font-size: .78rem;
+	font-weight: 600;
+	border-radius: 2rem;
+	background: var(--bac-label-bg);
+	color: var(--bac-label-text);
+	pointer-events: none;
+	transition: opacity .3s ease;
+}
+.fw-bac--int-toggle.is-after .fw-bac__hint { opacity: .5; }
+
+/* Builder empty state. */
+.fw-bac__empty {
+	padding: 1.5rem;
+	border: 1px dashed rgba(0, 0, 0, .2);
+	border-radius: .5rem;
+	color: #6c757d;
+	text-align: center;
+	font-size: .9rem;
+}
+
+/* =============================================================================
+ * Design skins
+ * ========================================================================== */
+
+/* Circle knob — larger, translucent. */
+.fw-bac--design-circle .fw-bac__knob {
+	background: rgba(255, 255, 255, .25);
+	-webkit-backdrop-filter: blur(3px);
+	backdrop-filter: blur(3px);
+	border: 2px solid #fff;
+	color: #fff;
+	width: calc(var(--bac-knob, 42px) + 12px);
+	height: calc(var(--bac-knob, 42px) + 12px);
+}
+.fw-bac--design-circle .fw-bac__line { width: 2px; }
+
+/* Arrows — no knob ring, just chevrons. */
+.fw-bac--design-arrows .fw-bac__knob {
+	background: transparent;
+	box-shadow: none;
+	color: var(--bac-divider, #fff);
+	width: auto;
+	height: auto;
+	gap: 6px;
+	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5));
+}
+.fw-bac--design-arrows .fw-bac__chev { width: 18px; height: 18px; stroke-width: 2.8; }
+.fw-bac--design-arrows .fw-bac__line { width: 2px; }
+
+/* Minimal line — tiny grip dot, no chevrons. */
+.fw-bac--design-line .fw-bac__chev { display: none; }
+.fw-bac--design-line .fw-bac__knob {
+	width: 16px;
+	height: 16px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+}
+.fw-bac--design-line .fw-bac__line { width: 2px; }
+
+/* Labeled — emphasised badges. */
+.fw-bac--design-labeled .fw-bac__label {
+	font-size: .82rem;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+}
+
+/* Framed — card chrome around the comparison. */
+.fw-bac--design-framed {
+	background: #fff;
+	padding: 10px;
+	border-radius: 16px;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, .14);
+}
+.fw-bac--design-framed .fw-bac__media { border-radius: 9px; }
+.fw-bac--design-framed .fw-bac__label {
+	top: auto;
+	bottom: 12px;
+	background: rgba(0, 0, 0, .65);
+}
+.fw-bac--design-framed.fw-bac--vertical .fw-bac__label--before { bottom: auto; top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-bac__before,
+	.fw-bac__handle,
+	.fw-bac--int-toggle .fw-bac__before { transition: none; }
+}

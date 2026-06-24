@@ -514,6 +514,21 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     return $attr;
 }, 25, 2 );
 
+/**
+ * Force a wrapper when an element's ONLY non-default setting is a GSAP scroll
+ * effect. Leaf shortcodes that gate their wrapper on sc_needs_wrapper() (e.g.
+ * text-block, media-image) otherwise emit no wrapper, so the data-upw-g*
+ * attributes the filter above stamps onto $attr have nowhere to land and the
+ * animation silently never fires. Keeping this in the GSAP module (rather than
+ * hard-coding gsap_motion into sc_needs_wrapper) keeps the engine self-contained.
+ */
+add_filter( 'sc_needs_wrapper', function ( $needs, $atts ) {
+    if ( $needs ) { return $needs; }
+    $g      = ( isset( $atts['gsap_motion'] ) && is_array( $atts['gsap_motion'] ) ) ? $atts['gsap_motion'] : [];
+    $effect = isset( $g['effect'] ) ? (string) $g['effect'] : 'none';
+    return in_array( $effect, [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub' ], true );
+}, 10, 2 );
+
 
 /**
  * Conditionally enqueue the bundled GSAP + ScrollTrigger + initializer + the

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Spotlight layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <rect x="14" y="18" width="54" height="54" rx="4" fill="#fff" stroke="#cfd6dd" stroke-width="2"/>
+  <rect x="19" y="23" width="44" height="44" rx="2" fill="#e0e5ea"/>
+  <g fill="#fff" stroke="#cfd6dd" stroke-width="2">
+    <rect x="74" y="18" width="15" height="15" rx="3"/>
+    <rect x="91" y="18" width="15" height="15" rx="3"/>
+    <rect x="74" y="35" width="15" height="15" rx="3"/>
+    <rect x="91" y="35" width="15" height="15" rx="3"/>
+    <rect x="74" y="52" width="15" height="15" rx="3"/>
+    <rect x="91" y="52" width="15" height="15" rx="3"/>
+  </g>
+</svg>

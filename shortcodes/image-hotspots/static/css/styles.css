@@ -1,0 +1,103 @@
+/* =============================================================================
+ * Image Hotspots — pins positioned over an image; each reveals a tooltip card.
+ * ========================================================================== */
+.fw-hs {
+	--hs-pin: #4a90d9;
+	--hs-pop-bg: #1f2530;
+	--hs-pop-color: #ffffff;
+	--hs-accent: #8ec3ff;
+	--hs-size: 26px;
+}
+.fw-hs--pin-sm { --hs-size: 20px; }
+.fw-hs--pin-md { --hs-size: 26px; }
+.fw-hs--pin-lg { --hs-size: 34px; }
+
+.fw-hs__stage { position: relative; display: block; overflow: hidden; line-height: 0; }
+.fw-hs__stage.rounded    { border-radius: .6rem; }
+.fw-hs__stage.rounded-lg { border-radius: 1.1rem; }
+.fw-hs__stage.rounded-0  { border-radius: 0; }
+.fw-hs__img { width: 100%; height: auto; display: block; }
+
+/* Point + pin -------------------------------------------------------------- */
+.fw-hs__point { position: absolute; transform: translate(-50%, -50%); z-index: 2; }
+.fw-hs__point:hover, .fw-hs__point.is-open { z-index: 5; }
+.fw-hs__pin {
+	position: relative;
+	width: var(--hs-size);
+	height: var(--hs-size);
+	border: 0;
+	border-radius: 50%;
+	background: var(--hs-pin);
+	color: #fff;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: 700;
+	font-size: calc(var(--hs-size) * .5);
+	line-height: 1;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, .35), 0 0 0 3px rgba(255, 255, 255, .85);
+	transition: transform .2s ease;
+}
+.fw-hs__pin:hover { transform: scale(1.12); }
+.fw-hs__pin:focus-visible { outline: 2px solid var(--hs-pin); outline-offset: 3px; }
+.fw-hs__ic img { width: 60%; height: 60%; object-fit: contain; }
+.fw-hs__ring { position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
+
+/* Pulse design. */
+.fw-hs--design-pulse .fw-hs__ring { animation: fw-hs-pulse 2s ease-out infinite; }
+@keyframes fw-hs-pulse {
+	0%   { box-shadow: 0 0 0 0 rgba(74, 144, 217, .6); }
+	100% { box-shadow: 0 0 0 16px rgba(74, 144, 217, 0); }
+}
+/* Plain dot has no number/icon. */
+.fw-hs--design-dot .fw-hs__pin,
+.fw-hs--design-pulse .fw-hs__pin { font-size: 0; }
+
+/* Tooltip card ------------------------------------------------------------- */
+.fw-hs__pop {
+	position: absolute;
+	left: 50%;
+	bottom: calc(100% + 12px);
+	transform: translateX(-50%) translateY(6px);
+	width: max-content;
+	max-width: 240px;
+	padding: .7rem .85rem;
+	border-radius: .5rem;
+	background: var(--hs-pop-bg);
+	color: var(--hs-pop-color);
+	font-size: .85rem;
+	line-height: 1.45;
+	text-align: left;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+	z-index: 6;
+}
+.fw-hs--hover .fw-hs__point:hover .fw-hs__pop,
+.fw-hs--hover .fw-hs__point:focus-within .fw-hs__pop,
+.fw-hs__point.is-open .fw-hs__pop {
+	opacity: 1; visibility: visible; pointer-events: auto;
+	transform: translateX(-50%) translateY(0);
+}
+/* Flip below when JS marks the point. */
+.fw-hs__point.fw-hs--flip .fw-hs__pop { bottom: auto; top: calc(100% + 12px); }
+.fw-hs__pop-title { display: block; font-weight: 700; margin-bottom: .15rem; }
+.fw-hs__pop-text { display: block; }
+.fw-hs__pop-link { display: inline-block; margin-top: .45rem; color: var(--hs-accent); font-weight: 600; text-decoration: none; }
+.fw-hs__pop-link:hover { text-decoration: underline; }
+.fw-hs__pop-arrow {
+	position: absolute; left: 50%; bottom: -5px;
+	width: 10px; height: 10px; background: var(--hs-pop-bg);
+	transform: translateX(-50%) rotate(45deg);
+}
+.fw-hs__point.fw-hs--flip .fw-hs__pop-arrow { bottom: auto; top: -5px; }
+
+.fw-hs__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-hs__pin, .fw-hs__pop { transition: none; }
+	.fw-hs--design-pulse .fw-hs__ring { animation: none; }
+}

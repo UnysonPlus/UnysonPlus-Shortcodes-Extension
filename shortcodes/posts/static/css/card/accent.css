@@ -1,0 +1,4 @@
+/* Posts card design: Accent Bar. */
+.posts__card--accent { border: 1px solid rgba(0,0,0,.08); border-radius: .4rem; }
+.posts__accent-bar { display: block; width: 100%; height: 4px; background: currentColor; opacity: .85; }
+.posts__card--accent .posts__body { padding: var(--posts-card-pad); }

@@ -1,0 +1,41 @@
+/* Gallery — Design: Cards. Grid of shadowed cards; image on top, caption panel
+   below. Columns + gap + ratio come from inline custom properties. */
+.fw-gallery.design-cards .fw-gallery__cards {
+	display: grid;
+	grid-template-columns: repeat(var(--gal-cols, 3), minmax(0, 1fr));
+	gap: var(--gal-gap, 1rem);
+}
+.fw-gallery.design-cards .fw-gallery__item {
+	display: flex;
+	flex-direction: column;
+	background: #fff;
+	border-radius: .75rem;
+	overflow: hidden;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, .08);
+	transition: transform .25s ease, box-shadow .25s ease;
+}
+.fw-gallery.design-cards .fw-gallery__item:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 14px 30px rgba(0, 0, 0, .14);
+}
+.fw-gallery.design-cards .fw-gallery__media { aspect-ratio: var(--gal-ratio, 4 / 3); }
+.fw-gallery.design-cards .fw-gallery__cards--natural .fw-gallery__media { aspect-ratio: auto; }
+.fw-gallery.design-cards .fw-gallery__cards--natural .fw-gallery__media img { height: auto; }
+.fw-gallery.design-cards .fw-gallery__caption {
+	margin: 0;
+	padding: .85rem 1rem 1rem;
+	text-align: left;
+	color: #444;
+	font-size: .92rem;
+	line-height: 1.45;
+}
+
+@media (max-width: 992px) {
+	.fw-gallery.design-cards .fw-gallery__cards { grid-template-columns: repeat(var(--gal-cols-t, 2), minmax(0, 1fr)); }
+}
+@media (max-width: 576px) {
+	.fw-gallery.design-cards .fw-gallery__cards { grid-template-columns: repeat(var(--gal-cols-m, 1), minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery.design-cards .fw-gallery__item { transition: none; }
+}

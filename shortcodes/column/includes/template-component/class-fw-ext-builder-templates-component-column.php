@@ -60,6 +60,11 @@ class FW_Ext_Builder_Templates_Component_Column extends FW_Ext_Builder_Templates
 				. '</li>';
 		}
 
+		// Append Global Templates (synced) — published `snippet` posts tagged as
+		// column-kind globals. Clicking one inserts a real [column] (saved width)
+		// whose only child is a [snippet] reference (handled in scripts.js).
+		$html .= $this->get_global_templates_html();
+
 		if (empty($html)) {
 			$html = '<div class="fw-text-muted">'. __('No Templates Saved', 'fw') .'</div>';
 		} else {
@@ -76,6 +81,56 @@ class FW_Ext_Builder_Templates_Component_Column extends FW_Ext_Builder_Templates
 				. '<input type="file" class="template-import-file fw-hidden" accept="application/json,.json" />'
 			. '</div>'
 			. $html;
+
+		return $html;
+	}
+
+	/**
+	 * `<li>` entries for Column-kind Global Templates (published `snippet` posts
+	 * tagged `_fw_global_kind = column`). Each carries the snippet ID + the saved
+	 * column width; scripts.js inserts a real [column] + [snippet] reference
+	 * (synced), not a content copy. Returns '' when snippets is inactive / none.
+	 */
+	private function get_global_templates_html()
+	{
+		if ( ! fw_ext( 'snippets' ) ) {
+			return '';
+		}
+
+		$snippets = get_posts( array(
+			'post_type'        => 'snippet',
+			'post_status'      => 'publish',
+			'numberposts'      => -1,
+			'orderby'          => 'title',
+			'order'            => 'ASC',
+			'suppress_filters' => false,
+			'meta_key'         => '_fw_global_kind',
+			'meta_value'       => 'column',
+		) );
+
+		if ( empty( $snippets ) ) {
+			return '';
+		}
+
+		$html = '';
+
+		foreach ( $snippets as $snippet ) {
+			$title = $snippet->post_title !== '' ? $snippet->post_title : ( '#' . $snippet->ID );
+			$width = get_post_meta( $snippet->ID, '_fw_global_column_width', true );
+			$width = $width ? $width : '1_1';
+
+			$html .=
+				'<li class="template-global">'
+					. '<a href="#" onclick="return false;" data-delete-global="'. (int) $snippet->ID .'"'
+						. ' class="template-delete dashicons fw-x" title="'. esc_attr__( 'Delete', 'fw' ) .'"></a>'
+					. '<a href="#" onclick="return false;" data-load-global-column="'. (int) $snippet->ID .'"'
+						. ' data-global-width="'. esc_attr( $width ) .'"'
+						. ' class="template-title">'
+						. fw_htmlspecialchars( $title )
+						. ' <span class="template-global-tag">'. esc_html__( '(Global)', 'fw' ) .'</span>'
+					. '</a>'
+				. '</li>';
+		}
 
 		return $html;
 	}
@@ -113,6 +168,11 @@ class FW_Ext_Builder_Templates_Component_Column extends FW_Ext_Builder_Templates
 			'fw-option-builder-templates-'. $this->get_type(),
 			'_fw_option_type_builder_templates_'. $this->get_type(),
 			array(
+				// Global Templates are stored as `snippet` posts, so the switch only
+				// makes sense (and is only shown) when the snippets extension is active.
+				'globalTemplatesEnabled'     => (bool) fw_ext('snippets'),
+				'globalTemplatesNonce'       => wp_create_nonce('fw_builder_global_template_save'),
+				'globalTemplatesDeleteNonce' => wp_create_nonce('fw_global_template_delete'),
 				'l10n' => array(
 					'template_name'         => __('Template Name', 'fw'),
 					'save_template'         => __('Save Column', 'fw'),
@@ -120,6 +180,12 @@ class FW_Ext_Builder_Templates_Component_Column extends FW_Ext_Builder_Templates
 					'import_failed'         => __('Failed to import template', 'fw'),
 					'import_not_json'       => __('That file is not a valid JSON file', 'fw'),
 					'import_no_file'        => __('Please choose a file to import', 'fw'),
+					'save_as_global_label'  => __('Save as Global Template', 'fw'),
+					'save_as_global_desc'   => __('Store this column as a reusable, synced Global Template. Drop it into a row from Templates → Columns (Global) — editing it updates every page that uses it.', 'fw'),
+					'global_save_failed'    => __('Failed to save global template', 'fw'),
+					'global_saved'          => __('Saved as Global Template. Insert it from Templates → Columns (Global).', 'fw'),
+					'global_delete_confirm' => __('Move this Global Template to Trash? Pages using it will stop showing it until restored.', 'fw'),
+					'global_delete_failed'  => __('Failed to delete global template', 'fw'),
 				),
 			)
 		);

@@ -21,9 +21,14 @@ $options = [
 							'help'  => __('Shown on the clickable tab button, so keep it short. This is also used as the row label in the list above.', 'fw'),
 					),
 					'tab_content' => array(
-						'type'  => 'textarea',
+						'type'  => 'wp-editor',
 						'label' => __('Content', 'fw'),
 							'help'  => __('The panel shown when this tab is selected. Accepts HTML and shortcodes for richer content.', 'fw'),
+					),
+					'badge' => array(
+						'type'  => 'text',
+						'label' => __('Badge', 'fw'),
+						'help'  => __('Optional small pill shown next to this tab title (e.g. "Save 20%"). Handy for a Monthly / Yearly pricing toggle.', 'fw'),
 					),
 					'is_active' => array(
 						'type'  => 'switch',
@@ -45,12 +50,13 @@ $options = [
 				'type'    => 'select',
 				'label'   => __('Tab Style', 'fw'),
 				'desc'    => __('Choose the style of the tabs', 'fw'),
-				'help'    => __('Pills read as standalone buttons; Underline is a quieter editorial strip. Pick the look that suits the surrounding section.', 'fw'),
+				'help'    => __('Pills read as standalone buttons; Underline is a quieter editorial strip; Segmented Toggle is a compact pill switcher (ideal for a Monthly / Yearly pricing toggle). Pick the look that suits the section.', 'fw'),
 				'value'   => 'tabs',
 				'choices' => [
 					'tabs'      => __('Tabs (Default)', 'fw'),
 					'pills'     => __('Pills', 'fw'),
 					'underline' => __('Underline (v5.2+)', 'fw'),
+					'segmented' => __('Segmented Toggle (switcher)', 'fw'),
 				],
 			],
 			'justified' => [

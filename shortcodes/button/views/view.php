@@ -87,19 +87,20 @@ if ( ! function_exists( 'sc_button_kses_label' ) ) {
     }
 }
 
-// Enqueue the icon-v2 pack CSS on the front end when an icon is used. Without
-// this only globally-loaded packs (Font Awesome, Dashicons) render; Linecons /
-// Entypo / Linearicons / Typicons / Unycon have no global handle, so their
-// stylesheet must be enqueued here (same pattern as the icon / icon-box views).
+// Enqueue ONLY the icon-v2 pack this button's icon needs (Font Awesome / Entypo /
+// Linearicons / Typicons / Unycon …), rather than every pack — so a page with one
+// Font Awesome glyph doesn't also pull the other pack stylesheets.
 if (
     ! empty( $atts['icon'] ) &&
     isset( fw()->backend->option_type( 'icon-v2' )->packs_loader )
 ) {
-    fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_frontend_css();
+    fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_pack_for_icon( $atts['icon'] );
 }
 
 $atts['base_class']       = 'btn';
-$atts['unique_id_prefix'] = 'bt-';
+// Unique per-element class prefixed `btn-` (e.g. btn-8e730e61) so it reads as part of the button
+// namespace. It's a hex id, so it never collides with a `btn-{preset}` style class.
+$atts['unique_id_prefix'] = 'btn-';
 $atts['extra_attrs']      = [];
 
 // Margin/padding from the `spacing` field auto-applies to the wrapper via the
@@ -165,7 +166,11 @@ if ($custom_width !== '') {
 }
 
 if (!empty($attr['class'])) {
-    $classes[] = $attr['class'];
+    // $attr['class'] carries the base class ('btn') + the unique id class ('bt-…'); push each
+    // token so the array_unique() below collapses the duplicate 'btn' we already seeded.
+    foreach (preg_split('/\s+/', $attr['class']) as $cl) {
+        if ($cl !== '') { $classes[] = $cl; }
+    }
     unset($attr['class']);
 }
 
@@ -218,6 +223,10 @@ if (in_array($align, array('left', 'center', 'right'), true)) {
     $align_open  = '<div class="sc-btn-align" style="text-align: ' . esc_attr($align) . ';">';
     $align_close = '</div>';
 }
+
+// De-duplicate while preserving order — the seeded base class, the wrapper's base class, and a
+// style preset can otherwise repeat 'btn' (e.g. "btn btn-primary btn bt-1234").
+$classes = array_values(array_unique(array_filter($classes)));
 ?>
 <?php echo $align_open; ?>
 <a href="<?php echo esc_url($atts['link']); ?>"

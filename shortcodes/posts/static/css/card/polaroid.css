@@ -1,0 +1,9 @@
+/* Posts card design: Polaroid. */
+.posts__card--polaroid { background: #fff; padding: .7rem .7rem 0; box-shadow: 0 6px 18px rgba(0,0,0,.14); transform: rotate(-1.6deg); transition: transform .3s ease, box-shadow .3s ease; }
+.posts__card--polaroid:nth-child(even) { transform: rotate(1.6deg); }
+.posts__card--polaroid:hover { transform: rotate(0); box-shadow: 0 10px 26px rgba(0,0,0,.2); }
+.posts__card--polaroid .posts__body { padding: .85rem .4rem 1.2rem; text-align: center; }
+.posts__card--polaroid .posts__body > * + * { margin-top: .4em; }
+@media (prefers-reduced-motion: reduce) {
+    .posts__card--polaroid, .posts__card--polaroid:nth-child(even) { transform: none; transition: none; }
+}

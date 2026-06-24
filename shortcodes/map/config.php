@@ -7,6 +7,6 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'Map', 'fw' ),
 	'description' => __( 'Add a Map', 'fw' ),
-	'tab'         => __( 'Content Elements', 'fw' ),
+	'tab'         => __( 'Media Elements', 'fw' ),
 	'popup_size'    => 'medium', // can be large, medium or small
 ); 

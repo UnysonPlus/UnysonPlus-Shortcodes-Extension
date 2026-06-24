@@ -490,6 +490,59 @@ $options = array(
                 'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
                 'value'        => 'no',
             ],
+
+            // ---- Alignment (content + column) — placed first, right after Full
+            // Height, because Content Alignment is the primary, recommended way to
+            // align a whole column's content at once (especially to center it). ----
+            'group_alignment' => [
+                'type'    => 'group',
+                'options' => [
+                    'content_direction' => [
+                        'type'         => 'switch',
+                        'label'        => __( 'Layout Direction', 'fw' ),
+                        'desc'         => __( 'Stack the column\'s elements vertically (default) or lay them out inline in a row.', 'fw' ),
+                        'help'         => __( 'Inline places elements side by side — e.g. two buttons — wrapping onto the next line if they don\'t fit. Content Alignment still centers them horizontally; Content Vertical Alignment centers them on the cross axis. Pair with Gap for spacing between them.', 'fw' ),
+                        'right-choice' => [ 'value' => 'row',    'label' => __( 'Inline', 'fw' ) ],
+                        'left-choice'  => [ 'value' => 'column', 'label' => __( 'Stacked', 'fw' ) ],
+                        'value'        => 'column',
+                    ],
+                    'content_h' => [
+                        'type'    => 'image-picker',
+                        'label'   => __( 'Content Alignment', 'fw' ),
+                        'desc'    => __( 'Align the whole column\'s content at once — the simplest way to center it.', 'fw' ),
+                        'help'    => __( 'Set this to Center and the whole column\'s content centers as one, including a Special Heading\'s overline. This is usually all a centered section needs — only reach for an element\'s own alignment when a single item has to differ from the rest of the column.', 'fw' ),
+                        'value'   => 'default',
+                        'choices' => $halign_choices,
+                    ],
+                    'content_v' => [
+                        'type'    => 'image-picker',
+                        'label'   => __( 'Content Vertical Alignment', 'fw' ),
+                        'desc'    => __( 'Position the elements within the column height.', 'fw' ),
+                        'help'    => __( '"Top / Default" keeps them at the top. Middle / Bottom / Space Between only show when the column is taller than its content (equal-height row or Full Height on); Space Between spreads 2+ elements from top to bottom.', 'fw' ),
+                        'value'   => 'default',
+                        'choices' => $contentvalign_choices,
+                    ],
+                    'content_gap' => [
+                        'type'    => 'short-select',
+                        'label'   => __( 'Gap', 'fw' ),
+                        'desc'    => __( 'Space between the column\'s elements. Uses the site Gap Scale (Theme Settings → General → Spacing → Gaps).', 'fw' ),
+                        'help'    => __( 'Works in both Stacked and Inline directions. Sizes follow your Gap Scale, so changing the scale in Theme Settings updates every column at once. Only takes effect once the column has 2+ elements.', 'fw' ),
+                        'value'   => '',
+                        'choices' => function_exists( 'sc_get_gap_select_choices' )
+                            ? sc_get_gap_select_choices( __( 'None', 'fw' ) )
+                            : array( '' => __( 'None', 'fw' ) ),
+                    ],
+                    'align_self' => [
+                        'type'    => 'image-picker',
+                        'label'   => __( 'Column Vertical Alignment', 'fw' ),
+                        'desc'    => __( 'Align this column against its row siblings.', 'fw' ),
+                        'help'    => __( 'Only visible when the row has unequal-height columns. Default stretches to match the tallest; Top / Middle / Bottom position the column without stretching.', 'fw' ),
+                        'value'   => 'default',
+                        'choices' => $colvalign_choices,
+                    ],
+                ],
+            ],
+
             'mobile_order' => [
                 'type'    => 'short-select',
                 'label'   => __( 'Mobile Order', 'fw' ),
@@ -579,37 +632,6 @@ $options = array(
                 ],
             ],
 
-            // ---- Alignment (column self + content) ----
-            'group_alignment' => [
-                'type'    => 'group',
-                'options' => [
-                    'align_self' => [
-                        'type'    => 'image-picker',
-                        'label'   => __( 'Column Vertical Align', 'fw' ),
-                        'desc'    => __( 'Align this column against its row siblings.', 'fw' ),
-                        'help'    => __( 'Only visible when the row has unequal-height columns. Default stretches to match the tallest; Top / Middle / Bottom position the column without stretching.', 'fw' ),
-                        'value'   => 'default',
-                        'choices' => $colvalign_choices,
-                    ],
-                    'content_v' => [
-                        'type'    => 'image-picker',
-                        'label'   => __( 'Content Vertical Align', 'fw' ),
-                        'desc'    => __( 'Position the elements within the column height.', 'fw' ),
-                        'help'    => __( '"Top / Default" keeps them at the top. Middle / Bottom / Space Between only show when the column is taller than its content (equal-height row or Full Height on); Space Between spreads 2+ elements from top to bottom.', 'fw' ),
-                        'value'   => 'default',
-                        'choices' => $contentvalign_choices,
-                    ],
-                    'content_h' => [
-                        'type'    => 'image-picker',
-                        'label'   => __( 'Content Horizontal Align', 'fw' ),
-                        'desc'    => __( 'Align the column content horizontally.', 'fw' ),
-                        'help'    => __( 'Only affects content narrower than the column — buttons, images, inline elements. Full-width blocks (text, etc.) fill the width, so they will not visibly move.', 'fw' ),
-                        'value'   => 'default',
-                        'choices' => $halign_choices,
-                    ],
-                ],
-            ],
-
             // ---- Position & stacking ----
             'group_position' => [
                 'type'    => 'group',
@@ -657,7 +679,7 @@ $options = array(
             ],
             // Border Preset — a reusable border + corners + shadow style (with a
             // Default/Hover state) defined in Theme Settings → General → Borders.
-            // Lands on the column's inner card wrapper as a `.colb-{name}` class
+            // Lands on the column's inner card wrapper as a `.boxp-{name}` class
             // (auto-creates the inner wrapper). Replaces the old manual Border /
             // Color / Width / Rounded / Shadow selects (those still RENDER for any
             // column saved before this, but are no longer editable here).
@@ -666,13 +688,13 @@ $options = array(
                 'options' => [
                     'border_preset' => [
                         'type'         => 'border-style-picker',
-                        'label'        => __( 'Border Preset', 'fw' ),
-                        'desc'         => __( 'Apply a reusable border + corners + shadow style (with a hover state) to the column card. Each option previews the real border next to its name.', 'fw' ),
-                        'help'         => __( 'Border Presets live in Theme Settings → General → Borders — the theme ships a few (Card, Outline, Soft Shadow, Hover Lift) and you can add your own with full Default/Hover control and Custom CSS. Change a preset there and every column using it updates. Each preset is a .colb-{name} class on the column\'s inner card wrapper.', 'fw' ),
+                        'label'        => __( 'Box Preset', 'fw' ),
+                        'desc'         => __( 'Apply a reusable box style — border, corners, shadow and an optional background fill (with a hover state) — to the column card. Each option previews the real style next to its name.', 'fw' ),
+                        'help'         => __( 'Box Presets live in Theme Settings → Components → Box Presets — the theme ships a few (Card, Outline, Soft Shadow, Hover Lift) and you can add your own with full Default/Hover control, a background fill and Custom CSS. Change a preset there and every element using it updates. Each preset is a .boxp-{name} class on the column\'s inner card wrapper.', 'fw' ),
                         'value'        => '',
                         'choices'      => function_exists( 'sc_get_border_preset_choices' ) ? sc_get_border_preset_choices() : array( '' => __( 'None', 'fw' ) ),
-                        'preview_text' => __( 'Border', 'fw' ),
-                        'placeholder'  => __( '— Select a border —', 'fw' ),
+                        'preview_text' => __( 'Box', 'fw' ),
+                        'placeholder'  => __( '— Select a box style —', 'fw' ),
                     ],
                 ],
             ],

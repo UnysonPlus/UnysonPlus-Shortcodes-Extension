@@ -1,0 +1,8 @@
+/* Posts card design: Quote-Led. */
+.posts__card--quote { padding: var(--posts-card-pad); }
+.posts__card--quote .posts__body { position: relative; padding: 0; padding-top: 2.2rem; }
+.posts__card--quote .posts__body::before { content: "\201C"; position: absolute; top: -.4rem; left: -.2rem; font-family: Georgia, "Times New Roman", serif; font-size: 4rem; line-height: 1; opacity: .18; }
+.posts__card--quote .posts__excerpt { font-size: 1.2rem; line-height: 1.5; font-style: italic; }
+.posts__card--quote .posts__excerpt p { margin: 0; }
+.posts__quote-media { margin-top: 1rem; }
+.posts__card--quote .posts__quote-media .posts__image { width: 60px; height: 60px; aspect-ratio: 1 / 1; border-radius: 50%; }

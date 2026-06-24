@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Polaroid scatter layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <g fill="#fff" stroke="#cfd6dd" stroke-width="2">
+    <g transform="rotate(-7 38 45)">
+      <rect x="22" y="24" width="32" height="40" rx="2"/>
+      <rect x="26" y="28" width="24" height="24" fill="#e9edf1" stroke="none"/>
+    </g>
+    <g transform="rotate(6 82 47)">
+      <rect x="66" y="26" width="32" height="40" rx="2"/>
+      <rect x="70" y="30" width="24" height="24" fill="#e9edf1" stroke="none"/>
+    </g>
+  </g>
+</svg>

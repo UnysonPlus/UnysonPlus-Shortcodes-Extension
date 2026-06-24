@@ -24,7 +24,19 @@ $section_el = function ( $x, $y, $w, $h ) use ( $section_rrect ) {
 		. '" y2="' . round( $ly, 1 ) . '" stroke="#8c8c8c" stroke-width="1.5" stroke-linecap="round"/>';
 };
 
-$section_valign_uri = function ( $mode ) use ( $section_rrect, $section_el ) {
+// Caption + <svg> wrapper — mirrors the column's $glyph_svg so the section
+// thumbnails carry the same baked-in text label below the icon (the image-picker
+// itself doesn't render a visible caption). $icon_h = icon band height; the
+// caption sits in the 16px below it.
+$section_glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) {
+	$h = $icon_h + 16;
+	$inner .= '<text x="' . ( $w / 2 ) . '" y="' . ( $icon_h + 11 ) . '" text-anchor="middle" '
+		. 'font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#50575e">' . $label . '</text>';
+	$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $w . ' ' . $h . '" width="' . $w . '" height="' . $h . '">' . $inner . '</svg>';
+	return 'data:image/svg+xml,' . rawurlencode( $svg );
+};
+
+$section_valign_uri = function ( $mode, $label ) use ( $section_rrect, $section_el, $section_glyph_svg ) {
 	$w = 120; $icon_h = 50;
 	$svg = $section_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' ); // blue section
 
@@ -38,8 +50,27 @@ $section_valign_uri = function ( $mode ) use ( $section_rrect, $section_el ) {
 	elseif ( $mode === 'bottom' ) { $ey = $bottom - $eh; }
 	$svg .= $section_el( $ex, $ey, $ew, $eh );
 
-	$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $w . ' ' . $icon_h . '" width="' . $w . '" height="' . $icon_h . '">' . $svg . '</svg>';
-	return 'data:image/svg+xml,' . rawurlencode( $svg );
+	return $section_glyph_svg( $svg, $label, $w, $icon_h );
+};
+
+// Horizontal counterpart: a HALF-width gray column riding at the left / centre /
+// right of the blue section, to show where the columns sit across the row.
+$section_halign_uri = function ( $mode, $label ) use ( $section_rrect, $section_el, $section_glyph_svg ) {
+	$w = 120; $icon_h = 50;
+	$svg = $section_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' ); // blue section
+
+	$bt = 7; $bb = $icon_h - 7;                       // full-height column band
+	$inner_x = 17; $inner_w = $w - 2 * $inner_x;      // available horizontal track
+	$cw = $inner_w * 0.5;                             // half-width column
+	$cx = $inner_x;                                   // left / default
+	if ( $mode === 'center' )     { $cx = $inner_x + ( $inner_w - $cw ) / 2; }
+	elseif ( $mode === 'right' )  { $cx = $inner_x + $inner_w - $cw; }
+	$svg .= $section_rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // gray column
+
+	$ew = $cw - 10; $eh = 9;                          // white element centred in the column
+	$svg .= $section_el( $cx + 5, ( $bt + $bb ) / 2 - $eh / 2, $ew, $eh );
+
+	return $section_glyph_svg( $svg, $label, $w, $icon_h );
 };
 
 // image-picker choice entry (thumb + 3x hover preview), matching the column.
@@ -91,7 +122,7 @@ $options = [
 							'preset' => [
 								'label'   => __( 'Min Height', 'fw' ),
 								'desc'    => __( 'Minimum section height. Use a viewport preset (vh) for a hero-style, full-screen section, or pick Custom for an exact value.', 'fw' ),
-								'help'    => __( 'Pairs with Content Vertical Align below — give the section a tall min-height, then centre the content for a classic hero. "Auto" lets the section shrink-wrap its content.', 'fw' ),
+								'help'    => __( 'Pairs with Columns Vertical Alignment below — give the section a tall min-height, then centre the columns for a classic hero. "Auto" lets the section shrink-wrap its content.', 'fw' ),
 								'type'    => 'select',
 								'choices' => [
 									'auto'   => __( 'Auto (fit content)', 'fw' ),
@@ -117,15 +148,27 @@ $options = [
 						],
 						'show_borders' => false,
 					],
-					'content_valign' => [
+					'column_halign' => [
 						'type'    => 'image-picker',
-						'label'   => __( 'Content Vertical Align', 'fw' ),
-						'desc'    => __( 'Where the content sits when the section is taller than its content (most visible with a Min Height set).', 'fw' ),
+						'label'   => __( 'Columns Horizontal Alignment', 'fw' ),
+						'desc'    => __( 'Align this section\'s columns horizontally within the row — the simplest way to centre a single narrow column (e.g. one 1/2-width column).', 'fw' ),
+						'help'    => __( 'Only has a visible effect when the columns don\'t already fill the row width. "Center" centres them as a group; "Right" pushes them to the end of the row.', 'fw' ),
+						'value'   => 'default',
+						'choices' => [
+							'default' => $section_valign_pick( $section_halign_uri( 'default', __( 'Left / Default', 'fw' ) ), __( 'Left / Default', 'fw' ) ),
+							'center'  => $section_valign_pick( $section_halign_uri( 'center',  __( 'Center', 'fw' ) ),       __( 'Center', 'fw' ) ),
+							'right'   => $section_valign_pick( $section_halign_uri( 'right',   __( 'Right', 'fw' ) ),        __( 'Right', 'fw' ) ),
+						],
+					],
+					'column_valign' => [
+						'type'    => 'image-picker',
+						'label'   => __( 'Columns Vertical Alignment', 'fw' ),
+						'desc'    => __( 'Where the columns sit vertically when the section is taller than its content (most visible with a Min Height set).', 'fw' ),
 						'value'   => 'top',
 						'choices' => [
-							'top'    => $section_valign_pick( $section_valign_uri( 'top' ),    __( 'Top', 'fw' ) ),
-							'center' => $section_valign_pick( $section_valign_uri( 'center' ), __( 'Center', 'fw' ) ),
-							'bottom' => $section_valign_pick( $section_valign_uri( 'bottom' ), __( 'Bottom', 'fw' ) ),
+							'top'    => $section_valign_pick( $section_valign_uri( 'top',    __( 'Top / Default', 'fw' ) ), __( 'Top / Default', 'fw' ) ),
+							'center' => $section_valign_pick( $section_valign_uri( 'center', __( 'Center', 'fw' ) ),       __( 'Center', 'fw' ) ),
+							'bottom' => $section_valign_pick( $section_valign_uri( 'bottom', __( 'Bottom', 'fw' ) ),       __( 'Bottom', 'fw' ) ),
 						],
 					],
 					'background' => [

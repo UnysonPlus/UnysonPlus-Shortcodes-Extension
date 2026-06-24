@@ -5,10 +5,16 @@ class FW_Shortcode_Column extends FW_Shortcode
 	// Was array( 'column' ) — which blocked nested columns. A column may now host
 	// other columns (one level deep; the depth cap is enforced JS-side in the
 	// column item's allowIncomingType, and section-like types are still kept out
-	// there + by each section's own allowDestinationType). Leaving this empty lets
-	// the editor offer column-into-column drops; the items-corrector synthesizes
-	// the inner row at save time.
-	private $restricted_types = array();
+	// there + by each section's own allowDestinationType). The editor offers
+	// column-into-column drops; the items-corrector synthesizes the inner row at
+	// save time.
+	//
+	// `container` is restricted: a Container is a section-level band (it provides its
+	// OWN .fw-container) and must NEVER live inside a column. The column item's JS
+	// reads this list (`_.indexOf(restrictedTypes, type) === -1`), so a Container is
+	// refused as a drop target here — which also makes click-to-add resolve up to the
+	// section instead of dropping into the last column.
+	private $restricted_types = array( 'container' );
 
 	/**
 	 * @internal

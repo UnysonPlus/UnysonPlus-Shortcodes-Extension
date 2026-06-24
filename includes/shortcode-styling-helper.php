@@ -969,7 +969,11 @@ if ( ! function_exists( 'sc_get_button_style_choices' ) ) :
 	 *                      option prepended. false → `btn-{id}` keys.
 	 */
 	function sc_get_button_style_choices( $outline = false ) {
-		$out = $outline ? array( '' => __( 'No Outline', 'fw' ) ) : array();
+		// 'Default' (value '') = the bare `.btn` base — a basic bordered button with no color
+		// preset. Listed first, so it's the picker's default; the Site Converter selects it so a
+		// converted button is styled by the child theme's own `.btn` rule (which the user can
+		// later override by switching to a Color Preset such as Primary).
+		$out = $outline ? array( '' => __( 'No Outline', 'fw' ) ) : array( '' => __( 'Default', 'fw' ) );
 		if ( ! function_exists( 'unysonplus_get_button_color_presets' ) ) { return $out; }
 		// Readable, name-based class slug ('Primary' → btn-primary) — shared with
 		// css-tokens so the saved option value matches the generated CSS class.
@@ -993,7 +997,7 @@ if ( ! function_exists( 'sc_get_border_preset_choices' ) ) :
 	/**
 	 * Dropdown choices for a column's Border Preset picker, sourced from the saved
 	 * Border Presets (Theme Settings → General → Borders). Each preset's name-based
-	 * slug becomes the option value `colb-{slug}` (matching the generated CSS class
+	 * slug becomes the option value `boxp-{slug}` (matching the generated CSS class
 	 * in css-tokens.php). A blank "None" is prepended. Adding a preset in Theme
 	 * Settings instantly shows up in every Column's Border Preset dropdown.
 	 */
@@ -1009,7 +1013,7 @@ if ( ! function_exists( 'sc_get_border_preset_choices' ) ) :
 			if ( $id === '' ) { continue; }
 			$slug = isset( $slug_map[ $id ] ) ? $slug_map[ $id ] : $id;
 			$name = ! empty( $bp['preset_name'] ) ? $bp['preset_name'] : $bp['id'];
-			$out[ 'colb-' . $slug ] = $name;
+			$out[ 'boxp-' . $slug ] = $name;
 		}
 		return $out;
 	}

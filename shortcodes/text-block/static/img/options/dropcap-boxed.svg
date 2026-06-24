@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 46" width="64" height="46" role="img" aria-label="Boxed">
+  <rect width="64" height="46" rx="5" fill="#ffffff" stroke="#e2e7ee"/>
+  <rect x="7" y="11" width="22" height="26" rx="3" fill="#1a8f74"/>
+  <text x="11" y="32" font-family="Georgia, 'Times New Roman', serif" font-size="22" font-weight="700" fill="#ffffff">A</text>
+  <rect x="33" y="13" width="24" height="3" rx="1.5" fill="#c7ced6"/>
+  <rect x="33" y="21" width="24" height="3" rx="1.5" fill="#c7ced6"/>
+  <rect x="33" y="29" width="24" height="3" rx="1.5" fill="#c7ced6"/>
+  <rect x="7"  y="40" width="50" height="3" rx="1.5" fill="#c7ced6"/>
+</svg>

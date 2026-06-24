@@ -1,0 +1,62 @@
+/* =============================================================================
+ * Author Box — avatar + bio + socials (card / centered / banner / minimal).
+ * ========================================================================== */
+.fw-ab {
+	--ab-accent: #4a90d9;
+	--ab-card-bg: #ffffff;
+	--ab-name: inherit;
+	--ab-text: #5a6772;
+	--ab-avatar: 84px;
+	display: flex;
+	gap: 1.25rem;
+	align-items: flex-start;
+}
+.fw-ab__avatar { flex: 0 0 auto; }
+.fw-ab__avatar img { width: var(--ab-avatar); height: var(--ab-avatar); object-fit: cover; display: block; }
+.fw-ab--avatar-circle  .fw-ab__avatar img { border-radius: 50%; }
+.fw-ab--avatar-rounded .fw-ab__avatar img { border-radius: .6rem; }
+.fw-ab--avatar-square  .fw-ab__avatar img { border-radius: 0; }
+
+.fw-ab__body { flex: 1 1 auto; min-width: 0; }
+.fw-ab__name { font-size: 1.25rem; font-weight: 700; color: var(--ab-name); }
+.fw-ab__name a { color: inherit; text-decoration: none; }
+.fw-ab__name a:hover { color: var(--ab-accent); }
+.fw-ab__role { color: var(--ab-accent); font-size: .9rem; font-weight: 600; margin-top: .1rem; }
+.fw-ab__bio { color: var(--ab-text); margin-top: .5rem; line-height: 1.6; }
+.fw-ab__bio :last-child { margin-bottom: 0; }
+
+.fw-ab__footer { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: .85rem; }
+.fw-ab__socials { display: flex; gap: .4rem; }
+.fw-ab__social {
+	width: 2.1em; height: 2.1em; border-radius: 50%;
+	display: inline-flex; align-items: center; justify-content: center;
+	background: rgba(0, 0, 0, .06); color: #44505c;
+	transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+.fw-ab__social:hover { background: var(--ab-accent); color: #fff; transform: translateY(-2px); }
+.fw-ab__posts { color: var(--ab-accent); font-weight: 600; text-decoration: none; }
+.fw-ab__posts:hover { text-decoration: underline; }
+
+.fw-ab__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }
+
+/* Designs ------------------------------------------------------------------ */
+.fw-ab--design-card,
+.fw-ab--design-banner { background: var(--ab-card-bg); border-radius: .8rem; padding: 1.5rem; box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
+.fw-ab--design-banner { gap: 1.75rem; align-items: center; }
+.fw-ab--design-banner .fw-ab__avatar img { box-shadow: 0 4px 14px rgba(0, 0, 0, .15); }
+
+.fw-ab--design-centered { flex-direction: column; align-items: center; text-align: center; background: var(--ab-card-bg); border-radius: .8rem; padding: 1.75rem; box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
+.fw-ab--design-centered .fw-ab__footer { justify-content: center; }
+.fw-ab--design-centered .fw-ab__bio { max-width: 540px; }
+
+.fw-ab--design-minimal { background: transparent; box-shadow: none; padding: 0; }
+
+@media (max-width: 576px) {
+	.fw-ab--design-card,
+	.fw-ab--design-banner { flex-direction: column; align-items: center; text-align: center; }
+	.fw-ab--design-card .fw-ab__footer,
+	.fw-ab--design-banner .fw-ab__footer { justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-ab__social { transition: none; }
+}

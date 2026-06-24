@@ -17,7 +17,7 @@ if (
     ! empty( $atts['icon'] ) &&
     isset( fw()->backend->option_type( 'icon-v2' )->packs_loader )
 ) {
-    fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_frontend_css();
+    fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_pack_for_icon( $atts['icon'] );
 }
 
 /*f

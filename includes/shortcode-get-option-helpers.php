@@ -58,6 +58,43 @@ function sc_get_advanced_tab() {
                 ],
             ],
         ],
+        'group_display_conditions' => [
+            'type'    => 'group',
+            'options' => [
+                'dc_logged' => [
+                    'type'    => 'select',
+                    'label'   => __( 'Visibility', 'fw' ),
+                    'desc'    => __( 'Display Conditions — show this element to everyone, or only to logged-in / logged-out visitors.', 'fw' ),
+                    'value'   => 'all',
+                    'choices' => [
+                        'all'        => __( 'Everyone', 'fw' ),
+                        'logged_in'  => __( 'Logged-in users only', 'fw' ),
+                        'logged_out' => __( 'Logged-out visitors only', 'fw' ),
+                    ],
+                ],
+                'dc_roles' => [
+                    'type'    => 'checkboxes',
+                    'label'   => __( 'Restrict to roles', 'fw' ),
+                    'desc'    => __( 'If any roles are checked, only logged-in users with one of those roles see this element. Leave empty for no role restriction.', 'fw' ),
+                    'value'   => [],
+                    'choices' => function_exists( 'wp_roles' ) ? wp_roles()->get_names() : [],
+                ],
+                'dc_start' => [
+                    'type'            => 'datetime-picker',
+                    'label'           => __( 'Show from', 'fw' ),
+                    'desc'            => __( 'Optional. Hide this element until this date / time (site timezone).', 'fw' ),
+                    'value'           => '',
+                    'dynamic_content' => false,
+                ],
+                'dc_end' => [
+                    'type'            => 'datetime-picker',
+                    'label'           => __( 'Show until', 'fw' ),
+                    'desc'            => __( 'Optional. Hide this element after this date / time (site timezone).', 'fw' ),
+                    'value'           => '',
+                    'dynamic_content' => false,
+                ],
+            ],
+        ],
         'group_custom_attrs' => [
             'type'    => 'group',
             'options' => [
@@ -141,3 +178,111 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
 
     return $attr;
 }, 15, 2 );
+
+/**
+ * Display Conditions — per-element visibility gate (the Theme Builder "show this
+ * element when…" feature). Mirrors Divi's render-then-strip model: the element
+ * renders normally, then its output is discarded if its conditions don't pass.
+ *
+ * Gate is intentionally FAIL-OPEN: any uncertainty (non-builder shortcode, decode
+ * error, exception) returns the original output, so a bug here can never blank a
+ * page. A cheap raw pre-check skips the (heavier) atts decode for the ~99% of
+ * elements that set no condition. Extend the verdict via `fw_sc_display_conditions`.
+ */
+if ( ! function_exists( 'sc_eval_display_conditions' ) ) :
+function sc_eval_display_conditions( $atts ) {
+    $logged = isset( $atts['dc_logged'] ) ? (string) $atts['dc_logged'] : 'all';
+
+    // Normalize checkboxes (list of slugs OR { slug => true }) to a slug list.
+    $roles = ( isset( $atts['dc_roles'] ) && is_array( $atts['dc_roles'] ) ) ? array_filter( $atts['dc_roles'] ) : array();
+    if ( $roles && array_keys( $roles ) !== range( 0, count( $roles ) - 1 ) ) {
+        $roles = array_keys( $roles );
+    }
+    $roles = array_values( array_map( 'strval', $roles ) );
+
+    $logged_in = is_user_logged_in();
+    $show      = true;
+
+    if ( $logged === 'logged_in' && ! $logged_in ) {
+        $show = false;
+    } elseif ( $logged === 'logged_out' && $logged_in ) {
+        $show = false;
+    } elseif ( ! empty( $roles ) ) {
+        if ( ! $logged_in ) {
+            $show = false;
+        } else {
+            $user = wp_get_current_user();
+            if ( ! array_intersect( $roles, (array) $user->roles ) ) {
+                $show = false;
+            }
+        }
+    }
+
+    // Schedule — show only within [dc_start, dc_end]. Each bound is a datetime-picker
+    // string (Y/m/d H:i) interpreted in the SITE timezone; comparison is on absolute
+    // timestamps so it is correct regardless of the server's PHP timezone.
+    if ( $show ) {
+        $tz    = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+        $now   = time();
+        $to_ts = function ( $raw ) use ( $tz ) {
+            $raw = trim( (string) $raw );
+            if ( $raw === '' ) {
+                return null;
+            }
+            $dt = DateTimeImmutable::createFromFormat( 'Y/m/d H:i', $raw, $tz );
+            if ( ! $dt ) {
+                try { $dt = new DateTimeImmutable( $raw, $tz ); } catch ( \Exception $e ) { $dt = false; }
+            }
+            return $dt ? $dt->getTimestamp() : null;
+        };
+        $start = isset( $atts['dc_start'] ) ? $to_ts( $atts['dc_start'] ) : null;
+        $end   = isset( $atts['dc_end'] ) ? $to_ts( $atts['dc_end'] ) : null;
+        if ( $start !== null && $now < $start ) {
+            $show = false;
+        }
+        if ( $end !== null && $now > $end ) {
+            $show = false;
+        }
+    }
+
+    return (bool) apply_filters( 'fw_sc_display_conditions', $show, $atts );
+}
+endif;
+
+if ( ! function_exists( '_fw_sc_display_conditions_gate' ) ) :
+function _fw_sc_display_conditions_gate( $output, $tag, $attr ) {
+    // Only builder-authored elements carry these atts; plain shortcodes pass through.
+    if ( ! is_array( $attr ) || ! isset( $attr['_made_with_builder'] ) ) {
+        return $output;
+    }
+
+    // Cheap pre-check on the raw (still-encoded) atts: bail before decoding when
+    // nothing restricts visibility. dc_logged is a plain scalar; an empty dc_roles
+    // encodes to "[]".
+    $logged_raw = isset( $attr['dc_logged'] ) ? html_entity_decode( (string) $attr['dc_logged'], ENT_QUOTES ) : 'all';
+    $roles_raw  = isset( $attr['dc_roles'] ) ? html_entity_decode( (string) $attr['dc_roles'], ENT_QUOTES ) : '';
+    $start_raw  = isset( $attr['dc_start'] ) ? trim( (string) $attr['dc_start'] ) : '';
+    $end_raw    = isset( $attr['dc_end'] ) ? trim( (string) $attr['dc_end'] ) : '';
+    $has_roles  = ( $roles_raw !== '' && $roles_raw !== '[]' && $roles_raw !== 'null' && $roles_raw !== '{}' );
+    $has_sched  = ( $start_raw !== '' || $end_raw !== '' );
+    if ( ( $logged_raw === 'all' || $logged_raw === '' ) && ! $has_roles && ! $has_sched ) {
+        return $output;
+    }
+
+    // A restriction exists — decode + evaluate. FAIL-OPEN on any error.
+    try {
+        if ( ! function_exists( 'fw_ext_shortcodes_decode_attr' ) ) {
+            return $output;
+        }
+        global $post;
+        $decoded = fw_ext_shortcodes_decode_attr( $attr, (string) $tag, $post ? (int) $post->ID : 0 );
+        if ( is_wp_error( $decoded ) || ! is_array( $decoded ) ) {
+            return $output;
+        }
+        return sc_eval_display_conditions( $decoded ) ? $output : '';
+    } catch ( \Throwable $e ) {
+        return $output;
+    }
+}
+endif;
+add_filter( 'do_shortcode_tag', '_fw_sc_display_conditions_gate', 10, 3 );

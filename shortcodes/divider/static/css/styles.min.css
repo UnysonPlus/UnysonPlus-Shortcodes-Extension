@@ -1,1 +1,77 @@
-.fw-divider{border:none;display:block;padding:0;position:relative;width:100%}.divider-inner{background:#fff;padding:0 15px;position:absolute;top:50%;transform:translateY(-50%);z-index:1}.alignment-center .divider-inner{left:50%;transform:translate(-50%,-50%)}.alignment-left .divider-inner{left:10%}.alignment-right .divider-inner{right:10%}.divider-gradient{background-image:linear-gradient(90deg,transparent,rgba(0,0,0,.75),transparent);height:1px}.divider-ornament{background:#ccc;height:1px;margin:2em 0;overflow:visible;text-align:center}.divider-ornament:after{background:#fff;color:#333;content:"§";display:inline-block;font-size:1.5em;padding:0 10px;position:relative;top:-.7em}.divider-shadow{border:0;box-shadow:inset 0 12px 12px -12px rgba(0,0,0,.5);height:12px}.has-content.divider-std{border-top:1px solid #ccc;height:0;overflow:visible}
+/* --- Base Structure --- */
+.fw-divider {
+    display: block;
+    border: none;
+    padding: 0;
+    position: relative;
+    width: 100%;
+}
+
+.divider-inner {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #fff; /* Match your site background to "cut" the line */
+    padding: 0 15px;
+    z-index: 1;
+}
+
+.alignment-center .divider-inner { left: 50%; transform: translate(-50%, -50%); }
+.alignment-left .divider-inner { left: 10%; }
+.alignment-right .divider-inner { right: 10%; }
+
+/* --- Style 1: Gradient Fade (Ben Knight inspired) --- */
+.divider-gradient {
+    height: 1px;
+    background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.75), transparent);
+}
+
+/* --- Style 2: Ornamental / Glyph (Ibrahim Jabbari inspired) --- */
+.divider-ornament {
+    height: 1px;
+    background: #ccc;
+    text-align: center;
+    overflow: visible;
+    margin: 2em 0;
+}
+
+.divider-ornament:after {
+    content: "§"; /* Or use a FontAwesome glyph code like "\f005" */
+    display: inline-block;
+    position: relative;
+    top: -0.7em;
+    font-size: 1.5em;
+    padding: 0 10px;
+    background: #fff;
+    color: #333;
+}
+
+/* --- Style 3: Inner Shadow / Flare (Lrenhrda inspired) --- */
+.divider-shadow {
+    height: 12px;
+    border: 0;
+    box-shadow: inset 0 12px 12px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* --- Style 0: Standard (Solid) — the default --- */
+/* Uses currentColor so the wrapper's Line Color recolors the rule; the
+   default color below is the fallback when no Line Color is picked. */
+.divider-std {
+    height: 0;
+    border-top: 1px solid currentColor;
+    color: #ccc;
+    overflow: visible;
+}
+
+/* --- Content Handling (Text/Icons) --- */
+.has-content.divider-std {
+    border-top: 1px solid currentColor;
+    height: 0;
+    overflow: visible;
+}
+/* --- Shape / SVG divider (ruler_type = shape) --- */
+.divider-shape { line-height: 0; overflow: hidden; }
+.fw-divider__shape-svg { display: block; width: 100%; }
+.divider-shape.is-flip-x .fw-divider__shape-svg { transform: scaleX(-1); }
+.divider-shape.is-flip-y .fw-divider__shape-svg { transform: scaleY(-1); }
+.divider-shape.is-flip-x.is-flip-y .fw-divider__shape-svg { transform: scale(-1, -1); }

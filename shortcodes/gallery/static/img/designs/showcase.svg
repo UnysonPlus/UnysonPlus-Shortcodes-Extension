@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Showcase with thumbnails layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <g fill="#fff" stroke="#cfd6dd" stroke-width="2">
+    <rect x="20" y="14" width="80" height="46" rx="3"/>
+    <rect x="20" y="66" width="16" height="12" rx="2"/>
+    <rect x="40" y="66" width="16" height="12" rx="2"/>
+    <rect x="60" y="66" width="16" height="12" rx="2"/>
+    <rect x="80" y="66" width="16" height="12" rx="2"/>
+  </g>
+  <rect x="40" y="66" width="16" height="12" rx="2" fill="none" stroke="#9b9b9b" stroke-width="2.5"/>
+</svg>

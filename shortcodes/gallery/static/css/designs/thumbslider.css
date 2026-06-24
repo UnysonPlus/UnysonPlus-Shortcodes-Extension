@@ -1,0 +1,40 @@
+/* Gallery — Design: Thumbnail Slider. Main image slider + a thumbnail nav strip
+   (synced). Main arrow chrome is shared (styles.css). */
+.fw-gallery.design-thumbslider .fw-gallery__tnav { visibility: hidden; }
+.fw-gallery.design-thumbslider .fw-gallery__tnav.is-initialized { visibility: visible; }
+
+/* Main slider. */
+.fw-gallery.design-thumbslider .fw-gallery__tnav-main .fw-gallery__item { margin: 0; height: 100%; }
+.fw-gallery.design-thumbslider .fw-gallery__tnav-main .fw-gallery__media {
+	aspect-ratio: var(--gal-ratio, 4 / 3);
+	height: auto;
+}
+.fw-gallery.design-thumbslider .fw-gallery__tnav--natural .fw-gallery__tnav-main .fw-gallery__media {
+	aspect-ratio: auto;
+	height: 100%;
+}
+
+/* Thumbnail nav strip. */
+.fw-gallery.design-thumbslider .fw-gallery__tnav-nav { margin-top: 10px; }
+.fw-gallery.design-thumbslider .fw-gallery__tnav-nav .splide__slide {
+	opacity: .55;
+	cursor: pointer;
+	border-radius: 4px;
+	overflow: hidden;
+	transition: opacity .2s ease, box-shadow .2s ease;
+}
+.fw-gallery.design-thumbslider .fw-gallery__tnav-nav .splide__slide img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+.fw-gallery.design-thumbslider .fw-gallery__tnav-nav .splide__slide:hover { opacity: .85; }
+.fw-gallery.design-thumbslider .fw-gallery__tnav-nav .splide__slide.is-active {
+	opacity: 1;
+	box-shadow: inset 0 0 0 3px #333;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery.design-thumbslider .fw-gallery__tnav-nav .splide__slide { transition: none; }
+}

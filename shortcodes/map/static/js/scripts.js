@@ -144,11 +144,17 @@
 		}
 		// Leaflet's default marker icon resolves image paths relative to the
 		// CSS; point it at the CDN explicitly so markers aren't broken images.
-		var base = 'https://unpkg.com/leaflet@1.9.4/dist/images/';
+		// Prefer the plugin-served icons (localized via static.php); fall back to the CDN.
+		var base = ( typeof fwMapIconBase !== 'undefined' && fwMapIconBase ) ? fwMapIconBase : 'https://unpkg.com/leaflet@1.9.4/dist/images/';
+		// Use imagePath + BARE filenames — never full URLs in *Url. Leaflet's L.Icon.Default builds
+		// the final src as (imagePath || auto-detected path) + iconUrl, so a full URL in iconUrl gets
+		// a detected path prepended → a broken "<path><fullURL>" src (which also broke the old CDN
+		// markers). Setting imagePath is the only reliable way.
 		L.Icon.Default.mergeOptions({
-			iconRetinaUrl: base + 'marker-icon-2x.png',
-			iconUrl: base + 'marker-icon.png',
-			shadowUrl: base + 'marker-shadow.png'
+			imagePath:     base,
+			iconRetinaUrl: 'marker-icon-2x.png',
+			iconUrl:       'marker-icon.png',
+			shadowUrl:     'marker-shadow.png'
 		});
 		leafletIconsConfigured = true;
 	};

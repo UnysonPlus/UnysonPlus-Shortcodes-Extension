@@ -1,0 +1,50 @@
+/* =============================================================================
+ * Scroll to Top & Reading Progress.
+ * ========================================================================== */
+.fw-stt {
+	--stt-accent: #4a90d9;
+	--stt-icon: #ffffff;
+	--stt-size: 48px;
+}
+.fw-stt--size-sm { --stt-size: 40px; }
+.fw-stt--size-md { --stt-size: 48px; }
+.fw-stt--size-lg { --stt-size: 58px; }
+
+/* ---------- Back-to-top button ---------- */
+.fw-stt__btn {
+	position: fixed; z-index: 9990; bottom: 24px;
+	width: var(--stt-size); height: var(--stt-size);
+	display: inline-flex; align-items: center; justify-content: center;
+	border: 0; cursor: pointer; padding: 0;
+	background: var(--stt-accent); color: var(--stt-icon);
+	box-shadow: 0 6px 20px rgba(0, 0, 0, .22);
+	opacity: 0; visibility: hidden; transform: translateY(12px);
+	transition: opacity .25s ease, transform .25s ease, visibility .25s;
+}
+.fw-stt--pos-bottom-right .fw-stt__btn { right: 24px; }
+.fw-stt--pos-bottom-left  .fw-stt__btn { left: 24px; }
+.fw-stt--shape-circle  .fw-stt__btn { border-radius: 50%; }
+.fw-stt--shape-rounded .fw-stt__btn { border-radius: .7rem; }
+.fw-stt--shape-square  .fw-stt__btn { border-radius: 0; }
+.fw-stt.is-visible .fw-stt__btn { opacity: 1; visibility: visible; transform: translateY(0); }
+.fw-stt__btn:hover { filter: brightness(1.08); transform: translateY(-2px); }
+.fw-stt__btn svg { width: 45%; height: 45%; }
+.fw-stt__btn i { font-size: calc(var(--stt-size) * .42); }
+.fw-stt__btn img { width: 45%; height: 45%; object-fit: contain; }
+
+/* ---------- Reading progress bar ---------- */
+.fw-stt__progress {
+	position: fixed; left: 0; right: 0; z-index: 9991;
+	height: var(--stt-prog-h, 4px);
+	background: transparent; pointer-events: none;
+}
+.fw-stt--prog-top    .fw-stt__progress { top: 0; }
+.fw-stt--prog-bottom .fw-stt__progress { bottom: 0; }
+.fw-stt__progress-fill { display: block; height: 100%; width: 0; background: var(--stt-accent); transition: width .05s linear; }
+
+.fw-stt__empty { padding: 1rem 1.25rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-stt__btn { transition: opacity .2s ease, visibility .2s; }
+	.fw-stt__btn:hover { transform: none; }
+}

@@ -1,125 +1,170 @@
 <?php if ( ! defined( 'FW' ) ) {
-    die( 'Forbidden' );
+	die( 'Forbidden' );
 }
 
-$calendar_shortcode = fw_ext('shortcodes')->get_shortcode('calendar');
+$options = array(
 
-$options = [
-    'tab_content' => [
-        'title'   => __('Content', 'fw'),
-        'type'    => 'tab',
-        'options' => [
-            'group_content' => [
-                'type'    => 'group',
-                'options' => [
-                    'data_provider' => [
-                        'type'  => 'multi-picker',
-                        'label' => false,
-                        'desc'  => false,
-                        'picker' => [
-                            'population_method' => [
-                                'label'   => __('Population Method', 'fw'),
-                                'desc'    => __('Select calendar population method (Ex: events, custom)', 'fw'),
-                                'help'    => __('"Custom" lets you add entries by hand; "Events" auto-fills the calendar from your events data. Switching this changes the fields shown below.', 'fw'),
-                                'type'    => 'short-select',
-                                'value'   => 'custom',
-                                'choices' => $calendar_shortcode->_get_picker_dropdown_choices(),
-                            ]
-                        ],
-                        'choices'      => $calendar_shortcode->_get_picker_choices(),
-                        'show_borders' => false,
-                        'hide_picker'  => true,
-                    ],
-                    'template' => [
-                        'label'   => __('Calendar Type', 'fw'),
-                        'desc'    => __('Select calendar type', 'fw'),
-                        'help'    => __('Sets the initial view: "Daily" for a single-day agenda, "Weekly" for a 7-day grid, "Monthly" for a full month overview.', 'fw'),
-                        'type'    => 'short-select',
-                        'value'   => 'day',
-                        'choices' => [
-                            'day'   => __('Daily', 'fw'),
-                            'week'  => __('Weekly', 'fw'),
-                            'month' => __('Monthly', 'fw'),
-                        ],
-                    ],
-                    'first_week_day' => [
-                        'label'   => __('Start Week On', 'fw'),
-                        'desc'    => __('Select first day of week', 'fw'),
-                        'help'    => __('Sets which day appears in the leftmost column of the Weekly and Monthly views. Match your region\'s convention (Monday in much of Europe, Sunday in the US).', 'fw'),
-                        'type'    => 'short-select',
-                        'choices' => [
-                            '1' => __('Monday', 'fw'),
-                            '2' => __('Sunday', 'fw'),
-                        ],
-                        'value'   => 1,
-                    ],
-                ],
-            ],
-        ],
-    ],
+	/* ========================== CONTENT ========================== */
+	'tab_content' => array(
+		'title'   => __( 'Content', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'group' => array(
+				'type'    => 'group',
+				'options' => array(
+					'events' => array(
+						'type'          => 'addable-popup',
+						'label'         => __( 'Events', 'fw' ),
+						'popup-title'   => __( 'Add / Edit Event', 'fw' ),
+						'desc'          => __( 'Each entry is one event placed on its date in the month grid.', 'fw' ),
+						'template'      => '{{= title || "Event" }}{{= date ? " — " + date : "" }}',
+						'popup-options' => array(
+							'title' => array(
+								'type'  => 'text',
+								'label' => __( 'Title', 'fw' ),
+								'value' => __( 'New event', 'fw' ),
+							),
+							'date' => array(
+								'type'  => 'date-picker',
+								'label' => __( 'Date', 'fw' ),
+								'desc'  => __( 'The day the event appears on.', 'fw' ),
+							),
+							'end_date' => array(
+								'type'  => 'date-picker',
+								'label' => __( 'End Date', 'fw' ),
+								'desc'  => __( 'Optional — for a multi-day event, the last day (inclusive).', 'fw' ),
+							),
+							'time' => array(
+								'type'  => 'text',
+								'label' => __( 'Time', 'fw' ),
+								'desc'  => __( 'Optional display time, e.g. "8:00 AM" or "14:30". Ignored if All Day is on.', 'fw' ),
+							),
+							'all_day' => array(
+								'type'  => 'switch',
+								'label' => __( 'All Day', 'fw' ),
+								'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+								'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+								'value' => 'no',
+							),
+							'url' => array(
+								'type'  => 'text',
+								'label' => __( 'Link URL', 'fw' ),
+								'desc'  => __( 'Optional — makes the event clickable.', 'fw' ),
+							),
+							'color' => array(
+								'type'    => 'select',
+								'label'   => __( 'Color', 'fw' ),
+								'value'   => 'blue',
+								'choices' => array(
+									'blue'   => __( 'Blue', 'fw' ),
+									'green'  => __( 'Green', 'fw' ),
+									'amber'  => __( 'Amber', 'fw' ),
+									'red'    => __( 'Red', 'fw' ),
+									'purple' => __( 'Purple', 'fw' ),
+									'teal'   => __( 'Teal', 'fw' ),
+								),
+							),
+						),
+					),
+				),
+			),
+		),
+	),
 
-    'tab_styling' => [
-        'title'   => __( 'Styling', 'fw' ),
-        'type'    => 'tab',
-        'options' => [
-            'group_colors' => [
-                'type'    => 'group',
-                'options' => [
-                    'text_color'       => sc_color_field_compact( array( 'label' => __( 'Text Color', 'fw' ),       'kind' => 'text' ) ),
-                    'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
-                    'font_size_preset' => sc_font_size_field( array(
-                        'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),
-                    ) ),
-                    'heading_color' => sc_color_field_compact( array(
-                        'label' => __( 'Heading Color', 'fw' ),
-                        'desc'  => __( 'Overrides the general Text Color for the calendar heading only.', 'fw' ),
-                    ) ),
-                    'buttons_color' => sc_color_field_compact( array(
-                        'label' => __( 'Navigation Buttons Color', 'fw' ),
-                        'desc'  => __( 'Overrides the general Text Color for the prev / today / next navigation buttons only.', 'fw' ),
-                    ) ),
-                ],
-            ],
-            'group_spacings' => [
-                'type'    => 'group',
-                'options' => [
-                    'spacing' => array(
-                        'type'  => 'spacing',
-                        'label' => __( 'Margin & Padding', 'fw' ),
-                        'desc'  => __( 'All Sides applies to every side at once; any per-side value (Top, Right, Bottom, Left) overrides it for that direction.', 'fw' ),
-                        'help'  => sc_styling_help_text( 'spacing' ),
-                    ),
-                ],
-            ],
-        ],
-    ],
-    'tab_animation' => [
-        'title'   => __( 'Animations', 'fw' ),
-        'type'    => 'tab',
-        'options' => sc_get_animation_fields(),
-    ],
-    'tab_advanced' => [
-        'title'   => __('Advanced', 'fw'),
-        'type'    => 'tab',
-        'options' => [
-            'advanced_settings' => [
-                'type'    => 'group',
-                'options' => array_merge(
-                    sc_get_advanced_tab(),
-                    [
-                        /* 'title_extra' => [
-                            'type'  => 'text',
-                            'label' => __('Some Title', 'fw'),
-                            'desc'  => __('Write some heading title content', 'fw'),
-                        ],
-                        'title_extra_2' => [
-                            'type'  => 'text',
-                            'label' => __('Some Title2', 'fw'),
-                            'desc'  => __('Write some heading title content', 'fw'),
-                        ],*/
-                    ]
-                ),
-            ],
-        ],
-    ],
-];
+	/* ========================== DESIGN ========================== */
+	'tab_design' => array(
+		'title'   => __( 'Design', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'group_design' => array(
+				'type'    => 'group',
+				'options' => array(
+					'design' => call_user_func( function () {
+						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
+						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/calendar/static/img/design' );
+						$choices  = array();
+						foreach ( (array) $registry as $key => $meta ) {
+							$choices[ $key ] = array( 'small' => array(
+								'src'    => $base . '/' . ( isset( $meta['thumb'] ) ? $meta['thumb'] : $key . '.svg' ),
+								'height' => 56,
+								'title'  => isset( $meta['label'] ) ? $meta['label'] : $key,
+							) );
+						}
+						return array(
+							'type'    => 'image-picker',
+							'label'   => __( 'Design', 'fw' ),
+							'value'   => 'classic',
+							'choices' => $choices,
+						);
+					} ),
+				),
+			),
+			'group_opts' => array(
+				'type'    => 'group',
+				'options' => array(
+					'start_week' => array(
+						'type'    => 'select',
+						'label'   => __( 'Start Week On', 'fw' ),
+						'value'   => 'mon',
+						'choices' => array( 'mon' => __( 'Monday', 'fw' ), 'sun' => __( 'Sunday', 'fw' ) ),
+					),
+					'show_list' => array(
+						'type'  => 'switch',
+						'label' => __( 'Upcoming Events List', 'fw' ),
+						'desc'  => __( 'Show a list of upcoming events beneath the month grid.', 'fw' ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+						'value' => 'yes',
+					),
+					'list_limit' => array(
+						'type'  => 'text',
+						'label' => __( 'List Length', 'fw' ),
+						'desc'  => __( 'Max events to show in the upcoming list.', 'fw' ),
+						'value' => '5',
+					),
+				),
+			),
+		),
+	),
+
+	/* ========================== STYLING ========================== */
+	'tab_styling' => array(
+		'title'   => __( 'Styling', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'group_colors' => array(
+				'type'    => 'group',
+				'options' => array(
+					'accent_color' => sc_color_field_compact( array( 'label' => __( 'Accent (today / nav)', 'fw' ), 'kind' => 'bg' ) ),
+					'text_color'   => sc_color_field_compact( array( 'label' => __( 'Text Color', 'fw' ) ) ),
+					'font_size_preset' => sc_font_size_field(),
+				),
+			),
+			'group_spacings' => array(
+				'type'    => 'group',
+				'options' => array(
+					'spacing' => array(
+						'type'  => 'spacing',
+						'label' => __( 'Margin & Padding', 'fw' ),
+						'help'  => sc_styling_help_text( 'spacing' ),
+					),
+				),
+			),
+		),
+	),
+	'tab_animation' => array(
+		'title'   => __( 'Animations', 'fw' ),
+		'type'    => 'tab',
+		'options' => sc_get_animation_fields(),
+	),
+	'tab_advanced' => array(
+		'title'   => __( 'Advanced', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'advanced_settings' => array(
+				'type'    => 'group',
+				'options' => sc_get_advanced_tab(),
+			),
+		),
+	),
+);

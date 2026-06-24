@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'Accordion', 'fw' ),
 	'description' => __( 'Add an Accordion', 'fw' ),
-	'tab'         => __( 'Content Elements', 'fw' ),
+	'tab'         => __( 'Interactive Elements', 'fw' ),
 	'popup_size'    => 'large', // can be large, medium or small
 	'title_template' => '
 		{{ if ( o["tabs"] && o["tabs"].length > 0 ) { }}

@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
     'title'       => __( 'Posts', 'fw' ),
     'description' => __( 'Display posts in a grid, list, masonry, slider, overlay, or hero layout with full element-positioning control.', 'fw' ),
-    'tab'         => __( 'Content Elements', 'fw' ),
+    'tab'         => __( 'Components', 'fw' ),
     'popup_size'  => 'large',
 
     'title_template' => '

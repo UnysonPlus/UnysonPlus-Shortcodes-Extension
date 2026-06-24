@@ -1,0 +1,135 @@
+/**
+ * Flexbox builder-item (editor canvas only).
+ *
+ * The flexbox reuses the section item's panel/header CSS for its title bar; this
+ * file adds what the section CSS does NOT: a visible, targetable child DROP ZONE
+ * so an EMPTY flexbox can actually receive elements / a nested flexbox. Without a
+ * min-height the empty `.builder-items` collapses to ~0px and a dragged item lands
+ * beside the flexbox (as a sibling) instead of inside it — the "nesting doesn't
+ * work" symptom.
+ */
+.builder-item > .custom-flexbox > .builder-items {
+	min-height: 74px;
+	margin: 10px;
+	padding: 10px;
+	border: 1px dashed #c3ccd7;
+	border-radius: 0.5rem;
+	background: rgba(120, 144, 176, 0.05);
+}
+/* A flexbox that CONTAINS children: drop the surrounding drop-zone border and keep
+   only the TOP divider, so it no longer intersects the children's own card borders
+   (the messy double-border). Empty/leaf flexboxes (no children) keep the full
+   border via the rule above. */
+.builder-item > .custom-flexbox > .builder-items:has(> .builder-item) {
+	border-left: 0;
+	border-right: 0;
+	border-bottom: 0;
+}
+/* Bigger, clearer drop target on hover (when an item is being dragged over it). */
+.builder-item > .custom-flexbox > .builder-items.ui-sortable:hover {
+	border-color: #2271b1;
+	background: rgba(34, 113, 177, 0.06);
+}
+
+/* Empty-state hint. The ItemsView keeps the `.builder-items` class; when it holds
+   no `.builder-item` children we show a prompt so the drop target is obvious. */
+.builder-item > .custom-flexbox > .builder-items:not(:has(> .builder-item)) {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.builder-item > .custom-flexbox > .builder-items:not(:has(> .builder-item))::before {
+	content: "Drop elements or a Flexbox here";
+	color: #9aa7b5;
+	font-style: italic;
+	font-size: 11px;
+}
+
+/* Canvas preview: when Direction = Row, lay the children out side-by-side in the
+   editor too (mirrors the frontend d-flex flex-row) so the layout reads correctly
+   while building. Tagged by the item view via a `fx-dir-row` class on the wrapper. */
+.builder-item.fx-dir-row > .custom-flexbox > .builder-items:has(> .builder-item) {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	/* Explicit stretch (like the column canvas) so each child gets the row's height
+	   — required for the child card's height:100% (below) to resolve and the drop
+	   zone to fill, which keeps the empty-state text vertically centered. */
+	align-items: stretch;
+	/* Uniform spacing. Zero the flex gaps AND fw-row's negative gutter margin (which
+	   was pulling the edge cards flush to the parent), then use a small even padding
+	   here + on each child (below). Result: the gap BETWEEN cards and the gap from
+	   the parent EDGES are identical (~10px), horizontally AND vertically. The N%
+	   widths still fit exactly (no flex gap; padding is inside the border-box). */
+	column-gap: 0;
+	row-gap: 0;
+	margin: 0;
+	padding: 5px;
+}
+.builder-item.fx-dir-row > .custom-flexbox > .builder-items:has(> .builder-item) > .builder-item {
+	/* DEFAULT (no width set) = full-width → wraps onto its own line, i.e. STACKS.
+	   A child only goes side-by-side once you give it a Width: the item view then
+	   sets an inline `flex: 0 0 N%` which overrides this. So content/elements stack
+	   by default and you opt INTO columns by setting widths. */
+	flex: 0 0 100%;
+	min-width: 0; /* respect the inline flex-basis (N%) exactly; don't floor it */
+	/* Small even padding on ALL sides → ~10px between cards (h + v) and from edges. */
+	padding: 5px;
+}
+/* A side-by-side child stretches to the row's equal height (align-items:stretch),
+   but its drop zone keeps min-height:74px at the top — so the centered "Drop … here"
+   text sits in that top band with empty stretched space below it. Make the WHOLE
+   chain a flex-grow column (child item → card → drop zone) so the drop zone fills
+   the stretched height and the centered text re-centers. Pure flex-grow (1 1 auto)
+   instead of height:100% — it resolves reliably without a definite parent height. */
+.builder-item.fx-dir-row > .custom-flexbox > .builder-items:has(> .builder-item) > .builder-item {
+	display: flex;
+	flex-direction: column;
+}
+.builder-item.fx-dir-row > .custom-flexbox > .builder-items:has(> .builder-item) > .builder-item > .custom-flexbox {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+}
+.builder-item.fx-dir-row > .custom-flexbox > .builder-items:has(> .builder-item) > .builder-item > .custom-flexbox > .builder-items {
+	flex: 1 1 auto;
+}
+
+/* Direction = Column: stack children in the canvas (mirrors flex-column). */
+.builder-item.fx-dir-col > .custom-flexbox > .builder-items:has(> .builder-item) {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+/* Cross-axis Align needs a little height to be visible while building. */
+.builder-item.fx-has-align > .custom-flexbox > .builder-items { min-height: 90px; }
+
+/* When a main-axis Justify is set on a row, size children to content so the
+   distribution actually shows (otherwise flex:1 1 0 makes them fill the track). */
+.builder-item.fx-justify.fx-dir-row > .custom-flexbox > .builder-items:has(> .builder-item) > .builder-item {
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
+/* Width stepper in the flexbox panel ( < 6/12 > ), mirroring the column changer. */
+.fx-width-slot { margin-top: 2px; }
+.fx-width-changer {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	font-size: 11px;
+	line-height: 1;
+	color: #50575e;
+	user-select: none;
+}
+.fx-width-changer .dashicons {
+	cursor: pointer;
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	opacity: 0.55;
+	transition: opacity 0.15s;
+}
+.fx-width-changer .dashicons:hover { opacity: 1; }
+.fx-width-changer .current-width { min-width: 36px; text-align: center; font-weight: 600; }

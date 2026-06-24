@@ -1,0 +1,31 @@
+/* Gallery — Design: Stack / Banners. Full-width stacked strips cropped to a wide
+   ratio, with a subtle hover zoom. */
+.fw-gallery.design-stack .fw-gallery__stack {
+	display: flex;
+	flex-direction: column;
+	gap: var(--gal-gap, 1rem);
+}
+.fw-gallery.design-stack .fw-gallery__item {
+	width: 100%;
+	margin: 0;
+	border-radius: .5rem;
+	overflow: hidden;
+}
+.fw-gallery.design-stack .fw-gallery__media {
+	aspect-ratio: var(--gal-ratio, 21 / 9);
+	height: auto;
+}
+.fw-gallery.design-stack .fw-gallery__stack--natural .fw-gallery__media {
+	aspect-ratio: auto;
+	height: auto;
+}
+.fw-gallery.design-stack .fw-gallery__stack--natural .fw-gallery__media img { height: auto; }
+
+/* Centre the hover-overlay caption for a cinematic banner feel. */
+.fw-gallery.design-stack .fw-gallery__overlay {
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(0deg, rgba(0, 0, 0, .45), rgba(0, 0, 0, .15));
+	text-align: center;
+}
+.fw-gallery.design-stack .fw-gallery__overlay-text { font-size: 1.15rem; font-weight: 500; }

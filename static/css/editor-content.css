@@ -1,0 +1,54 @@
+/* ===========================================================================
+   editor-content.css — styles for content authored via the WYSIWYG editor's
+   custom toolbar features. This is NOT editor-only chrome: it is enqueued on the
+   FRONT END (so the authored content renders) AND into the TinyMCE iframe (for a
+   live preview), via class-fw-shortcodes-editor.php. Add future toolbar/format
+   styles here (today: the "List style" button's fw-list-* classes).
+
+   Colors come from the Color Presets (--color-green / --color-red, the latter the
+   Danger preset); the hardcoded fallbacks keep the editor iframe + preset-less
+   themes sane. Override freely in a child theme.
+   =========================================================================== */
+
+/* ===== Lists (fw-list-*) ===== */
+[class*="fw-list-"] { list-style: none; margin: 1.1em 0; padding: 0; }
+[class*="fw-list-"] li { position: relative; padding-left: 2em; margin: 0 0 .65em; }
+[class*="fw-list-"] li:last-child { margin-bottom: 0; }
+/* Item internals: drop the UA top margins (incl. a <p>'s default 1em) so a title
+   sits tight above its description; a hair of space under headings, no trailing gap. */
+[class*="fw-list-"] li > * { margin-top: 0; }
+[class*="fw-list-"] li :is(h1, h2, h3, h4, h5, h6) { margin-bottom: .2em; }
+[class*="fw-list-"] li > :last-child { margin-bottom: 0; }
+
+/* Marker (::before): a centered glyph; a circle for the solid / outline / steps
+   variants. Tune vertical centering with top / line-height / padding here. */
+.fw-list-pros li::before, .fw-list-pros-solid li::before, .fw-list-pros-outline li::before,
+.fw-list-cons li::before, .fw-list-cons-solid li::before, .fw-list-cons-outline li::before,
+.fw-list-steps li::before, .fw-list-arrow li::before {
+	position: absolute; left: 0; top: .15em;
+	display: inline-flex; align-items: center; justify-content: center;
+	box-sizing: border-box; width: 1.35em; height: 1.35em;
+	font-size: .9em; font-weight: 700; line-height: 1;
+}
+/* heading-led items: a heading's first line is shorter than body text → raise it */
+[class*="fw-list-"] li:has(> :is(h1, h2, h3, h4, h5, h6):first-child)::before { top: .04em; }
+
+/* Plain — clean spacing, no marker */
+.fw-list-plain, .fw-list-plain li { padding-left: 0; }
+
+/* Pros (check) — green */
+.fw-list-pros li::before         { content: "\2713"; color: var(--color-green, #00b295); }
+.fw-list-pros-solid li::before   { content: "\2713"; color: #fff; background: var(--color-green, #00b295); border-radius: 50%; }
+.fw-list-pros-outline li::before { content: "\2713"; color: var(--color-green, #00b295); border: 2px solid var(--color-green, #00b295); border-radius: 50%; }
+
+/* Cons (cross) — red (Danger preset) */
+.fw-list-cons li::before         { content: "\2715"; color: var(--color-red, #e0746a); }
+.fw-list-cons-solid li::before   { content: "\2715"; color: #fff; background: var(--color-red, #e0746a); border-radius: 50%; }
+.fw-list-cons-outline li::before { content: "\2715"; color: var(--color-red, #e0746a); border: 2px solid var(--color-red, #e0746a); border-radius: 50%; }
+
+/* Steps — numbered */
+.fw-list-steps { counter-reset: fw-step; }
+.fw-list-steps li::before { content: counter(fw-step); counter-increment: fw-step; color: #fff; background: var(--color-green, #00b295); border-radius: 50%; font-size: .8em; }
+
+/* Arrow */
+.fw-list-arrow li::before { content: "\2192"; color: var(--color-green, #00b295); }

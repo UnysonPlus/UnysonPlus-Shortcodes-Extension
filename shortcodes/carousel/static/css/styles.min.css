@@ -1,0 +1,125 @@
+/* Unyson+ Carousel (Splide). splide-core.min.css supplies the structural layout; this
+   file adds the slide content layout, the background/overlay treatment, and a neutral
+   arrow / dot skin (override per-instance via the Advanced CSS class). */
+
+.fw-carousel { position: relative; }
+.fw-carousel .splide { visibility: visible; }
+
+/* Slide — a flex box so content can center; relative so the bg image / overlay can fill it. */
+.fw-carousel__slide {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	overflow: hidden;
+}
+.fw-carousel__slide--bg {
+	min-height: var(--fwc-h, 360px);
+}
+
+/* Full-bleed background image + dark legibility overlay. */
+.fw-carousel__bg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	z-index: 0;
+}
+.fw-carousel__overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+}
+
+/* Inline image (image-above-text mode). */
+.fw-carousel__media { line-height: 0; }
+.fw-carousel__img { display: block; max-width: 100%; height: auto; }
+
+/* Slide content. */
+.fw-carousel__content {
+	position: relative;
+	z-index: 2;
+	max-width: 720px;
+	padding: 2rem 1.5rem;
+}
+.fw-carousel__slide--bg .fw-carousel__content { padding: 3rem 1.75rem; }
+.fw-carousel__content--left   { margin-right: auto; text-align: left; }
+.fw-carousel__content--center { margin-left: auto; margin-right: auto; text-align: center; }
+.fw-carousel__content--right  { margin-left: auto; text-align: right; }
+
+.fw-carousel__heading { margin: 0 0 .4em; font-size: clamp(1.5rem, 3vw, 2.6rem); line-height: 1.15; }
+.fw-carousel__text { margin: 0 0 1.1em; font-size: 1.05rem; line-height: 1.6; }
+.fw-carousel__slide--bg .fw-carousel__heading,
+.fw-carousel__slide--bg .fw-carousel__text { color: #fff; }
+
+.fw-carousel__btn { display: inline-block; }
+
+/* Whole-slide link (used when a slide has a link but no button). */
+.fw-carousel__link { position: absolute; inset: 0; z-index: 3; }
+
+/* --- Arrows ---
+   We ship only splide-core.min.css (structural), which does NOT position or skin
+   the arrows — so we provide the full positioning + skin here. */
+.fw-carousel .splide__arrow {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.7em;
+	height: 2.7em;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	background: rgba(0, 0, 0, .45);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, .25);
+	opacity: 1;
+	transition: background .15s ease, transform .15s ease;
+}
+.fw-carousel .splide__arrow--prev { left: 1em; }
+.fw-carousel .splide__arrow--next { right: 1em; }
+.fw-carousel .splide__arrow svg { fill: #fff; width: 1.1em; height: 1.1em; transition: none; }
+/* Splide injects ONE right-pointing icon into both arrows; the default theme flips
+   the prev arrow. We ship only the core, so flip it here (else both point right). */
+.fw-carousel .splide__arrow--prev svg { transform: scaleX(-1); }
+.fw-carousel .splide__arrow:hover:not(:disabled) { background: rgba(0, 0, 0, .72); transform: translateY(-50%) scale(1.06); }
+.fw-carousel .splide__arrow:disabled { opacity: .35; cursor: default; }
+
+/* --- Pagination dots ---
+   Core hides pagination (`display:none`) and supplies no skin — restore + position
+   it, and use light dots with a thin ring so they read on dark heroes AND light. */
+.fw-carousel .splide__pagination {
+	display: flex !important;
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: .8em;
+	z-index: 10;
+	padding: 0;
+	margin: 0;
+	justify-content: center;
+	align-items: center;
+}
+.fw-carousel .splide__pagination__page {
+	display: block;
+	width: 9px;
+	height: 9px;
+	margin: 4px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	background: rgba(255, 255, 255, .65);
+	box-shadow: 0 0 0 1px rgba(0, 0, 0, .22), 0 1px 2px rgba(0, 0, 0, .25);
+	opacity: 1;
+	transition: transform .15s ease, background .15s ease;
+}
+.fw-carousel .splide__pagination__page.is-active {
+	background: #fff;
+	transform: scale(1.45);
+}

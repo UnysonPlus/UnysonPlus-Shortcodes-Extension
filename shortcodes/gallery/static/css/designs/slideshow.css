@@ -1,0 +1,32 @@
+/* Gallery — Design: Slideshow / Fade. One full-width image, crossfading, with
+   optional Ken-Burns zoom. Arrow/pagination chrome is shared (styles.css). */
+.fw-gallery.design-slideshow .fw-gallery__slideshow { visibility: hidden; }
+.fw-gallery.design-slideshow .fw-gallery__slideshow.is-initialized { visibility: visible; }
+
+.fw-gallery.design-slideshow .fw-gallery__item { margin: 0; height: 100%; }
+.fw-gallery.design-slideshow .fw-gallery__media {
+	aspect-ratio: var(--gal-ratio, 16 / 9);
+	height: auto;
+}
+.fw-gallery.design-slideshow .fw-gallery__slideshow--natural .fw-gallery__media {
+	aspect-ratio: auto;
+	height: 100%;
+}
+
+/* Ken-Burns: slowly zoom the active slide's image. */
+.fw-gallery.design-slideshow .fw-gallery__slideshow--kb .fw-gallery__media { overflow: hidden; }
+.fw-gallery.design-slideshow .fw-gallery__slideshow--kb .splide__slide .fw-gallery__img {
+	transform: scale(1);
+	transform-origin: center;
+}
+.fw-gallery.design-slideshow .fw-gallery__slideshow--kb .splide__slide.is-active .fw-gallery__img {
+	animation: fw-gal-kenburns 8s ease-out forwards;
+}
+@keyframes fw-gal-kenburns {
+	from { transform: scale(1); }
+	to   { transform: scale(1.12); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery.design-slideshow .fw-gallery__slideshow--kb .splide__slide.is-active .fw-gallery__img { animation: none; }
+}

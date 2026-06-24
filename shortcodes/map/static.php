@@ -23,3 +23,12 @@ wp_enqueue_script(
 	fw()->manifest->get_version(),
 	true
 );
+
+// Serve Leaflet's default marker icons from the plugin instead of a third-party CDN, so OSM markers
+// never render as broken images when the CDN is blocked/unreachable (or a page CSP disallows it).
+// scripts.js reads this base; it falls back to the unpkg CDN if the variable is somehow absent.
+wp_localize_script(
+	'fw-shortcode-map-script',
+	'fwMapIconBase',
+	$shortcodes_extension->get_uri('/shortcodes/map/static/img/')
+);

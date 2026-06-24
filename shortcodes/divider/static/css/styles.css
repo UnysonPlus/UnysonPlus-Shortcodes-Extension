@@ -53,9 +53,25 @@
     box-shadow: inset 0 12px 12px -12px rgba(0, 0, 0, 0.5);
 }
 
+/* --- Style 0: Standard (Solid) — the default --- */
+/* Uses currentColor so the wrapper's Line Color recolors the rule; the
+   default color below is the fallback when no Line Color is picked. */
+.divider-std {
+    height: 0;
+    border-top: 1px solid currentColor;
+    color: #ccc;
+    overflow: visible;
+}
+
 /* --- Content Handling (Text/Icons) --- */
 .has-content.divider-std {
-    border-top: 1px solid #ccc;
+    border-top: 1px solid currentColor;
     height: 0;
     overflow: visible;
 }
+/* --- Shape / SVG divider (ruler_type = shape) --- */
+.divider-shape { line-height: 0; overflow: hidden; }
+.fw-divider__shape-svg { display: block; width: 100%; }
+.divider-shape.is-flip-x .fw-divider__shape-svg { transform: scaleX(-1); }
+.divider-shape.is-flip-y .fw-divider__shape-svg { transform: scaleY(-1); }
+.divider-shape.is-flip-x.is-flip-y .fw-divider__shape-svg { transform: scale(-1, -1); }

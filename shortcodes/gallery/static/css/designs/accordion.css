@@ -1,0 +1,39 @@
+/* Gallery — Design: Image Accordion. Side-by-side panels; hovering one expands
+   it while the rest shrink. Collapses to stacked rows on small screens. */
+.fw-gallery.design-accordion .fw-gallery__accordion {
+	display: flex;
+	gap: var(--gal-gap, 1rem);
+	height: var(--acc-h, 340px);
+}
+.fw-gallery.design-accordion .fw-gallery__item {
+	flex: 1 1 0;
+	min-width: 0;
+	height: 100%;
+	margin: 0;
+	border-radius: .5rem;
+	overflow: hidden;
+	transition: flex-grow .45s cubic-bezier(.2, .7, .2, 1);
+}
+.fw-gallery.design-accordion .fw-gallery__accordion:hover .fw-gallery__item { flex-grow: .6; }
+.fw-gallery.design-accordion .fw-gallery__accordion .fw-gallery__item:hover,
+.fw-gallery.design-accordion .fw-gallery__accordion .fw-gallery__item:focus-within { flex-grow: 4; }
+
+/* Show the hover-overlay caption only on the expanded panel. */
+.fw-gallery.design-accordion .fw-gallery__media { height: 100%; }
+
+@media (max-width: 768px) {
+	/* No room to expand — fall back to a simple stacked column. */
+	.fw-gallery.design-accordion .fw-gallery__accordion {
+		flex-direction: column;
+		height: auto;
+	}
+	.fw-gallery.design-accordion .fw-gallery__item {
+		flex: 0 0 auto;
+		height: calc(var(--acc-h, 340px) * .6);
+	}
+	.fw-gallery.design-accordion .fw-gallery__accordion:hover .fw-gallery__item,
+	.fw-gallery.design-accordion .fw-gallery__accordion .fw-gallery__item:hover { flex-grow: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery.design-accordion .fw-gallery__item { transition: none; }
+}

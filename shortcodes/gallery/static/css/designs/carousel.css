@@ -1,0 +1,14 @@
+/* Gallery — Design: Carousel Slider (Splide). Slide media fills a fixed-ratio
+   cell; the arrow + pagination chrome is shared (see styles.css). */
+.fw-gallery.design-carousel .fw-gallery__carousel { visibility: hidden; }
+.fw-gallery.design-carousel .fw-gallery__carousel.is-initialized { visibility: visible; }
+
+.fw-gallery.design-carousel .fw-gallery__item { margin: 0; height: 100%; }
+.fw-gallery.design-carousel .fw-gallery__media {
+	aspect-ratio: var(--gal-ratio, 4 / 3);
+	height: auto;
+}
+.fw-gallery.design-carousel .fw-gallery__carousel--natural .fw-gallery__media {
+	aspect-ratio: auto;
+	height: 100%;
+}

@@ -1,0 +1,60 @@
+/* =============================================================================
+ * Post Carousel — Splide slider of post cards (standard / overlay / minimal).
+ * ========================================================================== */
+.fw-pc {
+	--pc-accent: #4a90d9;
+	--pc-card-bg: #ffffff;
+	--pc-title: inherit;
+	--pc-text: #5a6772;
+}
+.fw-pc__carousel { visibility: hidden; }
+.fw-pc__carousel.is-initialized { visibility: visible; }
+
+.fw-pc__card { height: 100%; display: flex; flex-direction: column; background: var(--pc-card-bg); border-radius: .7rem; overflow: hidden; }
+.fw-pc--design-standard .fw-pc__card { box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
+
+.fw-pc__media { position: relative; display: block; overflow: hidden; line-height: 0; }
+.fw-pc__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+.fw-pc__card:hover .fw-pc__img { transform: scale(1.05); }
+.fw-pc--ratio-16-9 .fw-pc__media { aspect-ratio: 16 / 9; }
+.fw-pc--ratio-4-3  .fw-pc__media { aspect-ratio: 4 / 3; }
+.fw-pc--ratio-1-1  .fw-pc__media { aspect-ratio: 1 / 1; }
+.fw-pc--ratio-3-4  .fw-pc__media { aspect-ratio: 3 / 4; }
+
+.fw-pc__body { padding: 1.1rem 1.2rem 1.3rem; display: flex; flex-direction: column; gap: .4rem; flex: 1 1 auto; }
+.fw-pc__cat a { color: var(--pc-accent); font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; text-decoration: none; }
+.fw-pc__title { margin: 0; font-size: 1.15rem; line-height: 1.3; }
+.fw-pc__title a { color: var(--pc-title); text-decoration: none; }
+.fw-pc__title a:hover { color: var(--pc-accent); }
+.fw-pc__meta { display: flex; gap: .8rem; font-size: .82rem; color: var(--pc-text); }
+.fw-pc__excerpt { margin: .2rem 0 0; color: var(--pc-text); font-size: .92rem; line-height: 1.5; }
+.fw-pc__more { margin-top: auto; padding-top: .6rem; color: var(--pc-accent); font-weight: 600; text-decoration: none; align-self: flex-start; }
+.fw-pc__more:hover { text-decoration: underline; }
+
+/* Overlay design ----------------------------------------------------------- */
+.fw-pc--design-overlay .fw-pc__card { position: relative; }
+.fw-pc--design-overlay .fw-pc__media { position: absolute; inset: 0; aspect-ratio: auto; }
+.fw-pc--design-overlay .fw-pc__media .fw-pc__img { height: 100%; }
+.fw-pc--design-overlay .fw-pc__card { min-height: 320px; }
+.fw-pc--design-overlay .fw-pc__scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, .8) 0%, rgba(0, 0, 0, .1) 60%, rgba(0, 0, 0, 0) 100%); }
+.fw-pc--design-overlay .fw-pc__body { position: relative; z-index: 2; margin-top: auto; color: #fff; }
+.fw-pc--design-overlay .fw-pc__title a,
+.fw-pc--design-overlay .fw-pc__meta,
+.fw-pc--design-overlay .fw-pc__date { color: #fff; }
+.fw-pc--design-overlay .fw-pc__more { color: #fff; }
+
+/* Minimal design ----------------------------------------------------------- */
+.fw-pc--design-minimal .fw-pc__card { background: transparent; box-shadow: none; }
+.fw-pc--design-minimal .fw-pc__body { padding: 0; border-left: 3px solid var(--pc-accent); padding-left: 1.1rem; }
+
+.fw-pc__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
+
+/* Splide chrome ------------------------------------------------------------ */
+.fw-pc .splide__arrow { background: rgba(0, 0, 0, .55); opacity: 1; }
+.fw-pc .splide__arrow svg { fill: #fff; }
+.fw-pc .splide__arrow:hover:not(:disabled) { background: rgba(0, 0, 0, .8); }
+.fw-pc .splide__pagination__page.is-active { background: var(--pc-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-pc__img { transition: none; }
+}

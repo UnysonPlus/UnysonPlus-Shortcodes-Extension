@@ -57,6 +57,10 @@ if ($tab_style === 'tabs') {
     $nav_class .= ' nav-underline';
 }
 
+if ($tab_style === 'segmented') {
+    $nav_class .= ' nav-segmented';
+}
+
 // Alignment (only horizontal)
 if (!$is_vertical) {
     $nav_class .= ' justify-content-' . $alignment;
@@ -76,8 +80,8 @@ $has_active = array_filter($tabs, fn($t) => !empty($t['is_active']) && $t['is_ac
 <div <?php echo fw_attr_to_html($attr); ?>>
 
     <?php if ($is_vertical): ?>
-        <div class="row">
-            <div class="col-3">
+        <div class="fw-row">
+            <div class="fw-col-3">
                 <!-- Tab nav -->
                 <ul class="<?php echo esc_attr($nav_class . ' flex-column'); ?>" id="<?php echo esc_attr($tabs_id); ?>" role="tablist">
                     <?php foreach ($tabs as $key => $tab) : 
@@ -88,19 +92,19 @@ $has_active = array_filter($tabs, fn($t) => !empty($t['is_active']) && $t['is_ac
                         <li class="nav-item" role="presentation">
                             <button class="nav-link <?php echo $is_active ? 'active' : ''; echo esc_attr( $tab_title_class ); ?>"<?php echo $tab_title_style_attr; ?>
                                     id="<?php echo esc_attr($tab_id . '-tab'); ?>" 
-                                    data-bs-toggle="tab" 
-                                    data-bs-target="#<?php echo esc_attr($tab_id); ?>" 
+                                    data-fw-toggle="tab"
+                                    data-fw-target="#<?php echo esc_attr($tab_id); ?>"
                                     type="button" 
                                     role="tab" 
                                     aria-controls="<?php echo esc_attr($tab_id); ?>" 
                                     aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>">
-                                <?php echo esc_html($tab['tab_title']); ?>
+                                <?php echo esc_html($tab['tab_title']); ?><?php if ( ! empty( $tab['badge'] ) ) : ?><span class="tab-badge"><?php echo esc_html( $tab['badge'] ); ?></span><?php endif; ?>
                             </button>
                         </li>
                     <?php endforeach; ?>
                 </ul>
             </div>
-            <div class="col-9">
+            <div class="fw-col-9">
                 <!-- Tab content -->
                 <div class="<?php echo esc_attr($content_class); ?>" id="<?php echo esc_attr($tabs_id); ?>-content">
                     <?php foreach ($tabs as $key => $tab) : 
@@ -131,13 +135,13 @@ $has_active = array_filter($tabs, fn($t) => !empty($t['is_active']) && $t['is_ac
                 <li class="nav-item" role="presentation">
                     <button class="nav-link <?php echo $is_active ? 'active' : ''; echo esc_attr( $tab_title_class ); ?>"<?php echo $tab_title_style_attr; ?>
                             id="<?php echo esc_attr($tab_id . '-tab'); ?>"
-                            data-bs-toggle="tab"
-                            data-bs-target="#<?php echo esc_attr($tab_id); ?>"
+                            data-fw-toggle="tab"
+                            data-fw-target="#<?php echo esc_attr($tab_id); ?>"
                             type="button"
                             role="tab"
                             aria-controls="<?php echo esc_attr($tab_id); ?>"
                             aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>">
-                        <?php echo esc_html($tab['tab_title']); ?>
+                        <?php echo esc_html($tab['tab_title']); ?><?php if ( ! empty( $tab['badge'] ) ) : ?><span class="tab-badge"><?php echo esc_html( $tab['badge'] ); ?></span><?php endif; ?>
                     </button>
                 </li>
             <?php endforeach; ?>

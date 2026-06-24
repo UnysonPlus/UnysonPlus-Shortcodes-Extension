@@ -79,6 +79,18 @@
     padding: 0.5rem;
 }
 
+/* Default solid-badge fill: a light tint of the icon colour, used only when no
+   badge colour is picked. An explicit preset (.bg-{slug}, enqueued later) or a
+   custom-hex inline style overrides this in the cascade. currentColor adapts to
+   a custom Icon Color; the rgba fallback covers browsers without color-mix and
+   matches the default icon green (#5bcc92). */
+.icon-box__icon--badge-solid-square,
+.icon-box__icon--badge-solid-rounded,
+.icon-box__icon--badge-solid-circle {
+    background-color: rgba(91, 204, 146, 0.14);
+    background-color: color-mix(in srgb, currentColor 14%, transparent);
+}
+
 .icon-box__icon--badge-solid-square,
 .icon-box__icon--badge-outline-square {
     border-radius: 0;

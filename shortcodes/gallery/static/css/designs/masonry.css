@@ -1,0 +1,18 @@
+/* Gallery — Design: Masonry. CSS multi-column staggered tiling (no JS).
+   Images keep natural proportions; columns balance via column-count. */
+.fw-gallery.design-masonry .fw-gallery__masonry {
+	column-count: var(--gal-cols, 3);
+	column-gap: var(--gal-gap, 16px);
+}
+.fw-gallery.design-masonry .fw-gallery__item {
+	break-inside: avoid;
+	-webkit-column-break-inside: avoid;
+	margin: 0 0 var(--gal-gap, 16px);
+}
+
+@media (max-width: 992px) {
+	.fw-gallery.design-masonry .fw-gallery__masonry { column-count: var(--gal-cols-t, 2); }
+}
+@media (max-width: 576px) {
+	.fw-gallery.design-masonry .fw-gallery__masonry { column-count: 1; }
+}

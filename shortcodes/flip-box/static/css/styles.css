@@ -1,0 +1,107 @@
+/* =============================================================================
+ * Flip Box — 3D two-sided card. Direction via --fb-rot; trigger via hover/JS.
+ * ========================================================================== */
+.fw-fb {
+	--fb-front-bg: #2b6cb0;
+	--fb-front-color: #ffffff;
+	--fb-back-bg: #1f2937;
+	--fb-back-color: #ffffff;
+	--fb-accent: #ffffff;
+	--fb-rot: rotateY(180deg);
+	perspective: 1400px;
+}
+.fw-fb--dir-left  { --fb-rot: rotateY(180deg); }
+.fw-fb--dir-right { --fb-rot: rotateY(-180deg); }
+.fw-fb--dir-up    { --fb-rot: rotateX(180deg); }
+.fw-fb--dir-down  { --fb-rot: rotateX(-180deg); }
+
+.fw-fb__inner {
+	position: relative;
+	width: 100%;
+	height: var(--fb-h, 300px);
+	transform-style: preserve-3d;
+	transition: transform .6s cubic-bezier(.2, .7, .2, 1);
+	border-radius: inherit;
+}
+.fw-fb.rounded    { border-radius: .75rem; }
+.fw-fb.rounded-lg { border-radius: 1.25rem; }
+.fw-fb.rounded-0  { border-radius: 0; }
+
+/* Flip on hover (and keyboard focus) or when JS toggles .is-flipped (click). */
+.fw-fb--hover:hover .fw-fb__inner,
+.fw-fb--hover:focus-within .fw-fb__inner,
+.fw-fb.is-flipped .fw-fb__inner { transform: var(--fb-rot); }
+
+.fw-fb__face {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 1.75rem;
+	border-radius: inherit;
+	overflow: hidden;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+}
+.fw-fb__front { background: var(--fb-front-bg); color: var(--fb-front-color); }
+.fw-fb__back  { background: var(--fb-back-bg); color: var(--fb-back-color); transform: var(--fb-rot); }
+
+.fw-fb__icon { font-size: 2.6rem; line-height: 1; margin-bottom: .75rem; display: inline-block; }
+.fw-fb__icon img { width: 64px; height: 64px; object-fit: contain; }
+.fw-fb__title { margin: 0 0 .5rem; color: inherit; font-size: 1.35rem; }
+.fw-fb__text { font-size: .95rem; line-height: 1.5; opacity: .95; }
+.fw-fb__text p:last-child { margin-bottom: 0; }
+.fw-fb__btn {
+	display: inline-block;
+	margin-top: 1.1rem;
+	padding: .65em 1.4em;
+	border-radius: 2rem;
+	background: var(--fb-accent);
+	color: #1f2937;
+	font-weight: 600;
+	text-decoration: none;
+	transition: filter .2s ease, transform .2s ease;
+}
+.fw-fb__btn:hover { filter: brightness(.95); transform: translateY(-1px); }
+
+.fw-fb--click { cursor: pointer; }
+.fw-fb--click:focus-visible { outline: 2px solid var(--fb-front-bg); outline-offset: 3px; }
+
+.fw-fb__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
+
+/* =============================================================================
+ * Designs
+ * ========================================================================== */
+/* Gradient faces. */
+.fw-fb--design-gradient .fw-fb__front { background: linear-gradient(135deg, var(--fb-front-bg), rgba(0, 0, 0, .35)); }
+.fw-fb--design-gradient .fw-fb__back  { background: linear-gradient(135deg, var(--fb-back-bg), rgba(0, 0, 0, .35)); }
+
+/* Outline front — transparent with a border, colored back. */
+.fw-fb--design-outline .fw-fb__front {
+	background: transparent;
+	color: var(--fb-front-bg);
+	border: 2px solid currentColor;
+}
+.fw-fb--design-outline { --fb-front-color: #2b6cb0; }
+
+/* Image front + dark overlay. */
+.fw-fb--design-image .fw-fb__front {
+	background-image: var(--fb-front-image, none);
+	background-size: cover;
+	background-position: center;
+	color: #fff;
+}
+.fw-fb--design-image .fw-fb__front::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, .45);
+}
+.fw-fb--design-image .fw-fb__front > * { position: relative; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-fb__inner { transition: none; }
+}

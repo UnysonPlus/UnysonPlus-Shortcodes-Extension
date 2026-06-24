@@ -1,0 +1,34 @@
+/* Gallery — Design: Marquee / Ticker. A fixed-height row scrolling continuously.
+   The track holds two copies; each item has a right margin (not flex gap) so a
+   translateX(-50%) loop is perfectly seamless. Pauses on hover. */
+.fw-gallery.design-marquee .fw-gallery__marquee {
+	position: relative;
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+	mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+}
+.fw-gallery.design-marquee .fw-gallery__marquee-track {
+	display: flex;
+	width: max-content;
+	animation: fw-gal-marquee var(--mq-dur, 30s) linear infinite;
+}
+.fw-gallery.design-marquee .fw-gallery__marquee--right .fw-gallery__marquee-track {
+	animation-direction: reverse;
+}
+.fw-gallery.design-marquee .fw-gallery__marquee:hover .fw-gallery__marquee-track {
+	animation-play-state: paused;
+}
+.fw-gallery.design-marquee .fw-gallery__item {
+	flex: 0 0 auto;
+	height: var(--mq-h, 180px);
+	margin: 0 var(--mq-gap, 1rem) 0 0;
+}
+.fw-gallery.design-marquee .fw-gallery__media { border-radius: .5rem; }
+
+@keyframes fw-gal-marquee {
+	from { transform: translateX(0); }
+	to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-gallery.design-marquee .fw-gallery__marquee-track { animation: none; }
+}

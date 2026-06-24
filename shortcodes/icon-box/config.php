@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
     'title'       => __( 'Icon Box', 'fw' ),
     'description' => __( 'Add an Icon Box', 'fw' ),
-    'tab'         => __( 'Content Elements', 'fw' ),
+    'tab'         => __( 'Components', 'fw' ),
     'popup_size'    => 'large', // can be large, medium or small
     'title_template' => '
         {{ if ( o ) {

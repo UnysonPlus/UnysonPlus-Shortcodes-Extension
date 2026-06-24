@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Coverflow layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <g fill="#eef1f4" stroke="#cfd6dd" stroke-width="2">
+    <rect x="10" y="30" width="22" height="34" rx="3" transform="skewY(8)"/>
+    <rect x="88" y="22" width="22" height="34" rx="3" transform="skewY(-8)"/>
+  </g>
+  <rect x="42" y="20" width="36" height="50" rx="4" fill="#fff" stroke="#9b9b9b" stroke-width="2"/>
+  <rect x="47" y="25" width="26" height="40" rx="2" fill="#e0e5ea"/>
+  <g fill="#cfd6dd">
+    <circle cx="54" cy="80" r="2.5"/>
+    <circle cx="62" cy="80" r="2.5" fill="#9b9b9b"/>
+    <circle cx="70" cy="80" r="2.5"/>
+  </g>
+</svg>

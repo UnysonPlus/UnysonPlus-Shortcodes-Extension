@@ -1,0 +1,48 @@
+/* Unyson+ Countdown Timer shortcode */
+.fw-countdown {
+	margin: 0 0 1rem;
+}
+.fw-countdown--center { text-align: center; }
+.fw-countdown--right  { text-align: right; }
+
+.fw-countdown__units {
+	display: inline-flex;
+	gap: 1rem;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+.fw-countdown--center .fw-countdown__units { justify-content: center; }
+.fw-countdown--right  .fw-countdown__units { justify-content: flex-end; }
+
+.fw-countdown__unit {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	min-width: 3.5rem;
+}
+
+/* Default number / label typography. Overridden per-instance only when the user
+   sets the Number Font / Label Font in the Style tab (those emit inline styles). */
+.fw-countdown__num {
+	font-size: 2.5rem;   /* 40px */
+	font-weight: 400;
+	line-height: 1.1;    /* ~44px */
+	font-variant-numeric: tabular-nums;
+}
+.fw-countdown__label {
+	font-size: .8125rem; /* 13px */
+	font-weight: 400;
+	line-height: 1.23;   /* ~16px */
+	letter-spacing: .05em;
+	text-transform: uppercase;
+	opacity: .7;
+	margin-top: .25rem;
+}
+
+/* A unit's card look (border / corners / shadow / fill / padding) comes from the
+   chosen Box Preset (a .boxp-{name} class on each unit) — no default box here. */
+
+.fw-countdown__done {
+	font-size: 1.1rem;
+	font-weight: 600;
+}

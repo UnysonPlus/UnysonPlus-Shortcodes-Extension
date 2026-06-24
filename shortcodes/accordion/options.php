@@ -11,6 +11,7 @@ $options = [
                 'type'          => 'addable-popup',
                 'label'         => __( 'Accordion Items', 'fw' ),
                 'popup-title'   => __( 'Add/Edit Tabs', 'fw' ),
+                'size'          => 'medium', // small | medium | large — the WYSIWYG Content editor needs the room
                 'desc'          => __( 'Create your tabs', 'fw' ),
                 'help'          => __( 'Each row becomes one collapsible accordion item; drag to reorder. The list is empty by default, so add at least one item.', 'fw' ),
                 'template'      => '{{=tab_title}}',
@@ -252,6 +253,15 @@ $options = [
                 'label'        => __( 'Show Expand / Collapse All Buttons', 'fw' ),
                 'desc'         => __( 'Renders two convenience buttons above the accordion that open or close every item at once. Most useful when Multiple Open is also enabled.', 'fw' ),
                 'help'         => __( 'Best for long lists where users may want to scan everything quickly. With Multiple Open off, "Expand All" can only show one item at a time.', 'fw' ),
+                'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
+                'value'        => 'no',
+            ],
+            'faq_schema' => [
+                'type'         => 'switch',
+                'label'        => __( 'FAQ Rich Snippet (Schema)', 'fw' ),
+                'desc'         => __( 'Output FAQPage JSON-LD structured data so search engines can show this accordion as an expandable FAQ rich result.', 'fw' ),
+                'help'         => __( 'Only enable on a genuine FAQ (a list of questions and answers). Each item title becomes a Question and its content the Answer. Use it on ONE accordion per page to avoid duplicate FAQ schema.', 'fw' ),
                 'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
                 'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
                 'value'        => 'no',

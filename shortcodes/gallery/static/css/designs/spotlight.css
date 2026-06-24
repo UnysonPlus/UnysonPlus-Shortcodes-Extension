@@ -1,0 +1,26 @@
+/* Gallery — Design: Spotlight. First image large, the rest in a smaller grid
+   beside it; stacks on mobile. */
+.fw-gallery.design-spotlight .fw-gallery__spotlight {
+	display: grid;
+	grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+	gap: var(--gal-gap, 1rem);
+	align-items: start;
+}
+.fw-gallery.design-spotlight .fw-gallery__spotlight--right { grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr); }
+.fw-gallery.design-spotlight .fw-gallery__spotlight--right .fw-gallery__spotlight-feature { order: 2; }
+.fw-gallery.design-spotlight .fw-gallery__spotlight--solo { grid-template-columns: 1fr; }
+
+.fw-gallery.design-spotlight .fw-gallery__spotlight-feature .fw-gallery__media { aspect-ratio: 1 / 1; }
+.fw-gallery.design-spotlight .fw-gallery__spotlight-grid {
+	display: grid;
+	grid-template-columns: repeat(var(--gal-cols, 3), minmax(0, 1fr));
+	gap: var(--gal-gap, 1rem);
+	align-content: start;
+}
+.fw-gallery.design-spotlight .fw-gallery__spotlight-grid .fw-gallery__media { aspect-ratio: 1 / 1; }
+
+@media (max-width: 768px) {
+	.fw-gallery.design-spotlight .fw-gallery__spotlight,
+	.fw-gallery.design-spotlight .fw-gallery__spotlight--right { grid-template-columns: 1fr; }
+	.fw-gallery.design-spotlight .fw-gallery__spotlight--right .fw-gallery__spotlight-feature { order: 0; }
+}

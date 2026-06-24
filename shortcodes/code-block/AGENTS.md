@@ -28,7 +28,10 @@ Wrapped in `group_content` (flattens).
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
-| `code` | `code-editor` (mode: `htmlmixed`, height: 500) | — | The HTML/CSS/JS to render verbatim. Syntax-highlighted in the modal |
+| `code` | `code-editor` (mode: `htmlmixed`, height: 500) | — | The HTML/CSS/JS. Output verbatim (runs) by default, or shown as code when `render_as_code` is ON. Syntax-highlighted in the modal |
+| `render_as_code` | `switch` | `false` | When ON, the `code` is HTML-escaped + wrapped in a Prism-ready `<pre><code class="language-*">` so visitors **see** the markup instead of it rendering. The stored att stays raw HTML (editable), escaping happens at render time |
+| `beautify` | `switch` | `true` | Auto re-indents the markup with clean tab spacing at render time (markup only). Normalizes minified/messy HTML; `<pre>`/`<script>`/`<style>`/`<svg>` bodies are protected from reflow. Turn OFF to keep the code exactly as typed. Only applies when `render_as_code` is ON |
+| `code_language` | `select` (`auto`/`markup`/`css`/`javascript`/`php`/`json`/`bash`) | `auto` | Prism `language-*` class. **Auto-detect** sniffs the language from the code (markup/php/css/js/json). Only applies when `render_as_code` is ON |
 
 ### Tab: Styling
 
@@ -50,6 +53,29 @@ Standard.
 `views/view.php` outputs the `code` value as raw HTML inside the wrapper.
 `wpautop` is bypassed for this shortcode (otherwise `<script>` blocks
 would get paragraph-wrapped).
+
+When `render_as_code` is ON, the view (optionally) **beautifies** the markup,
+then **escapes** the `code` (`htmlspecialchars`), encodes newlines as `&#10;`
+(so wpautop/nl2br can't inject `<br>` inside the `<pre>`), and emits
+`<pre class="language-<lang> code-block__pre"><code class="language-<lang>">…</code></pre>`
+— Prism-ready. The markup also degrades gracefully to a plain monospaced
+block if Prism isn't loaded. This is the supported way to **show** code to
+visitors (docs / "here's the markup" examples): paste raw HTML, flip the
+switch — no manual entity-escaping, and re-opening the modal shows editable
+raw markup (not the entity soup that breaks if you hand-escape into `code`).
+
+Render-time helpers (defined in `view.php`, `function_exists`-guarded):
+- `sc_code_block_beautify_html()` — token-based HTML pretty-printer. Protects
+  `<pre>/<textarea>/<script>/<style>/<svg>` from reflow, single-lines tag
+  attributes, collapses inter-tag whitespace, then tab-indents via
+  `sc_code_block_indent_html()` (block tags own a line; leaf tags p/li/h#/td/th/…
+  keep inline content + closing tag on the same line; inline tags + SVG stay
+  inline, preserving `viewBox` casing — no DOMDocument lowercasing).
+- `sc_code_block_detect_language()` — heuristic sniffer for the `auto` choice
+  (php if `<?php`, markup if it starts with `<`, then json / css / js).
+Because beautification runs at RENDER time, the code view stays clean even
+when a page is re-saved through the builder (which bakes raw `do_shortcode`
+output) — the old "indent once in the importer" approach did not survive that.
 
 ## Pitfalls
 

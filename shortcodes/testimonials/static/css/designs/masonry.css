@@ -1,0 +1,55 @@
+/* Testimonials — Design: Masonry Wall.
+   CSS multi-column staggered tiling (no JS). */
+.testimonials.design-masonry .ts-masonry {
+	column-gap: 1.5rem;
+}
+.testimonials.design-masonry .ts-masonry--cols-1 { column-count: 1; }
+.testimonials.design-masonry .ts-masonry--cols-2 { column-count: 2; }
+.testimonials.design-masonry .ts-masonry--cols-3 { column-count: 3; }
+.testimonials.design-masonry .ts-masonry--cols-4 { column-count: 4; }
+
+.testimonials.design-masonry .ts-masonry__item {
+	display: inline-block;
+	width: 100%;
+	margin: 0 0 1.5rem;
+	padding: 1.5rem 1.5rem 1.25rem;
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, .08);
+	border-radius: .75rem;
+	box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+	break-inside: avoid;
+	-webkit-column-break-inside: avoid;
+	transition: transform .2s ease, box-shadow .2s ease;
+}
+.testimonials.design-masonry .ts-masonry__item:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 .75rem 1.5rem rgba(0, 0, 0, .1);
+}
+.testimonials.design-masonry .ts-masonry__rating { margin-bottom: .5rem; }
+.testimonials.design-masonry .testimonial-quote { margin: 0 0 1rem; }
+.testimonials.design-masonry .ts-masonry__author {
+	display: flex;
+	align-items: center;
+	gap: .75rem;
+	margin: 0;
+}
+.testimonials.design-masonry .ts-masonry__avatar {
+	width: 48px;
+	height: 48px;
+	object-fit: cover;
+	flex: 0 0 auto;
+}
+.testimonials.design-masonry .ts-masonry__byline { display: flex; flex-direction: column; line-height: 1.25; }
+.testimonials.design-masonry .testimonial-author { font-weight: 600; }
+.testimonials.design-masonry .testimonial-job { font-size: .85em; color: #6c757d; }
+
+@media (max-width: 768px) {
+	.testimonials.design-masonry .ts-masonry--cols-3,
+	.testimonials.design-masonry .ts-masonry--cols-4 { column-count: 2; }
+}
+@media (max-width: 540px) {
+	.testimonials.design-masonry .ts-masonry { column-count: 1 !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.testimonials.design-masonry .ts-masonry__item { transition: none; }
+}

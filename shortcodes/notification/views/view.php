@@ -16,7 +16,7 @@ if (
 	! empty( $atts['icon'] ) &&
 	isset( fw()->backend->option_type( 'icon-v2' )->packs_loader )
 ) {
-	fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_frontend_css();
+	fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_pack_for_icon( $atts['icon'] );
 }
 
 /*
@@ -33,6 +33,18 @@ $custom_icon  = isset( $atts['custom_icon'] ) ? trim( (string) $atts['custom_ico
 $picked_icon  = ! empty( $atts['icon'] ) ? $atts['icon'] : null;
 $dismissible  = ! empty( $atts['dismissible'] );
 $auto_dismiss = isset( $atts['auto_dismiss'] ) ? max( 0, (int) $atts['auto_dismiss'] ) : 0;
+
+// Announcement-bar / floating-toast modes. Any non-inline mode pins the notice
+// to the viewport and always gets a close button.
+$display_mode = isset( $atts['display_mode'] ) ? $atts['display_mode'] : 'inline';
+if ( ! in_array( $display_mode, array( 'inline', 'bar-top', 'bar-bottom', 'floating' ), true ) ) {
+	$display_mode = 'inline';
+}
+$is_pinned       = ( $display_mode !== 'inline' );
+$persist_dismiss = ( $is_pinned && isset( $atts['persist_dismiss'] ) && $atts['persist_dismiss'] === 'yes' );
+if ( $is_pinned ) {
+	$dismissible = true; // pinned notices must be closeable
+}
 
 $default_labels = apply_filters( 'sc_notification_default_labels', [
 	'primary'   => __( 'Note!',        'fw' ),
@@ -143,6 +155,10 @@ if ( $layout !== 'inline' ) {
 if ( $border_style !== 'filled' ) {
 	$wrapper_classes[] = 'alert--border-' . sanitize_html_class( $border_style );
 }
+if ( $is_pinned ) {
+	$wrapper_classes[] = 'alert--pinned';
+	$wrapper_classes[] = 'alert--' . sanitize_html_class( $display_mode );
+}
 if ( $dismissible ) {
 	$wrapper_classes[] = 'alert-dismissible';
 	$wrapper_classes[] = 'fade';
@@ -178,11 +194,16 @@ $atts['base_class']       = 'alert';
 $atts['unique_id_prefix'] = 'al-';
 $atts['css_class']        = trim( implode( ' ', $wrapper_classes ) . ' ' . ( $atts['css_class'] ?? '' ) );
 
+$extra_attrs = isset( $atts['extra_attrs'] ) && is_array( $atts['extra_attrs'] ) ? $atts['extra_attrs'] : [];
 if ( $dismissible && $auto_dismiss > 0 ) {
-	$atts['extra_attrs'] = array_merge(
-		isset( $atts['extra_attrs'] ) && is_array( $atts['extra_attrs'] ) ? $atts['extra_attrs'] : [],
-		[ 'data-auto-dismiss' => (string) $auto_dismiss ]
-	);
+	$extra_attrs['data-auto-dismiss'] = (string) $auto_dismiss;
+}
+if ( $persist_dismiss ) {
+	// Stable key from the message/label/mode so editing the text re-shows it.
+	$extra_attrs['data-persist-key'] = 'upw-alert-' . substr( md5( $message . '|' . $label . '|' . $display_mode ), 0, 12 );
+}
+if ( ! empty( $extra_attrs ) ) {
+	$atts['extra_attrs'] = $extra_attrs;
 }
 
 $attr = sc_build_wrapper_attr( $atts );

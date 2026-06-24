@@ -1,0 +1,117 @@
+/* =============================================================================
+ * Audio Player — custom controls (classic / card / minimal / playlist).
+ * ========================================================================== */
+.fw-ap {
+	--ap-accent: #4a90d9;
+	--ap-bg: #ffffff;
+	--ap-text: inherit;
+	--ap-muted: #6b7280;
+	--ap-track: rgba(0, 0, 0, .12);
+	color: var(--ap-text);
+}
+.fw-ap__audio { display: none; }
+
+.fw-ap__player {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	background: var(--ap-bg);
+	border: 1px solid rgba(0, 0, 0, .08);
+	padding: 1rem 1.2rem;
+	border-radius: inherit;
+}
+.fw-ap.rounded    .fw-ap__player { border-radius: .7rem; }
+.fw-ap.rounded-lg .fw-ap__player { border-radius: 1.1rem; }
+.fw-ap.rounded-0  .fw-ap__player { border-radius: 0; }
+
+.fw-ap__main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: .55rem; }
+.fw-ap__info { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+.fw-ap__title { font-weight: 600; color: var(--ap-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fw-ap__artist { font-size: .82rem; color: var(--ap-muted); }
+.fw-ap__artist:empty { display: none; }
+
+/* Controls row */
+.fw-ap__controls { display: flex; align-items: center; gap: .6rem; }
+.fw-ap__btn {
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 2.3em; height: 2.3em; flex: 0 0 auto;
+	border: 0; background: none; color: var(--ap-text); cursor: pointer; padding: 0; border-radius: 50%;
+	transition: background .2s ease, transform .15s ease;
+}
+.fw-ap__btn:hover { background: rgba(0, 0, 0, .06); }
+.fw-ap__btn:active { transform: scale(.94); }
+.fw-ap__btn svg { width: 1.35em; height: 1.35em; fill: currentColor; }
+.fw-ap__btn:focus-visible { outline: 2px solid var(--ap-accent); outline-offset: 2px; }
+.fw-ap__play { background: var(--ap-accent); color: #fff; width: 2.9em; height: 2.9em; }
+.fw-ap__play:hover { background: var(--ap-accent); filter: brightness(1.08); }
+.fw-ap__play svg { width: 1.5em; height: 1.5em; }
+.fw-ap__i-play, .fw-ap__i-pause { display: inline-flex; }
+.fw-ap__i-pause { display: none; }
+.fw-ap.is-playing .fw-ap__i-play { display: none; }
+.fw-ap.is-playing .fw-ap__i-pause { display: inline-flex; }
+
+/* Progress */
+.fw-ap__bar { flex: 1 1 auto; min-width: 60px; }
+.fw-ap__progress { position: relative; height: 6px; background: var(--ap-track); border-radius: 3px; cursor: pointer; touch-action: none; }
+.fw-ap__buffered { position: absolute; inset: 0 auto 0 0; width: 0; background: rgba(0, 0, 0, .08); border-radius: 3px; }
+.fw-ap__played { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--ap-accent); border-radius: 3px; }
+.fw-ap__handle { position: absolute; top: 50%; left: 0; width: 13px; height: 13px; border-radius: 50%; background: var(--ap-accent); transform: translate(-50%, -50%); box-shadow: 0 1px 4px rgba(0, 0, 0, .35); }
+.fw-ap__progress:focus-visible { outline: 2px solid var(--ap-accent); outline-offset: 3px; }
+
+.fw-ap__time { font-size: .8rem; color: var(--ap-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fw-ap__sep { margin: 0 .25em; opacity: .5; }
+
+.fw-ap__volwrap { display: flex; align-items: center; gap: .25rem; }
+.fw-ap__vol { width: 72px; accent-color: var(--ap-accent); }
+.fw-ap__i-mute { display: none; }
+.fw-ap.is-muted .fw-ap__i-vol { display: none; }
+.fw-ap.is-muted .fw-ap__i-mute { display: inline-flex; }
+.fw-ap__dl { text-decoration: none; }
+
+/* Cover */
+.fw-ap__cover { display: none; position: relative; flex: 0 0 auto; width: 84px; height: 84px; border-radius: .5rem; overflow: hidden; background: var(--ap-accent); }
+.fw-ap__cover-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fw-ap__cover[data-empty="1"] .fw-ap__cover-img { display: none; }
+.fw-ap__cover-note { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; color: #fff; font-size: 1.8rem; }
+.fw-ap__cover[data-empty="1"] .fw-ap__cover-note { display: flex; }
+
+/* Track list (data source; shown by Playlist) */
+.fw-ap__list { display: none; list-style: none; margin: .5rem 0 0; padding: 0; }
+.fw-ap__track { display: flex; align-items: center; gap: .7rem; padding: .55rem .7rem; border-radius: .45rem; cursor: pointer; }
+.fw-ap__track:hover { background: rgba(0, 0, 0, .04); }
+.fw-ap__track.is-active { background: color-mix(in srgb, var(--ap-accent) 12%, transparent); }
+@supports not (background: color-mix(in srgb, red 10%, white)) { .fw-ap__track.is-active { background: rgba(74, 144, 217, .12); } }
+.fw-ap__track.is-active .fw-ap__track-title { color: var(--ap-accent); font-weight: 600; }
+.fw-ap__track-num { width: 1.5em; text-align: center; color: var(--ap-muted); font-size: .85rem; flex: 0 0 auto; }
+.fw-ap__track-cover { width: 38px; height: 38px; border-radius: .35rem; object-fit: cover; flex: 0 0 auto; }
+.fw-ap__track-meta { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.fw-ap__track-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fw-ap__track-artist { font-size: .78rem; color: var(--ap-muted); }
+.fw-ap__track-dur { color: var(--ap-muted); font-size: .8rem; }
+
+.fw-ap__empty { padding: 1.25rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
+
+/* =============================================================================
+ * Designs
+ * ========================================================================== */
+/* Minimal — bare, compact. */
+.fw-ap--design-minimal .fw-ap__player { border: 0; background: transparent; padding: .4rem .25rem; gap: .6rem; }
+.fw-ap--design-minimal .fw-ap__info { display: none; }
+.fw-ap--design-minimal .fw-ap__play { width: 2.4em; height: 2.4em; }
+
+/* Card — cover + soft shadow. */
+.fw-ap--design-card .fw-ap__player { box-shadow: 0 8px 26px rgba(0, 0, 0, .09); }
+.fw-ap--design-card .fw-ap__cover { display: block; }
+
+/* Playlist — cover + the list. */
+.fw-ap--design-playlist .fw-ap__player { box-shadow: 0 8px 26px rgba(0, 0, 0, .09); }
+.fw-ap--design-playlist .fw-ap__cover { display: block; width: 72px; height: 72px; }
+.fw-ap--design-playlist .fw-ap__list { display: block; max-height: 300px; overflow: auto; border: 1px solid rgba(0, 0, 0, .07); border-top: 0; border-radius: 0 0 inherit inherit; padding: .35rem; }
+
+@media (max-width: 560px) {
+	.fw-ap__volwrap { display: none; }
+	.fw-ap--design-card .fw-ap__cover { width: 64px; height: 64px; }
+}
+@media (prefers-reduced-motion: reduce) {
+	.fw-ap__btn { transition: none; }
+}

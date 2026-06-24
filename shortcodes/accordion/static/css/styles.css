@@ -9,6 +9,14 @@
    future per-item styles (background, border, hover, etc.). */
 .accordion .accordion-item {
 	display: block;
+	border: 1px solid #dddddd;
+	border-top: none;
+}
+
+/* First item keeps its top border so the stack reads as one bordered group;
+   the rest share the border of the item above (no doubling). */
+.accordion .accordion-item:first-child {
+	border-top: 1px solid #dddddd;
 }
 
 .accordion .accordion-title {
@@ -18,10 +26,9 @@
 	font-weight: bold;
 	color: #333333;
 	background: #f2f2f2;
-	padding: 1rem;
+	padding: 0.9rem 1rem 0.75rem;
 	margin: 0;
 	cursor: pointer;
-	border-top: 1px solid #cfcfcf;
 	user-select: none;
 }
 
@@ -30,14 +37,12 @@
 	outline-offset: -2px;
 }
 
-/* First-item header has no top border. Was `.accordion-title:first-child`
-   before the .accordion-item wrap; updated to look one level deeper. */
-.accordion .accordion-item:first-child .accordion-title {
-	border-top: none;
-}
-
+/* Open: the title joins its panel as a white card and a hairline divider links
+   it to the content below — fixes the old "floating title with an empty gap"
+   look (the open title used to drop its background and detach from the panel). */
 .accordion .accordion-title.ui-state-active {
-	background: none;
+	background: #ffffff;
+	border-bottom: 1px solid #eeeeee;
 }
 
 .accordion .accordion-title-text {
@@ -252,10 +257,19 @@
 /* ── Content ──────────────────────────────────────────────── */
 
 .accordion .accordion-content {
-	padding: 1rem;
+	padding: 0.9rem 1rem;
 }
 
-.accordion .accordion-content p:last-child {
+/* The panel padding owns the vertical rhythm — drop the first/last child's
+   stock margins (e.g. a paragraph's top/bottom margin) so the space above and
+   below the content matches the title's padding instead of being thrown off by
+   inherited text margins. Was `p:last-child` only, which left the first
+   paragraph's top margin stacking under the divider (unbalanced gap). */
+.accordion .accordion-content > :first-child {
+	margin-top: 0;
+}
+
+.accordion .accordion-content > :last-child {
 	margin-bottom: 0;
 }
 

@@ -11,6 +11,18 @@ $options = [
                 'type'   => 'multi-picker',
                 'label'  => false,
                 'desc'   => false,
+                'show_borders' => false,
+                // Default = a standard solid line with no inline content. Without
+                // this, a freshly-added divider has an empty ruler_type and the
+                // view falls through to the invisible whitespace branch.
+                'value'  => [
+                    'ruler_type' => 'line',
+                    'line'       => [
+                        'line_design'  => 'std',
+                        'content_type' => 'none',
+                        'alignment'    => 'center',
+                    ],
+                ],
                 'picker' => [
                     'ruler_type' => [
                         'type'    => 'select',
@@ -18,6 +30,7 @@ $options = [
                         'help'    => __( 'Line draws a visible separator (optionally with text or an icon); Whitespace inserts an invisible vertical gap to space sections apart.', 'fw' ),
                         'choices' => [
                             'line'  => __( 'Line / Divider', 'fw' ),
+                            'shape' => __( 'Shape / SVG', 'fw' ),
                             'space' => __( 'Whitespace', 'fw' ),
                         ]
                     ]
@@ -67,6 +80,44 @@ $options = [
                                 'right'  => __( 'Right', 'fw' ),
                             ],
                             'condition' => [ 'content_type' => ['text', 'icon'] ],
+                        ],
+                    ],
+                    'shape' => [
+                        'shape_style' => [
+                            'type'    => 'select',
+                            'label'   => __( 'Shape', 'fw' ),
+                            'help'    => __( 'A decorative SVG silhouette stretched across the full width — great as a section boundary or a fancy separator.', 'fw' ),
+                            'value'   => 'waves',
+                            'choices' => [
+                                'waves'    => __( 'Waves', 'fw' ),
+                                'wave'     => __( 'Single Wave', 'fw' ),
+                                'curve'    => __( 'Curve', 'fw' ),
+                                'tilt'     => __( 'Tilt / Diagonal', 'fw' ),
+                                'triangle' => __( 'Triangle', 'fw' ),
+                                'zigzag'   => __( 'Zigzag / Peaks', 'fw' ),
+                                'arrow'    => __( 'Arrow', 'fw' ),
+                            ],
+                        ],
+                        'shape_height' => [
+                            'type'  => 'text',
+                            'label' => __( 'Shape Height (px)', 'fw' ),
+                            'help'  => __( 'Vertical size of the shape band, in pixels. The shape stretches to the full width.', 'fw' ),
+                            'value' => '60',
+                        ],
+                        'shape_flip_x' => [
+                            'type'         => 'switch',
+                            'label'        => __( 'Flip Horizontally', 'fw' ),
+                            'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                            'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
+                            'value'        => 'no',
+                        ],
+                        'shape_flip_y' => [
+                            'type'         => 'switch',
+                            'label'        => __( 'Flip Vertically', 'fw' ),
+                            'help'         => __( 'Point the shape downward instead of upward.', 'fw' ),
+                            'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                            'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
+                            'value'        => 'no',
                         ],
                     ],
                     'space' => [

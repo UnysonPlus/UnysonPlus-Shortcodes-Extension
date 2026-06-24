@@ -1,0 +1,29 @@
+/* Unyson+ Animated Counter shortcode */
+.fw-counter {
+	margin: 0 0 1rem;
+}
+.fw-counter--center { text-align: center; }
+.fw-counter--right  { text-align: right; }
+
+/* The number row. */
+.fw-counter__main {
+	display: inline-flex;
+	align-items: center;
+}
+.fw-counter--center .fw-counter__main { justify-content: center; }
+.fw-counter--right  .fw-counter__main { justify-content: flex-end; }
+
+.fw-counter__value {
+	font-size: 2.6rem;
+	font-weight: 700;
+	line-height: 1.05;
+	display: inline-flex;
+	align-items: baseline;
+	white-space: nowrap;
+}
+/* Default subordinate size for prefix / suffix when no Typography is set
+   (the Style-tab Typography fields emit an explicit px size that wins). */
+.fw-counter__prefix,
+.fw-counter__suffix {
+	font-size: .8em;
+}

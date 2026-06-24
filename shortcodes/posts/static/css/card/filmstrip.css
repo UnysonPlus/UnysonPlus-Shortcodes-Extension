@@ -1,0 +1,6 @@
+/* Posts card design: Filmstrip. */
+.posts__filmstrip-frame { position: relative; background: #14171a; padding: 11px 8px; }
+.posts__filmstrip-frame::before, .posts__filmstrip-frame::after { content: ""; position: absolute; left: 0; right: 0; height: 11px; background-image: radial-gradient(circle, #f3f4f6 2.2px, transparent 2.6px); background-size: 12px 11px; background-position: center; }
+.posts__filmstrip-frame::before { top: 0; }
+.posts__filmstrip-frame::after  { bottom: 0; }
+.posts__card--filmstrip .posts__body { padding: var(--posts-card-pad); }

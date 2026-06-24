@@ -42,11 +42,20 @@ $btn_grow     = 12 - $split;
 		<?php if (!empty($atts['title'])): ?>
 		<h2<?php echo $title_class !== '' ? ' class="' . esc_attr( $title_class ) . '"' : ''; ?><?php echo $title_style_attr; ?>><?php echo esc_html( $atts['title'] ); ?></h2>
 		<?php endif; ?>
+		<?php if ( ! empty( $atts['message'] ) ) : ?>
 		<p class="<?php echo esc_attr( $message_class ); ?>"<?php echo $message_style_attr; ?>><?php echo wp_kses_post( $atts['message'] ); ?></p>
+		<?php endif; ?>
 	</div>
+	<?php
+	$cta_label  = isset( $atts['button_label'] )  ? trim( (string) $atts['button_label'] ) : '';
+	$cta_link   = isset( $atts['button_link'] )   ? (string) $atts['button_link']   : '#';
+	$cta_target = isset( $atts['button_target'] ) ? (string) $atts['button_target'] : '_self';
+	if ( $cta_label !== '' ) :
+	?>
 	<div class="fw-action-btn" style="flex-grow:<?php echo esc_attr( $btn_grow ); ?>">
-		<a href="<?php echo esc_url($atts['button_link']); ?>" class="btn btn-1" target="<?php echo esc_attr($atts['button_target']); ?>">
-			<span><?php echo esc_html( $atts['button_label'] ); ?></span>
+		<a href="<?php echo esc_url( $cta_link ); ?>" class="btn btn-1" target="<?php echo esc_attr( $cta_target ); ?>">
+			<span><?php echo esc_html( $cta_label ); ?></span>
 		</a>
 	</div>
+	<?php endif; ?>
 </div>

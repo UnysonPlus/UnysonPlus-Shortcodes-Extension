@@ -1,0 +1,10 @@
+/* Posts card design: Postcard. */
+.posts__card--postcard { flex-direction: row; align-items: stretch; border: 1px solid rgba(0,0,0,.1); border-radius: .4rem; }
+.posts__postcard-media { flex: 0 0 38%; max-width: 38%; }
+.posts__postcard-media .posts__image { height: 100%; }
+.posts__card--postcard .posts__body { flex: 1 1 auto; padding: var(--posts-card-pad); border-left: 2px dashed rgba(0,0,0,.18); }
+@media (max-width: 600px) {
+    .posts__card--postcard { flex-direction: column; }
+    .posts__postcard-media { flex-basis: auto; max-width: 100%; }
+    .posts__card--postcard .posts__body { border-left: 0; border-top: 2px dashed rgba(0,0,0,.18); }
+}

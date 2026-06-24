@@ -1,0 +1,144 @@
+/* Unyson+ Progress Bars. Height comes from --fwp-h, gap from --fwp-gap (set inline per instance). */
+
+/* ---- Horizontal bars --------------------------------------------------- */
+.fw-progress--bar .fw-progress__item { margin: 0 0 var(--fwp-gap, 1.1rem); }
+.fw-progress--bar .fw-progress__item:last-child { margin-bottom: 0; }
+
+.fw-progress__head {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	margin: 0 0 .4rem;
+	font-size: .95rem;
+}
+.fw-progress__label { font-weight: 600; display: inline-flex; align-items: center; gap: .4em; }
+.fw-progress__value { opacity: .7; font-variant-numeric: tabular-nums; }
+.fw-progress__icon { font-size: 1.1em; line-height: 1; }
+img.fw-progress__icon { width: 1.1em; height: 1.1em; object-fit: contain; }
+
+.fw-progress__track {
+	position: relative;
+	width: 100%;
+	height: var(--fwp-h, 10px);
+	background: rgba(0, 0, 0, .08);
+	overflow: hidden;
+}
+.fw-progress__fill {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	height: 100%;
+	width: 0;
+	background: #2563eb;
+	transition: width .9s cubic-bezier(.22, .61, .36, 1);
+	white-space: nowrap;
+}
+/* Percentage rendered inside the bar. */
+.fw-progress__fill .fw-progress__value {
+	color: #fff;
+	opacity: 1;
+	font-size: .72em;
+	font-weight: 600;
+	padding: 0 .5em;
+}
+
+.fw-progress--rounded .fw-progress__track,
+.fw-progress--rounded .fw-progress__fill { border-radius: 9999px; }
+
+/* Striped fill texture (bars only). */
+.fw-progress--striped .fw-progress__fill {
+	background-image: linear-gradient(45deg, rgba(255, 255, 255, .18) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .18) 50%, rgba(255, 255, 255, .18) 75%, transparent 75%, transparent);
+	background-size: 1rem 1rem;
+}
+
+/* ---- Circle & gauge grid ---------------------------------------------- */
+.fw-progress--circle,
+.fw-progress--gauge {
+	display: grid;
+	grid-template-columns: repeat(var(--fwp-cols, 3), minmax(0, 1fr));
+	gap: var(--fwp-gap, 1.1rem);
+	justify-items: center;
+	text-align: center;
+}
+.fw-progress--circle .fw-progress__item,
+.fw-progress--gauge .fw-progress__item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.fw-progress__svgwrap { position: relative; }
+.fw-progress__svg { display: block; }
+.fw-progress__svg-track { stroke: rgba(0, 0, 0, .08); }
+.fw-progress__svg-fill {
+	stroke: #2563eb;
+	transition: stroke-dashoffset 1s cubic-bezier(.22, .61, .36, 1);
+}
+.fw-progress__center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: .15em;
+	font-weight: 700;
+	line-height: 1.1;
+}
+/* Gauge value sits low, inside the arc. */
+.fw-progress__center.is-gauge { justify-content: flex-end; padding-bottom: .15em; }
+.fw-progress__center .fw-progress__value { opacity: 1; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+.fw-progress__center .fw-progress__icon { font-size: 1.4em; }
+.fw-progress__caption { margin-top: .5rem; font-weight: 600; font-size: .95rem; }
+
+/* ---- Reduced motion: show the final state, skip the fill animation ----- */
+@media (prefers-reduced-motion: reduce) {
+	.fw-progress__fill,
+	.fw-progress__svg-fill { transition: none !important; }
+}
+
+/* ---- Pie (reuses the circular grid + SVG) ----------------------------- */
+.fw-progress--pie {
+	display: grid;
+	grid-template-columns: repeat(var(--fwp-cols, 3), minmax(0, 1fr));
+	gap: var(--fwp-gap, 1.1rem);
+	justify-items: center;
+	text-align: center;
+}
+.fw-progress--pie .fw-progress__item { display: flex; flex-direction: column; align-items: center; }
+
+/* ---- Vertical bars ---------------------------------------------------- */
+.fw-progress--vertical {
+	display: grid;
+	grid-template-columns: repeat(var(--fwp-cols, 3), minmax(0, 1fr));
+	gap: var(--fwp-gap, 1.1rem);
+	justify-items: center;
+	align-items: end;
+	text-align: center;
+}
+.fw-progress--vertical .fw-progress__item { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; }
+.fw-progress__vtrack {
+	position: relative;
+	width: var(--fwp-h, 10px);
+	min-width: 10px;
+	background: rgba(0, 0, 0, .08);
+	overflow: hidden;
+	display: flex;
+	align-items: flex-end;
+}
+.fw-progress--rounded .fw-progress__vtrack,
+.fw-progress--rounded .fw-progress__vfill { border-radius: 9999px; }
+.fw-progress__vfill { width: 100%; height: 0; margin-top: auto; background: #2563eb; transition: height .9s cubic-bezier(.22, .61, .36, 1); }
+.fw-progress--vertical .fw-progress__value { opacity: 1; font-size: 1rem; }
+.fw-progress--vertical .fw-progress__caption { margin-top: .4rem; }
+
+/* ---- Segmented -------------------------------------------------------- */
+.fw-progress--segmented .fw-progress__item { margin: 0 0 var(--fwp-gap, 1.1rem); }
+.fw-progress--segmented .fw-progress__item:last-child { margin-bottom: 0; }
+.fw-progress__segments { display: flex; gap: 4px; width: 100%; }
+.fw-progress__seg { flex: 1 1 0; height: var(--fwp-h, 10px); background: rgba(0, 0, 0, .12); transition: background .3s ease; }
+.fw-progress--rounded .fw-progress__seg { border-radius: 3px; }
+.fw-progress__seg.is-on { background: #2563eb; }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-progress__vfill { transition: none !important; }
+}

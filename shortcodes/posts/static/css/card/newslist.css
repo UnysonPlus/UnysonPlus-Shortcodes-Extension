@@ -1,0 +1,6 @@
+/* Posts card design: Compact News List. */
+.posts__card--newslist { flex-direction: row; align-items: center; gap: .85rem; }
+.posts__newslist-media { flex: 0 0 72px; max-width: 72px; }
+.posts__newslist-media .posts__image { width: 72px; aspect-ratio: 1 / 1; border-radius: .35rem; }
+.posts__card--newslist .posts__body { flex: 1 1 auto; min-width: 0; padding: 0; }
+.posts__card--newslist .posts__body > * + * { margin-top: .25em; }

@@ -204,14 +204,14 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 			),
 		);
 
-		/* ---- Borders ---- */
+		/* ---- Box Presets ---- */
 		$borders = array(
 			'border_presets' => array(
-				'label'         => __( 'Border Presets', 'fw' ),
+				'label'         => __( 'Box Presets', 'fw' ),
 				'type'          => 'border-presets',
 				'color-choices' => $color_choices,
 				'value'         => function_exists( 'unysonplus_default_border_presets' ) ? unysonplus_default_border_presets() : array(),
-				'desc'          => __( 'Each preset produces a <code>.colb-{name}</code> class with a live preview — pick it on a Column (Styling → Border Preset) or a Table (Table Options → Frame). Border, corner radius and box-shadow are set per Default / Hover state.', 'fw' ),
+				'desc'          => __( 'A reusable card style — border, corner radius, padding, box-shadow and an optional background fill (color / gradient / image). Each preset produces a <code>.boxp-{name}</code> class with a live preview — pick it on a Column (Styling → Box Preset), a Table (Table Options → Frame), or a Countdown. Set per Default / Hover state.', 'fw' ),
 			),
 		);
 
@@ -235,7 +235,7 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 			'tab_typography' => $tab( __( 'Typography', 'fw' ), $typography ),
 			'tab_spacing'    => $tab( __( 'Spacing', 'fw' ), $spacing ),
 			'tab_buttons'    => $tab( __( 'Buttons', 'fw' ), $buttons ),
-			'tab_borders'    => $tab( __( 'Borders', 'fw' ), $borders ),
+			'tab_borders'    => $tab( __( 'Box Presets', 'fw' ), $borders ),
 			'tab_tables'     => $tab( __( 'Tables', 'fw' ), $tables ),
 		) );
 	}

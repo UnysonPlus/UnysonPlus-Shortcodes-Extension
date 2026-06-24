@@ -2,6 +2,49 @@
     die( 'Forbidden' );
 }
 
+// The standard Advanced tab (Unique ID, CSS ID / CSS Class / Custom CSS, Responsive, Custom
+// Attributes). Inject the per-part class fields INTO the CSS group, right below CSS Class, so
+// all the class targets read as one group instead of being stranded at the bottom of the tab.
+$sc_sh_advanced = sc_get_advanced_tab();
+$sc_sh_part_classes = [
+    'overline_class' => [
+        'label' => __('Overline Class', 'fw'),
+        'desc'  => false,
+        'type'  => 'text',
+        'dynamic_content' => false,
+        'help'  => __('Add your own CSS class(es), space-separated, to target the overline from custom CSS.', 'fw'),
+    ],
+    'title_class' => [
+        'label' => __('Title Class', 'fw'),
+        'desc'  => false,
+        'type'  => 'text',
+        'dynamic_content' => false,
+        'help'  => __('Add your own CSS class(es), space-separated, to target the title from custom CSS.', 'fw'),
+    ],
+    'subtitle_class' => [
+        'label' => __('Subtitle Class', 'fw'),
+        'desc'  => false,
+        'type'  => 'text',
+        'dynamic_content' => false,
+        'help'  => __('Add your own CSS class(es), space-separated, to target the subtitle from custom CSS.', 'fw'),
+    ],
+];
+if ( isset( $sc_sh_advanced['group_css']['options'] ) && is_array( $sc_sh_advanced['group_css']['options'] ) ) {
+    $sc_sh_css_opts = [];
+    foreach ( $sc_sh_advanced['group_css']['options'] as $sc_sh_k => $sc_sh_v ) {
+        // No dynamic-content picker on Special Heading's CSS ID / CSS Class either (special-heading
+        // override only — the shared sc_get_advanced_tab() is untouched for other shortcodes).
+        if ( in_array( $sc_sh_k, array( 'css_id', 'css_class' ), true ) && is_array( $sc_sh_v ) ) {
+            $sc_sh_v['dynamic_content'] = false;
+        }
+        $sc_sh_css_opts[ $sc_sh_k ] = $sc_sh_v;
+        if ( $sc_sh_k === 'css_class' ) { // drop the part-class fields right under CSS Class
+            $sc_sh_css_opts = array_merge( $sc_sh_css_opts, $sc_sh_part_classes );
+        }
+    }
+    $sc_sh_advanced['group_css']['options'] = $sc_sh_css_opts;
+}
+
 $options = [
     'tab_content' => [
         'title'   => __('Content', 'fw'),
@@ -12,18 +55,21 @@ $options = [
                 'options' => [
                     'overline' => [
                         'type'  => 'text',
+                        'dynamic_content' => false,
                         'label' => __('Overline', 'fw'),
                         'desc'  => __('Small label shown above the title. Also known as eyebrow headline. Leave empty to hide.', 'fw'),
                         'help'  => __('Examples: "FAQs", "Our process", "Step 1". Give it a rule or uppercase kicker look with Overline Style on the Layout tab.', 'fw'),
                     ],
                     'title' => [
                         'type'  => 'text',
+                        'dynamic_content' => false,
                         'label' => __('Title', 'fw'),
                         'desc'  => __('Write the heading title content', 'fw'),
                         'help'  => __('You can wrap part of the text in inline HTML — e.g. an &lt;em&gt; or a coloured &lt;span&gt; — to emphasise a word.', 'fw'),
                     ],
                     'subtitle' => [
                         'type'  => 'text',
+                        'dynamic_content' => false,
                         'label' => __('Subtitle', 'fw'),
                         'desc'  => __('Write the heading subtitle content', 'fw'),
                         'help'  => __('A short supporting line under the title — keep it to a sentence or two. For longer copy use a Text Block instead.', 'fw'),
@@ -56,10 +102,10 @@ $options = [
                 'type'    => 'group',
                 'options' => [
                     'alignment' => sc_alignment_field( array(
-                        'label' => __( 'Alignment', 'fw' ),
-                        'value' => 'left',
-                        'desc'  => __( 'Master horizontal alignment for the whole heading. Each element below can override it.', 'fw' ),
-                        'help'  => __( 'Sets the overline, title and subtitle together. Use the per-element controls below only when one line should differ.', 'fw' ),
+                        'label'   => __( 'Alignment', 'fw' ),
+                        'inherit' => true,
+                        'desc'    => __( 'Master horizontal alignment for the whole heading. Each element below can override it.', 'fw' ),
+                        'help'    => __( 'Leave on Inherit to follow the theme / parent alignment (nothing is forced). Pick Left, Center or Right to set the overline, title and subtitle together. Use the per-element controls below only when one line should differ.', 'fw' ),
                     ) ),
                     'overline_align' => sc_alignment_field( array(
                         'label'   => __( 'Overline Alignment', 'fw' ),
@@ -243,29 +289,7 @@ $options = [
         'options' => [
             'advanced_settings' => [
                 'type'    => 'group',
-                'options' => array_merge(
-                    sc_get_advanced_tab(),
-                    [
-                        'overline_class' => [
-                            'label' => __('Overline Class', 'fw'),
-                            'desc'  => false,
-                            'type'  => 'text',
-                            'help'  => __('Add your own CSS class(es), space-separated, to target the overline from custom CSS.', 'fw'),
-                        ],
-                        'title_class' => [
-                            'label' => __('Title Class', 'fw'),
-                            'desc'  => false,
-                            'type'  => 'text',
-                            'help'  => __('Add your own CSS class(es), space-separated, to target the title from custom CSS.', 'fw'),
-                        ],
-                        'subtitle_class' => [
-                            'label' => __('Subtitle Class', 'fw'),
-                            'desc'  => false,
-                            'type'  => 'text',
-                            'help'  => __('Add your own CSS class(es), space-separated, to target the subtitle from custom CSS.', 'fw'),
-                        ],
-                    ]
-                ),
+                'options' => $sc_sh_advanced, // CSS group now carries Overline/Title/Subtitle Class
             ],
         ],
     ],

@@ -7,7 +7,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'Button', 'fw' ),
 	'description' => __( 'Add a Button', 'fw' ),
-	'tab'         => __( 'Content Elements', 'fw' ),
+	'tab'         => __( 'Components', 'fw' ),
 	'popup_size' => 'large',
 	'title_template' => '<span class="fw-btn">{{= o.label }}</span>',
 );

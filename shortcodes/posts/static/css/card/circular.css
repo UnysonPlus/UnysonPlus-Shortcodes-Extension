@@ -1,0 +1,6 @@
+/* Posts card design: Circular. */
+.posts__card--circular { align-items: center; text-align: center; padding: var(--posts-card-pad); }
+.posts__circular-media { width: 140px; height: 140px; margin: 0 auto .9rem; }
+.posts__card--circular .posts__circular-media .posts__image { width: 140px; height: 140px; aspect-ratio: 1 / 1; border-radius: 50%; }
+.posts__card--circular .posts__body { padding: 0; }
+.posts__card--circular .posts__cats, .posts__card--circular .posts__meta--inline-dot, .posts__card--circular .posts__meta--inline-pipe, .posts__card--circular .posts__meta--inline-icons { justify-content: center; }

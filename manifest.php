@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.7.59';
+$manifest['version']     = '1.8.22';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,72 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.8.22 - New Flexbox layout element (Structure tab) — a self-contained, nestable
+ *          flex container that outputs a chosen semantic HTML tag, exposed as seven
+ *          per-tag palette tiles (Div / Main / Article / Header / Footer / Aside /
+ *          Nav). Each tile drops the SAME item type but presets html_tag via a
+ *          data-fxtag on the thumbnail. Row by default: a child given a Width
+ *          (1/12…12/12, a custom percentage, or the canvas drag-stepper) flows
+ *          side-by-side like a column; a child with no width stacks full-width.
+ *          Full flex control — direction (+reverse), wrap, gap (spacing presets),
+ *          justify / align / align-content (image-pickers), align-self, order (1–12),
+ *          grow-to-fill — plus background, a border/shadow preset, min-height and
+ *          spacing. It holds content elements and nests one level (the fw_inner_flexbox
+ *          alias sidesteps WordPress' same-tag shortcode limit), and is root-droppable
+ *          so it needs no Section wrapper. Scoped to the Theme Builder part editors
+ *          (the Structure tab sits left of Dynamic Content). Renders clean Bootstrap
+ *          flex markup; the editor canvas mirrors the real layout.
+ * 1.7.77 - New Avatar shortcode (Components). A user-avatar element with two
+ *          modes: Single (one avatar, optional status dot, optional Name +
+ *          Subtitle "user chip") and Group (an overlapping row with a
+ *          configurable overlap, a Max Visible cap, and a "+N" counter — auto
+ *          from hidden avatars or a manual social-proof label like "2K+").
+ *          Image-or-initials fallback: library images are server-side cropped
+ *          to a sharp 2x square via fw_resize (retina, cached on disk) and
+ *          displayed at the chosen Size; with no image, initials are derived
+ *          from the Name (auto per-name color, or a Fixed color from the Style
+ *          tab). Five pure-CSS designs (plain / bordered / accent ring / soft
+ *          shadow / soft tint), three shapes, a px Size slider, and presence
+ *          dots. Sizing is driven by a single --av-size custom property so the
+ *          box, initials, dot, ring and overlap all scale from one number.
+ * 1.7.75 - Text Block: typography options added, plus rendering hardening. New
+ *          Styling-tab controls — Line Height, Paragraph Spacing, Lead Paragraph,
+ *          Link Underline (all preset CLASSES on the wrapper), a per-block Link
+ *          Color (--tb-link, gated by a tb-linkcolor class so the theme link color
+ *          is untouched unless picked), and a Drop Cap Color (--fw-dropcap-accent,
+ *          recolors the accent/boxed/outline caps). All are new option ids, so no
+ *          legacy save can feed them and no migration is needed. Rendering now runs
+ *          the content through WP's own pipeline order — do_shortcode(shortcode_unautop(
+ *          wpautop())) — so Text/HTML-mode blank-line paragraphs auto-format while
+ *          block-level nested shortcodes don't gain stray <p> (idempotent on the
+ *          <p>-tagged HTML TinyMCE already stores). The drop-cap wrapper now treats a
+ *          leading HTML entity (a smart quote, &ldquo;) as one atomic unit so it can't
+ *          be split mid-entity. Also a cross-element fix: the GSAP module hooks the
+ *          sc_needs_wrapper filter, so an element whose only non-default setting is a
+ *          GSAP scroll effect still emits a wrapper for its data-upw-g* attributes
+ *          (previously such a block — e.g. a plain text-block with only a Reveal —
+ *          rendered wrapper-less and silently never animated; also fixes media-image).
+ *
+ * 1.7.71 - Special Heading: the overline and subtitle now render as semantic <p> tags
+ *          instead of <div> (cleaner SEO/markup; the heading tag and the load-bearing
+ *          .heading-overline__label span are unchanged). Styling targets the classes,
+ *          so themes are unaffected unless they used tag-qualified selectors like
+ *          div.heading-subtitle. CSS zeroes the <p> UA margins so spacing is identical.
+ *
+ * 1.7.69 - Calendar: complete modernization rewrite. Replaced the old client-side
+ *          bootstrap-calendar engine (Bootstrap 3 + jQuery + Underscore + jstimezone-
+ *          detect, ~6,600 lines, AJAX) with a dependency-free, SERVER-rendered month
+ *          grid + a small vanilla-JS month navigator. New builder-driven events model
+ *          (title / date / end date / time / all-day / url / colour), an optional
+ *          upcoming-events list, and five designs (classic / minimal / cards /
+ *          bordered / dark). Legacy saved events (data_provider/custom_events) are
+ *          still read, so existing calendars keep their data.
+ *
+ * 1.7.67 - Highlight Text: optional "Prefix" and "Suffix" plain-text fields around the
+ *          highlighted phrase, so the effect (marker / gradient / underline / glow /
+ *          outline) can be scoped to ONE phrase inside a heading (e.g. "Build it
+ *          [visually] today"). Empty prefix/suffix = the previous single-phrase output.
+ *
  * 1.7.54 - New "Lottie Animation" media element ([lottie]). Plays a Lottie .json vector
  *          via a bundled lottie-web (SVG / light build, ~168 KB, vendored and
  *          enqueued only when used; src filterable via fw_shortcode_lottie_library_src).

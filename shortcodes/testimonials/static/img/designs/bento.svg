@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90" width="120" height="90" role="img" aria-label="Bento featured grid layout">
+  <rect width="120" height="90" fill="#f8f9fa"/>
+  <g fill="#fff" stroke="#cfd6dd" stroke-width="2">
+    <rect x="14" y="16" width="50" height="42" rx="5"/>
+    <rect x="70" y="16" width="36" height="20" rx="4"/>
+    <rect x="70" y="40" width="36" height="18" rx="4"/>
+    <rect x="14" y="62" width="24" height="14" rx="4"/>
+    <rect x="44" y="62" width="62" height="14" rx="4"/>
+  </g>
+  <circle cx="26" cy="28" r="6" fill="#cfd6dd"/>
+  <rect x="22" y="40" width="34" height="3.5" rx="1.75" fill="#dfe4e9"/>
+  <rect x="22" y="47" width="24" height="3.5" rx="1.75" fill="#dfe4e9"/>
+  <rect x="76" y="23" width="24" height="3" rx="1.5" fill="#dfe4e9"/>
+  <rect x="76" y="46" width="24" height="3" rx="1.5" fill="#dfe4e9"/>
+</svg>

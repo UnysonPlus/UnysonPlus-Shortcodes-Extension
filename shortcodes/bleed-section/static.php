@@ -16,6 +16,6 @@ $bs_css = '/shortcodes/bleed-section/static/css/bleed-section.css';
 wp_enqueue_style(
 	'fw-shortcode-bleed-section',
 	$shortcodes_extension->get_uri( $bs_css ),
-	array(),
+	array( 'fw-ext-builder-frontend-grid' ), // .fw- grid + order/utility classes
 	$bs_asset_ver( $bs_css )
 );

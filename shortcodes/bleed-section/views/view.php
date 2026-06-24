@@ -63,16 +63,16 @@ $content_order = '';
 $image_order   = '';
 if ( $bleed_side === 'right' ) {
 	if ( $bleed_mobile === 'image-first' ) {
-		$content_order = ' order-2 order-md-1';
-		$image_order   = ' order-1 order-md-2';
+		$content_order = ' fw-order-2 fw-order-md-1';
+		$image_order   = ' fw-order-1 fw-order-md-2';
 	}
 } else {
 	if ( $bleed_mobile === 'content-first' ) {
-		$image_order   = ' order-2';
-		$content_order = ' order-1';
+		$image_order   = ' fw-order-2';
+		$content_order = ' fw-order-1';
 	} else {
-		$image_order   = ' order-md-2';
-		$content_order = ' order-md-1';
+		$image_order   = ' fw-order-md-2';
+		$content_order = ' fw-order-md-1';
 	}
 }
 
@@ -101,17 +101,17 @@ $attr['class']  = $existing_class . 'bleed-section';
 		</div>
 	<?php endif; ?>
 	<div class="<?php echo esc_attr( $container_class ); ?>" style="position:relative;z-index:2;">
-		<div class="row">
+		<div class="fw-row">
 			<?php if ( $bleed_side === 'left' ) : ?>
-				<div class="col-md-<?php echo esc_attr( $image_col . $image_order ); ?>"></div>
-				<div class="col-md-<?php echo esc_attr( $content_col . $content_order ); ?>" style="<?php echo $content_style; ?>">
+				<div class="fw-col-md-<?php echo esc_attr( $image_col . $image_order ); ?>"></div>
+				<div class="fw-col-md-<?php echo esc_attr( $content_col . $content_order ); ?>" style="<?php echo $content_style; ?>">
 					<?php echo do_shortcode( $content ); ?>
 				</div>
 			<?php else : ?>
-				<div class="col-md-<?php echo esc_attr( $content_col . $content_order ); ?>" style="<?php echo $content_style; ?>">
+				<div class="fw-col-md-<?php echo esc_attr( $content_col . $content_order ); ?>" style="<?php echo $content_style; ?>">
 					<?php echo do_shortcode( $content ); ?>
 				</div>
-				<div class="col-md-<?php echo esc_attr( $image_col . $image_order ); ?>"></div>
+				<div class="fw-col-md-<?php echo esc_attr( $image_col . $image_order ); ?>"></div>
 			<?php endif; ?>
 		</div>
 	</div>
