@@ -16,6 +16,6 @@ $cfg = array(
 		'description'    => __('A nestable flexbox container with a semantic HTML tag. Lay children out in a row or column; give each child a width to build side-by-side layouts.', 'fw'),
 		'type'           => 'flexbox', // WARNING: must match Page_Builder_Flexbox_Item::get_type()
 		'popup_size'     => 'medium',
-		'title_template' => '{{= ( o.html_tag && o.html_tag !== "div" ? o.html_tag : "Flexbox" ) }}',
+		'title_template' => '{{= ( o.html_tag ? o.html_tag : "div" ) }}',
 	)
 );

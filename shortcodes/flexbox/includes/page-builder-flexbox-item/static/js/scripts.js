@@ -221,7 +221,11 @@
 				} else if (fxWidthCss) {
 					this.$el.css({ 'flex': '0 0 ' + fxWidthCss, 'max-width': fxWidthCss });
 				} else {
-					this.$el.css({ 'flex': '', 'max-width': '' });
+					// Auto width. A nested flexbox CONTAINER spans the FULL row (Auto =
+					// full width) — force 100% so the canvas content-sizing default (which
+					// shrinks plain ELEMENTS to their content) doesn't also shrink this
+					// container. In a Column parent it is already full-width, so leave it.
+					this.$el.css({ 'flex': fxParentCol ? '' : '0 0 100%', 'max-width': '', 'width': '' });
 				}
 
 				// Canvas preview: Justify (main axis) + Align (cross axis) applied to the

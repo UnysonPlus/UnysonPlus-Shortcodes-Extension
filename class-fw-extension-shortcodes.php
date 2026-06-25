@@ -455,9 +455,16 @@ class FW_Extension_Shortcodes extends FW_Extension
 			add_shortcode( 'fw_inner_column', array( $this->shortcodes['column'], 'render' ) );
 		}
 		// Same reason for nested Flexbox: a flexbox directly inside another flexbox
-		// is emitted as fw_inner_flexbox so the repeated [flexbox] tags don't collide.
+		// is emitted as an fw_inner_flexbox* alias so the repeated [flexbox] tags don't
+		// collide. Because WP's parser is non-recursive PER TAG, ONE alias only fixes a
+		// single nested level — a deeper tree (authored / imported / theme-builder
+		// preset) re-collides when the same alias nests inside itself. So register a
+		// POOL of aliases; the notation generator (fw_flexbox_alias_for_depth) cycles
+		// through them by depth so no ancestor chain ever repeats a tag.
 		if ( isset( $this->shortcodes['flexbox'] ) ) {
-			add_shortcode( 'fw_inner_flexbox', array( $this->shortcodes['flexbox'], 'render' ) );
+			foreach ( fw_flexbox_inner_alias_pool() as $alias ) {
+				add_shortcode( $alias, array( $this->shortcodes['flexbox'], 'render' ) );
+			}
 		}
 	}
 

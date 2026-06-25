@@ -45,6 +45,19 @@
 	font-size: 11px;
 }
 
+/* The ItemsView renders the children container as `.builder-items.fw-row`, so it
+   inherits Bootstrap's `.fw-row::before / ::after` CLEARFIX. Inside our display:flex
+   container those two generated pseudo-elements become STRAY FLEX ITEMS — one at each
+   end — so justify-content (space-between / around / evenly) reserves an edge slot for
+   each and the first/last real cards never reach the container edges. Neutralize them
+   whenever the row holds items (the empty-state hint above keeps its own ::before,
+   guarded by :not(:has)). Mirrors the page-builder's `.fw-pb-flex-row` fix. */
+.builder-item > .custom-flexbox > .builder-items:has(> .builder-item)::before,
+.builder-item > .custom-flexbox > .builder-items:has(> .builder-item)::after {
+	content: none;
+	display: none;
+}
+
 /* Canvas preview: when Direction = Row, lay the children out side-by-side in the
    editor too (mirrors the frontend d-flex flex-row) so the layout reads correctly
    while building. Tagged by the item view via a `fx-dir-row` class on the wrapper. */
@@ -67,12 +80,14 @@
 	padding: 5px;
 }
 .builder-item.fx-dir-row > .custom-flexbox > .builder-items:has(> .builder-item) > .builder-item {
-	/* DEFAULT (no width set) = full-width → wraps onto its own line, i.e. STACKS.
-	   A child only goes side-by-side once you give it a Width: the item view then
-	   sets an inline `flex: 0 0 N%` which overrides this. So content/elements stack
-	   by default and you opt INTO columns by setting widths. */
-	flex: 0 0 100%;
-	min-width: 0; /* respect the inline flex-basis (N%) exactly; don't floor it */
+	/* STANDARD flexbox: a Row child is content-sized and sits INLINE (mirrors the
+	   front end). Give it a Width and the item view sets an inline `flex: 0 0 N%`
+	   which overrides this; set Direction = Column to stack. width:fit-content forces
+	   the card to shrink to its element instead of filling the row. */
+	flex: 0 1 auto;
+	width: fit-content;
+	max-width: 100%;
+	min-width: 0; /* respect the inline flex-basis (N%) exactly; allow shrink */
 	/* Small even padding on ALL sides → ~10px between cards (h + v) and from edges. */
 	padding: 5px;
 }

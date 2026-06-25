@@ -60,3 +60,47 @@ function fw_ext_shortcodes_enqueue_shortcodes_admin_scripts() {
 
 	do_action('fw:ext:shortcodes:enqueue-shortcodes-admin-scripts');
 }
+
+/**
+ * Pool of distinct shortcode-tag aliases for NESTED flexbox containers.
+ *
+ * WordPress' shortcode parser is non-recursive PER TAG: a [flexbox] inside a
+ * [flexbox] (or the same alias inside itself) mis-pairs — the outer open binds
+ * to the first inner close — self-closing the inner box and leaking the trailing
+ * close tag as literal text. A single alias only fixes ONE nested level; deeper
+ * trees re-collide. Cycling through this pool by nesting depth guarantees no
+ * ancestor chain ever repeats a tag (good for trees up to count(pool)+1 levels;
+ * the cycle then repeats, but only between NON-adjacent, non-self-nesting levels,
+ * which the parser tolerates). All aliases render through the one flexbox
+ * instance (FW_Shortcode::render keys off $this, not the passed $tag).
+ *
+ * @return string[]
+ * @since 2.10.x
+ */
+function fw_flexbox_inner_alias_pool() {
+	return array(
+		'fw_inner_flexbox',   // kept first for back-compat with existing content
+		'fw_inner_flexbox2',
+		'fw_inner_flexbox3',
+		'fw_inner_flexbox4',
+		'fw_inner_flexbox5',
+		'fw_inner_flexbox6',
+	);
+}
+
+/**
+ * Pick the inner-flexbox alias for a given nesting depth (depth 1 = first flexbox
+ * nested inside another flexbox). Cycles through fw_flexbox_inner_alias_pool().
+ *
+ * @param int $depth 1-based nesting depth (0 = top-level, never aliased).
+ * @return string
+ * @since 2.10.x
+ */
+function fw_flexbox_alias_for_depth( $depth ) {
+	$pool = fw_flexbox_inner_alias_pool();
+	$i    = ( (int) $depth - 1 ) % count( $pool );
+	if ( $i < 0 ) {
+		$i = 0;
+	}
+	return $pool[ $i ];
+}
