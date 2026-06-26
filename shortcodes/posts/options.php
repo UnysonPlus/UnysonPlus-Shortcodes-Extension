@@ -186,6 +186,14 @@ $options = [
             'group_source' => [
                 'type'    => 'group',
                 'options' => [
+                    'use_current_query' => [
+                        'label'        => __( 'Posts for current page', 'fw' ),
+                        'desc'         => __( 'Use the posts of the page being viewed (an archive, category, tag, search, or blog index) instead of a custom query — ideal for an archive Body Template. The query settings below are ignored while this is on.', 'fw' ),
+                        'type'         => 'switch',
+                        'value'        => 'no',
+                        'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
+                        'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
+                    ],
                     'post_type' => [
                         'label'   => __( 'Post Type', 'fw' ),
                         'desc'    => __( 'Source content type.', 'fw' ),

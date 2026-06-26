@@ -657,10 +657,20 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
         if ( $row_gap_size !== '' ) $style_var .= '--posts-row-gap:' . $row_gap_size . ';';
         $attr['style'] = isset( $attr['style'] ) ? $attr['style'] . ';' . $style_var : $style_var;
 
-        /* Query */
+        /* Query — either the current page's main query ("Posts for current page",
+           the archive Body Template pattern) or a custom WP_Query from the atts. The
+           render below only reads $query->posts, so reusing the main query is safe. */
         $paged = max( 1, (int) get_query_var( 'paged' ) ?: ( (int) get_query_var( 'page' ) ?: 1 ) );
-        $q_args = sc_posts_build_query_args( $atts, $paged );
-        $query  = new WP_Query( $q_args );
+        $use_current = ( sc_get( 'use_current_query', $atts, 'no' ) === 'yes' )
+            && ! is_admin() && ! is_singular()
+            && isset( $GLOBALS['wp_query'] ) && ( $GLOBALS['wp_query'] instanceof WP_Query )
+            && $GLOBALS['wp_query']->have_posts();
+        if ( $use_current ) {
+            $query = $GLOBALS['wp_query'];
+        } else {
+            $q_args = sc_posts_build_query_args( $atts, $paged );
+            $query  = new WP_Query( $q_args );
+        }
 
         /* Pagination handling — sticky pin */
         $posts_list = $query->posts;
