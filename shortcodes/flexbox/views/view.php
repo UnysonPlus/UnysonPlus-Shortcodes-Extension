@@ -114,6 +114,33 @@ $atts['css_class'] = trim( ( isset( $atts['css_class'] ) ? $atts['css_class'] : 
 // (Styling) + animation + Advanced (css_id, custom attrs) via its filters.
 $attr = sc_build_wrapper_attr( $atts );
 
+// Responsive overrides — Direction / Justify per breakpoint, emitted as scoped
+// media-query CSS keyed to this flexbox's unique fx-* class (no responsive flex
+// utility classes exist, so we generate the rules). Empty values inherit.
+$resp_css = '';
+if ( isset( $attr['class'] ) && preg_match( '/\bfx-[a-z0-9]+\b/i', (string) $attr['class'], $um ) ) {
+	$uid_sel = '.' . $um[0];
+	$jc_map  = array( 'start' => 'flex-start', 'center' => 'center', 'end' => 'flex-end', 'between' => 'space-between', 'around' => 'space-around', 'evenly' => 'space-evenly' );
+	$bps     = array(
+		'mobile' => '@media (max-width:767.98px)',
+		'tablet' => '@media (min-width:768px) and (max-width:991.98px)',
+	);
+	foreach ( $bps as $bp_key => $mq ) {
+		$rule = '';
+		$d_bp = isset( $atts[ 'direction_' . $bp_key ] ) ? (string) $atts[ 'direction_' . $bp_key ] : '';
+		if ( $d_bp === 'row' || $d_bp === 'column' ) {
+			$rule .= 'flex-direction:' . $d_bp . ';';
+		}
+		$j_bp = isset( $atts[ 'justify_content_' . $bp_key ] ) ? (string) $atts[ 'justify_content_' . $bp_key ] : '';
+		if ( isset( $jc_map[ $j_bp ] ) ) {
+			$rule .= 'justify-content:' . $jc_map[ $j_bp ] . ';';
+		}
+		if ( $rule !== '' ) {
+			$resp_css .= $mq . '{' . $uid_sel . '{' . $rule . '}}';
+		}
+	}
+}
+
 // Min height (exact value, e.g. 60vh) — for vertical centring with align-items.
 $min_h = '';
 if ( isset( $atts['min_height'] ) && is_array( $atts['min_height'] )
@@ -143,6 +170,9 @@ if ( $extra_style !== '' ) {
 	$attr['style'] = $existing . $extra_style;
 }
 
+if ( $resp_css !== '' ) {
+	echo '<style>' . $resp_css . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput — generated, value-sanitized CSS
+}
 echo '<' . $tag . ' ' . fw_attr_to_html( $attr ) . '>';
 echo do_shortcode( $content );
 echo '</' . $tag . '>';
