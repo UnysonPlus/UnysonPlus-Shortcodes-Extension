@@ -628,11 +628,22 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
 
         $atts['css_class'] = trim( implode( ' ', $wrapper_classes ) . ' ' . ( $atts['css_class'] ?? '' ) );
 
+        /* Decide up-front whether we'll reuse the page's main query (the archive Body
+           Template pattern) so the page size advertised to AJAX load-more / infinite
+           scroll matches the query actually on screen — not the (ignored) atts ppp. */
+        $use_current = ( sc_get( 'use_current_query', $atts, 'no' ) === 'yes' )
+            && ! is_admin() && ! is_singular()
+            && isset( $GLOBALS['wp_query'] ) && ( $GLOBALS['wp_query'] instanceof WP_Query )
+            && $GLOBALS['wp_query']->have_posts();
+        $ppp_attr = $use_current
+            ? max( 1, (int) $GLOBALS['wp_query']->get( 'posts_per_page' ) )
+            : (int) sc_get( 'posts_per_page', $atts, 6 );
+
         $extra_attrs = [
             'data-mobile-layout' => sanitize_html_class( $mobile_ovr ),
             'data-density'       => sanitize_html_class( $card_padding ),
             'data-pagination'    => sanitize_html_class( $pag_type ),
-            'data-ppp'           => (int) sc_get( 'posts_per_page', $atts, 6 ),
+            'data-ppp'           => $ppp_attr,
         ];
         if ( $layout_mode === 'slider' ) {
             $extra_attrs['data-slider-arrows']   = sanitize_html_class( $slider_arrows );
@@ -661,10 +672,6 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
            the archive Body Template pattern) or a custom WP_Query from the atts. The
            render below only reads $query->posts, so reusing the main query is safe. */
         $paged = max( 1, (int) get_query_var( 'paged' ) ?: ( (int) get_query_var( 'page' ) ?: 1 ) );
-        $use_current = ( sc_get( 'use_current_query', $atts, 'no' ) === 'yes' )
-            && ! is_admin() && ! is_singular()
-            && isset( $GLOBALS['wp_query'] ) && ( $GLOBALS['wp_query'] instanceof WP_Query )
-            && $GLOBALS['wp_query']->have_posts();
         if ( $use_current ) {
             $query = $GLOBALS['wp_query'];
         } else {
