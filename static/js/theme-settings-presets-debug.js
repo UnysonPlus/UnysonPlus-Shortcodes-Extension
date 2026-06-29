@@ -93,3 +93,77 @@
 	// Expose a manual trigger.
 	window.upwPresetOverflow = run;
 }() );
+
+
+/**
+ * Preset-accordion tracer. Logs why a preset box does (or does not) reveal its body
+ * (.inside) when clicked. Click a Color preset vs a Typography preset and compare the
+ * two logged snapshots. Also catches JS errors fired during the click (e.g. an Iris /
+ * color-picker error that aborts the box render). Loads only with ?upw_preset_debug=1.
+ */
+( function () {
+	'use strict';
+
+	window.addEventListener( 'error', function ( ev ) {
+		console.log( '%c[UPW preset JS error]', 'color:#b02a37;font-weight:bold',
+			ev.message, '@', ( ev.filename || '' ) + ':' + ( ev.lineno || '' ) );
+	} );
+
+	function libOf( el ) {
+		var box = el.closest ? el.closest( '.fw-option-type-addable-box' ) : null;
+		if ( box && box.id ) { return box.id; }
+		var tab = el.closest ? el.closest( '.fw-options-tab' ) : null;
+		return tab && tab.id ? tab.id : '(unknown)';
+	}
+
+	function snap( optionBox ) {
+		var pb     = optionBox.querySelector( '.fw-postbox' );
+		var inside = optionBox.querySelector( '.inside' );
+		var cs     = inside ? getComputedStyle( inside ) : null;
+		return {
+			hasPostbox:    !! pb,
+			hasHeader:     !! optionBox.querySelector( '.postbox-header .hndle' ),
+			hasInside:     !! inside,
+			closed:        pb ? pb.classList.contains( 'closed' ) : null,
+			insideDisplay: cs ? cs.display : null,
+			insideVisible: cs ? ( cs.display !== 'none' && cs.visibility !== 'hidden' && parseFloat( cs.opacity ) > 0 ) : null,
+			insideHeight:  inside ? inside.offsetHeight : null,
+			insideKids:    inside ? inside.children.length : null,
+			hasIris:       !! optionBox.querySelector( '.iris-picker, .wp-picker-container, .iris-initialized, .a8c-iris' ),
+			hasColorField: !! optionBox.querySelector( '.fw-option-type-color-picker' )
+		};
+	}
+
+	// Capture-phase so we see the state BEFORE the framework's own handler runs, then
+	// sample again after it has had a chance to toggle.
+	document.addEventListener( 'click', function ( e ) {
+		var optionBox = e.target.closest && e.target.closest(
+			'#fw-options-tab-components_container .fw-preset-2col .fw-option-box'
+		);
+		if ( ! optionBox ) { return; }
+
+		var lib    = libOf( optionBox );
+		var before = snap( optionBox );
+		setTimeout( function () {
+			var after = snap( optionBox );
+			console.log( '%c[UPW preset click] ' + lib, 'color:#2f74e6;font-weight:bold' );
+			console.table( { before: before, after: after } );
+			if ( before.closed === after.closed ) {
+				console.log( '%c  → .closed did NOT change: the toggle handler did not fire on this box.', 'color:#b02a37' );
+			} else if ( ! after.insideVisible ) {
+				console.log( '%c  → box opened but .inside is not visible (height=' + after.insideHeight + ', kids=' + after.insideKids + ').', 'color:#b02a37' );
+			} else {
+				console.log( '%c  → box opened and body is visible.', 'color:#1e7d4f' );
+			}
+		}, 200 );
+	}, true );
+
+	// Manual full dump of every preset box's current state.
+	window.upwPresetTrace = function () {
+		var boxes = document.querySelectorAll( '#fw-options-tab-components_container .fw-preset-2col .fw-option-box' );
+		console.log( '%c[UPW preset trace] ' + boxes.length + ' preset box(es) in view', 'color:#2f74e6;font-weight:bold' );
+		Array.prototype.forEach.call( boxes, function ( b, i ) {
+			console.log( i, libOf( b ), snap( b ) );
+		} );
+	};
+}() );
