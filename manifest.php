@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.8.33';
+$manifest['version']     = '1.8.43';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,19 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.8.34 - New "Announcement Pill" element (Content Elements tab) — a compact, highly
+ *          customizable badge / chip: an optional sub-tag ("New"), a message, a leading
+ *          marker (dot / pulse "live" dot / icon) and a trailing icon, across seven
+ *          styles (Soft / Outline / Solid / Subtle / Ghost / Gradient / Glass), three
+ *          shapes & sizes, and per-part colours (pill / message / sub-tag / gradient).
+ *          A dedicated "Link & SEO" tab makes it search-friendly: it renders a crawlable
+ *          <a> when linked (plain <span> otherwise — never role="alert"), auto-opens
+ *          external links in a new tab with rel="noopener noreferrer", and adds optional
+ *          rel="nofollow/sponsored/ugc", an aria-label, a title tooltip, a remembered
+ *          (localStorage) dismiss button, and opt-in schema.org SpecialAnnouncement
+ *          JSON-LD. Decorative dots / icons are aria-hidden. The Site Converter maps
+ *          hero "what's new" pills straight to this element instead of verbatim code.
+ *
  * 1.8.22 - New Flexbox layout element (Structure tab) — a self-contained, nestable
  *          flex container that outputs a chosen semantic HTML tag, exposed as seven
  *          per-tag palette tiles (Div / Main / Article / Header / Footer / Aside /

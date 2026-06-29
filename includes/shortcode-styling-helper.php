@@ -72,9 +72,12 @@ if ( ! function_exists( 'sc_theme_settings_url' ) ) :
 			'borders'    => 'tab_borders',
 			'tables'     => 'tab_tables',
 		);
-		// Plugin-owned, theme-independent home: the Shortcodes extension Settings
-		// form (Unyson+ → Extensions → Shortcodes → Settings).
-		$url = admin_url( 'admin.php?page=fw-extensions&sub-page=extension&extension=shortcodes' );
+		// Presets now live in Appearance → Theme Settings → Components (theme-scoped),
+		// surfaced under any active theme by includes/theme-settings-presets.php.
+		$slug = ( function_exists( 'fw' ) && method_exists( fw()->backend, '_get_settings_page_slug' ) )
+			? fw()->backend->_get_settings_page_slug()
+			: 'fw-settings';
+		$url = admin_url( 'admin.php?page=' . $slug );
 		if ( isset( $map[ $context ] ) ) {
 			$url .= '#fw-options-tab-' . $map[ $context ];
 		}

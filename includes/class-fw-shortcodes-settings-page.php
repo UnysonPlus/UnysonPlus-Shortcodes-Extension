@@ -46,6 +46,9 @@ class FW_Ext_Shortcodes_Settings_Page {
 		add_action( 'admin_menu', array( $this, '_action_admin_menu' ), 100 );
 		add_action( 'admin_enqueue_scripts', array( $this, '_action_enqueue' ) );
 
+		// Redirect the retired Component Presets URL → Theme Settings (presets moved there).
+		add_action( 'admin_init', array( $this, '_redirect_legacy_presets_page' ) );
+
 		add_action( 'wp_ajax_fw_ext_shortcodes_save', array( $this, '_ajax_save' ) );
 		add_action( 'wp_ajax_fw_ext_shortcodes_install_zip', array( $this, '_ajax_install_zip' ) );
 		add_action( 'wp_ajax_fw_ext_shortcodes_install_github', array( $this, '_ajax_install_github' ) );
@@ -87,24 +90,27 @@ class FW_Ext_Shortcodes_Settings_Page {
 			array( $this, 'render_page' )
 		);
 
-		// Dedicated entry for the preset editor (Color Presets, Typography,
-		// Spacing, Buttons, Borders, Tables). A normal WP settings page that
-		// renders the plugin-owned components schema and saves to the
-		// theme-independent fw_ext_settings_options:shortcodes store.
-		// Hidden in "bare" mode (Page Builder settings → Styling Presets off).
-		if ( ! function_exists( 'unysonplus_styling_presets_enabled' ) || unysonplus_styling_presets_enabled() ) {
-			$this->presets_hook_suffix = add_submenu_page(
-				self::PARENT,
-				__( 'Component Presets', 'fw' ),
-				__( 'Component Presets', 'fw' ),
-				self::CAPABILITY,
-				self::STYLING_SLUG,
-				array( $this, 'render_presets_page' )
-			);
-			if ( $this->presets_hook_suffix ) {
-				// Handle the save before any output so we can PRG-redirect.
-				add_action( 'load-' . $this->presets_hook_suffix, array( $this, '_maybe_save_presets' ) );
-			}
+		// The dedicated "Component Presets" submenu is RETIRED — the presets now live
+		// in Appearance → Theme Settings → Components (theme-scoped). See
+		// includes/theme-settings-presets.php. The old ?page=fw-component-presets URL
+		// is redirected there by _redirect_legacy_presets_page() (admin_init).
+	}
+
+	/**
+	 * @internal
+	 * Redirect the old Component Presets URL (?page=fw-component-presets) to the
+	 * Theme Settings page, where the presets now live. Keeps bookmarks working.
+	 */
+	public function _redirect_legacy_presets_page() {
+		if ( ! is_admin() || ! current_user_can( self::CAPABILITY ) ) {
+			return;
+		}
+		if ( isset( $_GET['page'] ) && self::STYLING_SLUG === $_GET['page'] ) {
+			$slug = ( function_exists( 'fw' ) && method_exists( fw()->backend, '_get_settings_page_slug' ) )
+				? fw()->backend->_get_settings_page_slug()
+				: 'fw-settings';
+			wp_safe_redirect( admin_url( 'admin.php?page=' . $slug ) );
+			exit;
 		}
 	}
 

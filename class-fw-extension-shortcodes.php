@@ -98,6 +98,12 @@ class FW_Extension_Shortcodes extends FW_Extension
 			array( $this, '_filter_disabled_from_settings' )
 		);
 
+		// Surface the Component Presets inside Appearance -> Theme Settings (under
+		// any active theme) and store them theme-scoped. Registered always — the
+		// fw_settings_options filter is consumed on the front end too (default
+		// merging), not just in admin.
+		require_once dirname( __FILE__ ) . '/includes/theme-settings-presets.php';
+
 		// Admin settings page: enable/disable list + zip/GitHub install.
 		if ( is_admin() ) {
 			require_once dirname( __FILE__ ) . '/includes/class-fw-shortcodes-settings-page.php';

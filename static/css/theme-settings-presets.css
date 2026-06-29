@@ -1,0 +1,92 @@
+/**
+ * Component Presets in Theme Settings — layout containment.
+ *
+ * The presets are injected as a nested-tab section (#fw-options-tab-components_container).
+ * Unyson's option/tab wrappers are flex/grid descendants whose default
+ * `min-width:auto` is content-based, so the wide addable-box preset grid forces the
+ * whole chain — and the page — wider than the viewport (horizontal overflow).
+ *
+ * Fix: set `min-width:0` down the chain so each wrapper can shrink to the available
+ * width, and pin the preset grid to a fixed 2-column (matching .fw-preset-2col)
+ * 1fr layout that always fits its container. Scoped to the Components section so no
+ * other Theme Settings tab is affected. `!important` beats the addable-box JS, which
+ * sets inline grid styles from a (here-unreliable) clientWidth measurement.
+ */
+
+/**
+ * Root cause of the page-wide overflow: the Theme Settings tab layout is flex
+ * (left nav | content). The content wrapper's default `min-width:auto` is
+ * content-based, so the wide preset grid stretches the wrapper — and the whole
+ * page — instead of staying within the available flex space. Letting every level
+ * shrink to 0 makes the content wrapper honour the available width. This file is
+ * enqueued ONLY on the Theme Settings page, so these unscoped rules are safe.
+ */
+.fw-options-tabs-wrapper,
+.fw-options-tabs-list,
+.fw-options-tabs-contents,
+.fw-options-tabs-contents > .fw-inner,
+.fw-options-tabs-contents > .fw-inner > .fw-options-tab {
+	min-width: 0 !important;
+	max-width: 100% !important;
+}
+
+/**
+ * THE root cause (confirmed via DevTools): Unyson core (backend-options.css) sets
+ * `display:table; width:100%` on the first-level tab content inner. An auto-layout
+ * table sizes to its content's min-content and ignores max-width, so a wide tab
+ * stretches it — and the page. `table-layout:fixed` makes the table honour its
+ * `width:100%` instead of growing to content, while KEEPING `display:table` so the
+ * tab / min-height layout is unchanged (a `display:block` override fixed the width
+ * but stretched the sub-tab nav strip — the spacing regression). Combined with the
+ * `min-width:0` chain above (which lets the flex content column shrink), the table
+ * now matches the available width. Loaded only on the Theme Settings page.
+ */
+.fw-backend-side-tabs .fw-options-tabs-first-level > .fw-options-tabs-contents > .fw-inner {
+	table-layout: fixed !important;
+	width: 100% !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
+}
+
+#fw-options-tab-components_container,
+#fw-options-tab-components_container .fw-options-tabs-wrapper,
+#fw-options-tab-components_container .fw-options-tabs-contents,
+#fw-options-tab-components_container .fw-inner,
+#fw-options-tab-components_container .fw-options-tab,
+#fw-options-tab-components_container .fw-backend-option,
+#fw-options-tab-components_container .fw-backend-option > div,
+#fw-options-tab-components_container .fw-option-type-addable-box {
+	min-width: 0 !important;
+	max-width: 100% !important;
+}
+
+/* The preset grid: 2 FIXED-width columns (max 428px each), left-aligned. Using a
+   fixed cap instead of `1fr` is what keeps the grid ~856px wide no matter how wide
+   an ancestor is — `1fr` would fill (and be stretched by) a wide container, and
+   removing the boxes' native 428px cap let each box balloon to fill it. */
+#fw-options-tab-components_container .fw-preset-2col .fw-option-boxes {
+	display: grid !important;
+	grid-template-columns: repeat(3, minmax(0, 428px)) !important;
+	grid-auto-flow: row !important;
+	grid-template-rows: auto !important;
+	justify-content: start !important;
+	width: auto !important;
+	max-width: 100% !important;
+	min-width: 0 !important;
+	gap: 10px;
+}
+
+#fw-options-tab-components_container .fw-preset-2col .fw-option-boxes > .fw-option-box,
+#fw-options-tab-components_container .fw-preset-2col .fw-option-boxes > .sortable-placeholder {
+	min-width: 0 !important;
+	max-width: 428px !important;
+	width: auto !important;
+	margin: 0 !important;
+}
+
+/* One column on narrow screens. */
+@media (max-width: 1100px) {
+	#fw-options-tab-components_container .fw-preset-2col .fw-option-boxes {
+		grid-template-columns: minmax(0, 428px) !important;
+	}
+}
