@@ -113,17 +113,22 @@ function sc_get_gsap_fields() {
         'choices' => $style_choices,
     ];
 
+    // Scroll Effect previews: hand-drawn (and self-animating) SVG diagrams under
+    // static/img/scroll-effects/. SVG suits these abstract motion patterns — crisp,
+    // tiny, and able to demonstrate the motion in the picker. Each tile shows the same
+    // SVG at two sizes (large = the hover preview). Falls back gracefully if the URI
+    // can't be resolved (the option type still works as a radio of empty tiles).
+    $fx_ext  = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
+    $fx_base = $fx_ext ? $fx_ext->get_declared_URI( '/static/img/scroll-effects' ) : '';
+    $fx      = function ( $file, $label ) use ( $fx_base ) {
+        return [
+            'small' => [ 'src' => $fx_base . '/' . $file . '.svg', 'height' => 66 ],
+            'large' => [ 'src' => $fx_base . '/' . $file . '.svg', 'height' => 132 ],
+            'label' => $label,
+        ];
+    };
+
     return [
-        'gsap_heading' => [
-            'type'  => 'html',
-            'label' => false,
-            'desc'  => false,
-            'html'  => '<h4 style="margin:34px 0 6px;padding-top:22px;border-top:1px solid #e5e5e5;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:#666;">'
-                       . esc_html__( 'Scroll Motion (GSAP)', 'fw' )
-                       . '</h4><p style="margin:0 0 4px;color:#888;font-size:12px;">'
-                       . esc_html__( 'Scroll-driven motion powered by GSAP + ScrollTrigger. Independent of the entrance animation above — GSAP loads only on pages that use it.', 'fw' )
-                       . '</p>',
-        ],
         'gsap_motion' => [
             'type'         => 'multi-picker',
             'label'        => false,
@@ -132,17 +137,19 @@ function sc_get_gsap_fields() {
             'value'        => [ 'effect' => 'none' ],
             'picker' => [
                 'effect' => [
-                    'type'    => 'select',
+                    'type'    => 'image-picker',
                     'label'   => __( 'Scroll Effect', 'fw' ),
-                    'desc'    => __( 'Pick a scroll-driven effect. Leave on None for no GSAP motion (nothing loads).', 'fw' ),
+                    'desc'    => __( 'Pick a scroll-driven effect. Leave on None for no GSAP motion (nothing loads). Hover a tile to preview it larger.', 'fw' ),
+                    'help'    => __( 'Scroll Motion (GSAP): scroll-driven motion powered by GSAP + ScrollTrigger. Independent of the entrance animation above — GSAP loads only on pages that use it.', 'fw' ),
+                    'value'   => 'none',
                     'choices' => [
-                        'none'      => __( 'None', 'fw' ),
-                        'reveal'    => __( 'Reveal (fade + move in on scroll)', 'fw' ),
-                        'stagger'   => __( 'Stagger children (cascade in)', 'fw' ),
-                        'splittext' => __( 'Split Text (headline reveal)', 'fw' ),
-                        'parallax'  => __( 'Parallax (moves with scroll)', 'fw' ),
-                        'pin'       => __( 'Pin (sticks while you scroll past)', 'fw' ),
-                        'scrub'     => __( 'Scroll Scrub (progress tied to scroll)', 'fw' ),
+                        'none'      => $fx( 'none',      __( 'None', 'fw' ) ),
+                        'reveal'    => $fx( 'reveal',    __( 'Reveal', 'fw' ) ),
+                        'stagger'   => $fx( 'stagger',   __( 'Stagger', 'fw' ) ),
+                        'splittext' => $fx( 'splittext', __( 'Split Text', 'fw' ) ),
+                        'parallax'  => $fx( 'parallax',  __( 'Parallax', 'fw' ) ),
+                        'pin'       => $fx( 'pin',       __( 'Pin', 'fw' ) ),
+                        'scrub'     => $fx( 'scrub',     __( 'Scrub', 'fw' ) ),
                     ],
                 ],
             ],
