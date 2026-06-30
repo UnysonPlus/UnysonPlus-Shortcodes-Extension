@@ -195,6 +195,38 @@ $contentvalign_choices = array(
     'between' => $pick( $valign_uri( 'content', 'between', __( 'Space Between', 'fw' ) ),  __( 'Space Between', 'fw' ), 64, 150 ),
 );
 
+// Content-direction glyph: blue section → gray column → white elements either
+// STACKED (three bars top-to-bottom = the default vertical flow) or INLINE (three
+// boxes side-by-side = a flex row). Same visual language as the alignment glyphs.
+$dir_uri = function ( $mode, $label ) use ( $rrect, $glyph_svg ) {
+    $w = 120; $icon_h = 50;
+    $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );            // blue section
+    $gx = 17; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;
+    $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // gray column
+    $ix = $gx + 5; $iw = $gw - 10; $iy = $bt + 4; $ih = ( $bb - 4 ) - ( $bt + 4 );
+    $n = 3;
+    if ( $mode === 'row' ) {
+        $gap = 4; $ew = ( $iw - ( $n - 1 ) * $gap ) / $n;
+        for ( $i = 0; $i < $n; $i++ ) {
+            $svg .= $rrect( $ix + $i * ( $ew + $gap ), $iy, $ew, $ih, 2, '#ffffff', '#dcdcde' );
+        }
+    } else {
+        $gap = 5; $eh = ( $ih - ( $n - 1 ) * $gap ) / $n;
+        for ( $i = 0; $i < $n; $i++ ) {
+            $svg .= $rrect( $ix, $iy + $i * ( $eh + $gap ), $iw, $eh, 2, '#ffffff', '#dcdcde' );
+        }
+    }
+    return $glyph_svg( $svg, $label, $w, $icon_h );
+};
+
+// Content-direction choices (Stacked = default first, then Inline). Keys stay the
+// 'column'/'row' the view whitelists — same scalar values the old switch stored,
+// so existing saved columns map straight through (no migration).
+$direction_choices = array(
+    'column' => $pick( $dir_uri( 'column', __( 'Stacked', 'fw' ) ), __( 'Stacked', 'fw' ), 64, 150 ),
+    'row'    => $pick( $dir_uri( 'row',    __( 'Inline', 'fw' ) ),   __( 'Inline', 'fw' ), 64, 150 ),
+);
+
 // Responsive width choices: Default + 1/12…12/12 + Auto (image-picker).
 // 45px thumbnails (1.5× the 30px base) so the bars read clearly.
 $width_choices = array( 'default' => $pick( $col_bar_uri( 0, 'default', __( 'Default', 'fw' ) ), __( 'Default', 'fw' ), 45 ) );
@@ -498,13 +530,12 @@ $options = array(
                 'type'    => 'group',
                 'options' => [
                     'content_direction' => [
-                        'type'         => 'switch',
-                        'label'        => __( 'Layout Direction', 'fw' ),
-                        'desc'         => __( 'Stack the column\'s elements vertically (default) or lay them out inline in a row.', 'fw' ),
-                        'help'         => __( 'Inline places elements side by side — e.g. two buttons — wrapping onto the next line if they don\'t fit. Content Alignment still centers them horizontally; Content Vertical Alignment centers them on the cross axis. Pair with Gap for spacing between them.', 'fw' ),
-                        'right-choice' => [ 'value' => 'row',    'label' => __( 'Inline', 'fw' ) ],
-                        'left-choice'  => [ 'value' => 'column', 'label' => __( 'Stacked', 'fw' ) ],
-                        'value'        => 'column',
+                        'type'    => 'image-picker',
+                        'label'   => __( 'Content Direction', 'fw' ),
+                        'desc'    => __( 'Stack the column\'s elements vertically (default) or lay them out inline in a row.', 'fw' ),
+                        'help'    => __( 'Inline places elements side by side — e.g. two buttons — wrapping onto the next line if they don\'t fit. Content Alignment still positions them horizontally; Content Vertical Alignment positions them on the cross axis. Pair with Gap for spacing between them.', 'fw' ),
+                        'value'   => 'column',
+                        'choices' => $direction_choices,
                     ],
                     'content_h' => [
                         'type'    => 'image-picker',

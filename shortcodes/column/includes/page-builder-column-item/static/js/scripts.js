@@ -200,9 +200,15 @@
 					.children('.builder-items')
 					.first();
 				var justifyMap = { start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between' };
-				var alignMap   = { start: 'flex-start', center: 'center', end: 'flex-end' };
-				var cv = justifyMap[ atts.content_v ];
-				var ch = alignMap[ atts.content_h ];
+				var crossMap   = { start: 'flex-start', center: 'center', end: 'flex-end' };
+				// Axis-aware mapping mirrors the frontend (view.php): "Inline" (row) swaps the
+				// flex axes, so Content Alignment (horizontal) drives justify-content in a row
+				// but align-items in a column — and vice-versa for Content Vertical Alignment.
+				// `between` lives only on the main axis (justify-content).
+				var isRow      = ( atts.content_direction === 'row' );
+				var mainAlign  = isRow ? justifyMap[ atts.content_h ] : justifyMap[ atts.content_v ];
+				var crossAlign = isRow ? crossMap[ atts.content_v ]   : crossMap[ atts.content_h ];
+				var gapSlug    = ( atts.content_gap || '' ).replace( /[^a-z0-9_-]/gi, '' );
 
 				// If this column hosts NESTED COLUMNS, its `.builder-items` is a grid
 				// ROW (flex-canvas tags it `.fw-pb-flex-row`: display:flex; flex-wrap),
@@ -220,15 +226,17 @@
 					});
 				}
 
-				if ( ( cv || ch ) && ! hasChildColumn ) {
+				if ( ( isRow || mainAlign || crossAlign || gapSlug ) && ! hasChildColumn ) {
 					$items.css({
 						'display': 'flex',
-						'flex-direction': 'column',
-						'justify-content': cv || '',
-						'align-items': ch || ''
+						'flex-direction': isRow ? 'row' : 'column',
+						'flex-wrap': isRow ? 'wrap' : '',
+						'justify-content': mainAlign || '',
+						'align-items': crossAlign || '',
+						'gap': gapSlug ? ( 'var(--gap-' + gapSlug + ')' ) : ''
 					});
 				} else {
-					$items.css({ 'display': '', 'flex-direction': '', 'justify-content': '', 'align-items': '' });
+					$items.css({ 'display': '', 'flex-direction': '', 'flex-wrap': '', 'justify-content': '', 'align-items': '', 'gap': '' });
 				}
 			},
 			events: {
