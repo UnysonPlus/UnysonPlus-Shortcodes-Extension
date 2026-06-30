@@ -167,7 +167,9 @@ $hidden_content  = ! empty( $atts['hidden_content'] )  ? $atts['hidden_content']
 $btn_show        = ! empty( $atts['btn_show'] )        ? $atts['btn_show']        : __( 'Show More', 'fw' );
 $btn_hide        = ! empty( $atts['btn_hide'] )        ? $atts['btn_hide']        : __( 'Show Less', 'fw' );
 $initially_open  = ( ! empty( $atts['initially_open'] ) && $atts['initially_open'] === 'yes' );
-$btn_color       = ! empty( $atts['btn_color'] )       ? $atts['btn_color']       : '';
+$btn_color       = function_exists( 'sc_color_to_css' )
+    ? sc_color_to_css( isset( $atts['btn_color'] ) ? $atts['btn_color'] : '', '' )
+    : ( ( ! empty( $atts['btn_color'] ) && is_string( $atts['btn_color'] ) ) ? $atts['btn_color'] : '' );
 $toggle_icon     = ! empty( $atts['toggle_icon'] )     ? $atts['toggle_icon']     : 'none';
 
 $show_btn_position = ! empty( $atts['show_btn_position'] ) ? $atts['show_btn_position'] : 'inline';
@@ -207,7 +209,7 @@ $hide_align = $align_from( $hide_effective );
  * =================================================================== */
 
 $btn_color_safe = '';
-if ( $btn_color && preg_match( '/^(#[0-9a-fA-F]{3,8}|rgba?\([\d.,\s%]+\))$/', $btn_color ) ) {
+if ( $btn_color && preg_match( '/^(#[0-9a-fA-F]{3,8}|rgba?\([\d.,\s%]+\)|var\(--color-[a-z0-9\-]+\))$/', $btn_color ) ) {
     $btn_color_safe = $btn_color;
 }
 $btn_style = $btn_color_safe ? ' style="color:' . esc_attr( $btn_color_safe ) . ';"' : '';

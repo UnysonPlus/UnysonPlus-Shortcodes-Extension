@@ -609,6 +609,57 @@ if ( ! function_exists( 'sc_normalize_color_value' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'sc_color_to_css' ) ) :
+	/**
+	 * Resolve a preset-or-custom color value (from sc_color_field_compact) to a
+	 * single CSS color STRING — for consumers that need a value (a CSS custom
+	 * property, an inline `color:`/`background:`, a JS/canvas color), not a class.
+	 *
+	 *   - preset (`predefined` like 'text-red'/'bg-blue') → `var(--color-{slug})`
+	 *     (live-linked to Theme Settings → General → Colors). When $as_hex is true
+	 *     (e.g. WebGL / canvas, which can't read a CSS var) → the slug's hex from
+	 *     unysonplus_color_preset_slug_map().
+	 *   - custom hex/rgb(a) → the sanitised value.
+	 *   - legacy plain string (pre-compact saves) → passed through.
+	 *   - nothing set → $fallback.
+	 *
+	 * @param mixed  $value    string|array as produced by sc_color_field*()
+	 * @param string $fallback returned when nothing usable is set
+	 * @param bool   $as_hex   resolve a preset to its hex instead of var(--color-…)
+	 * @return string a CSS color token (possibly empty if $fallback is '')
+	 */
+	function sc_color_to_css( $value, $fallback = '', $as_hex = false ) {
+		if ( is_string( $value ) ) {
+			return $value !== '' ? $value : $fallback;
+		}
+		if ( ! is_array( $value ) ) {
+			return $fallback;
+		}
+
+		$predefined = isset( $value['predefined'] ) ? trim( (string) $value['predefined'] ) : '';
+		$custom     = isset( $value['custom'] )     ? trim( (string) $value['custom'] )     : '';
+
+		if ( $predefined !== '' ) {
+			$slug = preg_replace( '/[^a-z0-9\-]/', '', preg_replace( '/^(text|bg)-/', '', $predefined ) );
+			if ( $slug === '' ) {
+				return $fallback;
+			}
+			if ( $as_hex && function_exists( 'unysonplus_color_preset_slug_map' ) ) {
+				$map = unysonplus_color_preset_slug_map();
+				return isset( $map[ $slug ] ) ? $map[ $slug ] : $fallback;
+			}
+			return 'var(--color-' . $slug . ')';
+		}
+
+		if ( $custom !== '' && $custom !== 'transparent' ) {
+			$custom = preg_replace( '/[^A-Za-z0-9#\(\),.%\s]/', '', $custom );
+			return $custom !== '' ? $custom : $fallback;
+		}
+
+		return $fallback;
+	}
+endif;
+
 if ( ! function_exists( 'sc_font_size_field' ) ) :
 	/**
 	 * Build a single font-size-preset select field for the Styling tab.

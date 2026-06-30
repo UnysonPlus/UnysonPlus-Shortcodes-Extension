@@ -195,13 +195,11 @@ $options = [
             'group_colors' => [
                 'type'    => 'group',
                 'options' => [
-                    'btn_color' => [
-                        'type'  => 'color-picker',
-                        'label' => __( 'Button Colour (custom hex/rgba)', 'fw' ),
-                        'desc'  => __( 'Free-form colour for both toggle buttons. Overridden by the per-button presets below when picked.', 'fw' ),
-                        'help'  => __( 'Accepts hex (#rrggbb) and rgb()/rgba() values. Anything that does not match those patterns is silently dropped — no malformed inline styles are ever emitted.', 'fw' ),
-                        'value' => '',
-                    ],
+                    'btn_color' => sc_color_field_compact( array(
+                        'label' => __( 'Button Colour', 'fw' ),
+                        'kind'  => 'text',
+                        'desc'  => __( 'Color for both toggle buttons — a palette preset or a custom color. Overridden by the per-button colors below when those are picked.', 'fw' ),
+                    ) ),
                     'visible_color' => sc_color_field_compact( array(
                         'label' => __( 'Visible Content Color', 'fw' ),
                         'desc'  => __( 'Color preset applied to every paragraph in Visible Content.', 'fw' ),
