@@ -272,6 +272,13 @@ function sc_get_animation_fields() {
         $fields = array_merge( $fields, sc_get_gsap_fields() );
     }
 
+    /**
+     * Let extensions append their own field groups to every element's Animations
+     * tab (e.g. the Animation Engine's Hover module adds an "Interaction" group).
+     * Receives and returns the inner fields array.
+     */
+    $fields = apply_filters( 'sc_animation_fields', $fields );
+
     return $fields;
 }
 endif;

@@ -131,16 +131,17 @@ function sc_get_gsap_fields() {
     return [
         'gsap_motion' => [
             'type'         => 'multi-picker',
-            'label'        => false,
-            'desc'         => false,
+            'label'        => __( 'Scroll Effect', 'fw' ),
+            'desc'         => __( 'Pick a scroll-driven effect. Leave on None for no GSAP motion (nothing loads).', 'fw' ),
+            'help'         => __( 'Scroll Motion (GSAP): scroll-driven motion powered by GSAP + ScrollTrigger. Independent of the entrance animation above — GSAP loads only on pages that use it.', 'fw' ),
+            'popover'      => true,
             'show_borders' => false,
             'value'        => [ 'effect' => 'none' ],
             'picker' => [
                 'effect' => [
                     'type'    => 'image-picker',
-                    'label'   => __( 'Scroll Effect', 'fw' ),
-                    'desc'    => __( 'Pick a scroll-driven effect. Leave on None for no GSAP motion (nothing loads). Hover a tile to preview it larger.', 'fw' ),
-                    'help'    => __( 'Scroll Motion (GSAP): scroll-driven motion powered by GSAP + ScrollTrigger. Independent of the entrance animation above — GSAP loads only on pages that use it.', 'fw' ),
+                    'label'   => false,
+                    'desc'    => __( 'Hover a tile to preview it larger.', 'fw' ),
                     'value'   => 'none',
                     'choices' => [
                         'none'      => $fx( 'none',      __( 'None', 'fw' ) ),
