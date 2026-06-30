@@ -128,6 +128,18 @@ function sc_get_gsap_fields() {
         ];
     };
 
+    // Shared trailing fields for the one-shot entrance effects (zoom/rotate/blur/
+    // clip/skew): the timing block + a "play once" switch + run-on-mobile.
+    $once_field = [
+        'type'         => 'switch',
+        'label'        => __( 'Play once', 'fw' ),
+        'desc'         => __( 'Off = replay every time it scrolls back into view.', 'fw' ),
+        'value'        => 'yes',
+        'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
+        'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+    ];
+    $entrance_tail = array_merge( $timing(), [ 'once' => $once_field, 'run_on_mobile' => $run_on_mobile( true ) ] );
+
     return [
         'gsap_motion' => [
             'type'         => 'multi-picker',
@@ -151,6 +163,11 @@ function sc_get_gsap_fields() {
                         'parallax'  => $fx( 'parallax',  __( 'Parallax', 'fw' ) ),
                         'pin'       => $fx( 'pin',       __( 'Pin', 'fw' ) ),
                         'scrub'     => $fx( 'scrub',     __( 'Scrub', 'fw' ) ),
+                        'zoom'      => $fx( 'zoom',      __( 'Zoom In', 'fw' ) ),
+                        'rotate'    => $fx( 'rotate',    __( 'Rotate In', 'fw' ) ),
+                        'blur'      => $fx( 'blur',      __( 'Blur In', 'fw' ) ),
+                        'clip'      => $fx( 'clip',      __( 'Clip Wipe', 'fw' ) ),
+                        'skew'      => $fx( 'skew',      __( 'Skew Settle', 'fw' ) ),
                     ],
                 ],
             ],
@@ -371,6 +388,94 @@ function sc_get_gsap_fields() {
                         ],
                     ],
                 ],
+                'zoom' => [
+                    'group_gsap_zoom' => [
+                        'type'    => 'group',
+                        'options' => array_merge( [
+                            'scale' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Start scale', 'fw' ),
+                                'desc'       => __( 'Smaller = zooms in from further out.', 'fw' ),
+                                'value'      => 0.6,
+                                'properties' => [ 'min' => 0.2, 'max' => 0.95, 'step' => 0.05 ],
+                            ],
+                        ], $entrance_tail ),
+                    ],
+                ],
+                'rotate' => [
+                    'group_gsap_rotate' => [
+                        'type'    => 'group',
+                        'options' => array_merge( [
+                            'rotate' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Rotation (°)', 'fw' ),
+                                'value'      => 8,
+                                'properties' => [ 'min' => 2, 'max' => 30, 'step' => 1 ],
+                            ],
+                            'direction' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Spin from', 'fw' ),
+                                'value'   => 'left',
+                                'choices' => [
+                                    'left'  => __( 'Counter-clockwise', 'fw' ),
+                                    'right' => __( 'Clockwise', 'fw' ),
+                                ],
+                            ],
+                        ], $entrance_tail ),
+                    ],
+                ],
+                'blur' => [
+                    'group_gsap_blur' => [
+                        'type'    => 'group',
+                        'options' => array_merge( [
+                            'blur' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Blur (px)', 'fw' ),
+                                'value'      => 12,
+                                'properties' => [ 'min' => 2, 'max' => 40, 'step' => 1 ],
+                            ],
+                        ], $entrance_tail ),
+                    ],
+                ],
+                'clip' => [
+                    'group_gsap_clip' => [
+                        'type'    => 'group',
+                        'options' => array_merge( [
+                            'direction' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Wipe from', 'fw' ),
+                                'value'   => 'up',
+                                'choices' => [
+                                    'up'    => __( 'Bottom → up', 'fw' ),
+                                    'down'  => __( 'Top → down', 'fw' ),
+                                    'left'  => __( 'Right → left', 'fw' ),
+                                    'right' => __( 'Left → right', 'fw' ),
+                                ],
+                            ],
+                        ], $entrance_tail ),
+                    ],
+                ],
+                'skew' => [
+                    'group_gsap_skew' => [
+                        'type'    => 'group',
+                        'options' => array_merge( [
+                            'skew' => [
+                                'type'       => 'slider',
+                                'label'      => __( 'Skew (°)', 'fw' ),
+                                'value'      => 8,
+                                'properties' => [ 'min' => 2, 'max' => 30, 'step' => 1 ],
+                            ],
+                            'distance' => [
+                                'type'         => 'number',
+                                'label'        => __( 'Distance (px)', 'fw' ),
+                                'value'        => 40,
+                                'min'          => 0,
+                                'step'         => 1,
+                                'numeric_type' => 'integer',
+                            ],
+                        ], $entrance_tail ),
+                    ],
+                ],
             ],
         ],
     ];
@@ -416,7 +521,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     $g = ( isset( $atts['gsap_motion'] ) && is_array( $atts['gsap_motion'] ) ) ? $atts['gsap_motion'] : [];
 
     $effect  = isset( $g['effect'] ) ? (string) $g['effect'] : 'none';
-    $allowed = [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub' ];
+    $allowed = [ 'reveal', 'stagger', 'splittext', 'parallax', 'pin', 'scrub', 'zoom', 'rotate', 'blur', 'clip', 'skew' ];
     if ( ! in_array( $effect, $allowed, true ) ) {
         return $attr;
     }
@@ -502,6 +607,53 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
             $data['data-upw-g-start']      = $pick( 'start', $start_allow, 'top 85%' );
             if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
             $pending = ( $kind === 'fade' ); // only fade starts invisible
+            break;
+
+        case 'zoom':
+            $data['data-upw-g-scale'] = $num( 'scale', 0.6 );
+            $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
+            if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
+            if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            $pending = true;
+            break;
+
+        case 'rotate':
+            $data['data-upw-g-rotate'] = $num( 'rotate', 8 );
+            $data['data-upw-g-dir']    = $pick( 'direction', [ 'left', 'right' ], 'left' );
+            $data['data-upw-g-start']  = $pick( 'start', $start_allow, 'top 85%' );
+            if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
+            if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            $pending = true;
+            break;
+
+        case 'blur':
+            $data['data-upw-g-blur']  = $num( 'blur', 12 );
+            $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
+            if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
+            if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            $pending = true;
+            break;
+
+        case 'clip':
+            $data['data-upw-g-dir']   = $pick( 'direction', [ 'up', 'down', 'left', 'right' ], 'up' );
+            $data['data-upw-g-start'] = $pick( 'start', $start_allow, 'top 85%' );
+            if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
+            if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            $pending = true;
+            break;
+
+        case 'skew':
+            $data['data-upw-g-skew']     = $num( 'skew', 8 );
+            $data['data-upw-g-distance'] = $num( 'distance', 40 );
+            $data['data-upw-g-start']    = $pick( 'start', $start_allow, 'top 85%' );
+            if ( $num( 'delay', 0 ) !== '0' ) $data['data-upw-g-delay'] = $num( 'delay', 0 );
+            if ( ! $on( 'once', true ) )          $data['data-upw-g-once']   = '0';
+            if ( ! $on( 'run_on_mobile', true ) ) $data['data-upw-g-mobile'] = '0';
+            $pending = true;
             break;
     }
 

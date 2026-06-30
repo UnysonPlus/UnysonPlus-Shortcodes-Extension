@@ -222,9 +222,58 @@
             el.classList.remove('upw-g-pending');
         }
 
+        // One-shot entrance helper shared by the reveal-variants below.
+        function entranceTrigger(el) {
+            return {
+                trigger: el,
+                start: startPos(attr(el, 'data-upw-g-start')),
+                toggleActions: attr(el, 'data-upw-g-once') === '0'
+                    ? 'play none none reverse'
+                    : 'play none none none'
+            };
+        }
+        function oneShot(el, from, to) {
+            to.delay = num(attr(el, 'data-upw-g-delay'), 0);
+            if (!to.duration) { to.duration = 0.9; }
+            if (!to.ease) { to.ease = 'power3.out'; }
+            to.scrollTrigger = entranceTrigger(el);
+            gsap.fromTo(el, from, to);
+            el.classList.remove('upw-g-pending');
+        }
+
+        function zoom(el) {
+            oneShot(el, { opacity: 0, scale: num(attr(el, 'data-upw-g-scale'), 0.6) },
+                        { opacity: 1, scale: 1 });
+        }
+        function rotateIn(el) {
+            var deg = num(attr(el, 'data-upw-g-rotate'), 8);
+            if (attr(el, 'data-upw-g-dir') === 'right') { deg = -deg; }
+            oneShot(el, { opacity: 0, rotation: deg, scale: 0.96 },
+                        { opacity: 1, rotation: 0, scale: 1 });
+        }
+        function blurIn(el) {
+            var b = num(attr(el, 'data-upw-g-blur'), 12);
+            oneShot(el, { opacity: 0, filter: 'blur(' + b + 'px)' },
+                        { opacity: 1, filter: 'blur(0px)' });
+        }
+        function clipIn(el) {
+            var FROM = {
+                up:   'inset(100% 0 0 0)', down:  'inset(0 0 100% 0)',
+                left: 'inset(0 100% 0 0)', right: 'inset(0 0 0 100%)'
+            };
+            var f = FROM[attr(el, 'data-upw-g-dir')] || FROM.up;
+            oneShot(el, { clipPath: f, webkitClipPath: f },
+                        { clipPath: 'inset(0% 0% 0% 0%)', webkitClipPath: 'inset(0% 0% 0% 0%)' });
+        }
+        function skewIn(el) {
+            oneShot(el, { opacity: 0, skewY: num(attr(el, 'data-upw-g-skew'), 8), y: num(attr(el, 'data-upw-g-distance'), 40) },
+                        { opacity: 1, skewY: 0, y: 0 });
+        }
+
         var BUILDERS = {
             reveal: reveal, stagger: stagger, splittext: splittext,
-            parallax: parallax, pin: pin, scrub: scrub
+            parallax: parallax, pin: pin, scrub: scrub,
+            zoom: zoom, rotate: rotateIn, blur: blurIn, clip: clipIn, skew: skewIn
         };
 
         function build(el) {
