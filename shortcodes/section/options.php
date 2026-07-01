@@ -93,7 +93,7 @@ $options = [
 					'variant' => [
 						'type'    => 'select',
 						'label'   => __( 'Section Variant', 'fw' ),
-						'desc'    => __( 'Named visual preset for this section. Pairs with the Background control below — pick a variant for the overall theme, override the colour in Background if you want a one-off.', 'fw' ),
+						'desc'    => __( 'Named visual preset for this section. Pairs with the Background control on the Styling tab — pick a variant for the overall theme, override the colour in Background if you want a one-off.', 'fw' ),
 						'help'    => __( 'Use "Alt" on every other section to create a subtle banded rhythm down the page. "Light"/"Dark" force a fixed scheme regardless of the theme\'s default.', 'fw' ),
 						'value'   => '',
 						'choices' => [
@@ -171,6 +171,18 @@ $options = [
 							'bottom' => $section_valign_pick( $section_valign_uri( 'bottom', __( 'Bottom', 'fw' ) ),       __( 'Bottom', 'fw' ) ),
 						],
 					],
+				],
+			],
+		],
+	],
+
+	'tab_styling' => [
+		'title'   => __( 'Styling', 'fw' ),
+		'type'    => 'tab',
+		'options' => [
+			'group_background' => [
+				'type'    => 'group',
+				'options' => [
 					'background' => [
 						'type'  => 'background-pro',
 						'label' => __( 'Background', 'fw' ),
@@ -179,13 +191,6 @@ $options = [
 					],
 				],
 			],
-		],
-	],
-
-	'tab_styling' => [
-		'title'   => __( 'Spacing', 'fw' ),
-		'type'    => 'tab',
-		'options' => [
 			'group_spacings' => [
 				'type'    => 'group',
 				'options' => [
