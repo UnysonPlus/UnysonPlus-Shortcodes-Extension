@@ -268,14 +268,11 @@ function sc_get_animation_fields() {
 
     // Append the GSAP "Scroll Motion" block (separate engine, separate saved
     // value key `gsap_motion` — no migration of existing `animation` saves).
-    if ( function_exists( 'sc_get_gsap_fields' ) ) {
-        $fields = array_merge( $fields, sc_get_gsap_fields() );
-    }
-
     /**
-     * Let extensions append their own field groups to every element's Animations
-     * tab (e.g. the Animation Engine's Hover module adds an "Interaction" group).
-     * Receives and returns the inner fields array.
+     * Scroll Motion (GSAP) and Hover Interactions are provided by the Animation Engine
+     * extension, which appends its field groups here via this filter — so they appear
+     * only when the engine is active. Core ships just the Animate.css Entrance block
+     * above, keeping the lightweight path free of GSAP / WebGL / Three.js.
      */
     $fields = apply_filters( 'sc_animation_fields', $fields );
 
