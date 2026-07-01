@@ -201,8 +201,6 @@
 					.first();
 				var justifyMap = { start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between' };
 				var alignMap   = { start: 'flex-start', center: 'center', end: 'flex-end' };
-				var cv = justifyMap[ atts.content_v ];
-				var ch = alignMap[ atts.content_h ];
 
 				// If this column hosts NESTED COLUMNS, its `.builder-items` is a grid
 				// ROW (flex-canvas tags it `.fw-pb-flex-row`: display:flex; flex-wrap),
@@ -220,12 +218,28 @@
 					});
 				}
 
-				if ( ( cv || ch ) && ! hasChildColumn ) {
+				// Content Direction = Inline (row): the `sc-col-inline` class (styles.css) lays
+				// the leaf elements out side-by-side (content-sized), copying the Flexbox item's
+				// approach. Skipped when the column hosts nested columns (flex-canvas governs those).
+				var isRow = ( atts.content_direction === 'row' ) && ! hasChildColumn;
+				this.$el[ isRow ? 'addClass' : 'removeClass' ]( 'sc-col-inline' );
+
+				// Axis-aware (mirrors view.php + the flexbox item): a row swaps the flex axes,
+				// so Content Alignment drives justify-content in a row but align-items in a
+				// column — and vice-versa for Content Vertical Alignment.
+				var jc = isRow ? justifyMap[ atts.content_h ] : justifyMap[ atts.content_v ];
+				var ai = isRow ? alignMap[ atts.content_v ]   : alignMap[ atts.content_h ];
+
+				if ( isRow ) {
+					// Clear any stale column inline-flex (from a previous Stacked state) so the
+					// sc-col-inline row CSS wins; layer the chosen justify/align on top.
+					$items.css({ 'display': '', 'flex-direction': '', 'justify-content': jc || '', 'align-items': ai || '' });
+				} else if ( ( jc || ai ) && ! hasChildColumn ) {
 					$items.css({
 						'display': 'flex',
 						'flex-direction': 'column',
-						'justify-content': cv || '',
-						'align-items': ch || ''
+						'justify-content': jc || '',
+						'align-items': ai || ''
 					});
 				} else {
 					$items.css({ 'display': '', 'flex-direction': '', 'justify-content': '', 'align-items': '' });

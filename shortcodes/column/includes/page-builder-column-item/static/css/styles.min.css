@@ -190,3 +190,39 @@ body.rtl .pb-item-type-column > .panel .controls {
 }
 
 /* end: collapsed */
+
+/* ---------------------------------------------------------------------------
+   Content Direction = Inline (row) — canvas preview.
+
+   Mirrors the frontend (view.php: d-flex flex-row) and copies the Flexbox item's
+   proven approach: lay the column's leaf elements out SIDE-BY-SIDE in the editor,
+   each content-sized (width:fit-content) so they sit inline instead of each
+   filling the row and wrapping (the "still stacked" symptom). Tagged by the item
+   view via `sc-col-inline` on the wrapper; the JS skips it for columns that host
+   nested columns (the flex-canvas governs those rows).
+   --------------------------------------------------------------------------- */
+.builder-item.sc-col-inline > .pb-item-type-column > .builder-items:has(> .builder-item) {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	padding: 7px 5px 13px;
+}
+/* Neutralize any inherited .fw-row clearfix pseudo-elements — inside a flex row
+   they'd become stray flex items and skew justify-content (mirrors the flexbox +
+   page-builder fix). */
+.builder-item.sc-col-inline > .pb-item-type-column > .builder-items:has(> .builder-item)::before,
+.builder-item.sc-col-inline > .pb-item-type-column > .builder-items:has(> .builder-item)::after {
+	content: none;
+	display: none;
+}
+.builder-item.sc-col-inline > .pb-item-type-column > .builder-items:has(> .builder-item) > .builder-item {
+	/* Content-sized so the element sits inline (mirrors the front end). A leaf that
+	   doesn't fit wraps onto the next line (flex-wrap above). Give a child a Width in
+	   its own options and its inline flex-basis still wins over this. */
+	flex: 0 1 auto;
+	width: fit-content;
+	max-width: 100%;
+	min-width: 0;
+	padding: 0 5px 8px;
+}
