@@ -269,6 +269,26 @@ function sc_get_animation_fields() {
     // Append the GSAP "Scroll Motion" block (separate engine, separate saved
     // value key `gsap_motion` — no migration of existing `animation` saves).
     /**
+     * Discoverability nudge: when the Animation Engine is NOT active, point users to it
+     * (it's what adds Scroll Motion / Hover / WebGL). Removed automatically once the
+     * engine is on — its own field groups then appear right here instead.
+     */
+    if ( ! function_exists( 'fw_ext' ) || ! fw_ext( 'animation-engine' ) ) {
+        $fields['animation_engine_promo'] = [
+            'type'  => 'html',
+            'label' => false,
+            'desc'  => false,
+            'html'  => '<div style="margin-top:16px;padding:12px 14px;border:1px dashed #c3d9f0;border-radius:6px;background:#f4f9ff;color:#3a4a5c;font-size:13px;line-height:1.55;">'
+                . '<strong style="color:#2f74e6;">&#10024; ' . esc_html__( 'Want more?', 'fw' ) . '</strong> '
+                . esc_html__( 'Add scroll-driven motion, hover interactions and real-time WebGL effects by enabling the', 'fw' )
+                . ' <a href="' . esc_url( admin_url( 'admin.php?page=fw-extensions' ) ) . '" target="_blank" rel="noopener" style="font-weight:600;">'
+                . esc_html__( 'Animation Engine extension', 'fw' ) . '</a> '
+                . esc_html__( 'in the Extension Manager.', 'fw' )
+                . '</div>',
+        ];
+    }
+
+    /**
      * Scroll Motion (GSAP) and Hover Interactions are provided by the Animation Engine
      * extension, which appends its field groups here via this filter — so they appear
      * only when the engine is active. Core ships just the Animate.css Entrance block
