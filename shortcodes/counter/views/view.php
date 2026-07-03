@@ -131,7 +131,7 @@ if ( $css_class !== '' ) {
 }
 $classes = array_merge( $classes, $hide_keys );
 ?>
-<div<?php echo $css_id !== '' ? ' id="' . esc_attr( $css_id ) . '"' : ''; ?> class="<?php echo esc_attr( implode( ' ', array_unique( $classes ) ) ); ?>">
+<div<?php echo $css_id !== '' ? ' id="' . esc_attr( $css_id ) . '"' : ''; ?> class="<?php echo esc_attr( implode( ' ', array_unique( $classes ) ) ); ?>"<?php echo ( function_exists( 'sc_position_style' ) && ( $sc_pos = sc_position_style( $atts ) ) !== '' ) ? ' style="' . esc_attr( $sc_pos ) . '"' : ''; ?>>
 	<div class="fw-counter__main">
 		<span class="fw-counter__value" data-target="<?php echo esc_attr( $target ); ?>" data-start="<?php echo esc_attr( $start ); ?>" data-duration="<?php echo esc_attr( $duration ); ?>" data-decimals="<?php echo esc_attr( $decimals ); ?>" data-sep="<?php echo $separator === ',' ? '1' : '0'; ?>" data-easing="<?php echo esc_attr( $easing ); ?>">
 			<?php

@@ -101,7 +101,7 @@ $align_class = function ( $a ) {
 	return 'fw-carousel__content--' . $a;
 };
 ?>
-<div<?php echo $css_id !== '' ? ' id="' . esc_attr( $css_id ) . '"' : ''; ?> class="<?php echo esc_attr( implode( ' ', array_unique( $wrap_classes ) ) ); ?>">
+<div<?php echo $css_id !== '' ? ' id="' . esc_attr( $css_id ) . '"' : ''; ?> class="<?php echo esc_attr( implode( ' ', array_unique( $wrap_classes ) ) ); ?>"<?php echo ( function_exists( 'sc_position_style' ) && ( $sc_pos = sc_position_style( $atts ) ) !== '' ) ? ' style="' . esc_attr( $sc_pos ) . '"' : ''; ?>>
 	<div class="splide" data-splide="<?php echo esc_attr( wp_json_encode( $config ) ); ?>"<?php echo $height !== '' ? ' style="--fwc-h:' . esc_attr( $height ) . '"' : ''; ?>>
 		<div class="splide__track">
 			<ul class="splide__list">

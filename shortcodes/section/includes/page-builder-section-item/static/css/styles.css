@@ -38,3 +38,35 @@
 .builder-item.section--cols-right > .pb-item-type-column > .builder-items.fw-pb-flex-row {
 	justify-content: flex-end;
 }
+
+.builder-item.section--cols-between > .pb-item-type-column > .builder-items.fw-pb-flex-row {
+	justify-content: space-between;
+}
+
+.builder-item.section--cols-around > .pb-item-type-column > .builder-items.fw-pb-flex-row {
+	justify-content: space-around;
+}
+
+.builder-item.section--cols-evenly > .pb-item-type-column > .builder-items.fw-pb-flex-row {
+	justify-content: space-evenly;
+}
+
+/* --- Min Height + Columns Vertical Alignment — live canvas preview (WYSIWYG). ---
+   scripts.js stamps the resolved min-height on the section body box and adds
+   .section--canvas-mh + .section--canvas-va-{stretch|top|center|bottom} when a Min Height
+   is set. The body becomes a flex column so the columns row fills the space below the
+   title bar, then align-items positions / stretches the columns vertically — mirroring the
+   frontend (a tall section's flex-column justify-content). */
+.pb-item-type-column.section--canvas-mh {
+	display: flex;
+	flex-direction: column;
+}
+
+.pb-item-type-column.section--canvas-mh > .builder-items {
+	flex: 1 1 auto;
+}
+
+.pb-item-type-column.section--canvas-va-stretch > .builder-items.fw-pb-flex-row { align-items: stretch; }
+.pb-item-type-column.section--canvas-va-top     > .builder-items.fw-pb-flex-row { align-items: flex-start; }
+.pb-item-type-column.section--canvas-va-center  > .builder-items.fw-pb-flex-row { align-items: center; }
+.pb-item-type-column.section--canvas-va-bottom  > .builder-items.fw-pb-flex-row { align-items: flex-end; }

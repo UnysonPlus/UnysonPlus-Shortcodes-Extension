@@ -12,6 +12,19 @@ if (!defined('FW')) die('Forbidden');
  */
 if ( ! function_exists( 'sc_get_advanced_tab' ) ) :
 function sc_get_advanced_tab() {
+    // Offset + z-index sub-fields the Position picker reveals ONLY for a POSITIONED value
+    // (relative / absolute / fixed / sticky). z-index and the offsets have no effect on
+    // static, so Default / Static reveal nothing. Shared across the four positioned choices.
+    $pos_fields = [
+        // One compact inline row of four unit inputs (Top / Right / Bottom / Left), like the
+        // spacing control. Each side picks a unit (px / % / em / rem / vh / vw) or "auto".
+        'pos_offsets'    => [
+            'type'  => 'position-box',
+            'label' => __( 'Offset', 'fw' ),
+            'desc'  => __( 'Nudge the element from its anchor edges — Top / Right / Bottom / Left. Choose a unit per side, or "auto" to let the browser decide.', 'fw' ),
+        ],
+        'element_zindex' => [ 'type' => 'number', 'label' => __( 'Z-Index', 'fw' ), 'desc' => __( 'Stacking order — a higher value sits on top of lower ones. Integer.', 'fw' ), 'value' => '', 'step' => 1 ],
+    ];
     return [
         // 'unique' is Unyson's auto-generated, immutable ID — renders as a
         // hidden input, no label/desc shown to the user.
@@ -40,6 +53,44 @@ function sc_get_advanced_tab() {
                     // type (NOT under `properties`); without it the editor
                     // defaults to htmlmixed and raw CSS isn't syntax-highlighted.
                     'mode'       => 'css',
+                ],
+            ],
+        ],
+        // Position + Z-Index for ANY element (Elementor-style) — placed after the CSS classes.
+        // A multi-picker so the Offset row + Z-Index appear ONLY for a positioned value; Default /
+        // Static reveal nothing (offsets + stacking have no effect there). Applied to the wrapper
+        // by sc_build_wrapper_attr() via sc_position_style().
+        'group_position' => [
+            'type'    => 'group',
+            'options' => [
+                'element_position' => [
+                    'type'         => 'multi-picker',
+                    'label'        => false,
+                    'desc'         => false,
+                    'value'        => [ 'position' => 'default' ],
+                    'picker'       => [
+                        'position' => [
+                            'type'    => 'select',
+                            'label'   => __( 'Position', 'fw' ),
+                            'desc'    => __( 'Take this element out of the normal flow. Relative nudges it from its own spot; Absolute / Fixed / Sticky position it against a positioned ancestor or the viewport. The Offset row + Z-Index appear once you pick a positioned value.', 'fw' ),
+                            'help'    => __( 'Absolute needs a positioned ancestor — set the containing Section or Column to Relative for that. Z-Index and the offsets have no effect on Default / Static.', 'fw' ),
+                            'choices' => [
+                                'default'  => __( 'Default', 'fw' ),
+                                'static'   => __( 'Static', 'fw' ),
+                                'relative' => __( 'Relative', 'fw' ),
+                                'absolute' => __( 'Absolute', 'fw' ),
+                                'fixed'    => __( 'Fixed', 'fw' ),
+                                'sticky'   => __( 'Sticky', 'fw' ),
+                            ],
+                        ],
+                    ],
+                    'choices'      => [
+                        'relative' => $pos_fields,
+                        'absolute' => $pos_fields,
+                        'fixed'    => $pos_fields,
+                        'sticky'   => $pos_fields,
+                    ],
+                    'show_borders' => false,
                 ],
             ],
         ],

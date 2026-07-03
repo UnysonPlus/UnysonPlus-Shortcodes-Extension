@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.8.75';
+$manifest['version']     = '1.8.90';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,57 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.8.88 - Section Min Height now previews live on the builder canvas (WYSIWYG). Picking Full
+ *          Viewport (100vh), one of the vh presets, or a Custom height makes the section item show
+ *          that real height while editing, instead of only applying on the front end — the canvas
+ *          render mirrors the frontend's min-height resolution (preset value or the Custom
+ *          {value, unit}) and stamps it as an inline min-height on the section item. Skipped while
+ *          the section is collapsed so a collapsed section doesn't stay tall, and the value is
+ *          whitelisted to safe CSS lengths.
+ *
+ * 1.8.87 - Section "Columns Vertical Alignment" gains "Default / Stretched" — and it's now the
+ *          default. In a taller (min-height) section the columns now FILL the section height by
+ *          default, instead of sitting at the top with empty space below; Top / Center / Bottom
+ *          still position the content-height columns block as before. Implemented with a
+ *          .section--valign-stretch modifier that makes the section a flex column and grows the
+ *          container + row to fill it (the row's columns already stretch to each other, so they now
+ *          reach the full section height). Backward compatible: existing sections have an explicit
+ *          Top/Center/Bottom saved so they're unchanged, and a legacy/empty value still falls back
+ *          to Top — only newly-added sections pick up the Stretched default. The vertical-alignment
+ *          thumbnails were also corrected to show the whole columns block moving as a unit (matching
+ *          the Column's own Vertical Alignment), and the horizontal-alignment thumbnails now use
+ *          thin, even container padding so Space Between / Around / Evenly read clearly.
+ *
+ * 1.8.82 - Distribute alignment for Section columns and Column content. The Section's "Columns
+ *          Horizontal Alignment" and the Column's "Content Alignment" pickers gain Space Between /
+ *          Space Around / Space Evenly (with matching distribute thumbnails), so a row of columns —
+ *          or a column's inline content — can be spread apart the way the Flexbox already allowed,
+ *          without dropping to a Flexbox. Section routes them through its .section--cols-{between,
+ *          around,evenly} row rules (frontend + builder-canvas preview); Column emits the
+ *          justify-content-* Bootstrap utility. Axis-aware: the distribute values only apply on the
+ *          main axis (justify-content), so the Column ignores them when Content Alignment lands on
+ *          the cross axis (stacked/default direction) where align-items has no space-* values.
+ *
+ * 1.8.81 - Flexbox gains a full Background (background-pro). The Styling tab's compact Background
+ *          Color field is replaced by the same color / gradient / image / video background control
+ *          the Section uses, so a Flexbox can now carry an image or gradient background on its own
+ *          (previously only a solid colour, or a wrapping Section). Rendered in the view via
+ *          sc_bg_pro_style() + sc_bg_pro_video_attr(), stacked under the flex gap / width / min-height
+ *          styles. Existing flexboxes are migrated automatically: a saved bg_color is resolved to a
+ *          concrete colour (its preset slug → var(--color-{slug})) and rendered as the background-pro
+ *          colour layer, so no colour is lost. (Min Height already existed on the Styling tab.)
+ *
+ * 1.8.78 - Combine effects: multi-instance modules in the Animations inserter. A module can set
+ *          anim_meta['multi'] => true to be added to an element MORE THAN ONCE — its inserter tile
+ *          stays available and each click drops a new configurable card (e.g. Hover = Lift + Ripple,
+ *          both run). sc_get_animation_fields() pre-declares up to N slots per multi module
+ *          (<key>__2 … __N) so each instance persists under its own key; the animation-stack
+ *          container groups the slots under one tile and reveals the next empty one on Add, while a
+ *          single-instance tile still hides once used. Hover is the first multi-enabled module (its
+ *          wrapper + runtime now loop over instances and apply every effect). The inserter search
+ *          also matches a module's style/effect names (not just its title — e.g. "letter jump" finds
+ *          Text Effect), and the inserter tile icons render a little larger.
+ *
  * 1.8.75 - Animations tab reorganized as an "Add Animation" inserter + card stack. As the
  *          Animation Engine grows (Entrance, Scroll, Hover, Physics, Parallax, Marquee, Text,
  *          Scroll Loop, and more to come), the tab was becoming an ever-longer wall of always-

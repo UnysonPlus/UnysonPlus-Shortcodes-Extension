@@ -34,4 +34,43 @@
 	justify-content: flex-end;
 }
 
+.section--cols-between .row,
+.section--cols-between .fw-row {
+	justify-content: space-between;
+}
+
+.section--cols-around .row,
+.section--cols-around .fw-row {
+	justify-content: space-around;
+}
+
+.section--cols-evenly .row,
+.section--cols-evenly .fw-row {
+	justify-content: space-evenly;
+}
+
+/* Columns Vertical Alignment = "Default / Stretched" — the columns fill a taller
+   (min-height) section. The section becomes a flex column and the container + row
+   grow to fill it; the row's columns already stretch to each other (flex default),
+   so they now stretch to the full section height. Direct-child selectors keep a
+   nested Container's own rows unaffected. */
+.section--valign-stretch {
+	display: flex;
+	flex-direction: column;
+}
+
+.section--valign-stretch > .fw-container,
+.section--valign-stretch > .fw-container-fluid {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+}
+
+.section--valign-stretch > .fw-container > .row,
+.section--valign-stretch > .fw-container > .fw-row,
+.section--valign-stretch > .fw-container-fluid > .row,
+.section--valign-stretch > .fw-container-fluid > .fw-row {
+	flex: 1 1 auto;
+}
+
 /* Bleed layout moved to its own `bleed-section` shortcode. */

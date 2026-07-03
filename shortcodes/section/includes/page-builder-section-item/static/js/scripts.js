@@ -102,10 +102,57 @@
 					var atts   = this.model.get('atts') || {},
 						halign = atts.column_halign ? String(atts.column_halign) : '';
 
-					this.$el.removeClass('section--cols-center section--cols-right');
+					this.$el.removeClass('section--cols-center section--cols-right section--cols-between section--cols-around section--cols-evenly');
 
-					if (halign === 'center' || halign === 'right') {
+					if (['center', 'right', 'between', 'around', 'evenly'].indexOf(halign) !== -1) {
 						this.$el.addClass('section--cols-' + halign);
+					}
+				}
+
+				// Reflect Min Height (atts.min_height) live on the canvas — WYSIWYG, so a
+				// Full-Viewport (100vh) or Custom section shows its real height while editing
+				// (mirrors the frontend view's min-height resolution). Removed while collapsed
+				// so a collapsed section doesn't stay tall.
+				{
+					var mhAtts = this.model.get('atts') || {},
+						mh     = mhAtts.min_height || '',
+						mhCss  = '';
+
+					if (mh && typeof mh === 'object') {
+						var mhPreset = mh.preset ? String(mh.preset) : '';
+						if (mhPreset === 'custom') {
+							var uv   = (mh.custom && mh.custom.custom_height) ? mh.custom.custom_height : {},
+								num  = (uv.value != null) ? String(uv.value).trim() : '',
+								unit = uv.unit ? String(uv.unit) : 'px';
+							if (/^-?\d*\.?\d+$/.test(num)) { mhCss = num + unit; }
+						} else if (mhPreset && mhPreset !== 'auto') {
+							mhCss = mhPreset; // e.g. "100vh"
+						}
+					} else if (typeof mh === 'string' && mh !== 'auto' && mh !== '') {
+						mhCss = mh.trim(); // legacy plain-string value
+					}
+
+					// Only allow safe CSS length values through to the inline style.
+					if (mhCss && !/^-?\d*\.?\d+(px|%|vh|vw|rem|em)$/.test(mhCss)) { mhCss = ''; }
+
+					// Apply to the section BODY box (the bordered .pb-item-type-column), NOT the
+					// outer .builder-item — putting it on the outer wrapper only adds empty space
+					// (a "margin") below the content-height body. The body growing pulls the
+					// wrapper with it. Clear any legacy value an older build left on the wrapper.
+					this.$el.css('min-height', '');
+					var $body = this.$el.children('.pb-item-type-column');
+					if (!$body.length) { $body = this.$el; }
+					$body.css('min-height', (this.model.get('fw-collapse') || !mhCss) ? '' : mhCss);
+
+					// Reflect Columns Vertical Alignment on the canvas too — only meaningful with a
+					// Min Height. Mirrors the frontend: Stretch = columns fill the tall section;
+					// Top / Center / Bottom position the columns block. The body becomes a flex
+					// column and the columns row fills + aligns via this item's styles.css.
+					var va = mhAtts.column_valign ? String(mhAtts.column_valign) : 'top'; // empty = top (frontend fallback)
+					if (['stretch', 'top', 'center', 'bottom'].indexOf(va) === -1) { va = 'top'; }
+					$body.removeClass('section--canvas-mh section--canvas-va-stretch section--canvas-va-top section--canvas-va-center section--canvas-va-bottom');
+					if (mhCss && !this.model.get('fw-collapse')) {
+						$body.addClass('section--canvas-mh section--canvas-va-' + va);
 					}
 				}
 

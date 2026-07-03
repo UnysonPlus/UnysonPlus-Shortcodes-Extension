@@ -95,17 +95,28 @@ $glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) {
 $align_uri = function ( $align, $label ) use ( $rrect, $glyph_el, $glyph_svg ) {
     $w = 120; $icon_h = 50;
     $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );            // blue section
-    $gx = 17; $bt = 7; $bb = $icon_h - 7; $gw = $w - 2 * $gx;
+    $gx = 7; $bt = 7; $bb = $icon_h - 7; $gw = $w - 2 * $gx; // thin, even side padding (matches top/bottom)
     $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // full gray column
 
     // Element at the TOP of the column; horizontal position shows the alignment.
     $ix = $gx + 5; $iw = $gw - 10; $eh = 9; $ey = $bt + 4;
-    if ( $align === 'center' )    { $ew = $iw * 0.5; $ex = $ix + ( $iw - $ew ) / 2; }
-    elseif ( $align === 'start' ) { $ew = $iw * 0.5; $ex = $ix; }
-    elseif ( $align === 'end' )   { $ew = $iw * 0.5; $ex = $ix + $iw - $ew; }
-    else                          { $ew = $iw; $ex = $ix; } // default → fills the width
+    if ( in_array( $align, array( 'between', 'around', 'evenly' ), true ) ) {
+        // Distribute three elements across the width (space-between/around/evenly).
+        $n = 3; $ew = $iw * 0.2; $free = $iw - $n * $ew;
+        if ( 'between' === $align )     { $gap = $free / ( $n - 1 ); $x0 = $ix; }
+        elseif ( 'around' === $align )  { $gap = $free / $n;         $x0 = $ix + $gap / 2; }
+        else /* evenly */               { $gap = $free / ( $n + 1 ); $x0 = $ix + $gap; }
+        for ( $i = 0; $i < $n; $i++ ) {
+            $svg .= $glyph_el( $x0 + $i * ( $ew + $gap ), $ey, $ew, $eh );
+        }
+    } else {
+        if ( $align === 'center' )    { $ew = $iw * 0.5; $ex = $ix + ( $iw - $ew ) / 2; }
+        elseif ( $align === 'start' ) { $ew = $iw * 0.5; $ex = $ix; }
+        elseif ( $align === 'end' )   { $ew = $iw * 0.5; $ex = $ix + $iw - $ew; }
+        else                          { $ew = $iw; $ex = $ix; } // default → fills the width
 
-    $svg .= $glyph_el( $ex, $ey, $ew, $eh );
+        $svg .= $glyph_el( $ex, $ey, $ew, $eh );
+    }
     return $glyph_svg( $svg, $label, $w, $icon_h );
 };
 
@@ -126,6 +137,11 @@ $halign_choices = array(
     'start'   => $pick( $align_uri( 'start',   __( 'Left', 'fw' ) ),    __( 'Left', 'fw' ), 64, 150 ),
     'center'  => $pick( $align_uri( 'center',  __( 'Center', 'fw' ) ),  __( 'Center', 'fw' ), 64, 150 ),
     'end'     => $pick( $align_uri( 'end',     __( 'Right', 'fw' ) ),   __( 'Right', 'fw' ), 64, 150 ),
+    // Distribute — only apply on the main axis (Content Direction = Inline/Row); the view
+    // guards them so they never emit an invalid align-items-{between…} in the stacked default.
+    'between' => $pick( $align_uri( 'between', __( 'Space Between', 'fw' ) ), __( 'Space Between', 'fw' ), 64, 150 ),
+    'around'  => $pick( $align_uri( 'around',  __( 'Space Around', 'fw' ) ),  __( 'Space Around', 'fw' ), 64, 150 ),
+    'evenly'  => $pick( $align_uri( 'evenly',  __( 'Space Evenly', 'fw' ) ),  __( 'Space Evenly', 'fw' ), 64, 150 ),
 );
 
 // Vertical-alignment glyph: blue section → gray column → white element(s).
@@ -137,7 +153,7 @@ $valign_uri = function ( $variant, $mode, $label ) use ( $rrect, $glyph_el, $gly
     $w = 120; $icon_h = 50;
     $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' ); // blue section
 
-    $gx = 17; $gw = $w - 2 * $gx;            // column x / width
+    $gx = 7; $gw = $w - 2 * $gx;             // column x / width (thin, even side padding)
     $bt = 7; $bb = $icon_h - 7;              // column travel band within the section (7..43)
     $ex = $gx + 5; $ew = $gw - 10; $eh = 9;  // white element x / width / height
     $etop = $bt + 4;                         // element "top" y (the shared default look)
@@ -201,7 +217,7 @@ $contentvalign_choices = array(
 $dir_uri = function ( $mode, $label ) use ( $rrect, $glyph_svg ) {
     $w = 120; $icon_h = 50;
     $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );            // blue section
-    $gx = 17; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;
+    $gx = 7; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;             // thin, even side padding (matches top/bottom)
     $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // gray column
     $ix = $gx + 5; $iw = $gw - 10; $iy = $bt + 4; $ih = ( $bb - 4 ) - ( $bt + 4 );
     $n = 3;
@@ -663,35 +679,6 @@ $options = array(
                 ],
             ],
 
-            // ---- Position & stacking ----
-            'group_position' => [
-                'type'    => 'group',
-                'options' => [
-                    'position' => [
-                        'type'    => 'short-select',
-                        'label'   => __( 'Position', 'fw' ),
-                        'desc'    => __( 'CSS position for the column.', 'fw' ),
-                        'help'    => __( '"Sticky" keeps the column in view while scrolling (a top-0 offset is applied automatically). "Absolute" / "Fixed" remove it from the grid flow — use with care.', 'fw' ),
-                        'value'   => '',
-                        'choices' => [
-                            ''         => __( 'Default', 'fw' ),
-                            'static'   => __( 'Static', 'fw' ),
-                            'relative' => __( 'Relative', 'fw' ),
-                            'absolute' => __( 'Absolute', 'fw' ),
-                            'sticky'   => __( 'Sticky', 'fw' ),
-                            'fixed'    => __( 'Fixed', 'fw' ),
-                        ],
-                    ],
-                    'z_index' => [
-                        'type'  => 'number',
-                        'label' => __( 'Z-Index', 'fw' ),
-                        'desc'  => __( 'Stacking order.', 'fw' ),
-                        'help'  => __( 'Higher numbers sit on top. Has effect only with a Position other than Default.', 'fw' ),
-                        'value' => '',
-                        'step'  => 1,
-                    ],
-                ],
-            ],
         ],
     ],
     'tab_styling' => [

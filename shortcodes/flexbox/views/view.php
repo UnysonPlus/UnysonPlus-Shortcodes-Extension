@@ -110,8 +110,37 @@ if ( $w_custom === '' ) {
 
 $atts['css_class'] = trim( ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) . ' ' . implode( ' ', $classes ) );
 
-// sc_build_wrapper_attr auto-applies base_class + unique class + bg_color/spacing
-// (Styling) + animation + Advanced (css_id, custom attrs) via its filters.
+// --- Background (background-pro): new value, else migrated legacy bg_color. ---
+// The Styling tab's old compact Background Color (bg_color) was replaced by the full
+// background-pro control. Migrate an existing bg_color into a background-pro color layer so
+// legacy flexboxes keep their colour: bg_color's `predefined` is a slug (e.g. "bg-red"), so
+// resolve it to var(--color-{slug}) (bg-pro treats the color value as concrete CSS).
+if ( ! function_exists( 'flexbox_migrate_bg_color' ) ) {
+	function flexbox_migrate_bg_color( $atts ) {
+		$bgc   = isset( $atts['bg_color'] ) ? $atts['bg_color'] : '';
+		$color = '';
+		if ( is_array( $bgc ) ) {
+			if ( ! empty( $bgc['custom'] ) ) {
+				$color = (string) $bgc['custom'];
+			} elseif ( ! empty( $bgc['predefined'] ) ) {
+				$slug = preg_replace( '/^(?:bg|text)-/', '', (string) $bgc['predefined'] );
+				if ( $slug !== '' ) { $color = 'var(--color-' . $slug . ')'; }
+			}
+		} elseif ( is_string( $bgc ) && $bgc !== '' ) {
+			$color = $bgc;
+		}
+		if ( $color === '' ) { return array(); }
+		return array( 'color' => array( 'value' => array( 'predefined' => '', 'custom' => $color ) ) );
+	}
+}
+$bgv = ( ! empty( $atts['background'] ) && is_array( $atts['background'] ) )
+	? $atts['background']
+	: flexbox_migrate_bg_color( $atts );
+// Rendered here (below) — drop bg_color so the styling filter doesn't also apply it.
+unset( $atts['bg_color'] );
+
+// sc_build_wrapper_attr auto-applies base_class + unique class + spacing (Styling)
+// + animation + Advanced (css_id, custom attrs) via its filters.
 $attr = sc_build_wrapper_attr( $atts );
 
 // Responsive overrides — Direction / Justify per breakpoint, emitted as scoped
@@ -153,9 +182,13 @@ if ( isset( $atts['min_height'] ) && is_array( $atts['min_height'] )
 	}
 }
 
+// Background-pro layers (color / gradient / image) — sits UNDER gap/width/min-height so it
+// composes with the spacing-driven style sc_build_wrapper_attr already produced.
+$bg_style = function_exists( 'sc_bg_pro_style' ) ? sc_bg_pro_style( $bgv ) : '';
+
 // Flex gap (resolved preset size) + custom width + min height — appended to any
 // spacing-driven style sc_build_wrapper_attr already produced.
-$extra_style = '';
+$extra_style = $bg_style;
 if ( $gap_size !== '' ) {
 	$extra_style .= 'gap:' . $gap_size . ';';
 }
@@ -168,6 +201,16 @@ if ( $min_h !== '' ) {
 if ( $extra_style !== '' ) {
 	$existing      = isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . '; ' : '';
 	$attr['style'] = $existing . $extra_style;
+}
+
+// Background video (background-pro): merge its data-attrs + flag class; the theme's
+// bg-video JS reads `.background-video[data-...]` and injects the <video> element.
+if ( function_exists( 'sc_bg_pro_video_attr' ) ) {
+	$__vattr = sc_bg_pro_video_attr( $bgv );
+	if ( ! empty( $__vattr ) ) {
+		$attr          = array_merge( $attr, $__vattr );
+		$attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' background-video' );
+	}
 }
 
 if ( $resp_css !== '' ) {

@@ -40,15 +40,24 @@ $section_valign_uri = function ( $mode, $label ) use ( $section_rrect, $section_
 	$w = 120; $icon_h = 50;
 	$svg = $section_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' ); // blue section
 
-	$gx = 17; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;        // column band
-	$svg .= $section_rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // gray full-height column
+	$gx = 7; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;         // thin, even side padding
+	$ex = $gx + 5; $ew = $gw - 10; $eh = 9;                          // white content bar
 
-	$ex = $gx + 5; $ew = $gw - 10; $eh = 9;   // white element
-	$top = $bt + 4; $bottom = $bb - 4;
-	$ey = $top;
-	if ( $mode === 'center' )     { $ey = ( $top + $bottom ) / 2 - $eh / 2; }
-	elseif ( $mode === 'bottom' ) { $ey = $bottom - $eh; }
-	$svg .= $section_el( $ex, $ey, $ew, $eh );
+	if ( $mode === 'stretch' ) {
+		// Default / Stretched — the columns fill the section height; content rides at the top.
+		$svg .= $section_rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+		$svg .= $section_el( $ex, $bt + 4, $ew, $eh );
+	} else {
+		// The whole columns block (gray) sits top / center / bottom within the taller section —
+		// mirroring the frontend (section flex-column justify-content) and the Column's own
+		// "Column Vertical Alignment" glyph: the block MOVES as a unit, it doesn't stretch.
+		$gh = $eh + 8;                                     // content-height columns block
+		if ( $mode === 'bottom' )     { $gy = $bb - $gh; }
+		elseif ( $mode === 'center' ) { $gy = ( $bt + $bb ) / 2 - $gh / 2; }
+		else                          { $gy = $bt; }       // top
+		$svg .= $section_rrect( $gx, $gy, $gw, $gh, 3, '#bdbdbd', '#dcdcde' );
+		$svg .= $section_el( $ex, $gy + ( $gh - $eh ) / 2, $ew, $eh );
+	}
 
 	return $section_glyph_svg( $svg, $label, $w, $icon_h );
 };
@@ -60,15 +69,30 @@ $section_halign_uri = function ( $mode, $label ) use ( $section_rrect, $section_
 	$svg = $section_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' ); // blue section
 
 	$bt = 7; $bb = $icon_h - 7;                       // full-height column band
-	$inner_x = 17; $inner_w = $w - 2 * $inner_x;      // available horizontal track
-	$cw = $inner_w * 0.5;                             // half-width column
-	$cx = $inner_x;                                   // left / default
-	if ( $mode === 'center' )     { $cx = $inner_x + ( $inner_w - $cw ) / 2; }
-	elseif ( $mode === 'right' )  { $cx = $inner_x + $inner_w - $cw; }
-	$svg .= $section_rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // gray column
+	$inner_x = 7; $inner_w = $w - 2 * $inner_x;       // thin, even side padding (matches top/bottom)
 
-	$ew = $cw - 10; $eh = 9;                          // white element centred in the column
-	$svg .= $section_el( $cx + 5, ( $bt + $bb ) / 2 - $eh / 2, $ew, $eh );
+	if ( in_array( $mode, array( 'between', 'around', 'evenly' ), true ) ) {
+		// Distribute three narrow columns across the track (space-between/around/evenly).
+		$n = 3; $cw = $inner_w * 0.18; $free = $inner_w - $n * $cw;
+		if ( 'between' === $mode )     { $gap = $free / ( $n - 1 ); $x0 = $inner_x; }
+		elseif ( 'around' === $mode )  { $gap = $free / $n;         $x0 = $inner_x + $gap / 2; }
+		else /* evenly */              { $gap = $free / ( $n + 1 ); $x0 = $inner_x + $gap; }
+		for ( $i = 0; $i < $n; $i++ ) {
+			$cx = $x0 + $i * ( $cw + $gap );
+			$svg .= $section_rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+			$ew = $cw - 6; $eh = 9;
+			if ( $ew > 3 ) { $svg .= $section_el( $cx + 3, $bt + 4, $ew, $eh ); } // content at top (stretched column, default flow)
+		}
+	} else {
+		$cw = $inner_w * 0.5;                             // half-width column
+		$cx = $inner_x;                                   // left / default
+		if ( $mode === 'center' )     { $cx = $inner_x + ( $inner_w - $cw ) / 2; }
+		elseif ( $mode === 'right' )  { $cx = $inner_x + $inner_w - $cw; }
+		$svg .= $section_rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // gray column
+
+		$ew = $cw - 10; $eh = 9;                          // white element at TOP of the column (stretched, default flow)
+		$svg .= $section_el( $cx + 5, $bt + 4, $ew, $eh );
+	}
 
 	return $section_glyph_svg( $svg, $label, $w, $icon_h );
 };
@@ -151,24 +175,28 @@ $options = [
 					'column_halign' => [
 						'type'    => 'image-picker',
 						'label'   => __( 'Columns Horizontal Alignment', 'fw' ),
-						'desc'    => __( 'Align this section\'s columns horizontally within the row — the simplest way to centre a single narrow column (e.g. one 1/2-width column).', 'fw' ),
-						'help'    => __( 'Only has a visible effect when the columns don\'t already fill the row width. "Center" centres them as a group; "Right" pushes them to the end of the row.', 'fw' ),
+						'desc'    => __( 'Align this section\'s columns horizontally within the row — centre a single narrow column, or spread multiple columns apart.', 'fw' ),
+						'help'    => __( 'Only has a visible effect when the columns don\'t already fill the row width. "Center" / "Right" position them as a group; "Space Between / Around / Evenly" distribute the gaps between multiple columns.', 'fw' ),
 						'value'   => 'default',
 						'choices' => [
 							'default' => $section_valign_pick( $section_halign_uri( 'default', __( 'Left / Default', 'fw' ) ), __( 'Left / Default', 'fw' ) ),
 							'center'  => $section_valign_pick( $section_halign_uri( 'center',  __( 'Center', 'fw' ) ),       __( 'Center', 'fw' ) ),
 							'right'   => $section_valign_pick( $section_halign_uri( 'right',   __( 'Right', 'fw' ) ),        __( 'Right', 'fw' ) ),
+							'between' => $section_valign_pick( $section_halign_uri( 'between', __( 'Space Between', 'fw' ) ),  __( 'Space Between', 'fw' ) ),
+							'around'  => $section_valign_pick( $section_halign_uri( 'around',  __( 'Space Around', 'fw' ) ),   __( 'Space Around', 'fw' ) ),
+							'evenly'  => $section_valign_pick( $section_halign_uri( 'evenly',  __( 'Space Evenly', 'fw' ) ),   __( 'Space Evenly', 'fw' ) ),
 						],
 					],
 					'column_valign' => [
 						'type'    => 'image-picker',
 						'label'   => __( 'Columns Vertical Alignment', 'fw' ),
-						'desc'    => __( 'Where the columns sit vertically when the section is taller than its content (most visible with a Min Height set).', 'fw' ),
-						'value'   => 'top',
+						'desc'    => __( 'Where the columns sit vertically when the section is taller than its content (most visible with a Min Height set). "Default / Stretched" makes the columns fill the section height; Top / Center / Bottom position the content-height columns as a block.', 'fw' ),
+						'value'   => 'stretch',
 						'choices' => [
-							'top'    => $section_valign_pick( $section_valign_uri( 'top',    __( 'Top / Default', 'fw' ) ), __( 'Top / Default', 'fw' ) ),
-							'center' => $section_valign_pick( $section_valign_uri( 'center', __( 'Center', 'fw' ) ),       __( 'Center', 'fw' ) ),
-							'bottom' => $section_valign_pick( $section_valign_uri( 'bottom', __( 'Bottom', 'fw' ) ),       __( 'Bottom', 'fw' ) ),
+							'stretch' => $section_valign_pick( $section_valign_uri( 'stretch', __( 'Default / Stretched', 'fw' ) ), __( 'Default / Stretched', 'fw' ) ),
+							'top'     => $section_valign_pick( $section_valign_uri( 'top',    __( 'Top', 'fw' ) ),    __( 'Top', 'fw' ) ),
+							'center'  => $section_valign_pick( $section_valign_uri( 'center', __( 'Center', 'fw' ) ), __( 'Center', 'fw' ) ),
+							'bottom'  => $section_valign_pick( $section_valign_uri( 'bottom', __( 'Bottom', 'fw' ) ), __( 'Bottom', 'fw' ) ),
 						],
 					],
 				],

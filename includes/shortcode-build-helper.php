@@ -73,6 +73,58 @@ function sc_element_scope_class( $atts ) {
 }
 endif;
 
+/**
+ * Build the inline CSS for the shared "Position" control (Advanced tab → element_position, a
+ * multi-picker). Emits position + offsets + z-index ONLY for a positioned value; offsets and
+ * z-index are omitted for static (they do nothing there). Offset values are whitelisted to safe
+ * CSS lengths (px/%/em/rem/vh/vw/vmin/vmax, auto, 0, negatives) so nothing arbitrary reaches style.
+ *
+ * @param array $atts shortcode atts
+ * @return string e.g. "position:absolute;top:20px;right:0;z-index:5;" or '' when Default/Static-less.
+ */
+if ( ! function_exists( 'sc_position_style' ) ) :
+function sc_position_style( $atts ) {
+    $mp = isset( $atts['element_position'] ) ? $atts['element_position'] : null;
+    if ( ! is_array( $mp ) ) { return ''; }
+    $pos = isset( $mp['position'] ) ? (string) $mp['position'] : 'default';
+    if ( ! in_array( $pos, [ 'static', 'relative', 'absolute', 'fixed', 'sticky' ], true ) ) { return ''; }
+    $style = 'position:' . $pos . ';';
+    if ( $pos !== 'static' ) { // offsets + z-index don't apply to static
+        $sub = ( isset( $mp[ $pos ] ) && is_array( $mp[ $pos ] ) ) ? $mp[ $pos ] : [];
+
+        // Offsets: the position-box control saves a per-side { value, unit } map under
+        // 'pos_offsets'. Fall back to the legacy flat 'pos_top' / 'pos_right' / … strings
+        // (pre-position-box saves) so older builder JSON still renders.
+        $offsets = ( isset( $sub['pos_offsets'] ) && is_array( $sub['pos_offsets'] ) ) ? $sub['pos_offsets'] : null;
+        foreach ( [ 'top', 'right', 'bottom', 'left' ] as $side ) {
+            if ( $offsets !== null ) {
+                $sv   = ( isset( $offsets[ $side ] ) && is_array( $offsets[ $side ] ) ) ? $offsets[ $side ] : [];
+                $unit = isset( $sv['unit'] ) ? trim( (string) $sv['unit'] ) : '';
+                $num  = isset( $sv['value'] ) ? trim( (string) $sv['value'] ) : '';
+                if ( $unit === 'auto' ) {
+                    $v = 'auto';
+                } elseif ( $num !== '' && is_numeric( $num ) ) {
+                    $v = $num . $unit;
+                } else {
+                    $v = '';
+                }
+            } else {
+                $v = isset( $sub[ 'pos_' . $side ] ) ? trim( (string) $sub[ 'pos_' . $side ] ) : '';
+            }
+            if ( $v !== '' && preg_match( '/^(?:auto|-?0|-?\d+(?:\.\d+)?(?:px|%|em|rem|vh|vw|vmin|vmax))$/', $v ) ) {
+                $style .= $side . ':' . $v . ';';
+            }
+        }
+
+        // Z-Index. The `number` option type casts an untouched field to 0 on save, so treat 0 as
+        // unset (z-index:0 has no practical effect) to keep the DOM clean.
+        $z = isset( $sub['element_zindex'] ) ? trim( (string) $sub['element_zindex'] ) : '';
+        if ( $z !== '' && preg_match( '/^-?\d+$/', $z ) && (int) $z !== 0 ) { $style .= 'z-index:' . (int) $z . ';'; }
+    }
+    return $style;
+}
+endif;
+
 function sc_build_wrapper_attr( $atts ) {
 
     $base_class       = ! empty( $atts['base_class'] ) ? $atts['base_class'] : '';
@@ -136,6 +188,12 @@ function sc_build_wrapper_attr( $atts ) {
     // Add inline style if provided
     if ( ! empty( $atts['css_style'] ) ) {
         $attr['style'] = esc_attr( $atts['css_style'] );
+    }
+
+    // Position + Z-Index (shared Advanced tab → element_position) → merge onto the wrapper style.
+    $pos_style = function_exists( 'sc_position_style' ) ? sc_position_style( $atts ) : '';
+    if ( $pos_style !== '' ) {
+        $attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . ';' : '' ) . $pos_style;
     }
 
     // Add class attribute if classes exist (de-duplicated — e.g. a base_class of

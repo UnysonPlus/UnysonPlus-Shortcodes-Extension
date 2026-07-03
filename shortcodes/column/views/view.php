@@ -130,8 +130,11 @@ $content_v = (string) fw_akg( 'content_v', $atts, '' );
 $content_h = (string) fw_akg( 'content_h', $atts, '' );
 $direction = (string) fw_akg( 'content_direction', $atts, 'column' );
 $is_row    = ( $direction === 'row' );
-$cv_ok = in_array( $content_v, array( 'start','center','end','between' ), true );
-$ch_ok = in_array( $content_h, array( 'start','center','end' ), true );
+// Cross-axis values (align-items) accept only start/center/end; main-axis values
+// (justify-content) additionally accept the distribute set (between/around/evenly).
+$cv_ok      = in_array( $content_v, array( 'start','center','end','between','around','evenly' ), true ); // content_v on main axis (column)
+$ch_cross   = in_array( $content_h, array( 'start','center','end' ), true );                             // content_h on cross axis (column)
+$ch_main    = in_array( $content_h, array( 'start','center','end','between','around','evenly' ), true ); // content_h on main axis (row)
 
 // Gap between elements → flex `gap` via the theme-aware `--gap-{slug}` CSS
 // variable (generated from the Gap Scale in css-tokens.php). Slug is
@@ -141,7 +144,7 @@ $gap_ok   = ( $gap_slug !== '' );
 
 $content_align_tokens = array();
 $content_align_style  = '';
-if ( $cv_ok || $ch_ok || $is_row || $gap_ok ) {
+if ( $cv_ok || $ch_main || $is_row || $gap_ok ) {
     $content_align_tokens[] = 'd-flex';
     $content_align_tokens[] = $is_row ? 'flex-row' : 'flex-column';
     if ( $is_row ) { $content_align_tokens[] = 'flex-wrap'; }
@@ -150,41 +153,27 @@ if ( $cv_ok || $ch_ok || $is_row || $gap_ok ) {
     // (always meaning horizontal) drives justify-content in a row but
     // align-items in a column — and vice-versa for "Content Vertical
     // Alignment" — keeping both option labels honest in either direction.
-    // `between` exists only on the main axis (justify-content), so it's
-    // ignored when Content Vertical Alignment lands on the cross axis (a row).
+    // The distribute values (between/around/evenly) exist only on the main axis
+    // (justify-content), so they're ignored whenever an alignment lands on the
+    // cross axis (align-items), which has no space-* values.
     if ( $is_row ) {
-        if ( $ch_ok ) { $content_align_tokens[] = 'justify-content-' . $content_h; }
+        if ( $ch_main ) { $content_align_tokens[] = 'justify-content-' . $content_h; }
         if ( in_array( $content_v, array( 'start','center','end' ), true ) ) {
             $content_align_tokens[] = 'align-items-' . $content_v;
         }
     } else {
         if ( $cv_ok ) { $content_align_tokens[] = 'justify-content-' . $content_v; }
-        if ( $ch_ok ) { $content_align_tokens[] = 'align-items-' . $content_h; }
+        if ( $ch_cross ) { $content_align_tokens[] = 'align-items-' . $content_h; }
     }
 
     if ( $gap_ok ) { $content_align_style = 'gap:var(--gap-' . $gap_slug . ');'; }
 }
 
-// Position (sticky also gets top-0 so it actually sticks).
-$position = (string) fw_akg( 'position', $atts, '' );
-if ( in_array( $position, array( 'static','relative','absolute','sticky','fixed' ), true ) ) {
-    $outer_extra[] = 'position-' . $position;
-    if ( $position === 'sticky' ) { $outer_extra[] = 'top-0'; }
-}
+// Position + Z-Index now come from the shared Advanced-tab control (element_position),
+// applied to this column's outer $attr as an inline style by sc_build_wrapper_attr().
 
 if ( ! empty( $outer_extra ) ) {
     $attr['class'] = trim( $attr['class'] . ' ' . implode( ' ', $outer_extra ) );
-}
-
-// Z-index → inline style on the outer column (no general z-index utility).
-// Skip 0: the `number` option type casts an empty field to 0 on save
-// (intval('')/floatval('') === 0), so an untouched Z-Index would otherwise
-// stamp every column with a meaningless `style="z-index:0;"`. z-index:0 has no
-// practical effect anyway, so treat it as unset and keep the DOM clean.
-$z_index = fw_akg( 'z_index', $atts, '' );
-if ( $z_index !== '' && is_numeric( $z_index ) && (int) $z_index !== 0 ) {
-    $existing_style = isset( $attr['style'] ) ? rtrim( trim( $attr['style'] ), ';' ) : '';
-    $attr['style']  = ( $existing_style !== '' ? $existing_style . '; ' : '' ) . 'z-index:' . (int) $z_index . ';';
 }
 
 // 4. Build the INNER class list: Inner Wrapper Class field tokens +

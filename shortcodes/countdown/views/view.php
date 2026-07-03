@@ -128,7 +128,7 @@ if ( $css_class !== '' ) {
 }
 $classes = array_merge( $classes, $hide_keys );
 ?>
-<div<?php echo $css_id !== '' ? ' id="' . esc_attr( $css_id ) . '"' : ''; ?> class="<?php echo esc_attr( implode( ' ', array_unique( $classes ) ) ); ?>" data-target="<?php echo esc_attr( $target_ms ); ?>" data-oncomplete="<?php echo esc_attr( $on_complete ); ?>">
+<div<?php echo $css_id !== '' ? ' id="' . esc_attr( $css_id ) . '"' : ''; ?> class="<?php echo esc_attr( implode( ' ', array_unique( $classes ) ) ); ?>"<?php echo ( function_exists( 'sc_position_style' ) && ( $sc_pos = sc_position_style( $atts ) ) !== '' ) ? ' style="' . esc_attr( $sc_pos ) . '"' : ''; ?> data-target="<?php echo esc_attr( $target_ms ); ?>" data-oncomplete="<?php echo esc_attr( $on_complete ); ?>">
 	<div class="fw-countdown__units">
 		<?php foreach ( $units as $unit => $info ) : ?>
 			<?php if ( ! $info['show'] ) { continue; } ?>

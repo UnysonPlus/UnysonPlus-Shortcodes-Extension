@@ -75,7 +75,13 @@ $valign = isset( $atts['column_valign'] )
 if ( $min_height !== '' ) {
 	$section_style .= 'min-height:' . esc_attr( $min_height ) . ';';
 }
-if ( $min_height !== '' || $valign === 'center' || $valign === 'bottom' ) {
+if ( $valign === 'stretch' ) {
+	// Default / Stretched — the columns fill the section height. Only meaningful with a Min
+	// Height; the .section--valign-stretch rules grow the container + row to fill the section.
+	if ( $min_height !== '' ) { $section_extra_classes .= ' section--valign-stretch'; }
+} elseif ( $min_height !== '' || $valign === 'center' || $valign === 'bottom' ) {
+	// Top (also the fallback for a legacy/empty value) / Center / Bottom — position the
+	// content-height columns block within the taller section.
 	$valign_map = array( 'center' => 'center', 'bottom' => 'flex-end' );
 	$justify    = isset( $valign_map[ $valign ] ) ? $valign_map[ $valign ] : 'flex-start';
 	$section_style .= 'display:flex;flex-direction:column;justify-content:' . $justify . ';';
@@ -85,7 +91,7 @@ if ( $min_height !== '' || $valign === 'center' || $valign === 'bottom' ) {
 // class so it can reach this section's auto-generated .fw-row(s) — same pattern
 // as the section--gap-* classes above. Default (left) needs no class.
 $halign = isset( $atts['column_halign'] ) ? (string) $atts['column_halign'] : '';
-if ( $halign === 'center' || $halign === 'right' ) {
+if ( in_array( $halign, array( 'center', 'right', 'between', 'around', 'evenly' ), true ) ) {
 	$section_extra_classes .= ' section--cols-' . $halign;
 }
 

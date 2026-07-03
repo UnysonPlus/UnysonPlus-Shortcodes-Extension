@@ -144,7 +144,7 @@ $resolve_bar_fill = function ( $bar ) use ( $fill_class, $fill_style, $fill_raw,
 	return array( $fill_class, $fill_style, $fill_raw );
 };
 ?>
-<div<?php echo $css_id !== '' ? ' id="' . esc_attr( $css_id ) . '"' : ''; ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo esc_attr( $wrap_style ); ?>" data-animate="<?php echo $animate ? '1' : '0'; ?>">
+<div<?php echo $css_id !== '' ? ' id="' . esc_attr( $css_id ) . '"' : ''; ?> class="<?php echo esc_attr( implode( ' ', $classes ) ); ?>" style="<?php echo esc_attr( rtrim( $wrap_style, ';' ) . ( function_exists( 'sc_position_style' ) && ( $sc_pos = sc_position_style( $atts ) ) !== '' ? ';' . $sc_pos : '' ) ); ?>" data-animate="<?php echo $animate ? '1' : '0'; ?>">
 <?php
 foreach ( $bars as $bar ) :
 	$label   = isset( $bar['label'] ) ? trim( (string) $bar['label'] ) : '';

@@ -380,7 +380,12 @@ $options = [
 			'group_styling' => [
 				'type'    => 'group',
 				'options' => [
-					'bg_color'      => sc_color_field_compact( [ 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ] ),
+					'background'    => [
+						'type'  => 'background-pro',
+						'label' => __( 'Background', 'fw' ),
+						'desc'  => __( 'Color, gradient, image and video background layers (they stack: image over gradient over color). Replaces the old Background Color field — existing flexboxes are migrated automatically.', 'fw' ),
+						'help'  => __( 'Image attachment "Fixed" gives a parallax effect. Video renders a muted, looping background; set a poster/fallback image for while it loads or where autoplay is blocked.', 'fw' ),
+					],
 					'border_preset' => [
 						'type'         => 'border-style-picker',
 						'label'        => __( 'Border / Box Style', 'fw' ),
