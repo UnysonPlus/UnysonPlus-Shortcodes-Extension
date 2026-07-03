@@ -13,7 +13,7 @@ $cfg['page_builder'] = array(
     'title_template' => '
         {{ if ( o ) {
             var t = o["title"] || "";
-            var d = o["design"] || "stacked";
+            var d = ( o["design_settings"] && o["design_settings"].family ) || o["design"] || "stacked";
         }}
             {{ if ( o.image && o.image.url ) { }}
                 <div style="margin-top:.5rem;">

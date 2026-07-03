@@ -10,8 +10,9 @@
  *      options.php (mirrors the role of sc_get_advanced_tab() for tab_advanced).
  *   2. A filter on `sc_build_wrapper_attr` that injects animation classes,
  *      data-* attributes and CSS custom properties when a shortcode opts in.
- *   3. Conditional enqueue: animate.min.css + sc-animations.js are loaded only
- *      when at least one shortcode on the rendered page has animations enabled.
+ *   3. On-demand enqueue: the shared base + ONLY the used effects' Animate.css
+ *      partials (static/css/animate/) + sc-animations.js are loaded, and only when
+ *      at least one shortcode on the rendered page has animations enabled.
  *
  * No view.php files need to be modified — the filter pipes everything through
  * the shared wrapper-attribute builder used by every shortcode today.
@@ -262,8 +263,8 @@ function sc_get_animation_fields() {
     $tile_base = $sc_ext ? $sc_ext->get_declared_URI( '/static/img/entrance-effects' ) : '';
     $tile      = function ( $file, $label ) use ( $tile_base ) {
         return [
-            'small' => [ 'src' => $tile_base . '/' . $file . '.svg', 'height' => 96 ],
-            'large' => [ 'src' => $tile_base . '/' . $file . '.svg', 'height' => 150 ],
+            'small' => [ 'src' => $tile_base . '/' . $file . '.svg', 'height' => 107 ],
+            'large' => [ 'src' => $tile_base . '/' . $file . '.svg', 'height' => 190 ],
             'label' => $label,
         ];
     };
@@ -332,12 +333,21 @@ function sc_get_animation_fields() {
     $fields = apply_filters( 'sc_animation_fields', $fields );
 
     /**
+     * Multi-instance expansion. A module that sets `anim_meta['multi'] => true` can be added to an
+     * element MORE THAN ONCE (e.g. Hover = Lift + Ripple, Text Effect = Slide + Rainbow + Neon).
+     * We pre-declare up to N slots per such module — the base key plus `<key>__2 … __N` — so each
+     * instance saves under its own key (the fields must exist in the declared options for their
+     * values to persist; the container just shows/hides them as cards). Every slot is a deep copy
+     * tagged with its base id + index so the container groups them under one inserter tile.
+     */
+    $fields = sc_expand_multi_animation_fields( $fields, 4 );
+
+    /**
      * Wrap every module field in the `animation-stack` container — the Animations-tab organizer
      * (card stack + "Add Animation" inserter). A container renders/collects its children WITHOUT
      * namespacing (like group/box/tab), so each module keeps saving under its own key
-     * (animation / interaction / physics / gsap_motion / …) — zero value migration. When the
-     * container type is registered on fw_container_types_init (below), which fires before any
-     * options render.
+     * (animation / interaction / physics / gsap_motion / …) — zero value migration. The container
+     * type is registered on fw_container_types_init (below), which fires before any options render.
      */
     return [
         'animation_stack' => [
@@ -346,6 +356,37 @@ function sc_get_animation_fields() {
             'options' => $fields,
         ],
     ];
+}
+endif;
+
+/**
+ * Expand `anim_meta['multi']` module fields into up to $max instance slots (base + `<key>__2..__N`).
+ * Each field (base and slot) is tagged `anim_meta['multi_base']` (the base key) and
+ * `anim_meta['multi_index']` (1..N) so the container can group slots under one inserter tile and
+ * reveal the next empty one on "Add". Single-instance fields pass through untouched, order kept.
+ */
+if ( ! function_exists( 'sc_expand_multi_animation_fields' ) ) :
+function sc_expand_multi_animation_fields( $fields, $max = 4 ) {
+    if ( ! is_array( $fields ) ) {
+        return $fields;
+    }
+    $out = [];
+    foreach ( $fields as $key => $field ) {
+        $is_multi = is_array( $field ) && ! empty( $field['anim_meta']['multi'] );
+        if ( ! $is_multi ) {
+            $out[ $key ] = $field;
+            continue;
+        }
+        for ( $i = 1; $i <= max( 1, (int) $max ); $i++ ) {
+            $slot_key = ( $i === 1 ) ? $key : $key . '__' . $i;
+            $slot     = $field; // deep value-copy (arrays copy by value in PHP)
+            $slot['anim_meta']['multi_base']  = $key;
+            $slot['anim_meta']['multi_index'] = $i;
+            $slot['anim_meta']['multi_max']   = (int) $max;
+            $out[ $slot_key ] = $slot;
+        }
+    }
+    return $out;
 }
 endif;
 
@@ -371,6 +412,22 @@ function sc_animation_flag( $set = false ) {
     static $used = false;
     if ( $set ) $used = true;
     return $used;
+}
+endif;
+
+/**
+ * On-demand asset registry for entrance animations — records which Animate.css
+ * effect classes actually rendered this request, so wp_footer enqueues ONLY those
+ * effects' CSS partials (+ the shared base) instead of the whole 72 KB bundle.
+ * Pass an 'animate__<name>' class to record it; call with no arg to read the set.
+ */
+if ( ! function_exists( 'sc_animation_use' ) ) :
+function sc_animation_use( $effect = null ) {
+    static $used = [];
+    if ( $effect !== null && preg_match( '/^animate__[a-zA-Z]+$/', (string) $effect ) ) {
+        $used[ $effect ] = true;
+    }
+    return array_keys( $used );
 }
 endif;
 
@@ -437,16 +494,23 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
         $attr['style']  = esc_attr( $existing_style === '' ? $css_string : rtrim( $existing_style, '; ' ) . '; ' . $css_string );
     }
 
-    // Flag the request so wp_footer enqueues the assets.
+    // Flag the request + record the effect so wp_footer enqueues ONLY this effect's
+    // CSS partial (plus the shared base), not the whole Animate.css bundle.
     sc_animation_flag( true );
+    sc_animation_use( $effect );
 
     return $attr;
 }, 20, 2 );
 
 
 /**
- * Conditionally enqueue animate.min.css + sc-animations.js at the very start
- * of wp_footer. Only fires if at least one shortcode rendered with animation on.
+ * On-demand enqueue at the start of wp_footer. Instead of the whole 72 KB
+ * Animate.css bundle, ship the shared base (~3 KB) plus ONLY the CSS partials for
+ * the effects that actually rendered on this page — so one entrance animation costs
+ * ~3.5 KB, not 72 KB. Per-effect files live in static/css/animate/effects/<name>.min.css
+ * (base in static/css/animate/base.min.css); split from the upstream bundle. The
+ * generic IntersectionObserver runtime (sc-animations.js) is tiny + shared, loaded
+ * whenever any effect is used. Only fires if a shortcode rendered with animation on.
  */
 add_action( 'wp_footer', function () {
     if ( ! sc_animation_flag() ) return;
@@ -454,40 +518,33 @@ add_action( 'wp_footer', function () {
     $shortcodes_ext = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
     if ( ! $shortcodes_ext ) return;
 
-    $css_uri = fw_min_uri($shortcodes_ext->get_declared_URI( '/static/css/animate.min.css' ));
-    $js_uri  = fw_min_uri($shortcodes_ext->get_declared_URI( '/static/js/sc-animations.js' ));
+    $base_uri = $shortcodes_ext->get_declared_URI( '/static/css/animate' );
+    $base_dir = $shortcodes_ext->get_declared_path( '/static/css/animate' );
+    $ver      = fw_ext( 'shortcodes' )->manifest->get_version();
+    $fmt      = function ( $rel ) use ( $base_dir, $ver ) {
+        $abs = $base_dir . $rel;
+        return file_exists( $abs ) ? $ver . '.' . filemtime( $abs ) : $ver;
+    };
 
-    wp_enqueue_style( 'animate-css', $css_uri, [], '4.1.1' );
-
+    // Shared base (CSS vars, .animate__animated, speed / delay / repeat / infinite utilities,
+    // reduced-motion guard). Carries the .sc-anim-pending visibility helpers as inline CSS.
+    wp_enqueue_style( 'animate-css-base', $base_uri . '/base.min.css', [], $fmt( '/base.min.css' ) );
     $inline_css = '.sc-anim-pending{visibility:hidden;}'
                 . '.sc-anim-pending.animate__animated{visibility:visible;}'
                 . '@media (prefers-reduced-motion: reduce){'
                 .   '.animate__animated{animation:none !important;}'
                 .   '.sc-anim-pending{visibility:visible !important;}'
                 . '}';
-    wp_add_inline_style( 'animate-css', $inline_css );
+    wp_add_inline_style( 'animate-css-base', $inline_css );
 
+    // One partial per used effect (only the effects the page actually rendered).
+    foreach ( sc_animation_use() as $effect ) {
+        $name = substr( $effect, strlen( 'animate__' ) ); // e.g. animate__fadeInUp → fadeInUp
+        $rel  = '/effects/' . $name . '.min.css';
+        if ( ! file_exists( $base_dir . $rel ) ) continue;
+        wp_enqueue_style( 'animate-css-' . $name, $base_uri . $rel, [ 'animate-css-base' ], $fmt( $rel ) );
+    }
+
+    $js_uri = fw_min_uri( $shortcodes_ext->get_declared_URI( '/static/js/sc-animations.js' ) );
     wp_enqueue_script( 'sc-animations', $js_uri, [], '1.0.0', true );
 }, 5 );
-
-
-/**
- * Entrance-picker tile size (admin builder ONLY, entrance-scoped).
- *
- * The Entrance Animation popover uses animated-SVG tiles with the effect name baked in, so they
- * need to render taller than the usual engine popover tiles for the label to read. The core
- * multi-picker CSS caps ALL popover tiles at 72px in the large modal / Theme Settings, which
- * overrides the picker's own per-choice height — that cap stays for the OTHER popovers. So the
- * entrance block owns its tile size here, targeting only its swatches by their `/entrance-effects/`
- * src path (higher specificity than the cap). Printed on admin pages only. Mirrors the pattern the
- * Animation Engine's physics module uses.
- */
-add_action( 'admin_head', function () {
-    $sel = 'ul.thumbnails.image_picker_selector li .thumbnail img[src*="/entrance-effects/"]';
-    echo '<style id="sc-entrance-picker-size">'
-        . '.fw-mp-pop ' . $sel . ','
-        . '.fw-modal-large .fw-mp-pop ' . $sel . ','
-        . '.appearance_page_fw-settings .fw-mp-pop ' . $sel
-        . '{height:96px !important;width:auto !important;}'
-        . "</style>\n";
-} );

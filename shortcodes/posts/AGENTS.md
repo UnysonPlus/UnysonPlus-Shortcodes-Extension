@@ -38,7 +38,11 @@ picker; `first_style` makes the first post use a different style (hero-split);
 ## Options UX — pickers + option-gating (since the Design rework)
 
 The options are organised around **image-picker multi-pickers** that reveal
-only the chosen value's sub-options (mirrors the Testimonials Design picker):
+only the chosen value's sub-options (mirrors the Testimonials Design picker). The **`card`** and
+**`design`** (layout) pickers run in **popover mode** (`'popover' => true`): their visible label
+is on the **top-level** multi-picker and the inner picker sub-option is `'label' => false` — keep
+it that way (moving the label back onto the picker changes how the popover renders). The saved
+value shapes are unchanged by the popover.
 
 - **`design`** (new id) — Layout mode image-picker (`grid`/`list`/`masonry`/
   `slider`). Reveals columns/gaps/equal-height/featured for grid, columns/gaps

@@ -52,9 +52,11 @@ Registry-driven dispatcher, identical in shape to `testimonials`:
 
 ### Design picker = a `multi-picker` keyed by an `image-picker`
 
-The design is chosen by a **`multi-picker`** named **`design_settings`** whose
-picker sub-option `design` is an **`image-picker`**. Each design's choice reveals
-ONLY that design's options. Saved shape:
+The design is chosen by a **popover** **`multi-picker`** (`'popover' => true`) named
+**`design_settings`** whose picker sub-option `design` is an **`image-picker`**. Each design's
+choice reveals ONLY that design's options. **Popover label rule:** the visible label sits on the
+**top-level** multi-picker (`'label' => __('Design')`) and the picker sub-option is `'label' =>
+false` — do NOT move it back onto the picker (that changes how the popover renders). Saved shape:
 `design_settings => { design: '<key>', '<key>': { …that design's options… } }`.
 `design_settings` is a dedicated id (never a legacy scalar) so opening the modal
 with raw saved atts can't hit `$value['design']`-on-a-string (the blank-`error:`

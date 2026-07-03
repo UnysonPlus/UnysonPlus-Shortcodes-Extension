@@ -125,29 +125,170 @@ $options = [
             'group_design' => [
                 'type'    => 'group',
                 'options' => [
-                    'design' => call_user_func( function () {
+                    'design_settings' => call_user_func( function () {
                         $registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
+                        $families = ( is_array( $registry ) && isset( $registry['families'] ) ) ? $registry['families'] : array();
                         $base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/image-box/static/img/design' );
-                        $choices  = array();
-                        if ( is_array( $registry ) ) {
-                            foreach ( $registry as $key => $meta ) {
-                                $thumb = isset( $meta['thumb'] ) ? $meta['thumb'] : ( $key . '.svg' );
-                                $choices[ $key ] = array(
-                                    'small' => array(
-                                        'src'    => $base . '/' . $thumb,
-                                        'height' => 72,
-                                        'title'  => isset( $meta['label'] ) ? $meta['label'] : $key,
-                                    ),
-                                );
-                            }
+
+                        // Family tiles (the popover image-picker).
+                        $family_choices = array();
+                        foreach ( $families as $fkey => $fmeta ) {
+                            $thumb = isset( $fmeta['thumb'] ) ? $fmeta['thumb'] : ( $fkey . '.svg' );
+                            $family_choices[ $fkey ] = array(
+                                'small' => array(
+                                    'src'    => $base . '/' . $thumb,
+                                    'height' => 72,
+                                    'title'  => isset( $fmeta['label'] ) ? $fmeta['label'] : $fkey,
+                                ),
+                                'label' => isset( $fmeta['label'] ) ? $fmeta['label'] : $fkey,
+                            );
                         }
+
+                        // Shared overlay colour/opacity fragments (Overlay family).
+                        $ov_color = function_exists( 'sc_color_field_compact' )
+                            ? sc_color_field_compact( array(
+                                'label' => __( 'Overlay Colour', 'fw' ),
+                                'kind'  => 'bg',
+                                'desc'  => __( 'Tint over the image. Defaults to a dark scrim when empty.', 'fw' ),
+                            ) )
+                            : array( 'type' => 'color-picker', 'label' => __( 'Overlay Colour', 'fw' ) );
+
                         return array(
-                            'type'    => 'image-picker',
-                            'label'   => __( 'Design', 'fw' ),
-                            'desc'    => __( 'The overall look of the box. Hover-overlay designs reveal the text over the image; caption / card / frame designs keep it visible.', 'fw' ),
-                            'help'    => __( 'Pick the layout first, then fine-tune with the Image Crop Ratio, Media Width and Content Alignment below, plus the Hover Effect in the Effects & Link tab.', 'fw' ),
-                            'value'   => 'stacked',
-                            'choices' => $choices,
+                            'type'         => 'multi-picker',
+                            'label'        => __( 'Design', 'fw' ),
+                            'desc'         => __( 'Pick a layout family — its variations appear in the panel.', 'fw' ),
+                            'help'         => __( 'Choose the family first, then fine-tune its variations here. Universal controls (Image Crop Ratio, Content Alignment, Hover Effect, Link) stay in their own sections.', 'fw' ),
+                            'popover'      => true,
+                            'show_borders' => false,
+                            'value'        => array( 'family' => 'stacked' ),
+                            'picker'       => array(
+                                'family' => array(
+                                    'type'    => 'image-picker',
+                                    'label'   => false,
+                                    'desc'    => __( 'Hover a tile to preview it.', 'fw' ),
+                                    'value'   => 'stacked',
+                                    'choices' => $family_choices,
+                                ),
+                            ),
+                            'choices'      => array(
+
+                                'stacked' => array(
+                                    'stacking' => call_user_func( function () {
+                                        $sbase = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/image-box/static/img/stacking' );
+                                        $items = array(
+                                            'img-title-text' => __( 'Image, Title, Text', 'fw' ),
+                                            'title-img-text' => __( 'Title, Image, Text', 'fw' ),
+                                            'title-text-img' => __( 'Title, Text, Image', 'fw' ),
+                                            'text-img-title' => __( 'Text, Image, Title', 'fw' ),
+                                        );
+                                        $ch = array();
+                                        foreach ( $items as $k => $lbl ) {
+                                            $ch[ $k ] = array(
+                                                'small' => array( 'src' => $sbase . '/' . $k . '.svg', 'height' => 60, 'title' => $lbl ),
+                                                'label' => $lbl,
+                                            );
+                                        }
+                                        return array(
+                                            'type'    => 'image-picker',
+                                            'label'   => __( 'Stacking Order', 'fw' ),
+                                            'desc'    => __( 'The vertical order of the image, heading and text.', 'fw' ),
+                                            'value'   => 'img-title-text',
+                                            'choices' => $ch,
+                                        );
+                                    } ),
+                                ),
+
+                                'side' => array(
+                                    'image_side' => array(
+                                        'type'    => 'select',
+                                        'label'   => __( 'Image Side', 'fw' ),
+                                        'value'   => 'left',
+                                        'choices' => array(
+                                            'left'  => __( 'Left', 'fw' ),
+                                            'right' => __( 'Right', 'fw' ),
+                                        ),
+                                    ),
+                                    'panel' => array(
+                                        'type'         => 'switch',
+                                        'label'        => __( 'Colour Panel', 'fw' ),
+                                        'desc'         => __( 'Fill the content half with the Accent colour (equal-height split).', 'fw' ),
+                                        'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+                                        'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+                                        'value'        => 'no',
+                                    ),
+                                    'media_width' => array(
+                                        'type'    => 'select',
+                                        'label'   => __( 'Media Width', 'fw' ),
+                                        'desc'    => __( 'How much of the row the image occupies.', 'fw' ),
+                                        'value'   => '50',
+                                        'choices' => array(
+                                            '33' => __( 'One third (33%)', 'fw' ),
+                                            '40' => __( 'Two fifths (40%)', 'fw' ),
+                                            '50' => __( 'Half (50%)', 'fw' ),
+                                            '60' => __( 'Three fifths (60%)', 'fw' ),
+                                        ),
+                                    ),
+                                ),
+
+                                'overlay' => array(
+                                    'reveal' => array(
+                                        'type'    => 'select',
+                                        'label'   => __( 'Reveal', 'fw' ),
+                                        'desc'    => __( 'How the text sits on the image.', 'fw' ),
+                                        'value'   => 'scrim',
+                                        'choices' => array(
+                                            'scrim'   => __( 'Gradient scrim (always visible)', 'fw' ),
+                                            'cover'   => __( 'Editorial cover (title at top)', 'fw' ),
+                                            'overlap' => __( 'Overlapping panel (magazine)', 'fw' ),
+                                            'bar'     => __( 'Solid caption bar', 'fw' ),
+                                            'fade'    => __( 'Fade in on hover', 'fw' ),
+                                            'slide'   => __( 'Slide up on hover', 'fw' ),
+                                            'center'  => __( 'Centered on hover', 'fw' ),
+                                            'frame'   => __( 'Frame draw on hover', 'fw' ),
+                                        ),
+                                    ),
+                                    'overlay_color'   => $ov_color,
+                                    'overlay_opacity' => array(
+                                        'type'    => 'select',
+                                        'label'   => __( 'Overlay Opacity', 'fw' ),
+                                        'value'   => '60',
+                                        'choices' => array(
+                                            '0'  => __( '0% (none)', 'fw' ),
+                                            '25' => __( '25%', 'fw' ),
+                                            '40' => __( '40%', 'fw' ),
+                                            '60' => __( '60%', 'fw' ),
+                                            '75' => __( '75%', 'fw' ),
+                                            '90' => __( '90%', 'fw' ),
+                                        ),
+                                    ),
+                                ),
+
+                                'card' => array(
+                                    'style' => array(
+                                        'type'    => 'select',
+                                        'label'   => __( 'Card Style', 'fw' ),
+                                        'value'   => 'card',
+                                        'choices' => array(
+                                            'card'          => __( 'Bordered card', 'fw' ),
+                                            'caption-below' => __( 'Clean caption strip', 'fw' ),
+                                        ),
+                                    ),
+                                ),
+
+                                'frame' => array(
+                                    'style' => array(
+                                        'type'    => 'select',
+                                        'label'   => __( 'Frame Style', 'fw' ),
+                                        'value'   => 'polaroid',
+                                        'choices' => array(
+                                            'polaroid'    => __( 'Polaroid', 'fw' ),
+                                            'postcard'    => __( 'Postcard', 'fw' ),
+                                            'badge'       => __( 'Bordered badge', 'fw' ),
+                                            'photo-stack' => __( 'Photo stack', 'fw' ),
+                                        ),
+                                    ),
+                                ),
+                            ),
                         );
                     } ),
                 ],
@@ -171,24 +312,99 @@ $options = [
                             'ratio-2-3'   => __( 'Portrait 2:3', 'fw' ),
                         ],
                     ],
-                    'media_width' => [
-                        'type'    => 'select',
-                        'label'   => __( 'Media Width (Side designs)', 'fw' ),
-                        'desc'    => __( 'For the Side designs only: how much of the row the image occupies. Ignored by other designs.', 'fw' ),
-                        'value'   => '50',
-                        'choices' => [
-                            '33' => __( 'One third (33%)', 'fw' ),
-                            '40' => __( 'Two fifths (40%)', 'fw' ),
-                            '50' => __( 'Half (50%)', 'fw' ),
-                            '60' => __( 'Three fifths (60%)', 'fw' ),
-                        ],
-                    ],
                     'content_align' => sc_alignment_field( array(
                         'label'   => __( 'Content Alignment', 'fw' ),
                         'inherit' => true,
                         'desc'    => __( 'Horizontal alignment of the eyebrow, title, text and button.', 'fw' ),
                         'help'    => __( 'Centered reads well on overlay and feature designs; Left suits side and caption designs. Leave on Inherit to use each design’s default.', 'fw' ),
                     ) ),
+                    'image_size' => array(
+                        'type'    => 'short-select',
+                        'label'   => __( 'Image Size', 'fw' ),
+                        'desc'    => __( 'How large the image renders. Applies to the image-top families (Stacked, Card, Frame); the Side family uses Media Width instead.', 'fw' ),
+                        'help'    => __( 'Small / X-Small centre the image — handy for a logo or avatar with a shape Mask below.', 'fw' ),
+                        'value'   => 'full',
+                        'choices' => array(
+                            'full'   => __( 'Full', 'fw' ),
+                            'large'  => __( 'Large (75%)', 'fw' ),
+                            'medium' => __( 'Medium (55%)', 'fw' ),
+                            'small'  => __( 'Small (35%)', 'fw' ),
+                            'xsmall' => __( 'X-Small (140px)', 'fw' ),
+                        ),
+                    ),
+                    'image_mask' => call_user_func( function () {
+                        $mbase = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/image-box/static/img/mask' );
+                        $items = array(
+                            'none'       => __( 'None', 'fw' ),
+                            'rounded'    => __( 'Rounded', 'fw' ),
+                            'rounded-xl' => __( 'Rounded XL', 'fw' ),
+                            'circle'     => __( 'Circle', 'fw' ),
+                            'squircle'   => __( 'Squircle', 'fw' ),
+                            'arch'       => __( 'Arch', 'fw' ),
+                            'hexagon'    => __( 'Hexagon', 'fw' ),
+                            'diamond'    => __( 'Diamond', 'fw' ),
+                            'triangle'   => __( 'Triangle', 'fw' ),
+                            'pentagon'   => __( 'Pentagon', 'fw' ),
+                            'star'       => __( 'Star', 'fw' ),
+                            'chevron'    => __( 'Chevron', 'fw' ),
+                            'octagon'    => __( 'Octagon', 'fw' ),
+                            'leaf'       => __( 'Leaf', 'fw' ),
+                            'shield'     => __( 'Shield', 'fw' ),
+                            'heart'      => __( 'Heart', 'fw' ),
+                            'flower'       => __( 'Flower', 'fw' ),
+                            'brush'        => __( 'Brush', 'fw' ),
+                            'water-splash' => __( 'Water Splash', 'fw' ),
+                            'grunge-frame' => __( 'Grunge Frame', 'fw' ),
+                            'blob-1'       => __( 'Blob 1', 'fw' ),
+                            'blob-2'       => __( 'Blob 2', 'fw' ),
+                            'custom'       => __( 'Custom', 'fw' ),
+                        );
+                        $ch = array();
+                        foreach ( $items as $k => $lbl ) {
+                            $ch[ $k ] = array(
+                                'small' => array( 'src' => $mbase . '/' . $k . '.svg', 'height' => 56, 'title' => $lbl ),
+                                'label' => $lbl,
+                            );
+                        }
+                        return array(
+                            'type'         => 'multi-picker',
+                            'label'        => false,
+                            'desc'         => false,
+                            'show_borders' => false,
+                            'picker'       => array(
+                                'mask' => array(
+                                    'type'    => 'image-picker',
+                                    'label'   => __( 'Image Mask', 'fw' ),
+                                    'desc'    => __( 'Clip the image to a shape. Shape masks (circle, hexagon, heart, …) force a square crop; Rounded / Arch keep the crop ratio. Pick Custom to supply your own.', 'fw' ),
+                                    'value'   => 'none',
+                                    'choices' => $ch,
+                                ),
+                            ),
+                            'value'        => array( 'mask' => 'none' ),
+                            'choices'      => array(
+                                'custom' => array(
+                                    'custom_svg' => array(
+                                        'type'  => 'textarea',
+                                        'label' => __( 'Inline SVG or SVG URL', 'fw' ),
+                                        'desc'  => __( 'Paste inline SVG markup OR a URL to a hosted .svg. Fill the shape solid on a TRANSPARENT background — the filled area is where the photo shows.', 'fw' ),
+                                        'help'  => __( 'Include a (square) viewBox, use filled paths/shapes (not stroke-only), and keep it script-free. Takes priority over the Upload and clip-path below.', 'fw' ),
+                                    ),
+                                    'custom_upload' => array(
+                                        'type'    => 'upload',
+                                        'label'   => __( 'Or upload an SVG', 'fw' ),
+                                        'desc'    => __( 'Upload an .svg from the Media Library (requires SVG uploads to be enabled on the site).', 'fw' ),
+                                        'files_ext' => array( 'svg' ),
+                                    ),
+                                    'custom_clip' => array(
+                                        'type'  => 'text',
+                                        'label' => __( 'Or a CSS clip-path', 'fw' ),
+                                        'desc'  => __( 'Advanced: a raw CSS clip-path value, e.g. polygon(50% 0, 100% 100%, 0 100%) or path("…").', 'fw' ),
+                                        'help'  => __( 'No SVG needed. Used only if the SVG / Upload fields above are empty.', 'fw' ),
+                                    ),
+                                ),
+                            ),
+                        );
+                    } ),
                 ],
             ],
         ],
@@ -229,25 +445,6 @@ $options = [
                             'fast'   => __( 'Fast (0.2s)', 'fw' ),
                             'normal' => __( 'Normal (0.4s)', 'fw' ),
                             'slow'   => __( 'Slow (0.7s)', 'fw' ),
-                        ],
-                    ],
-                    'overlay_color' => sc_color_field_compact( array(
-                        'label' => __( 'Overlay Color', 'fw' ),
-                        'kind'  => 'bg',
-                        'desc'  => __( 'Tint over the image for overlay / scrim / caption-bar designs. Defaults to a dark scrim when left empty.', 'fw' ),
-                    ) ),
-                    'overlay_opacity' => [
-                        'type'    => 'select',
-                        'label'   => __( 'Overlay Opacity', 'fw' ),
-                        'desc'    => __( 'Strength of the overlay tint on hover-overlay / scrim designs.', 'fw' ),
-                        'value'   => '60',
-                        'choices' => [
-                            '0'   => __( '0% (none)', 'fw' ),
-                            '25'  => __( '25%', 'fw' ),
-                            '40'  => __( '40%', 'fw' ),
-                            '60'  => __( '60%', 'fw' ),
-                            '75'  => __( '75%', 'fw' ),
-                            '90'  => __( '90%', 'fw' ),
                         ],
                     ],
                 ],

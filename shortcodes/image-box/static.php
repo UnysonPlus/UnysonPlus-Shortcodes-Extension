@@ -40,8 +40,12 @@ if ( ! function_exists( '_fw_imgbox_enqueue_design_css' ) ) :
             return;
         }
 
-        $design = isset( $atts['design'] ) && is_string( $atts['design'] ) ? $atts['design'] : 'stacked';
-        $design = sanitize_file_name( $design );
+        // Resolve the family + variations (or a legacy scalar) → flat key,
+        // using the exact same logic as the frontend render.
+        $registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
+        require_once dirname( __FILE__ ) . '/views/parts/resolve.php';
+        $resolved = sc_imgbox_resolve_design( $atts, $registry );
+        $design   = sanitize_file_name( $resolved['key'] );
         if ( $design === '' ) {
             return;
         }

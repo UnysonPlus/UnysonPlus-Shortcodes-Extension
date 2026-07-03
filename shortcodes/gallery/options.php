@@ -153,15 +153,16 @@ $options = array(
 				'options' => array(
 					'design_settings' => array(
 						'type'         => 'multi-picker',
-						'label'        => false,
-						'desc'         => false,
+						'label'        => __( 'Design', 'fw' ),
+						'desc'         => __( 'Pick the gallery layout/design — its options appear in the panel.', 'fw' ),
+						'popover'      => true,
 						'show_borders' => false,
 						'picker'       => array(
 							'design' => array(
-								'label'   => __( 'Design', 'fw' ),
+								'label'   => false,
 								'type'    => 'image-picker',
 								'choices' => $g_design_choices,
-								'desc'    => __( 'Pick the gallery layout/design.', 'fw' ),
+								'desc'    => __( 'Hover a tile to preview it.', 'fw' ),
 								'help'    => __( 'Each design is a self-contained layout with its own arrangement. Only the chosen design\'s options appear below. Cross-design appearance (lightbox, captions, colors, spacing) lives on the Style tab.', 'fw' ),
 							),
 						),

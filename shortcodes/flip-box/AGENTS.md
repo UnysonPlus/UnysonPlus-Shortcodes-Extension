@@ -13,19 +13,40 @@ designs. Lives in **Content Elements**.
 
 Leaf shortcode. Registry-driven Design picker + per-design CSS gating.
 
-## Design system
-`views/parts/registry.php` → `solid`, `gradient`, `outline`, `image` (the last
-sets `front_image`, using the Front Background Image as a cover with a dark
-overlay). Read by options.php / view.php (`fw-fb--design-<key>`) / static.php.
+## Design system (future-proof)
+`views/parts/registry.php` is the single source of truth → `solid`, `elevated`, `minimal`,
+`outline`, `gradient`, `glass`, `dark`, `neumorph`. **To add a design:** add a registry entry +
+a swatch (`static/img/design/<key>.svg`) + the CSS (`.fw-fb--design-<key>` in styles.css, or an
+auto-gated `static/css/design/<key>.css`). It appears in the picker automatically.
+
+The Design picker is a **popover `multi-picker`** (`options.php` → `design_settings`, picker id
+`skin`), so a design can reveal its OWN options via the multi-picker `choices` (keyed by design
+slug → read in view.php as `design_settings/{slug}/{id}`); the common controls (Effect, Trigger,
+Parallax…) stay in their own sections. **view.php** resolves the design from
+`design_settings/skin`, falling back to the legacy scalar `design` att (boxes saved before the
+popover conversion), then emits `fw-fb--design-<key>`. static.php's per-design CSS gating reads
+the same new-key-then-legacy path.
+
+**Both faces** take a
+Background Image that shows on ANY design (not just `image`): when `front_image` /
+`back_image` is set, view.php emits `--fb-front-image` / `--fb-back-image` + the
+`fw-fb--has-front-image` / `fw-fb--has-back-image` class, and the CSS paints it as a
+cover on that face with a dark legibility overlay.
 
 ## Options (atts)
-- **Content**: `front_icon` (icon-v2), `front_image` (upload, for the image
-  design), `front_title`, `front_text`; `back_title`, `back_text`,
-  `button_label`, `button_url`, `button_target`.
-- **Design**: `design`, `flip_direction` (`left|right|up|down`, → `--fb-rot`),
-  `trigger` (`hover|click`), `height` (slider px, def 300 → `--fb-h`), `rounded`.
-- **Styling**: `front_bg`/`front_color`/`back_bg`/`back_color`/`accent_color`
-  (custom hex → CSS vars `--fb-front-bg` etc.), `font_size_preset`, `spacing`.
+- **Content**: `front_icon` (icon-v2), `front_title`, `front_text`; `back_icon`
+  (icon-v2), `back_title`, `back_text`, `button_label`, `button_url`, `button_target`.
+- **Design**: `design_settings` (popover multi-picker → `skin`; legacy scalar `design`
+  fallback), `flip_direction` (popover: `left|right|up|down|diagonal` flips → `--fb-rot`, or
+  `fade|zoom|slide-*` reveals → `fw-fb--mode-reveal`), `trigger` (`hover|click|both`),
+  `parallax` (content-depth translateZ), `flip_speed`/`flip_easing` (→ `--fb-speed`/`--fb-ease`),
+  `height` (→ `--fb-h`), `rounded` (popover → `--fb-radius`).
+- **Styling**: `front_bg`/`front_image`/`front_color`, `back_bg`/`back_image`/`back_color`
+  (colors: custom hex → CSS vars `--fb-front-bg` etc.; images → `--fb-*-image`),
+  `font_size_preset`; **`button_style` + `button_size`** (`button-style-picker`, from
+  `sc_get_button_style_choices()` / `_size_` — the same Theme Settings → Buttons presets
+  the `[button]` shortcode uses; rendered as `<a class="btn btn-{preset} btn-{size}
+  fw-fb__btn">`); `spacing`. (The old `accent_color` "Button Color" was removed.)
 - **Animations + Advanced**: standard.
 
 ## Rendering

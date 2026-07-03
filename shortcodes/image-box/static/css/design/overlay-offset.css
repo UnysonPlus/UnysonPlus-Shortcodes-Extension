@@ -1,0 +1,61 @@
+/**
+ * Image Box — "Overlapping panel" design (overlay-offset).
+ *
+ * A magazine/editorial overlap: the content panel overlaps the image EDGE using
+ * a 12-column CSS grid where the body and the media share tracks (the body
+ * extends BEYOND the image on the outer side). Rendered by box-overlap.php.
+ *
+ * Colours: the wrapper carries .imgbox--content-over (title/eyebrow/text/icon go
+ * white via the base styles.css). The panel behind the content uses the Overlay
+ * Colour / Opacity vars for legibility over any image or column background.
+ * Content Alignment = Right mirrors it (content right, image left).
+ */
+
+.imgbox--design-overlay-offset .imgbox__overlap {
+	display: grid;
+	grid-template-columns: repeat(12, 1fr);
+	align-items: center;
+}
+
+/* Image occupies the right 8 columns; body the left 8 → overlap in cols 5–8. */
+.imgbox--design-overlay-offset .imgbox__media {
+	grid-column: 5 / 13;
+	grid-row: 1;
+	z-index: 1;
+	align-self: stretch;
+}
+.imgbox--design-overlay-offset .imgbox__body {
+	grid-column: 1 / 9;
+	grid-row: 1;
+	z-index: 2;
+	align-self: center;
+}
+
+/* The legibility panel behind the content. */
+.imgbox--design-overlay-offset .imgbox__overlap-panel {
+	padding: 1.5rem 1.75rem;
+	border-radius: 6px;
+	background: rgba(17, 22, 29, .6); /* fallback */
+	background: color-mix( in srgb, var(--imgbox-ov-color, #11161d) calc( var(--imgbox-ov-opacity, .6) * 100% ), transparent );
+}
+
+/* Big editorial title. */
+.imgbox--design-overlay-offset .imgbox__title {
+	font-size: clamp( 1.6rem, 4vw, 2.75rem );
+	line-height: 1.1;
+}
+.imgbox--design-overlay-offset .imgbox__eyebrow { margin-bottom: .5rem; }
+.imgbox--design-overlay-offset .imgbox__text { margin-top: .75rem; }
+
+/* Content Alignment = Right → mirror (content right, image left). */
+.imgbox--design-overlay-offset.imgbox--is-right .imgbox__media { grid-column: 1 / 9; }
+.imgbox--design-overlay-offset.imgbox--is-right .imgbox__body  { grid-column: 5 / 13; text-align: right; }
+
+/* Stack on narrow screens: image full-bleed, content overlaps the lower edge. */
+@media ( max-width: 600px ) {
+	.imgbox--design-overlay-offset .imgbox__overlap { grid-template-columns: 1fr; }
+	.imgbox--design-overlay-offset .imgbox__media,
+	.imgbox--design-overlay-offset.imgbox--is-right .imgbox__media { grid-column: 1; grid-row: 1; }
+	.imgbox--design-overlay-offset .imgbox__body,
+	.imgbox--design-overlay-offset.imgbox--is-right .imgbox__body { grid-column: 1; grid-row: 1; align-self: end; }
+}

@@ -95,10 +95,13 @@
 
 /* --- Alignment ---------------------------------------------------------- */
 .imgbox--is-left   .imgbox__body,
+.imgbox--is-left   .imgbox__head,
 .imgbox--is-left   .imgbox__overlay-inner { text-align: left; align-items: flex-start; }
 .imgbox--is-center .imgbox__body,
+.imgbox--is-center .imgbox__head,
 .imgbox--is-center .imgbox__overlay-inner { text-align: center; align-items: center; }
 .imgbox--is-right  .imgbox__body,
+.imgbox--is-right  .imgbox__head,
 .imgbox--is-right  .imgbox__overlay-inner { text-align: right; align-items: flex-end; }
 
 /* --- Buttons ------------------------------------------------------------ */
@@ -416,40 +419,118 @@
     border-bottom: 2px solid rgba(255,255,255,.55);
 }
 
-/* Flip Card — image front, 3D flip on hover to a colour back panel */
-.imgbox--part-flip .imgbox__flip { perspective: 1200px; }
-.imgbox--part-flip .imgbox__flip-inner {
-    position: relative;
-    transition: transform var(--imgbox-dur) ease;
-    transform-style: preserve-3d;
-}
-.imgbox--part-flip:hover .imgbox__flip-inner,
-.imgbox--part-flip .imgbox__link:hover .imgbox__flip-inner { transform: rotateY(180deg); }
-.imgbox--part-flip .imgbox__flip-front,
-.imgbox--part-flip .imgbox__flip-back {
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    border-radius: var(--imgbox-radius);
-    overflow: hidden;
-}
-.imgbox--part-flip .imgbox__flip-back {
-    position: absolute;
-    inset: 0;
-    transform: rotateY(180deg);
+/* ==========================================================================
+   STACKED — flex column + Stacking Order (image / heading / body reorder)
+   ========================================================================== */
+.imgbox--part-stacked .imgbox__stack {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    text-align: center;
-    background: var(--imgbox-accent);
-    color: #fff;
+    flex-direction: column;
+    gap: .85rem;
 }
-.imgbox--part-flip .imgbox__flip-back .imgbox__body { padding-top: 0; }
-.imgbox--part-flip .imgbox__flip-back .imgbox__title { color: #fff; }
-.imgbox--part-flip .imgbox__flip-back .imgbox__text { color: rgba(255,255,255,.9); }
-.imgbox--part-flip .imgbox__flip-back .imgbox__eyebrow { color: rgba(255,255,255,.85); }
-.imgbox--part-flip .imgbox__flip-back .imgbox__icon { color: #fff; }
-.imgbox--part-flip .imgbox__flip-back .imgbox__btn--button { background: #fff; color: var(--imgbox-accent); }
+.imgbox--part-stacked .imgbox__body { padding-top: 0; }
+
+/* Order presets (default img-title-text = natural DOM order, no rule needed). */
+.imgbox--stack-title-img-text .imgbox__head  { order: 1; }
+.imgbox--stack-title-img-text .imgbox__media { order: 2; }
+.imgbox--stack-title-img-text .imgbox__body  { order: 3; }
+.imgbox--stack-title-text-img .imgbox__head  { order: 1; }
+.imgbox--stack-title-text-img .imgbox__body  { order: 2; }
+.imgbox--stack-title-text-img .imgbox__media { order: 3; }
+.imgbox--stack-text-img-title .imgbox__body  { order: 1; }
+.imgbox--stack-text-img-title .imgbox__media { order: 2; }
+.imgbox--stack-text-img-title .imgbox__head  { order: 3; }
+
+/* ==========================================================================
+   IMAGE SIZE (image-top families: stacked / card / frame) — shrinks + centres
+   the media. The Side family uses Media Width instead; overlay fills.
+   ========================================================================== */
+.imgbox--part-stacked.imgbox--size-large .imgbox__media,
+.imgbox--part-card.imgbox--size-large .imgbox__media,
+.imgbox--part-frame.imgbox--size-large .imgbox__media { max-width: 75%; margin-inline: auto; }
+.imgbox--part-stacked.imgbox--size-medium .imgbox__media,
+.imgbox--part-card.imgbox--size-medium .imgbox__media,
+.imgbox--part-frame.imgbox--size-medium .imgbox__media { max-width: 55%; margin-inline: auto; }
+.imgbox--part-stacked.imgbox--size-small .imgbox__media,
+.imgbox--part-card.imgbox--size-small .imgbox__media,
+.imgbox--part-frame.imgbox--size-small .imgbox__media { max-width: 35%; margin-inline: auto; }
+.imgbox--part-stacked.imgbox--size-xsmall .imgbox__media,
+.imgbox--part-card.imgbox--size-xsmall .imgbox__media,
+.imgbox--part-frame.imgbox--size-xsmall .imgbox__media { max-width: 140px; margin-inline: auto; }
+
+/* ==========================================================================
+   IMAGE MASK (clip the media to a shape) — applies to any family.
+   Shape masks force a square crop; Rounded / Arch keep the crop ratio.
+   ========================================================================== */
+.imgbox--mask-rounded    .imgbox__media { border-radius: 14px; }
+.imgbox--mask-rounded-xl .imgbox__media { border-radius: 28px; }
+.imgbox--mask-circle     .imgbox__media { border-radius: 50%; aspect-ratio: 1 / 1 !important; }
+.imgbox--mask-squircle   .imgbox__media { border-radius: 28% !important; aspect-ratio: 1 / 1 !important; }
+.imgbox--mask-arch       .imgbox__media { border-radius: 50% 50% 8px 8px / 62% 62% 8px 8px; }
+
+/* clip-path polygon shapes. */
+.imgbox--mask-hexagon  .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+.imgbox--mask-diamond  .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.imgbox--mask-triangle .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; clip-path: polygon(50% 2%, 100% 100%, 0 100%); }
+.imgbox--mask-pentagon .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; clip-path: polygon(50% 0, 100% 38%, 82% 100%, 18% 100%, 0 38%); }
+.imgbox--mask-star     .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+.imgbox--mask-chevron  .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; clip-path: polygon(0 0, 75% 0, 100% 50%, 75% 100%, 0 100%, 25% 50%); }
+
+/* SVG mask-image organic shapes. */
+.imgbox--mask-heart  .imgbox__media,
+.imgbox--mask-blob-1 .imgbox__media,
+.imgbox--mask-blob-2 .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; background: transparent; }
+.imgbox--mask-heart .imgbox__media {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 29.6'%3E%3Cpath d='M16 29.6l-2.3-2.1C5.4 19.9 0 15 0 9 0 4 4 0 9 0c2.8 0 5.5 1.3 7 3.4C17.5 1.3 20.2 0 23 0c5 0 9 4 9 9 0 6-5.4 10.9-13.7 18.5z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 29.6'%3E%3Cpath d='M16 29.6l-2.3-2.1C5.4 19.9 0 15 0 9 0 4 4 0 9 0c2.8 0 5.5 1.3 7 3.4C17.5 1.3 20.2 0 23 0c5 0 9 4 9 9 0 6-5.4 10.9-13.7 18.5z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.imgbox--mask-blob-1 .imgbox__media {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M54 8c20-4 38 14 36 36 0 18 8 30-4 42S48 94 32 88C14 81 4 66 6 46 8 28 20 14 36 10c6-2 12-1 18-2z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M54 8c20-4 38 14 36 36 0 18 8 30-4 42S48 94 32 88C14 81 4 66 6 46 8 28 20 14 36 10c6-2 12-1 18-2z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.imgbox--mask-blob-2 .imgbox__media {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 6c18 4 28 14 34 30s4 34-10 46-34 10-48 2S8 58 12 42 24 14 38 9c4-2 8-4 12-3z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 6c18 4 28 14 34 30s4 34-10 46-34 10-48 2S8 58 12 42 24 14 38 9c4-2 8-4 12-3z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* clip-path / border-radius shapes (added). */
+.imgbox--mask-octagon .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); }
+.imgbox--mask-shield  .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%); }
+.imgbox--mask-leaf    .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0 50% 0 50% / 0 50% 0 50%; }
+
+/* SVG mask-image shapes (added): flower, splash, brush, blob-3, blob-4. */
+.imgbox--mask-flower .imgbox__media,
+.imgbox--mask-brush  .imgbox__media,
+.imgbox--mask-water-splash .imgbox__media,
+.imgbox--mask-grunge-frame .imgbox__media { aspect-ratio: 1 / 1 !important; border-radius: 0; background: transparent; }
+.imgbox--mask-flower .imgbox__media {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 12C56 12 60 18 60 26C68 20 78 22 82 30C86 38 82 46 74 50C82 54 86 62 82 70C78 78 68 80 60 74C60 82 56 88 50 88C44 88 40 82 40 74C32 80 22 78 18 70C14 62 18 54 26 50C18 46 14 38 18 30C22 22 32 20 40 26C40 18 44 12 50 12Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 12C56 12 60 18 60 26C68 20 78 22 82 30C86 38 82 46 74 50C82 54 86 62 82 70C78 78 68 80 60 74C60 82 56 88 50 88C44 88 40 82 40 74C32 80 22 78 18 70C14 62 18 54 26 50C18 46 14 38 18 30C22 22 32 20 40 26C40 18 44 12 50 12Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.imgbox--mask-brush .imgbox__media {
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M6 30C20 24 32 34 46 30C60 26 74 22 94 28L92 62C78 70 62 60 48 64C34 68 20 74 8 66Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M6 30C20 24 32 34 46 30C60 26 74 22 94 28L92 62C78 70 62 60 48 64C34 68 20 74 8 66Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.imgbox--mask-water-splash .imgbox__media {
+    -webkit-mask: url("../img/mask/src-water-splash.svg") center / contain no-repeat;
+    mask: url("../img/mask/src-water-splash.svg") center / contain no-repeat;
+}
+.imgbox--mask-grunge-frame .imgbox__media {
+    -webkit-mask: url("../img/mask/src-grunge-frame.svg") center / 100% 100% no-repeat;
+    mask: url("../img/mask/src-grunge-frame.svg") center / 100% 100% no-repeat;
+}
+
+/* Custom mask — user SVG (inline data-URI / URL / uploaded file) or clip-path.
+   Keeps the crop ratio (fills the media box); does not force square. */
+.imgbox--maskcustom-svg .imgbox__media {
+    border-radius: 0;
+    background: transparent;
+    -webkit-mask: var(--imgbox-mask) center / 100% 100% no-repeat;
+    mask: var(--imgbox-mask) center / 100% 100% no-repeat;
+}
+.imgbox--maskcustom-clip .imgbox__media {
+    border-radius: 0;
+    clip-path: var(--imgbox-clip);
+}
 
 /* ==========================================================================
    LIGHTBOX (appended to <body>, so top-level — not scoped under .imgbox)
@@ -512,8 +593,7 @@
     .imgbox__scrim,
     .imgbox__frame-line,
     .imgbox--fx-lift,
-    .imgbox--fx-tilt .imgbox__media,
-    .imgbox--part-flip .imgbox__flip-inner {
+    .imgbox--fx-tilt .imgbox__media {
         transition: none !important;
     }
     .imgbox--fx-zoom-in:hover .imgbox__img,

@@ -16,13 +16,17 @@
 	function filterTiles($catalog) {
 		var cat = $catalog.find('.upw-anim-tab.is-on').data('cat') || 'all';
 		var q = String($catalog.find('.upw-anim-search').val() || '').toLowerCase().trim();
+		var terms = q ? q.split(/\s+/) : [];
 		var shown = 0;
 
 		$catalog.find('.upw-anim-tile').each(function () {
 			var $t = $(this);
 			if ($t.hasClass('is-added')) { return; } // already on the element — never in the grid
 			var okCat = cat === 'all' || String($t.data('cat')) === String(cat);
-			var okQ = !q || $t.text().toLowerCase().indexOf(q) >= 0;
+			// Search the tile's visible text (module name + category) AND its style/effect keywords,
+			// so e.g. "letter jump" surfaces Text Effect. All typed terms must be present.
+			var hay = ($t.text() + ' ' + ($t.attr('data-keywords') || '')).toLowerCase();
+			var okQ = terms.every(function (term) { return hay.indexOf(term) >= 0; });
 			var show = okCat && okQ;
 			$t.toggleClass('is-filtered', !show);
 			if (show) { shown++; }
@@ -63,17 +67,28 @@
 	});
 
 	// Add — reveal a card + open its popover picker.
+	// Single-instance module: reveal its one card and mark the tile "added" (it leaves the grid).
+	// Multi-instance module (data-multi): reveal the NEXT empty slot card and keep the tile in the
+	// grid so more can be added; if every slot is used, do nothing.
 	$(document).on('click', '.upw-anim-tile', function (e) {
 		e.preventDefault();
 		var $tile = $(this);
-		if ($tile.hasClass('is-added')) { return; }
+		var isMulti = $tile.is('[data-multi]');
+		if (!isMulti && $tile.hasClass('is-added')) { return; }
 
 		var id = $tile.data('target');
 		var $stack = $tile.closest('.upw-anim-stack');
-		var $card = $stack.find('.upw-anim-card[data-anim-id="' + id + '"]');
+
+		var $card;
+		if (isMulti) {
+			$card = $stack.find('.upw-anim-card[data-anim-id="' + id + '"].is-hidden').first();
+			if (!$card.length) { return; } // all slots in use
+		} else {
+			$card = $stack.find('.upw-anim-card[data-anim-id="' + id + '"]').first();
+			$tile.addClass('is-added');
+		}
 
 		$card.removeClass('is-hidden');
-		$tile.addClass('is-added');
 		$tile.closest('.upw-anim-catalog').prop('hidden', true);
 		updateEmpty($stack);
 

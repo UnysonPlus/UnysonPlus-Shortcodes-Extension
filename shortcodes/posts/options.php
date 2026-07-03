@@ -325,15 +325,16 @@ $options = [
                 'options' => [
                     'card' => [
                         'type'         => 'multi-picker',
-                        'label'        => false,
-                        'desc'         => false,
+                        'label'        => __( 'Card Style', 'fw' ),
+                        'desc'         => __( 'How each post card looks. Works with any Layout below. Side / Hero styles reveal extra image controls.', 'fw' ),
+                        'popover'      => true,
                         'show_borders' => false,
                         'picker'       => [
                             'style' => [
-                                'label'   => __( 'Card Style', 'fw' ),
+                                'label'   => false,
                                 'type'    => 'image-picker',
                                 'choices' => $sc_card_choices,
-                                'desc'    => __( 'How each post card looks. Works with any Layout below. Side / Hero styles reveal extra image controls.', 'fw' ),
+                                'desc'    => __( 'Hover a tile to preview it.', 'fw' ),
                             ],
                         ],
                         'value'        => [ 'style' => 'standard' ],
@@ -341,15 +342,16 @@ $options = [
                     ],
                     'design' => [
                         'type'         => 'multi-picker',
-                        'label'        => false,
-                        'desc'         => false,
+                        'label'        => __( 'Layout', 'fw' ),
+                        'desc'         => __( 'How the cards are arranged on the page. The chosen layout’s options appear in the panel.', 'fw' ),
+                        'popover'      => true,
                         'show_borders' => false,
                         'picker'       => [
                             'mode' => [
-                                'label'   => __( 'Layout', 'fw' ),
+                                'label'   => false,
                                 'type'    => 'image-picker',
                                 'choices' => $sc_layout_choices,
-                                'desc'    => __( 'How the cards are arranged on the page. Only the chosen layout’s options appear below.', 'fw' ),
+                                'desc'    => __( 'Hover a tile to preview it.', 'fw' ),
                             ],
                         ],
                         'value'        => [ 'mode' => 'grid' ],

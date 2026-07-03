@@ -6,31 +6,33 @@
 	--fb-front-color: #ffffff;
 	--fb-back-bg: #1f2937;
 	--fb-back-color: #ffffff;
-	--fb-accent: #ffffff;
 	--fb-rot: rotateY(180deg);
-	perspective: 1400px;
+	perspective: 1100px;
 }
-.fw-fb--dir-left  { --fb-rot: rotateY(180deg); }
-.fw-fb--dir-right { --fb-rot: rotateY(-180deg); }
-.fw-fb--dir-up    { --fb-rot: rotateX(180deg); }
-.fw-fb--dir-down  { --fb-rot: rotateX(-180deg); }
+.fw-fb--dir-left     { --fb-rot: rotateY(180deg); }
+.fw-fb--dir-right    { --fb-rot: rotateY(-180deg); }
+.fw-fb--dir-up       { --fb-rot: rotateX(180deg); }
+.fw-fb--dir-down     { --fb-rot: rotateX(-180deg); }
+.fw-fb--dir-diagonal { --fb-rot: rotate3d(1, 1, 0, 180deg); }
 
 .fw-fb__inner {
 	position: relative;
 	width: 100%;
 	height: var(--fb-h, 300px);
 	transform-style: preserve-3d;
-	transition: transform .6s cubic-bezier(.2, .7, .2, 1);
-	border-radius: inherit;
+	transition: transform var(--fb-speed, .6s) var(--fb-ease, cubic-bezier(.2, .7, .2, 1));
+	border-radius: var(--fb-radius, .625rem);
 }
-.fw-fb.rounded    { border-radius: .75rem; }
-.fw-fb.rounded-lg { border-radius: 1.25rem; }
-.fw-fb.rounded-0  { border-radius: 0; }
+/* Corner radius comes from --fb-radius (view.php maps the picked size). Applied straight
+   to the faces below — NOT via a .rounded class — so Bootstrap's !important .rounded
+   utilities can't override it and the parallax tilt layer can't break an inherit chain. */
 
-/* Flip on hover (and keyboard focus) or when JS toggles .is-flipped (click). */
-.fw-fb--hover:hover .fw-fb__inner,
-.fw-fb--hover:focus-within .fw-fb__inner,
-.fw-fb.is-flipped .fw-fb__inner { transform: var(--fb-rot); }
+/* Flip on hover (and keyboard focus), or when JS toggles .is-flipped (click / both). */
+.fw-fb--mode-flip.fw-fb--hover:hover .fw-fb__inner,
+.fw-fb--mode-flip.fw-fb--hover:focus-within .fw-fb__inner,
+.fw-fb--mode-flip.fw-fb--both:hover .fw-fb__inner,
+.fw-fb--mode-flip.fw-fb--both:focus-within .fw-fb__inner,
+.fw-fb--mode-flip.is-flipped .fw-fb__inner { transform: var(--fb-rot); }
 
 .fw-fb__face {
 	position: absolute;
@@ -41,7 +43,7 @@
 	justify-content: center;
 	text-align: center;
 	padding: 1.75rem;
-	border-radius: inherit;
+	border-radius: var(--fb-radius, .625rem);
 	overflow: hidden;
 	-webkit-backface-visibility: hidden;
 	backface-visibility: hidden;
@@ -51,21 +53,12 @@
 
 .fw-fb__icon { font-size: 2.6rem; line-height: 1; margin-bottom: .75rem; display: inline-block; }
 .fw-fb__icon img { width: 64px; height: 64px; object-fit: contain; }
-.fw-fb__title { margin: 0 0 .5rem; color: inherit; font-size: 1.35rem; }
+.fw-fb__title { display: block; margin: 0 0 .5rem; color: inherit; font-size: 1.35rem; font-weight: 600; line-height: 1.25; }
 .fw-fb__text { font-size: .95rem; line-height: 1.5; opacity: .95; }
 .fw-fb__text p:last-child { margin-bottom: 0; }
-.fw-fb__btn {
-	display: inline-block;
-	margin-top: 1.1rem;
-	padding: .65em 1.4em;
-	border-radius: 2rem;
-	background: var(--fb-accent);
-	color: #1f2937;
-	font-weight: 600;
-	text-decoration: none;
-	transition: filter .2s ease, transform .2s ease;
-}
-.fw-fb__btn:hover { filter: brightness(.95); transform: translateY(-1px); }
+/* Button styling comes from the [button] preset classes (.btn / .btn-*); here we
+   only space it within the card. */
+.fw-fb__btn { margin-top: 1.1rem; }
 
 .fw-fb--click { cursor: pointer; }
 .fw-fb--click:focus-visible { outline: 2px solid var(--fb-front-bg); outline-offset: 3px; }
@@ -73,35 +66,123 @@
 .fw-fb__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
 
 /* =============================================================================
- * Designs
+ * Designs — each a distinct look. Color-driven designs read the --fb-* vars (so the
+ * Styling-tab colors override them); each also sets a signature default palette on the
+ * wrapper that the color pickers override. Themed designs (glass / neumorph) paint
+ * their own surface.
  * ========================================================================== */
-/* Gradient faces. */
-.fw-fb--design-gradient .fw-fb__front { background: linear-gradient(135deg, var(--fb-front-bg), rgba(0, 0, 0, .35)); }
-.fw-fb--design-gradient .fw-fb__back  { background: linear-gradient(135deg, var(--fb-back-bg), rgba(0, 0, 0, .35)); }
+
+/* Solid — flat colors straight from the vars (base behavior; no override needed). */
+
+/* Elevated — clean white card + soft drop shadow. */
+.fw-fb--design-elevated { --fb-front-bg: #ffffff; --fb-front-color: #1f2937; --fb-back-bg: #ffffff; --fb-back-color: #1f2937; }
+.fw-fb--design-elevated .fw-fb__face { box-shadow: 0 14px 34px rgba(15, 23, 42, .18); }
+
+/* Minimal — light, hairline border, no shadow. */
+.fw-fb--design-minimal { --fb-front-bg: #ffffff; --fb-front-color: #1f2937; --fb-back-bg: #f8fafc; --fb-back-color: #1f2937; }
+.fw-fb--design-minimal .fw-fb__face { border: 1px solid #e5e7eb; }
 
 /* Outline front — transparent with a border, colored back. */
-.fw-fb--design-outline .fw-fb__front {
-	background: transparent;
-	color: var(--fb-front-bg);
-	border: 2px solid currentColor;
-}
 .fw-fb--design-outline { --fb-front-color: #2b6cb0; }
+.fw-fb--design-outline .fw-fb__front { background: transparent; color: var(--fb-front-bg); border: 2px solid currentColor; }
 
-/* Image front + dark overlay. */
-.fw-fb--design-image .fw-fb__front {
+/* Gradient — each face color fades to a darker tint. */
+.fw-fb--design-gradient .fw-fb__front { background: linear-gradient(135deg, var(--fb-front-bg), rgba(0, 0, 0, .4)); }
+.fw-fb--design-gradient .fw-fb__back  { background: linear-gradient(135deg, var(--fb-back-bg), rgba(0, 0, 0, .4)); }
+
+/* Glass — translucent + blur (best over a section background / image). */
+.fw-fb--design-glass .fw-fb__face {
+	background: rgba(255, 255, 255, .14);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, .35);
+	color: #fff;
+}
+
+/* Dark. */
+.fw-fb--design-dark { --fb-front-bg: #111827; --fb-back-bg: #0b1220; }
+.fw-fb--design-dark .fw-fb__face { border: 1px solid #374151; }
+
+/* Neumorphic — soft extruded surface (needs a light section bg to read best). */
+.fw-fb--design-neumorph { --fb-front-color: #334155; --fb-back-color: #334155; }
+.fw-fb--design-neumorph .fw-fb__face { background: #e0e5ec; box-shadow: 8px 8px 18px #b8bec9, -8px -8px 18px #ffffff; }
+
+/* Front / back background image + dark overlay — applies to ANY design as soon as a
+   Front/Back Background Image is set (not just the "Image front" design). */
+.fw-fb--has-front-image .fw-fb__front,
+.fw-fb--has-back-image .fw-fb__back {
 	background-image: var(--fb-front-image, none);
 	background-size: cover;
 	background-position: center;
 	color: #fff;
 }
-.fw-fb--design-image .fw-fb__front::before {
+.fw-fb--has-back-image .fw-fb__back { background-image: var(--fb-back-image, none); }
+.fw-fb--has-front-image .fw-fb__front::before,
+.fw-fb--has-back-image .fw-fb__back::before {
 	content: "";
 	position: absolute;
 	inset: 0;
 	background: rgba(0, 0, 0, .45);
+	border-radius: var(--fb-radius, .625rem); /* keep rounded corners when the face is overflow:visible (parallax) */
 }
-.fw-fb--design-image .fw-fb__front > * { position: relative; z-index: 1; }
+.fw-fb--has-front-image .fw-fb__front > *,
+.fw-fb--has-back-image .fw-fb__back > * { position: relative; z-index: 1; }
+
+/* =============================================================================
+ * Reveal effects (Effect = Fade / Zoom / Slide *) — no 3D flip; the back animates
+ * in over the front on hover / focus / .is-flipped.
+ * ========================================================================== */
+.fw-fb--mode-reveal .fw-fb__inner { transform: none !important; transform-style: flat; overflow: hidden; }
+.fw-fb--mode-reveal .fw-fb__face { backface-visibility: visible; transition: transform var(--fb-speed, .5s) var(--fb-ease, cubic-bezier(.2, .7, .2, 1)), opacity var(--fb-speed, .45s) ease; }
+.fw-fb--mode-reveal .fw-fb__front { z-index: 1; }
+.fw-fb--mode-reveal .fw-fb__back { z-index: 2; opacity: 0; transform: none; }
+
+/* per-effect initial (hidden) position of the back */
+.fw-fb--dir-zoom .fw-fb__back        { transform: scale(.85); }
+.fw-fb--dir-slide-up .fw-fb__back    { transform: translateY(100%); }
+.fw-fb--dir-slide-down .fw-fb__back  { transform: translateY(-100%); }
+.fw-fb--dir-slide-left .fw-fb__back  { transform: translateX(100%); }
+.fw-fb--dir-slide-right .fw-fb__back { transform: translateX(-100%); }
+
+/* shown state: back animates in, front fades out */
+.fw-fb--mode-reveal.fw-fb--hover:hover .fw-fb__back,
+.fw-fb--mode-reveal.fw-fb--hover:focus-within .fw-fb__back,
+.fw-fb--mode-reveal.fw-fb--both:hover .fw-fb__back,
+.fw-fb--mode-reveal.fw-fb--both:focus-within .fw-fb__back,
+.fw-fb--mode-reveal.is-flipped .fw-fb__back { opacity: 1; transform: none; }
+
+.fw-fb--mode-reveal.fw-fb--hover:hover .fw-fb__front,
+.fw-fb--mode-reveal.fw-fb--hover:focus-within .fw-fb__front,
+.fw-fb--mode-reveal.fw-fb--both:hover .fw-fb__front,
+.fw-fb--mode-reveal.fw-fb--both:focus-within .fw-fb__front,
+.fw-fb--mode-reveal.is-flipped .fw-fb__front { opacity: 0; }
+
+/* =============================================================================
+ * Parallax — the face content floats forward in 3D (translateZ), separating from the
+ * face background so it reads as depth, most visibly during the flip (the classic
+ * "parallax flip card" — a depth effect, not a mouse tilt).
+ * ========================================================================== */
+.fw-fb__content {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+}
+.fw-fb--parallax { perspective: 900px; }             /* a touch closer → the depth reads */
+/* overflow:hidden on the face forces transform-style:flat (spec), which would kill the
+   translateZ depth — so parallax faces use overflow:visible + preserve-3d. The background
+   image still clips to the border-radius (backgrounds always do); the overlay gets its own
+   radius below. */
+.fw-fb--parallax .fw-fb__face { transform-style: preserve-3d; overflow: visible; }
+.fw-fb--parallax .fw-fb__content {
+	transform: translateZ(55px) scale(.9);
+	transition: transform var(--fb-speed, .6s) var(--fb-ease, ease);
+}
 
 @media (prefers-reduced-motion: reduce) {
-	.fw-fb__inner { transition: none; }
+	.fw-fb__inner,
+	.fw-fb--mode-reveal .fw-fb__face,
+	.fw-fb--parallax .fw-fb__content { transition: none; }
 }

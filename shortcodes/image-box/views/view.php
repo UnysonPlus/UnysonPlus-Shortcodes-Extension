@@ -59,6 +59,49 @@ if ( ! function_exists( 'sc_imgbox_locate_part' ) ) {
 
 /*
 |--------------------------------------------------------------------------
+| Custom Image Mask sanitizers.
+| The SVG is only ever emitted inside a CSS mask-image data-URI (a CSS
+| resource = "secure static mode", scripts never run) — we still strip
+| script/handlers as defense-in-depth. We do NOT run wp_kses because it
+| lowercases attribute names and would break the case-sensitive `viewBox`.
+|--------------------------------------------------------------------------
+*/
+if ( ! function_exists( 'sc_imgbox_sanitize_svg' ) ) {
+    function sc_imgbox_sanitize_svg( $svg ) {
+        $svg = (string) $svg;
+        if ( strlen( $svg ) > 30000 || stripos( $svg, '<svg' ) === false ) {
+            return '';
+        }
+        // Keep only the <svg>…</svg> fragment.
+        if ( preg_match( '#<svg[\s\S]*?</svg>#i', $svg, $m ) ) {
+            $svg = $m[0];
+        }
+        $svg = preg_replace( '#<script[\s\S]*?</script\s*>#i', '', $svg );
+        $svg = preg_replace( '#<foreignObject[\s\S]*?</foreignObject\s*>#i', '', $svg );
+        $svg = preg_replace( '#\son\w+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)#i', '', $svg ); // on* handlers
+        $svg = preg_replace( '#(xlink:href|href)\s*=\s*("\s*javascript:[^"]*"|\'\s*javascript:[^\']*\')#i', '', $svg );
+        return trim( $svg );
+    }
+}
+if ( ! function_exists( 'sc_imgbox_sanitize_clip' ) ) {
+    function sc_imgbox_sanitize_clip( $clip ) {
+        $clip = trim( (string) $clip );
+        if ( $clip === '' || strlen( $clip ) > 2000 ) {
+            return '';
+        }
+        // No url()/expression/js; allow only clip-path-ish characters.
+        if ( preg_match( '#url\(|expression|javascript:#i', $clip ) ) {
+            return '';
+        }
+        if ( ! preg_match( '~^[a-zA-Z0-9 ._,%()\'"/#+-]+$~', $clip ) ) {
+            return '';
+        }
+        return $clip;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | Icon markup — custom_icon (emoji / inline SVG) wins over the icon-v2 pick.
 | Mirrors icon-box's renderer (kept local per the self-contained rule).
 |--------------------------------------------------------------------------
@@ -106,14 +149,14 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
     function sc_imgbox_render( $atts ) {
 
         $registry = sc_imgbox_registry();
+        require_once __DIR__ . '/parts/resolve.php';
 
-        /* --- Resolve the design + its registry meta ----------------------- */
-        $design = sc_get( 'design', $atts, 'stacked' );
-        if ( ! isset( $registry[ $design ] ) ) {
-            $design = 'stacked';
-        }
-        $meta = isset( $registry[ $design ] ) ? $registry[ $design ] : array();
-        $part = isset( $meta['part'] ) ? $meta['part'] : 'stacked';
+        /* --- Resolve the family + variations → one flat design key -------- */
+        $resolved   = sc_imgbox_resolve_design( $atts, $registry );
+        $design     = $resolved['key'];
+        $part       = $resolved['part'];
+        $design_sub = $resolved['sub']; // the chosen family's variation values
+        $meta       = isset( $registry['designs'][ $design ] ) ? $registry['designs'][ $design ] : array();
 
         $part_file = sc_imgbox_locate_part( $part );
         if ( ! file_exists( $part_file ) ) {
@@ -157,17 +200,67 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
             fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_pack_for_icon( $picked_icon );
         }
 
-        /* --- Design behavior flags ---------------------------------------- */
-        $content_over = ! empty( $meta['content_over_image'] );
-        $hover_reveal = ! empty( $meta['hover_reveal'] );
+        /* --- Design behavior flags (from the resolved flat design) -------- */
+        $content_over = ! empty( $resolved['content_over'] );
+        $hover_reveal = ! empty( $resolved['hover_reveal'] );
 
         /* --- Effects ------------------------------------------------------ */
         $hover_fx   = sc_get( 'hover_effect', $atts, 'zoom-in' );
         $speed      = sc_get( 'transition_speed', $atts, 'normal' );
         $ratio      = sc_get( 'image_ratio', $atts, 'ratio-4-3' );
-        $media_w    = sc_get( 'media_width', $atts, '50' );
+        // media_width / overlay_* now live inside the Side / Overlay family
+        // reveals; fall back to any legacy top-level value.
+        $media_w    = isset( $design_sub['media_width'] ) ? $design_sub['media_width'] : sc_get( 'media_width', $atts, '50' );
         $align      = sc_get( 'content_align', $atts, '' );
-        $ov_opacity = (int) sc_get( 'overlay_opacity', $atts, 60 );
+        $ov_opacity = (int) ( isset( $design_sub['overlay_opacity'] ) ? $design_sub['overlay_opacity'] : sc_get( 'overlay_opacity', $atts, 60 ) );
+
+        // Universal image size + mask (apply to any family); stacking order
+        // (Stacked family only) rides in the resolved family sub-values.
+        $image_size = sc_get( 'image_size', $atts, 'full' );
+        $stacking   = isset( $design_sub['stacking'] ) ? $design_sub['stacking'] : 'img-title-text';
+
+        // Image mask is a multi-picker { mask: '<key>', custom: {…} } — tolerate a
+        // legacy scalar too. 'custom' resolves to an inline SVG / URL / clip-path.
+        $mask_raw          = sc_get( 'image_mask', $atts, 'none' );
+        $image_mask        = 'none';
+        $mask_custom_class = '';
+        $mask_custom_style = '';
+        if ( is_array( $mask_raw ) ) {
+            $image_mask = ( isset( $mask_raw['mask'] ) && is_string( $mask_raw['mask'] ) ) ? $mask_raw['mask'] : 'none';
+        } elseif ( is_string( $mask_raw ) ) {
+            $image_mask = $mask_raw;
+        }
+        if ( $image_mask === 'custom' ) {
+            $c_svg  = trim( (string) sc_get( 'image_mask/custom/custom_svg', $atts, '' ) );
+            $c_up   = sc_get( 'image_mask/custom/custom_upload', $atts, array() );
+            $c_url  = ( is_array( $c_up ) && ! empty( $c_up['url'] ) ) ? $c_up['url'] : '';
+            $c_clip = trim( (string) sc_get( 'image_mask/custom/custom_clip', $atts, '' ) );
+
+            $mask_url = '';
+            if ( $c_svg !== '' ) {
+                if ( stripos( $c_svg, '<svg' ) !== false ) {
+                    $clean = sc_imgbox_sanitize_svg( $c_svg );
+                    if ( $clean !== '' ) {
+                        $mask_url = 'url("data:image/svg+xml,' . rawurlencode( $clean ) . '")';
+                    }
+                } else {
+                    $mask_url = 'url("' . esc_url( $c_svg ) . '")';
+                }
+            } elseif ( $c_url !== '' ) {
+                $mask_url = 'url("' . esc_url( $c_url ) . '")';
+            }
+
+            if ( $mask_url !== '' ) {
+                $mask_custom_class = 'imgbox--maskcustom-svg';
+                $mask_custom_style = '--imgbox-mask:' . $mask_url . ';';
+            } elseif ( $c_clip !== '' ) {
+                $clip = sc_imgbox_sanitize_clip( $c_clip );
+                if ( $clip !== '' ) {
+                    $mask_custom_class = 'imgbox--maskcustom-clip';
+                    $mask_custom_style = '--imgbox-clip:' . $clip . ';';
+                }
+            }
+        }
 
         $align_map = array( 'left' => 'is-left', 'start' => 'is-left', 'center' => 'is-center', 'right' => 'is-right', 'end' => 'is-right' );
         $align_cls = isset( $align_map[ $align ] ) ? $align_map[ $align ] : '';
@@ -283,6 +376,17 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
         if ( $hover_reveal ) { $wrapper_classes[] = 'imgbox--hover-reveal'; }
         if ( $box_is_link )  { $wrapper_classes[] = 'imgbox--linked'; }
         if ( $img_html === '' ) { $wrapper_classes[] = 'imgbox--no-image'; }
+        if ( is_string( $image_size ) && $image_size !== '' && $image_size !== 'full' ) {
+            $wrapper_classes[] = 'imgbox--size-' . sanitize_html_class( $image_size );
+        }
+        if ( $image_mask === 'custom' ) {
+            if ( $mask_custom_class !== '' ) { $wrapper_classes[] = $mask_custom_class; }
+        } elseif ( is_string( $image_mask ) && $image_mask !== '' && $image_mask !== 'none' ) {
+            $wrapper_classes[] = 'imgbox--mask-' . sanitize_html_class( $image_mask );
+        }
+        if ( $part === 'stacked' && is_string( $stacking ) && $stacking !== '' && $stacking !== 'img-title-text' ) {
+            $wrapper_classes[] = 'imgbox--stack-' . sanitize_html_class( $stacking );
+        }
 
         $atts['base_class']       = 'imgbox-wrap';
         $atts['unique_id_prefix'] = 'ibx-';
@@ -300,7 +404,7 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
         $accent_hex = ( is_array( $accent_raw ) && ! empty( $accent_raw['custom'] ) ) ? $accent_raw['custom'] : '';
 
         // Overlay color → CSS var (custom hex), else the default dark scrim.
-        $ov_raw = sc_get( 'overlay_color', $atts, '' );
+        $ov_raw = isset( $design_sub['overlay_color'] ) ? $design_sub['overlay_color'] : sc_get( 'overlay_color', $atts, '' );
         $ov_hex = ( is_array( $ov_raw ) && ! empty( $ov_raw['custom'] ) ) ? $ov_raw['custom'] : '';
 
         $style_var = '--imgbox-media-w:' . (int) $media_w . '%;--imgbox-ov-opacity:' . ( max( 0, min( 100, $ov_opacity ) ) / 100 ) . ';';
@@ -309,6 +413,9 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
         }
         if ( $ov_hex !== '' ) {
             $style_var .= '--imgbox-ov-color:' . preg_replace( '/[^#0-9a-zA-Z(),.%\s-]/', '', $ov_hex ) . ';';
+        }
+        if ( $mask_custom_style !== '' ) {
+            $style_var .= $mask_custom_style;
         }
         $attr['style'] = isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' . $style_var : $style_var;
 

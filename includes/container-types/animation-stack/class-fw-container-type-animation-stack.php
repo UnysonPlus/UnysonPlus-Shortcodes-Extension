@@ -61,6 +61,7 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			$cards         = '';
 			$passthrough   = '';
 			$catalog_items = array();
+			$catalog_seen  = array();
 			$any_active    = false;
 
 			foreach ( $inner as $fid => $field ) {
@@ -90,23 +91,40 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 				$meta  = ( isset( $field['anim_meta'] ) && is_array( $field['anim_meta'] ) ) ? $field['anim_meta'] : array();
 				$cat   = isset( $meta['category'] ) ? (string) $meta['category'] : $this->fallback_category( $fid );
 				$label = ( isset( $field['label'] ) && $field['label'] ) ? (string) $field['label'] : $fid;
+				// Style / effect names (from the picker choices) so the inserter search can find a
+				// module by one of its effects — e.g. "letter jump" → Text Effect, "peel" → Sticky Stack.
+				$keywords = $this->picker_keywords( $field, $picker_id );
+
+				// Multi-instance: several slots (interaction, interaction__2, …) share one base id, so
+				// they group under a single inserter tile whose card list can grow.
+				$is_multi = ! empty( $meta['multi'] );
+				$base     = isset( $meta['multi_base'] ) ? (string) $meta['multi_base'] : $fid;
 
 				$rendered = fw()->backend->render_options( array( $fid => $field ), $values, $data );
 
 				$cards .= '<div class="upw-anim-card' . ( $active ? '' : ' is-hidden' ) . '"'
-					. ' data-anim-id="' . esc_attr( $fid ) . '"'
+					. ' data-anim-id="' . esc_attr( $base ) . '"'
+					. ' data-anim-slot="' . esc_attr( $fid ) . '"'
 					. ' data-anim-picker="' . esc_attr( $picker_id ) . '"'
 					. ' data-anim-off="' . esc_attr( $off_val ) . '">'
 					. '<button type="button" class="upw-anim-card-remove" aria-label="' . esc_attr__( 'Remove animation', 'fw' ) . '" title="' . esc_attr__( 'Remove animation', 'fw' ) . '">&times;</button>'
 					. $rendered
 					. '</div>';
 
-				$catalog_items[] = array(
-					'id'     => $fid,
-					'label'  => $label,
-					'cat'    => $cat,
-					'active' => $active,
-				);
+				// One catalog tile per base module (slots 2..N don't add their own tile).
+				if ( ! isset( $catalog_seen[ $base ] ) ) {
+					$catalog_seen[ $base ] = true;
+					$catalog_items[] = array(
+						'id'       => $base,
+						'label'    => $label,
+						'cat'      => $cat,
+						// A multi-instance tile stays available (never "added") so you can add more;
+						// a single tile hides once its one card is active.
+						'active'   => ( $is_multi ? false : $active ),
+						'keywords' => $keywords,
+						'multi'    => $is_multi,
+					);
+				}
 			}
 
 			// Nothing to organize (no picker fields) → just render passthrough untouched.
@@ -149,7 +167,9 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 		foreach ( $items as $it ) {
 			$tiles .= '<button type="button" class="upw-anim-tile' . ( $it['active'] ? ' is-added' : '' ) . '"'
 				. ' data-target="' . esc_attr( $it['id'] ) . '"'
-				. ' data-cat="' . esc_attr( $it['cat'] ) . '">'
+				. ' data-cat="' . esc_attr( $it['cat'] ) . '"'
+				. ( ! empty( $it['multi'] ) ? ' data-multi="1"' : '' )
+				. ' data-keywords="' . esc_attr( isset( $it['keywords'] ) ? $it['keywords'] : '' ) . '">'
 				. '<span class="upw-anim-tile-ico">' . $this->icon_svg( $it['id'] ) . '</span>'
 				. '<span class="upw-anim-tile-lbl">' . esc_html( $it['label'] ) . '</span>'
 				. '<span class="upw-anim-tile-cat">' . esc_html( $it['cat'] ) . '</span>'
@@ -165,6 +185,33 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			.     '<div class="upw-anim-tiles-empty is-hidden">' . esc_html__( 'All animations added.', 'fw' ) . '</div>'
 			. '</div>'
 			. '</div>';
+	}
+
+	/**
+	 * Space-joined, lowercase style / effect names pulled from a field's picker choices, so the
+	 * inserter search can match a module by one of its effects (not just the module name). Handles
+	 * both image-picker choices (`['label' => …]`) and plain select choices (`key => 'Label'`), and
+	 * includes the choice keys themselves (underscores/dashes → spaces) as a loose match.
+	 */
+	private function picker_keywords( $field, $picker_id ) {
+		$choices = ( isset( $field['picker'][ $picker_id ]['choices'] ) && is_array( $field['picker'][ $picker_id ]['choices'] ) )
+			? $field['picker'][ $picker_id ]['choices'] : array();
+
+		$out = array();
+		foreach ( $choices as $ck => $cv ) {
+			if ( is_array( $cv ) && isset( $cv['label'] ) && $cv['label'] ) {
+				$out[] = (string) $cv['label'];
+			} elseif ( is_string( $cv ) && $cv !== '' ) {
+				$out[] = $cv;
+			}
+			if ( is_string( $ck ) && $ck !== '' ) {
+				$out[] = str_replace( array( '_', '-' ), ' ', $ck );
+			}
+		}
+
+		$out = array_map( 'strtolower', $out );
+		$out = array_values( array_unique( array_filter( $out ) ) );
+		return implode( ' ', $out );
 	}
 
 	/**
@@ -190,6 +237,14 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			'text_effect' => '<path d="M6 20l6-16 6 16"/><path d="M8.4 14h7.2"/>',
 			// Scroll Loop — a circular loop arrow.
 			'scroll_loop' => '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 4.6V9h-4.4"/>',
+			// Sticky Card Stack — a deck of stacked cards.
+			'sticky_stack' => '<rect x="6" y="4" width="12" height="5" rx="1.5"/><rect x="4.5" y="10.5" width="15" height="5" rx="1.5"/><rect x="3" y="17" width="18" height="4.5" rx="1.5"/>',
+			// Horizontal Scroll — panels moving sideways.
+			'horizontal_scroll' => '<rect x="3" y="7" width="6.5" height="10" rx="1.5"/><rect x="10.5" y="7" width="6.5" height="10" rx="1.5"/><path d="M19 8l3 4-3 4"/>',
+			// Scroll Reveal — a box unmasking (half-drawn) with a wipe edge.
+			'scroll_reveal' => '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M12 4.5v15" stroke-dasharray="2 2"/><path d="M3.5 4.5h8.5v15H3.5z" fill="currentColor" stroke="none" opacity="0.28"/>',
+			// 3D Flip Card — a card with a flip arc.
+			'flip_card' => '<rect x="4.5" y="4" width="15" height="12" rx="2"/><path d="M6.5 19a5.5 2.6 0 0 0 11 0"/><path d="M15.6 17.4l2 1.6-2.2 1.1"/>',
 			'_default'    => '<circle cx="12" cy="12" r="8.5"/><path d="M9 12h6M12 9v6"/>',
 		);
 		$inner = isset( $paths[ $fid ] ) ? $paths[ $fid ] : $paths['_default'];

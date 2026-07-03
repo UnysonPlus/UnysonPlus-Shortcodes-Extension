@@ -5,185 +5,133 @@
 /**
  * Image Box — design registry (single source of truth).
  *
- * Each entry registers one selectable Design. Three places read this array:
- *   - options.php  → builds the `design` image-picker `choices`
- *   - view.php     → dispatches the box to `parts/box-<part>.php`
- *   - static.php   → auto-gates the per-design CSS (static/css/design/<key>.css)
+ * The Design control is a POPOVER multi-picker of 6 layout FAMILIES
+ * (Stacked / Side / Overlay / Card / Frame). Each family reveals its own
+ * variation sub-options; those variations collapse back to one of the flat
+ * design KEYS below at render time, so the 7 PHP parts (views/parts/box-*.php)
+ * and the ~20 `.imgbox--design-<key>` CSS selectors are reused unchanged. Adding
+ * a look is therefore either a new variation choice (front-end only) or, for a
+ * genuinely new appearance, a new `designs` entry + `static/css/design/<key>.css`.
  *
- * Adding a design = one entry here + (reuse or add) `views/parts/box-<part>.php`
- * + a thumbnail `static/img/design/<thumb>` + (optional) per-design CSS
- * `static/css/design/<key>.css`. No other file changes — the picker, the
- * dispatcher and the CSS gating all read this.
+ * Readers:
+ *   - options.php       → builds the family image-picker + per-family reveals.
+ *   - views/parts/resolve.php → collapses (family + variation values) → flat key.
+ *   - views/view.php    → dispatches to parts/box-<part>.php + emits the classes.
+ *   - static.php        → auto-gates static/css/design/<key>.css (per instance).
  *
- * PER-DESIGN CSS (only the chosen design loads): the base styles.css carries the
- * shared/structural CSS (the box shell, media frame, content stack, hover-effect
- * primitives) used by every design; a design's OWN look lives in
- * static/css/design/<key>.css and is enqueued only for instances that pick it
- * (static.php's per-instance hook auto-detects the file by name — no list to
- * maintain). Structural designs (stacked / side / card) have no file; the base
- * covers them.
+ * Value shape (saved under the `design_settings` att — a NEW key, never a legacy
+ * scalar, so a stray old string can't feed the multi-picker and trip the
+ * illegal-string-offset "blank error:" modal trap):
+ *   design_settings => [ 'family' => 'overlay', 'overlay' => [ 'reveal' => 'fade', … ] ]
  *
- * Keys (NON-EMPTY strings — they become the saved Design value):
- *   label              : human label shown in the picker
- *   thumb              : SVG filename under static/img/design/
- *   part               : which views/parts/box-<part>.php renders it
- *   content_over_image : (optional, bool) the text stack sits ON the image
- *                        (overlay/frame family) rather than beside/below it
- *   hover_reveal       : (optional, bool) the content is hidden until hover
- *   needs_media_width  : (optional, bool) reveals the Media Width control as
- *                        meaningful (side family — image vs content split)
- *   family             : grouping label (informational; not used for dispatch)
+ * Back-compat: a legacy scalar `design="overlay-slide"` still resolves — the
+ * resolver falls back to reading the flat `design` att when `design_settings`
+ * is absent.
  */
+
 return array(
 
-	/* --- Structure --------------------------------------------------------- */
-	'stacked' => array(
-		'label'  => __( 'Stacked — image top', 'fw' ),
-		'thumb'  => 'stacked.svg',
-		'part'   => 'stacked',
-		'family' => 'structure',
-	),
-	'stacked-center' => array(
-		'label'  => __( 'Stacked — centered', 'fw' ),
-		'thumb'  => 'stacked-center.svg',
-		'part'   => 'stacked',
-		'family' => 'structure',
-	),
-	'icon-feature' => array(
-		'label'  => __( 'Feature — small image, text below', 'fw' ),
-		'thumb'  => 'icon-feature.svg',
-		'part'   => 'stacked',
-		'family' => 'structure',
-	),
-	'side-left' => array(
-		'label'             => __( 'Side — image left', 'fw' ),
-		'thumb'             => 'side-left.svg',
-		'part'              => 'side',
-		'needs_media_width' => true,
-		'family'            => 'structure',
-	),
-	'side-right' => array(
-		'label'             => __( 'Side — image right', 'fw' ),
-		'thumb'             => 'side-right.svg',
-		'part'              => 'side',
-		'needs_media_width' => true,
-		'family'            => 'structure',
-	),
-
-	/* --- Hover overlays ---------------------------------------------------- */
-	'overlay-fade' => array(
-		'label'              => __( 'Overlay — fade in on hover', 'fw' ),
-		'thumb'              => 'overlay-fade.svg',
-		'part'               => 'overlay',
-		'content_over_image' => true,
-		'hover_reveal'       => true,
-		'family'             => 'overlay',
-	),
-	'overlay-slide' => array(
-		'label'              => __( 'Overlay — slide up on hover', 'fw' ),
-		'thumb'              => 'overlay-slide.svg',
-		'part'               => 'overlay',
-		'content_over_image' => true,
-		'hover_reveal'       => true,
-		'family'             => 'overlay',
-	),
-	'overlay-center' => array(
-		'label'              => __( 'Overlay — centered on hover', 'fw' ),
-		'thumb'              => 'overlay-center.svg',
-		'part'               => 'overlay',
-		'content_over_image' => true,
-		'hover_reveal'       => true,
-		'family'             => 'overlay',
-	),
-	'overlay-frame' => array(
-		'label'              => __( 'Overlay — frame draw on hover', 'fw' ),
-		'thumb'              => 'overlay-frame.svg',
-		'part'               => 'overlay',
-		'content_over_image' => true,
-		'hover_reveal'       => true,
-		'family'             => 'overlay',
-	),
-	'overlay-scrim' => array(
-		'label'              => __( 'Overlay — always-on gradient scrim', 'fw' ),
-		'thumb'              => 'overlay-scrim.svg',
-		'part'               => 'overlay',
-		'content_over_image' => true,
-		'family'             => 'overlay',
+	/* ======================================================================
+	   FAMILIES — the popover tiles. `part` is the default part; `thumb` is a
+	   representative existing SVG (dedicated family thumbs can replace these
+	   later). `default` is the flat key a freshly-picked family resolves to.
+	   ====================================================================== */
+	'families' => array(
+		'stacked' => array(
+			'label'   => __( 'Stacked', 'fw' ),
+			'thumb'   => 'stacked.svg',
+			'default' => 'stacked',
+		),
+		'side' => array(
+			'label'   => __( 'Side', 'fw' ),
+			'thumb'   => 'side-left.svg',
+			'default' => 'side-left',
+		),
+		'overlay' => array(
+			'label'   => __( 'Overlay', 'fw' ),
+			'thumb'   => 'overlay-scrim.svg',
+			'default' => 'overlay-scrim',
+		),
+		'card' => array(
+			'label'   => __( 'Card', 'fw' ),
+			'thumb'   => 'card.svg',
+			'default' => 'card',
+		),
+		'frame' => array(
+			'label'   => __( 'Frame', 'fw' ),
+			'thumb'   => 'polaroid.svg',
+			'default' => 'polaroid',
+		),
 	),
 
-	/* --- Captions & cards -------------------------------------------------- */
-	'card' => array(
-		'label'  => __( 'Card — bordered, image top', 'fw' ),
-		'thumb'  => 'card.svg',
-		'part'   => 'card',
-		'family' => 'card',
-	),
-	'caption-below' => array(
-		'label'  => __( 'Caption — clean strip below', 'fw' ),
-		'thumb'  => 'caption-below.svg',
-		'part'   => 'card',
-		'family' => 'card',
-	),
-	'caption-bar' => array(
-		'label'              => __( 'Caption — solid bar over image', 'fw' ),
-		'thumb'              => 'caption-bar.svg',
-		'part'               => 'overlay',
-		'content_over_image' => true,
-		'family'             => 'card',
+	/* ======================================================================
+	   FLAT DESIGNS — the render target. `part` = views/parts/box-<part>.php;
+	   `content_over_image` / `hover_reveal` become wrapper-class flags. This is
+	   what view.php/static.php consume after the resolver collapses the family.
+	   ====================================================================== */
+	'designs' => array(
+
+		/* --- Stacked ------------------------------------------------------- */
+		'stacked'        => array( 'part' => 'stacked' ),
+		'stacked-center' => array( 'part' => 'stacked' ),
+		'icon-feature'   => array( 'part' => 'stacked' ),
+
+		/* --- Side ---------------------------------------------------------- */
+		'side-left'   => array( 'part' => 'side' ),
+		'side-right'  => array( 'part' => 'side' ),
+		'circle-side' => array( 'part' => 'side' ),
+		'split-panel' => array( 'part' => 'split' ),
+
+		/* --- Overlay (content over image) ---------------------------------- */
+		'overlay-fade'    => array( 'part' => 'overlay', 'content_over_image' => true, 'hover_reveal' => true ),
+		'overlay-slide'   => array( 'part' => 'overlay', 'content_over_image' => true, 'hover_reveal' => true ),
+		'overlay-center'  => array( 'part' => 'overlay', 'content_over_image' => true, 'hover_reveal' => true ),
+		'overlay-frame'   => array( 'part' => 'overlay', 'content_over_image' => true, 'hover_reveal' => true ),
+		'overlay-scrim'   => array( 'part' => 'overlay', 'content_over_image' => true ),
+		'caption-bar'     => array( 'part' => 'overlay', 'content_over_image' => true ),
+		'editorial-cover' => array( 'part' => 'overlay', 'content_over_image' => true ),
+		// Magazine "overlapping panel" — title/content overlaps the image edge
+		// (CSS-grid overlap). Uses its own box-overlap.php part.
+		'overlay-offset'  => array( 'part' => 'overlap', 'content_over_image' => true ),
+
+		/* --- Card ---------------------------------------------------------- */
+		'card'          => array( 'part' => 'card' ),
+		'caption-below' => array( 'part' => 'card' ),
+
+		/* --- Frame --------------------------------------------------------- */
+		'polaroid'    => array( 'part' => 'frame' ),
+		'postcard'    => array( 'part' => 'frame' ),
+		'badge'       => array( 'part' => 'frame' ),
+		'photo-stack' => array( 'part' => 'frame' ),
 	),
 
-	/* --- Frames ------------------------------------------------------------ */
-	'polaroid' => array(
-		'label'  => __( 'Polaroid frame', 'fw' ),
-		'thumb'  => 'polaroid.svg',
-		'part'   => 'frame',
-		'family' => 'frame',
-	),
-	'postcard' => array(
-		'label'  => __( 'Postcard frame', 'fw' ),
-		'thumb'  => 'postcard.svg',
-		'part'   => 'frame',
-		'family' => 'frame',
-	),
-	'badge' => array(
-		'label'  => __( 'Bordered badge', 'fw' ),
-		'thumb'  => 'badge.svg',
-		'part'   => 'frame',
-		'family' => 'frame',
-	),
-
-	/* --- More designs ------------------------------------------------------ */
-	'circle-side' => array(
-		'label'             => __( 'Circle — round image beside text', 'fw' ),
-		'thumb'             => 'circle-side.svg',
-		'part'              => 'side',
-		'needs_media_width' => true,
-		'family'            => 'structure',
-	),
-	'split-panel' => array(
-		'label'             => __( 'Split — image + colour panel', 'fw' ),
-		'thumb'             => 'split-panel.svg',
-		'part'              => 'split',
-		'needs_media_width' => true,
-		'family'            => 'structure',
-	),
-	'photo-stack' => array(
-		'label'  => __( 'Photo stack — layered frames', 'fw' ),
-		'thumb'  => 'photo-stack.svg',
-		'part'   => 'frame',
-		'family' => 'frame',
-	),
-	'editorial-cover' => array(
-		'label'              => __( 'Editorial cover — title at top', 'fw' ),
-		'thumb'              => 'editorial-cover.svg',
-		'part'               => 'overlay',
-		'content_over_image' => true,
-		'family'             => 'overlay',
-	),
-	'flip-card' => array(
-		'label'  => __( 'Flip card — flips on hover', 'fw' ),
-		'thumb'  => 'flip-card.svg',
-		'part'   => 'flip',
-		'family' => 'card',
+	/* ======================================================================
+	   LEGACY MAP — old flat key → the family + variation values that reproduce
+	   it. Lets a saved `design="…"` scalar (or an items-corrector conversion)
+	   pre-select the right family in the editor. Not needed for the frontend
+	   (the resolver handles a bare scalar directly).
+	   ====================================================================== */
+	'legacy' => array(
+		'stacked'         => array( 'family' => 'stacked', 'sub' => array( 'align' => 'standard', 'media' => 'full' ) ),
+		'stacked-center'  => array( 'family' => 'stacked', 'sub' => array( 'align' => 'centered', 'media' => 'full' ) ),
+		'icon-feature'    => array( 'family' => 'stacked', 'sub' => array( 'align' => 'centered', 'media' => 'compact' ) ),
+		'side-left'       => array( 'family' => 'side', 'sub' => array( 'image_side' => 'left', 'shape' => 'rectangle', 'panel' => 'no' ) ),
+		'side-right'      => array( 'family' => 'side', 'sub' => array( 'image_side' => 'right', 'shape' => 'rectangle', 'panel' => 'no' ) ),
+		'circle-side'     => array( 'family' => 'side', 'sub' => array( 'image_side' => 'left', 'shape' => 'circle', 'panel' => 'no' ) ),
+		'split-panel'     => array( 'family' => 'side', 'sub' => array( 'image_side' => 'left', 'shape' => 'rectangle', 'panel' => 'yes' ) ),
+		'overlay-fade'    => array( 'family' => 'overlay', 'sub' => array( 'reveal' => 'fade' ) ),
+		'overlay-slide'   => array( 'family' => 'overlay', 'sub' => array( 'reveal' => 'slide' ) ),
+		'overlay-center'  => array( 'family' => 'overlay', 'sub' => array( 'reveal' => 'center' ) ),
+		'overlay-frame'   => array( 'family' => 'overlay', 'sub' => array( 'reveal' => 'frame' ) ),
+		'overlay-scrim'   => array( 'family' => 'overlay', 'sub' => array( 'reveal' => 'scrim' ) ),
+		'caption-bar'     => array( 'family' => 'overlay', 'sub' => array( 'reveal' => 'bar' ) ),
+		'editorial-cover' => array( 'family' => 'overlay', 'sub' => array( 'reveal' => 'cover' ) ),
+		'overlay-offset'  => array( 'family' => 'overlay', 'sub' => array( 'reveal' => 'overlap' ) ),
+		'card'            => array( 'family' => 'card', 'sub' => array( 'style' => 'card' ) ),
+		'caption-below'   => array( 'family' => 'card', 'sub' => array( 'style' => 'caption-below' ) ),
+		'polaroid'        => array( 'family' => 'frame', 'sub' => array( 'style' => 'polaroid' ) ),
+		'postcard'        => array( 'family' => 'frame', 'sub' => array( 'style' => 'postcard' ) ),
+		'badge'           => array( 'family' => 'frame', 'sub' => array( 'style' => 'badge' ) ),
+		'photo-stack'     => array( 'family' => 'frame', 'sub' => array( 'style' => 'photo-stack' ) ),
 	),
 );

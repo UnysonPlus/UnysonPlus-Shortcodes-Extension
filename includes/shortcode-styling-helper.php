@@ -1200,8 +1200,8 @@ if ( ! function_exists( 'sc_needs_wrapper' ) ) :
 			return true;
 		}
 
-		// Animations tab — the multi-picker is enabled when animation.enable === 'yes'.
-		if ( isset( $atts['animation']['enable'] ) && $atts['animation']['enable'] === 'yes' ) {
+		// Animations tab — an entrance effect is chosen when animation.effect is set & not 'none'.
+		if ( isset( $atts['animation']['effect'] ) && $atts['animation']['effect'] !== 'none' && $atts['animation']['effect'] !== '' ) {
 			return true;
 		}
 

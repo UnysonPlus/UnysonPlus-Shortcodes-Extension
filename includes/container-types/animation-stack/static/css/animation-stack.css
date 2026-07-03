@@ -103,8 +103,8 @@
 	box-shadow: 0 6px 16px rgba(47,116,230,.14);
 }
 .upw-anim-tile.is-added, .upw-anim-tile.is-filtered { display: none; }
-.upw-anim-tile-ico { color: #2f74e6; display: flex; align-items: center; justify-content: center; height: 30px; }
-.upw-anim-tile-ico svg { display: block; }
+.upw-anim-tile-ico { color: #2f74e6; display: flex; align-items: center; justify-content: center; height: 36px; }
+.upw-anim-tile-ico svg { display: block; width: 32px; height: 32px; stroke-width: 1.5; }
 .upw-anim-tile-lbl { font-size: 12.5px; font-weight: 600; color: #2b3a4f; line-height: 1.25; }
 .upw-anim-tile-cat {
 	font-size: 10px; text-transform: uppercase; letter-spacing: .04em;
