@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.8.62';
+$manifest['version']     = '1.8.75';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,88 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.8.75 - Animations tab reorganized as an "Add Animation" inserter + card stack. As the
+ *          Animation Engine grows (Entrance, Scroll, Hover, Physics, Parallax, Marquee, Text,
+ *          Scroll Loop, and more to come), the tab was becoming an ever-longer wall of always-
+ *          visible "None" rows. The module fields are now wrapped in a new "animation-stack"
+ *          container: each renders as a collapsible card that is HIDDEN until used, and a
+ *          searchable, category-tabbed "+ Add Animation" grid (one tile per module) reveals a
+ *          card on demand and opens its effect picker. Removing a card resets its picker to the
+ *          off value. Because a container renders/collects its children without namespacing (like
+ *          group/box/tab), every module keeps saving under its own key — zero value migration, the
+ *          output contract is unchanged. Modules advertise their inserter category + icon via an
+ *          optional 'anim_meta' on their field. Multiple animations still stack on one element.
+ *
+ * 1.8.70 - Position & Z-Index on every element (Elementor-style). The shared Advanced tab (below
+ *          the CSS classes) carries a Position control: a multi-picker select (Default / Static /
+ *          Relative / Absolute / Fixed / Sticky). Choosing a positioned value reveals an Offset row
+ *          plus a Z-Index — kept hidden for Default and Static since offsets and stacking only affect
+ *          positioned elements. The Offset row is one compact inline strip of four unit inputs
+ *          (Top / Right / Bottom / Left), like the spacing control — each side a number + a unit
+ *          dropdown (px / % / em / rem / vh / vw) with an "auto" entry that outputs the CSS keyword.
+ *          It is a new framework option type, position-box. The shared wrapper builder applies the
+ *          result as an inline style through a new sc_position_style() helper, which whitelists
+ *          offsets to safe CSS lengths so nothing arbitrary reaches the style attribute. Every
+ *          element built on the shared wrapper gets it automatically — the Column included, so its
+ *          old Layout-tab Position/Z-Index was retired in favour of this one — and the four elements
+ *          that render their own root (Counter, Countdown, Carousel, Progress) call the helper directly.
+ *
+ * 1.8.66 - Image Box gains three new customisation axes. The Stacked family drops its
+ *          redundant Alignment option (Content Alignment already does that) and instead offers
+ *          a Stacking Order picker — reorder image / heading / text (image-title-text,
+ *          title-image-text, title-text-image, text-image-title) via CSS order. Two universal
+ *          controls were added on the Design tab: Image Size (a compact short-select — full /
+ *          large / medium / small / x-small, shrinks + centres the media on image-top families)
+ *          and Image Mask, a 23-shape picker that clips the image to a shape (rounded, circle,
+ *          squircle, arch, hexagon, diamond, triangle, pentagon, star, chevron, octagon, leaf,
+ *          shield, heart, flower, brush, water splash, grunge frame and two organic
+ *          blobs — plus a clear None and a Custom tile where you can paste inline SVG / an SVG
+ *          URL, upload an SVG, or enter a raw CSS clip-path, all sanitised on save). The mask +
+ *          size axes replace the old `icon-feature` and `circle-side` designs and the Side
+ *          family's Shape sub-option (a round image is now Circle mask [+ Small size] on any
+ *          family); those keys stay only as legacy aliases.
+ *
+ * 1.8.65 - Image Box design system reworked into 5 layout FAMILIES (Stacked, Side, Overlay,
+ *          Card, Frame) shown in a compact popover picker, replacing the flat 21-tile grid
+ *          (the old Flip design was dropped — the dedicated Flip Box shortcode owns that).
+ *          Picking a family reveals only that family's variations (e.g. Overlay → reveal
+ *          style + colour/opacity; Side → image side / shape / colour panel / width), which
+ *          collapse back to the existing looks at render time, so a magazine-style overlapping
+ *          title-on-image is now the Overlay family (scrim / editorial cover / overlapping
+ *          panel / caption bar). This makes the catalog future-proof: a new variation is front-end
+ *          only, and a genuinely new look is one designs entry + a gated CSS file. The saved
+ *          value moved to a nested `design_settings` att (a legacy `design` scalar still
+ *          resolves). The Gallery and Posts design pickers also adopt the same popover mode.
+ *
+ * 1.8.64 - Flip Box overhaul. The back-face button now uses your Theme Settings → General →
+ *          Buttons presets (a Button Style + Size picker that previews the real button),
+ *          replacing the single "Button Color" field. BOTH faces now take a Background Image
+ *          (front + back), shown on ANY design with a dark legibility overlay — not only the
+ *          "Image front" design. Added a Back Icon (the front already had one). Background
+ *          Images and the Button Style / Size now live on the Styling tab (next to the face
+ *          colors), keeping the Content tab to text + icons. The builder title preview is
+ *          richer too — it shows the front icon / title / text and the back icon / title /
+ *          text / button instead of just the two titles. Front / Back Text are now rich-text
+ *          (WYSIWYG) editors instead of plain textareas. Eight distinct Designs (Solid,
+ *          Elevated, Minimal, Outline, Gradient, Glass, Dark, Neumorphic) replace the old four
+ *          look-alikes, chosen from a future-proof popover multi-picker built from the design
+ *          registry (add a registry entry + swatch + CSS and it appears; a design can reveal its
+ *          OWN options via the picker's `choices`). The Flip Direction option became an "Effect" picker — five 3D flips
+ *          (left / right / up / down / diagonal) plus six 2D reveals (fade, zoom, slide
+ *          up / down / left / right). New "Hover + click" trigger (flips on hover and also
+ *          toggles on click/tap) and an optional Parallax Tilt that leans the card toward the
+ *          cursor in 3D (composes with any effect; skipped on touch + reduced motion). Front
+ *          and Back titles now have a Title Tag selector (h1–h6 / span / p) for semantic level.
+ *          The Effect is now a visual popover image-picker (swatches, no migration — the
+ *          `popover` option type passes the scalar through). Adjustable flip Speed + Easing.
+ *          Optional Front button (e.g. "Details") that flips the card to the back — good for
+ *          touch. Optional Parallax Depth that floats the content forward in 3D (translateZ)
+ *          so it lifts off the background — a layered depth, most visible during the flip. Corner
+ *          Radius is now a popover swatch picker (Square → Extra Large) and FIXED: it applies
+ *          via a scoped --fb-radius variable straight on the faces, so Bootstrap's !important
+ *          .rounded utilities no longer override it and the parallax layer no longer flattens
+ *          it to square.
+ *
  * 1.8.34 - New "Announcement Pill" element (Content Elements tab) — a compact, highly
  *          customizable badge / chip: an optional sub-tag ("New"), a message, a leading
  *          marker (dot / pulse "live" dot / icon) and a trailing icon, across seven

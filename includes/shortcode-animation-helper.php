@@ -207,62 +207,97 @@ function sc_get_animation_fields() {
         ],
     ];
 
+    // Speed preset — shown once an effect (≠ None) is chosen.
+    $speed_preset_field = [
+        'label'   => __( 'Speed Preset', 'fw' ),
+        'desc'    => __( 'Quick speed adjustment using Animate.css presets. Leave on Default unless you need a tweak.', 'fw' ),
+        'type'    => 'select',
+        'value'   => '',
+        'choices' => [
+            ''                 => __( 'Default (1s)', 'fw' ),
+            'animate__slow'    => __( 'Slow (2s)', 'fw' ),
+            'animate__slower'  => __( 'Slower (3s)', 'fw' ),
+            'animate__fast'    => __( 'Fast (800ms)', 'fw' ),
+            'animate__faster'  => __( 'Faster (500ms)', 'fw' ),
+        ],
+    ];
+
+    // The settings panel revealed once any effect (≠ None) is chosen. Built ONCE and mapped
+    // onto every effect key below, so switching effects keeps the same panel — and, like
+    // Scroll Motion, each effect remembers its own tweaks (they store under the effect key).
+    $reveal_group = [
+        'group_animation_basic' => [
+            'type'    => 'group',
+            'options' => [
+                'speed_preset' => $speed_preset_field,
+            ],
+        ],
+        'advanced_tweaks_heading' => [
+            'type'  => 'html',
+            'label' => false,
+            'desc'  => false,
+            'html'  => '<h4 style="margin:28px 0 6px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:#666;">' . esc_html__( 'Advanced Tweaks', 'fw' ) . '</h4>',
+        ],
+        'group_animation_advanced' => [
+            'type'    => 'group',
+            'options' => $advanced_settings_fields,
+        ],
+    ];
+
+    // Reveal choices map the settings panel onto every real effect ("None" reveals nothing =
+    // the off state, no separate switch).
+    $reveal_choices = [ 'none' => [] ];
+    foreach ( $effect_choices as $optgroup ) {
+        if ( empty( $optgroup['choices'] ) || ! is_array( $optgroup['choices'] ) ) { continue; }
+        foreach ( $optgroup['choices'] as $effect_key => $effect_label ) {
+            $reveal_choices[ $effect_key ] = $reveal_group;
+        }
+    }
+
+    // Picker tiles — an animated-SVG image grid (each effect is a moving box previewing the
+    // motion, with its name baked in), shown in a popover. Tiles live in the shortcodes ext
+    // static dir; the filename is the effect key without the `animate__` prefix (`none.svg`
+    // for the off state). "None" leads the flat grid.
+    $sc_ext    = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
+    $tile_base = $sc_ext ? $sc_ext->get_declared_URI( '/static/img/entrance-effects' ) : '';
+    $tile      = function ( $file, $label ) use ( $tile_base ) {
+        return [
+            'small' => [ 'src' => $tile_base . '/' . $file . '.svg', 'height' => 96 ],
+            'large' => [ 'src' => $tile_base . '/' . $file . '.svg', 'height' => 150 ],
+            'label' => $label,
+        ];
+    };
+    $effect_tiles = [ 'none' => $tile( 'none', __( 'None', 'fw' ) ) ];
+    foreach ( $effect_choices as $optgroup ) {
+        if ( empty( $optgroup['choices'] ) || ! is_array( $optgroup['choices'] ) ) { continue; }
+        foreach ( $optgroup['choices'] as $effect_key => $effect_label ) {
+            $effect_tiles[ $effect_key ] = $tile( str_replace( 'animate__', '', $effect_key ), $effect_label );
+        }
+    }
+
     $fields = [
         'animation' => [
             'type'         => 'multi-picker',
-            'label'        => false,
-            'desc'         => false,
+            'popover'      => true,
+            // Popover multi-picker: the user-visible label lives on the TOP level; the picker
+            // sub-option is label => false (matches the engine's Scroll Motion / Physics pickers).
+            'label'        => __( 'Entrance Animation', 'fw' ),
+            'desc'         => __( 'Animate the element as it enters view — plus attention-seekers like Pulse and Wobble. Powered by Animate.css.', 'fw' ),
+            'help'         => __( 'Entrance Animation (Animate.css): plays a one-shot reveal as the element scrolls into view — fades, slides, zooms, flips and back / bounce / rotate entrances, plus attention-seekers like Pulse, Bounce, Shake and Wobble. After you pick an effect you can set its speed, delay, repeat count, loop and easing. Honours “reduce motion” (shows the element with no animation) and loads Animate.css only on pages that actually use an entrance. Part of core — available with or without the Animation Engine.', 'fw' ),
             'show_borders' => false,
+            'value'        => [ 'effect' => 'none' ],
+            // Metadata for the Animations-tab organizer (animation-stack container): which
+            // inserter category + icon this card shows under.
+            'anim_meta'    => [ 'category' => __( 'Entrance', 'fw' ), 'icon' => '&#10024;' ], // ✨
             'picker' => [
-                'enable' => [
-                    'type'         => 'switch',
-                    'label'        => __( 'Enable Animation', 'fw' ),
-                    'desc'         => __( 'Turn on to apply an Animate.css effect to this element when it scrolls into view.', 'fw' ),
-                    'value'        => 'no',
-                    'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
-                    'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                'effect' => [
+                    'type'    => 'image-picker',
+                    'label'   => false,
+                    'value'   => 'none',
+                    'choices' => $effect_tiles,
                 ],
             ],
-            'choices' => [
-                'no'  => [],
-                'yes' => [
-                    'group_animation_basic' => [
-                        'type'    => 'group',
-                        'options' => [
-                            'effect' => [
-                                'label'   => __( 'Animation Effect', 'fw' ),
-                                'desc'    => __( 'Choose an entrance or attention-seeking effect. Defaults work out of the box.', 'fw' ),
-                                'type'    => 'select',
-                                'value'   => 'animate__fadeInUp',
-                                'choices' => $effect_choices,
-                            ],
-                            'speed_preset' => [
-                                'label'   => __( 'Speed Preset', 'fw' ),
-                                'desc'    => __( 'Quick speed adjustment using Animate.css presets. Leave on Default unless you need a tweak.', 'fw' ),
-                                'type'    => 'select',
-                                'value'   => '',
-                                'choices' => [
-                                    ''                 => __( 'Default (1s)', 'fw' ),
-                                    'animate__slow'    => __( 'Slow (2s)', 'fw' ),
-                                    'animate__slower'  => __( 'Slower (3s)', 'fw' ),
-                                    'animate__fast'    => __( 'Fast (800ms)', 'fw' ),
-                                    'animate__faster'  => __( 'Faster (500ms)', 'fw' ),
-                                ],
-                            ],
-                        ],
-                    ],
-                    'advanced_tweaks_heading' => [
-                        'type'  => 'html',
-                        'label' => false,
-                        'desc'  => false,
-                        'html'  => '<h4 style="margin:28px 0 6px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;color:#666;">' . esc_html__( 'Advanced Tweaks', 'fw' ) . '</h4>',
-                    ],
-                    'group_animation_advanced' => [
-                        'type'    => 'group',
-                        'options' => $advanced_settings_fields,
-                    ],
-                ],
-            ],
+            'choices' => $reveal_choices,
         ],
     ];
 
@@ -296,9 +331,35 @@ function sc_get_animation_fields() {
      */
     $fields = apply_filters( 'sc_animation_fields', $fields );
 
-    return $fields;
+    /**
+     * Wrap every module field in the `animation-stack` container — the Animations-tab organizer
+     * (card stack + "Add Animation" inserter). A container renders/collects its children WITHOUT
+     * namespacing (like group/box/tab), so each module keeps saving under its own key
+     * (animation / interaction / physics / gsap_motion / …) — zero value migration. When the
+     * container type is registered on fw_container_types_init (below), which fires before any
+     * options render.
+     */
+    return [
+        'animation_stack' => [
+            'type'    => 'animation-stack',
+            'label'   => false,
+            'options' => $fields,
+        ],
+    ];
 }
 endif;
+
+
+/**
+ * Register the `animation-stack` container type (the Animations-tab organizer). Container types
+ * must be registered on the `fw_container_types_init` action.
+ */
+add_action( 'fw_container_types_init', function () {
+    if ( class_exists( 'FW_Container_Type' ) && ! class_exists( 'FW_Container_Type_Animation_Stack' ) ) {
+        require_once __DIR__ . '/container-types/animation-stack/class-fw-container-type-animation-stack.php';
+        FW_Container_Type::register( 'FW_Container_Type_Animation_Stack' );
+    }
+} );
 
 
 /**
@@ -322,17 +383,14 @@ endif;
 add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     $anim = ( isset( $atts['animation'] ) && is_array( $atts['animation'] ) ) ? $atts['animation'] : [];
 
-    $enable = $anim['enable'] ?? '';
-    if ( $enable !== 'yes' ) {
+    // The picker IS the effect select now ('none' = off, no separate Enable switch); the
+    // per-effect settings live under the chosen effect's key (Scroll Motion / Physics shape).
+    $effect = isset( $anim['effect'] ) ? (string) $anim['effect'] : 'none';
+    if ( $effect === 'none' || ! preg_match( '/^animate__[a-zA-Z]+$/', $effect ) ) {
         return $attr;
     }
 
-    $settings = ( isset( $anim['yes'] ) && is_array( $anim['yes'] ) ) ? $anim['yes'] : [];
-
-    $effect = isset( $settings['effect'] ) ? (string) $settings['effect'] : '';
-    if ( ! preg_match( '/^animate__[a-zA-Z]+$/', $effect ) ) {
-        return $attr;
-    }
+    $settings = ( isset( $anim[ $effect ] ) && is_array( $anim[ $effect ] ) ) ? $anim[ $effect ] : [];
 
     $speed_preset = isset( $settings['speed_preset'] ) ? (string) $settings['speed_preset'] : '';
     if ( $speed_preset && ! preg_match( '/^animate__[a-zA-Z]+$/', $speed_preset ) ) {
@@ -411,3 +469,25 @@ add_action( 'wp_footer', function () {
 
     wp_enqueue_script( 'sc-animations', $js_uri, [], '1.0.0', true );
 }, 5 );
+
+
+/**
+ * Entrance-picker tile size (admin builder ONLY, entrance-scoped).
+ *
+ * The Entrance Animation popover uses animated-SVG tiles with the effect name baked in, so they
+ * need to render taller than the usual engine popover tiles for the label to read. The core
+ * multi-picker CSS caps ALL popover tiles at 72px in the large modal / Theme Settings, which
+ * overrides the picker's own per-choice height — that cap stays for the OTHER popovers. So the
+ * entrance block owns its tile size here, targeting only its swatches by their `/entrance-effects/`
+ * src path (higher specificity than the cap). Printed on admin pages only. Mirrors the pattern the
+ * Animation Engine's physics module uses.
+ */
+add_action( 'admin_head', function () {
+    $sel = 'ul.thumbnails.image_picker_selector li .thumbnail img[src*="/entrance-effects/"]';
+    echo '<style id="sc-entrance-picker-size">'
+        . '.fw-mp-pop ' . $sel . ','
+        . '.fw-modal-large .fw-mp-pop ' . $sel . ','
+        . '.appearance_page_fw-settings .fw-mp-pop ' . $sel
+        . '{height:96px !important;width:auto !important;}'
+        . "</style>\n";
+} );
