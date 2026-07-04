@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.10.2';
+$manifest['version']     = '1.10.3';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,16 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.10.3 - Section-Background effects are now pluggable from a child theme's functions.php.
+ *          New `sc_section_background_effects` filter registers named effects
+ *          (`id => [ label, css, js, ver, deps, class, render ]`); `sc_section_background_render(
+ *          $id, $args )` outputs the backdrop (`.sc-bg-fill .sc-bg-effect--<id>` + the effect's
+ *          `render` markup) to drop inside a <section>, and the shared runtime lifts it to fill
+ *          the Section. Each effect's CSS/JS load ON DEMAND (only when used) via the existing
+ *          wp_footer/priority-5 pass, depending on `sc-bg-fill`. So a developer can add a custom
+ *          animated background (canvas/SVG/DOM) without touching the plugin. Documented on the
+ *          new "Section backgrounds (developers)" manual page.
+ *
  * 1.10.2 - Reusable "Use as Section Background" helper + Before/After gains it for
  *          BOTH types plus an Invisible design. New shared helper
  *          includes/shortcode-background-helper.php exposes sc_section_background_field()
