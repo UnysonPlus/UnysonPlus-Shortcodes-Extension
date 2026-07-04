@@ -25,6 +25,12 @@
 		var start = parseFloat(el.getAttribute('data-start'));
 		if (isNaN(start)) { start = 50; }
 
+		// Background mode: fill the Section (shared runtime) and drive the reveal from
+		// the whole Section. The reveal geometry still uses the media rect (which now
+		// covers the Section), so posFromPoint is unchanged.
+		var asBg = el.getAttribute('data-bg') === '1';
+		var surface = (asBg && window.scBgFill) ? (window.scBgFill(el) || media) : media;
+
 		var interacted = false;
 
 		function setPos(p) {
@@ -55,23 +61,23 @@
 		/* --- Interaction modes --- */
 		if (mode === 'toggle') {
 			var toggle = function () { el.classList.toggle('is-after'); markInteracted(); };
-			el.addEventListener('click', toggle);
+			surface.addEventListener('click', toggle);
 			el.addEventListener('keydown', function (e) {
 				if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); toggle(); }
 			});
 		} else if (mode === 'hover') {
-			media.addEventListener('pointermove', function (e) { markInteracted(); moveFromEvent(e); });
-			media.addEventListener('pointerdown', function (e) { markInteracted(); moveFromEvent(e); });
+			surface.addEventListener('pointermove', function (e) { markInteracted(); moveFromEvent(e); });
+			surface.addEventListener('pointerdown', function (e) { markInteracted(); moveFromEvent(e); });
 			// Touch: allow dragging a finger across to reveal.
-			media.addEventListener('touchmove', function (e) { markInteracted(); moveFromEvent(e); }, { passive: true });
+			surface.addEventListener('touchmove', function (e) { markInteracted(); moveFromEvent(e); }, { passive: true });
 		} else { // drag
 			var dragging = false;
-			media.addEventListener('pointerdown', function (e) {
+			surface.addEventListener('pointerdown', function (e) {
 				dragging = true;
 				markInteracted();
 				el.classList.add('is-dragging');
-				if (media.setPointerCapture && e.pointerId != null) {
-					try { media.setPointerCapture(e.pointerId); } catch (err) {}
+				if (surface.setPointerCapture && e.pointerId != null) {
+					try { surface.setPointerCapture(e.pointerId); } catch (err) {}
 				}
 				moveFromEvent(e);
 				e.preventDefault();
@@ -84,7 +90,7 @@
 			});
 			// Touch fallback for browsers without Pointer Events.
 			if (!('PointerEvent' in window)) {
-				media.addEventListener('touchstart', function (e) { dragging = true; markInteracted(); el.classList.add('is-dragging'); moveFromEvent(e); }, { passive: true });
+				surface.addEventListener('touchstart', function (e) { dragging = true; markInteracted(); el.classList.add('is-dragging'); moveFromEvent(e); }, { passive: true });
 				window.addEventListener('touchmove', function (e) { if (dragging) { moveFromEvent(e); } }, { passive: true });
 				window.addEventListener('touchend', function () { dragging = false; el.classList.remove('is-dragging'); });
 			}
@@ -152,9 +158,84 @@
 		}
 	}
 
+	/* =====================================================================
+	 * SPOTLIGHT type — a soft circular reveal that follows the cursor.
+	 * The top ".fw-bac__before" layer carries an inverse radial mask; we just
+	 * feed it --sr-x / --sr-y (px, relative to the media). Optional smooth
+	 * follow (lerp) and an optional background mode that fills the Section.
+	 * =================================================================== */
+
+	function initSpot(el) {
+		if (el.__bacReady) { return; }
+		el.__bacReady = true;
+
+		var media  = el.querySelector('.fw-bac__media') || el;
+		var asBg   = el.getAttribute('data-bg') === '1';
+		var smooth = el.getAttribute('data-smooth') === '1' && !REDUCED;
+		var idle   = el.getAttribute('data-idle') === '1';
+
+		// Background mode fills the Section via the shared runtime (window.scBgFill),
+		// which returns the host so we can drive the spotlight from the whole Section.
+		var host = (asBg && window.scBgFill) ? (window.scBgFill(el) || media) : media;
+
+		var tx = null, ty = null, cx = null, cy = null, raf = null, armed = false;
+
+		function rect() { return media.getBoundingClientRect(); }
+		function apply(x, y) {
+			el.style.setProperty('--sr-x', x + 'px');
+			el.style.setProperty('--sr-y', y + 'px');
+		}
+		function centre() { var r = rect(); return [ r.width / 2, r.height / 2 ]; }
+
+		function frame() {
+			raf = null;
+			if (tx == null) { return; }
+			cx += (tx - cx) * 0.18;
+			cy += (ty - cy) * 0.18;
+			apply(cx, cy);
+			if (Math.abs(tx - cx) > 0.4 || Math.abs(ty - cy) > 0.4) {
+				raf = requestAnimationFrame(frame);
+			} else {
+				apply(tx, ty);
+			}
+		}
+		function moveTo(x, y) {
+			tx = x; ty = y;
+			if (cx == null) { cx = x; cy = y; }
+			if (smooth) { if (!raf) { raf = requestAnimationFrame(frame); } }
+			else { cx = x; cy = y; apply(x, y); }
+		}
+		function fromEvent(e) {
+			var px = e.clientX, py = e.clientY;
+			if ((px == null) && e.touches && e.touches[0]) { px = e.touches[0].clientX; py = e.touches[0].clientY; }
+			if (px == null) { return; }
+			var r = rect();
+			moveTo(px - r.left, py - r.top);
+		}
+		function armOn() { if (!armed) { armed = true; el.classList.remove('is-away'); } }
+		function armOff() {
+			armed = false;
+			if (idle) { var c = centre(); moveTo(c[0], c[1]); }
+			else { el.classList.add('is-away'); }
+		}
+
+		// Initial resting state.
+		var c0 = centre();
+		cx = c0[0]; cy = c0[1];
+		if (idle) { apply(cx, cy); } else { el.classList.add('is-away'); }
+
+		host.addEventListener('pointerenter', armOn);
+		host.addEventListener('pointermove', function (e) { armOn(); fromEvent(e); });
+		host.addEventListener('pointerleave', armOff);
+		host.addEventListener('touchmove', function (e) { armOn(); fromEvent(e); }, { passive: true });
+		host.addEventListener('touchend', armOff);
+	}
+
 	function init() {
 		var nodes = document.querySelectorAll('[data-bac]');
 		Array.prototype.forEach.call(nodes, initOne);
+		var spots = document.querySelectorAll('[data-bac-spot]');
+		Array.prototype.forEach.call(spots, initSpot);
 	}
 
 	if (document.readyState === 'loading') {

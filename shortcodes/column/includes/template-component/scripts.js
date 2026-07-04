@@ -158,7 +158,50 @@
 						if (JSON.stringify(builder.rootItems) === json.data.json) {
 							console.log('Loaded value is the same as current');
 						} else {
-							builder.rootItems.add(JSON.parse(json.data.json));
+							// Route the loaded column(s) INTO a Section — reusing the last one, or
+							// creating one if the page has none — instead of dropping a bare column at
+							// ROOT (no section container, and a jQuery-UI sortable limitation then
+							// prevents dragging it into a section afterwards). Mirrors the Global
+							// Template path above and the builder's own click-to-add smart placement.
+							var loaded = JSON.parse(json.data.json),
+								nodes = Array.isArray(loaded) ? loaded : [loaded],
+								isSectionLike = function (type) {
+									return (window.fwSectionLikeTypes
+										&& typeof window.fwSectionLikeTypes.isSectionLike === 'function')
+										? window.fwSectionLikeTypes.isSectionLike(type)
+										: (type === 'section');
+								},
+								ensureSection = function () {
+									var section = null;
+									builder.rootItems.each(function (item) {
+										if (isSectionLike(item.get('type'))) { section = item; }
+									});
+									if (!section) {
+										var SectionCls = builder.getRegisteredItemClassByType('section');
+										if (SectionCls) {
+											section = new SectionCls({});
+											builder.rootItems.add(section);
+										}
+									}
+									return section;
+								};
+
+							for (var i = 0; i < nodes.length; i++) {
+								var node = nodes[i];
+
+								// A node that is already a section-like container stays at root.
+								if (node && isSectionLike(node.type)) {
+									builder.rootItems.add(node);
+									continue;
+								}
+
+								var section = ensureSection();
+								if (section && section.get('_items')) {
+									section.get('_items').add(node);
+								} else {
+									builder.rootItems.add(node); // fallback (no section class registered)
+								}
+							}
 						}
 
 						tooltipHideCallback();

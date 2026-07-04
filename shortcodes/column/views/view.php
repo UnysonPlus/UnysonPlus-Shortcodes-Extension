@@ -87,13 +87,14 @@ if ( ! empty( $width_class ) ) {
 }
 
 // Mobile ordering. The row is a flex container, so CSS `order` on the column
-// (the flex item) reorders it. `fw-order-{v}` applies at the smallest breakpoint
-// (mobile, <576px, where columns are stacked) and `fw-order-sm-0` resets to the
-// natural authoring order from `sm` up (where columns go side-by-side). Reuses
-// the existing utilities in builder/static/css/frontend-grid.css — no new CSS.
+// (the flex item) reorders it. `fw-order-{v}` applies below the `md` breakpoint
+// (mobile + phones, <768px — matching the Column/Content Order reverse) and
+// `fw-order-md-0` resets to the natural authoring order from `md` up (where columns
+// go side-by-side). Reuses the existing utilities in
+// builder/static/css/frontend-grid.css — no new CSS.
 $mobile_order = (string) fw_akg( 'mobile_order', $atts, '' );
 if ( in_array( $mobile_order, array( 'first', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'last' ), true ) ) {
-    $attr['class'] = trim( $attr['class'] . ' fw-order-' . $mobile_order . ' fw-order-sm-0' );
+    $attr['class'] = trim( $attr['class'] . ' fw-order-' . $mobile_order . ' fw-order-md-0' );
 }
 
 /*

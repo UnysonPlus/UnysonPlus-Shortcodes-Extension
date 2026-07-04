@@ -1836,6 +1836,22 @@ if ( ! function_exists( 'sc_bg_pro_style' ) ) :
 			$grad = FW_Option_Type_Gradient_V2::to_css( fw_akg( 'gradient/data', $bgv ) );
 			if ( $grad ) { $images[] = $grad; }
 		}
+
+		// Overlay — a tint rendered ON TOP of the image/gradient/colour (gradient over colour).
+		// Prepended to the image list so it sits first (topmost) in `background-image`.
+		$overlay  = array();
+		$ov_stops = fw_akg( 'overlay/gradient/stops', $bgv );
+		if ( is_array( $ov_stops ) && count( $ov_stops ) >= 2 && class_exists( 'FW_Option_Type_Gradient_V2' ) ) {
+			$og = FW_Option_Type_Gradient_V2::to_css( fw_akg( 'overlay/gradient', $bgv ) );
+			if ( $og ) { $overlay[] = $og; }
+		}
+		$ov_color = trim( (string) fw_akg( 'overlay/color', $bgv, '' ) );
+		if ( $ov_color !== '' && $ov_color !== 'rgba(0,0,0,0)' && $ov_color !== 'transparent'
+			&& preg_match( '/^(#[0-9a-fA-F]{3,8}|rgba?\([0-9.,%\s]+\))$/', $ov_color ) ) {
+			$overlay[] = 'linear-gradient(' . $ov_color . ',' . $ov_color . ')'; // flat colour tint
+		}
+		if ( $overlay ) { $images = array_merge( $overlay, $images ); }
+
 		if ( $images ) {
 			$style .= 'background-image:' . implode( ', ', $images ) . ';';
 			if ( $img_url ) {
@@ -1866,7 +1882,8 @@ if ( ! function_exists( 'sc_bg_pro_video_attr' ) ) :
 	 * @return array data-attr name => JSON string (or empty array).
 	 */
 	function sc_bg_pro_video_attr( $bgv ) {
-		if ( ! is_array( $bgv ) || fw_akg( 'video/enabled', $bgv, 'no' ) !== 'yes' ) {
+		// No enable toggle — the video is active whenever a source is set (checked below).
+		if ( ! is_array( $bgv ) ) {
 			return array();
 		}
 
@@ -1883,18 +1900,37 @@ if ( ! function_exists( 'sc_bg_pro_video_attr' ) ) :
 
 		if ( empty( $source ) ) { return array(); }
 
+		// A background video ALWAYS autoplays muted and inline — that's what makes it a
+		// *background*, and, crucially, browsers only autoplay video that is muted (an un-muted
+		// video is blocked for any visitor without a media-engagement history, i.e. essentially
+		// all real visitors). So mute + autoPlay are forced on with no Sound option. Looping is
+		// the one visitor-facing playback choice.
+		$loop = ( fw_akg( 'video/loop', $bgv, 'yes' ) !== 'no' );
 		$opts = array(
 			'source'   => $source,
-			'loop'     => ( fw_akg( 'video/loop',     $bgv, 'yes' ) === 'yes' ),
-			'autoPlay' => ( fw_akg( 'video/autoplay', $bgv, 'yes' ) === 'yes' ),
-			'mute'     => ( fw_akg( 'video/mute',     $bgv, 'yes' ) === 'yes' ),
+			'loop'     => $loop,
+			'autoPlay' => true,
+			'mute'     => true,
 		);
 
 		$data_name = ( function_exists( 'fw_ext' ) && version_compare( fw_ext( 'shortcodes' )->manifest->get_version(), '1.3.9', '>=' ) )
 			? 'data-background-options'
 			: 'data-wallpaper-options';
 
-		return array( $data_name => fw_htmlspecialchars( json_encode( $opts ) ) );
+		// Return RAW JSON — the consumer (section / flexbox view) prints it through
+		// fw_attr_to_html(), which HTML-encodes the attribute once. Pre-encoding here too
+		// double-escaped it ("&amp;quot;"), so the browser saw invalid JSON and the video
+		// never initialised.
+		$out = array( $data_name => json_encode( $opts ) );
+
+		// "Allow pause" → flag the wrapper so CSS re-enables pointer events on the video
+		// (visitors can click to pause). Off (default) → the video is decorative and ignores
+		// clicks, so no play/pause icon shows. See section styles.css .background-video rules.
+		if ( fw_akg( 'video/allow_interaction', $bgv, 'no' ) === 'yes' ) {
+			$out['data-bg-video-interactive'] = '1';
+		}
+
+		return $out;
 	}
 endif;
 

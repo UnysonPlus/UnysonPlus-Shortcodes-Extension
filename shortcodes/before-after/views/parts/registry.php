@@ -40,6 +40,10 @@ return array(
 		'label' => __( 'Minimal line', 'fw' ),
 		'thumb' => 'line.svg',
 	),
+	'invisible' => array(
+		'label' => __( 'Invisible — no line / handle', 'fw' ),
+		'thumb' => 'invisible.svg',
+	),
 	'labeled' => array(
 		'label'        => __( 'Labeled badges', 'fw' ),
 		'thumb'        => 'labeled.svg',

@@ -1,0 +1,24 @@
+/* =============================================================================
+ * Section-Background fill — shared runtime CSS.
+ * Any `.sc-bg-fill` element becomes a full-bleed backdrop of its host <section>;
+ * the JS marks the host `.sc-bg-host` (position:relative) and lifts its content.
+ * The element's OWN stylesheet handles filling its inner media (object-fit:cover).
+ * ========================================================================== */
+.sc-bg-host { position: relative; }
+
+.sc-bg-fill {
+	/* Layout-critical props are !important so the fill wins over the element's own
+	   base class (e.g. .fw-bac{position:relative}) regardless of stylesheet load
+	   order — the shared runtime CSS may enqueue before or after the element's. */
+	position: absolute !important;
+	inset: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	max-width: none !important;
+	margin: 0 !important;
+	z-index: 0;
+	overflow: hidden;
+	pointer-events: none; /* content stays interactive; a self-managing element
+	                          binds its own listeners to the host instead */
+}
+.sc-bg-fill img { width: 100%; height: 100%; object-fit: cover; display: block; }

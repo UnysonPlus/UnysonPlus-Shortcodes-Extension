@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="88" height="64" viewBox="0 0 88 64" fill="none">
+  <defs>
+    <radialGradient id="bacSpot" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#9aa7b4"/>
+      <stop offset="62%" stop-color="#9aa7b4"/>
+      <stop offset="100%" stop-color="#9aa7b4" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="bacFrame"><rect x="9" y="6" width="70" height="52" rx="4"/></clipPath>
+  </defs>
+  <rect width="88" height="64" rx="4" fill="#f5f7fa"/>
+  <g clip-path="url(#bacFrame)">
+    <rect x="9" y="6" width="70" height="52" fill="#cdd6df"/>
+    <circle cx="50" cy="33" r="21" fill="url(#bacSpot)"/>
+  </g>
+  <rect x="9" y="6" width="70" height="52" rx="4" fill="none" stroke="#cbd5e1" stroke-width="1.5"/>
+  <circle cx="50" cy="33" r="21" fill="none" stroke="#ffffff" stroke-width="1" stroke-opacity="0.7" stroke-dasharray="3 3"/>
+  <path d="M50 33l10 4-4 1-1 4z" fill="#ffffff" stroke="#5b6470" stroke-width="1" stroke-linejoin="round"/>
+</svg>

@@ -248,3 +248,43 @@
 	.fw-bac__handle,
 	.fw-bac--int-toggle .fw-bac__before { transition: none; }
 }
+
+/* =============================================================================
+ * SPOTLIGHT type — a cursor-following circular reveal (the Lithos effect).
+ * Reuses the two stacked layers: the top "before" layer gets an INVERSE radial
+ * mask so a soft hole under the pointer reveals the "after" layer beneath.
+ * scripts.js feeds --sr-x / --sr-y (px, relative to the media); --sr-r (radius)
+ * and --sr-in (inner transparent stop = 100% − softness) come from the options.
+ * ========================================================================== */
+.fw-bac--spotlight { --sr-x: 50%; --sr-y: 50%; }
+.fw-bac--spotlight .fw-bac__handle { display: none; }
+.fw-bac--spotlight .fw-bac__before {
+	clip-path: none; /* override the comparison clip */
+	-webkit-mask-image: radial-gradient(circle var(--sr-r, 240px) at var(--sr-x) var(--sr-y), transparent var(--sr-in, 45%), #000 100%);
+	        mask-image: radial-gradient(circle var(--sr-r, 240px) at var(--sr-x) var(--sr-y), transparent var(--sr-in, 45%), #000 100%);
+	-webkit-mask-repeat: no-repeat;
+	        mask-repeat: no-repeat;
+}
+/* Pointer away + no idle reveal → show the "before" fully (no hole). */
+.fw-bac--spotlight.is-away .fw-bac__before {
+	-webkit-mask-image: none;
+	        mask-image: none;
+}
+
+/* Invisible design — no visible divider line or handle. Great with the
+ * "Follow the cursor" interaction (and as a full-bleed background) for a clean,
+ * chrome-less wipe between the two images. The reveal still works (clip-path). */
+.fw-bac--design-invisible .fw-bac__handle { display: none; }
+
+/* Background mode: the shared `.sc-bg-fill` runtime (sc-bg-fill.css + sc-bg-fill.js)
+ * handles the full-bleed positioning + lifting the Section content. Here we only
+ * fill the element's own inner media so the images cover the Section. --------- */
+.fw-bac--bg .fw-bac__media {
+	height: 100%;
+	aspect-ratio: auto;
+	border-radius: 0;
+	background: none;
+}
+.fw-bac--bg .fw-bac__sizer { display: none; }
+.fw-bac--bg .fw-bac__layer { position: absolute; inset: 0; }
+.fw-bac--bg .fw-bac__layer img { height: 100%; }

@@ -36,7 +36,9 @@ if ( ! function_exists( '_fw_bac_enqueue_design_css' ) ) :
 			return;
 		}
 
-		$design = isset( $atts['design'] ) && is_string( $atts['design'] ) ? sanitize_file_name( $atts['design'] ) : '';
+		// `design` now lives under the Comparison type of the `type` multi-picker.
+		$design = fw_akg( 'type/comparison/design', $atts, isset( $atts['design'] ) ? $atts['design'] : '' );
+		$design = is_string( $design ) ? sanitize_file_name( $design ) : '';
 		if ( $design === '' ) {
 			return;
 		}

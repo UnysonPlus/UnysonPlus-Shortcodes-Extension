@@ -92,6 +92,19 @@ function sc_get_advanced_tab() {
                     ],
                     'show_borders' => false,
                 ],
+                'element_overflow' => [
+                    'type'    => 'select',
+                    'label'   => __( 'Overflow', 'fw' ),
+                    'desc'    => __( 'How content that spills outside this element is handled. "Hidden" clips it; "Auto" adds scrollbars only when needed; "Scroll" always shows them; "Clip" clips without a scroll container.', 'fw' ),
+                    'value'   => '',
+                    'choices' => [
+                        ''       => __( 'Default (visible)', 'fw' ),
+                        'hidden' => __( 'Hidden', 'fw' ),
+                        'auto'   => __( 'Auto (scroll if needed)', 'fw' ),
+                        'scroll' => __( 'Scroll', 'fw' ),
+                        'clip'   => __( 'Clip', 'fw' ),
+                    ],
+                ],
             ],
         ],
         'group_responsive' => [

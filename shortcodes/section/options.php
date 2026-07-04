@@ -106,6 +106,38 @@ $section_valign_pick = function ( $uri, $label ) {
 	);
 };
 
+// Shape-divider sub-fields, revealed by the Top/Bottom shape picker for any shape but "None".
+$divider_fields = [
+	'color'  => sc_color_field_compact( [ 'label' => __( 'Color', 'fw' ), 'kind' => 'bg' ] ),
+	'height' => [
+		'type'  => 'unit-input',
+		'label' => __( 'Height', 'fw' ),
+		'desc'  => __( 'Height of the divider band.', 'fw' ),
+		'units' => [ 'px', 'vh', '%' ],
+		'value' => [ 'value' => '100', 'unit' => 'px' ],
+	],
+	'flip'   => [
+		'type'         => 'switch',
+		'label'        => __( 'Flip Horizontally', 'fw' ),
+		'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+		'left-choice'  => [ 'value' => 'no',  'label' => __( 'No', 'fw' ) ],
+		'value'        => 'no',
+	],
+];
+$divider_shapes = [
+	'none'     => __( 'None', 'fw' ),
+	'tilt'     => __( 'Tilt', 'fw' ),
+	'curve'    => __( 'Curve', 'fw' ),
+	'wave'     => __( 'Wave', 'fw' ),
+	'triangle' => __( 'Triangle', 'fw' ),
+];
+$divider_reveal = [
+	'tilt'     => $divider_fields,
+	'curve'    => $divider_fields,
+	'wave'     => $divider_fields,
+	'triangle' => $divider_fields,
+];
+
 $options = [
 	'tab_layout' => [
 		'title'   => __( 'Layout', 'fw' ),
@@ -228,6 +260,43 @@ $options = [
 						'label' => __( 'Background', 'fw' ),
 						'desc'  => __( 'Color, gradient, image and video background layers (they stack: image over gradient over color). Replaces the old separate Background Color / Image / Video fields — existing sections are migrated automatically.', 'fw' ),
 						'help'  => __( 'Image attachment "Fixed" gives a parallax effect. Video renders a muted, looping background via the section\'s video player; set a poster/fallback image for while it loads or where autoplay is blocked.', 'fw' ),
+					],
+				],
+			],
+			'group_dividers' => [
+				'type'    => 'group',
+				'options' => [
+					'divider_top' => [
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'value'        => [ 'shape' => 'none' ],
+						'picker'       => [
+							'shape' => [
+								'type'    => 'select',
+								'label'   => __( 'Top Shape Divider', 'fw' ),
+								'desc'    => __( 'A shaped SVG edge at the TOP of the section — pick a shape and its Color / Height / Flip appear.', 'fw' ),
+								'choices' => $divider_shapes,
+							],
+						],
+						'choices'      => $divider_reveal,
+						'show_borders' => false,
+					],
+					'divider_bottom' => [
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'value'        => [ 'shape' => 'none' ],
+						'picker'       => [
+							'shape' => [
+								'type'    => 'select',
+								'label'   => __( 'Bottom Shape Divider', 'fw' ),
+								'desc'    => __( 'A shaped SVG edge at the BOTTOM of the section.', 'fw' ),
+								'choices' => $divider_shapes,
+							],
+						],
+						'choices'      => $divider_reveal,
+						'show_borders' => false,
 					],
 				],
 			],

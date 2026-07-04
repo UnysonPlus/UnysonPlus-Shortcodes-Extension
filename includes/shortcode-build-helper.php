@@ -196,6 +196,12 @@ function sc_build_wrapper_attr( $atts ) {
         $attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . ';' : '' ) . $pos_style;
     }
 
+    // Overflow (shared Advanced tab → element_overflow) → inline style, value whitelisted.
+    $ov = isset( $atts['element_overflow'] ) ? (string) $atts['element_overflow'] : '';
+    if ( in_array( $ov, array( 'hidden', 'auto', 'scroll', 'clip' ), true ) ) {
+        $attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . ';' : '' ) . 'overflow:' . $ov . ';';
+    }
+
     // Add class attribute if classes exist (de-duplicated — e.g. a base_class of
     // "heading" plus a user/converter css_class of "heading" collapse to one token).
     if ( ! empty( $classes ) ) {

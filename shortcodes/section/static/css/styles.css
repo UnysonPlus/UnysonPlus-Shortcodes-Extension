@@ -1,6 +1,34 @@
+/* Lift the section's content above the Formstone background layer. Formstone inserts
+   .fs-background-container as position:absolute; z-index:0, so it stacks OVER the section's
+   static content and hides it. The content containers are direct children of the
+   .background-video <section>, so give them position:relative + z-index:1 to sit on top.
+   (The legacy .fw-main-row variant is kept for any older markup still carrying that class.) */
+.background-video > .fw-container,
+.background-video > .fw-container-fluid,
 .fw-main-row.background-video .fw-container,
 .fw-main-row.background-video .fw-container-fluid {
+	position: relative;
 	z-index: 1;
+}
+
+/* Background video is decorative by default: swallow pointer events on the media
+   (and the Formstone embed click-shield) so an embedded YouTube/Vimeo player never
+   shows a play/pause icon or steals clicks. "Allow pause" adds
+   [data-bg-video-interactive], which re-enables clicks so visitors can pause it. */
+.background-video .fs-background-media,
+.background-video .fs-background-media iframe,
+.background-video .fs-background-media video {
+	pointer-events: none;
+}
+.background-video[data-bg-video-interactive] .fs-background-media,
+.background-video[data-bg-video-interactive] .fs-background-media iframe,
+.background-video[data-bg-video-interactive] .fs-background-media video {
+	pointer-events: auto;
+}
+/* When interaction is allowed, drop Formstone's transparent click-shield so the
+   click reaches the player (clicking an embedded video toggles play/pause). */
+.background-video[data-bg-video-interactive] .fs-background-embed.fs-background-ready:after {
+	pointer-events: none;
 }
 
 .section--alt {
@@ -97,6 +125,36 @@
 	.section--rev-mobile .fw-row {
 		flex-direction: column-reverse;
 	}
+}
+
+/* Shape Dividers — an SVG-shaped edge at the section's top and/or bottom. The band is
+   absolutely positioned and clipped; the SVG stretches to fill it (preserveAspectRatio
+   none). Section content is lifted above the divider so it never sits under the shape. */
+.section--has-divider { position: relative; }
+
+.sc-shape-divider {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	line-height: 0;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.sc-shape-divider--top    { top: 0; }
+.sc-shape-divider--bottom { bottom: 0; }
+
+.sc-shape-divider svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.section--has-divider > .fw-container,
+.section--has-divider > .fw-container-fluid {
+	position: relative;
+	z-index: 2;
 }
 
 /* Bleed layout moved to its own `bleed-section` shortcode. */

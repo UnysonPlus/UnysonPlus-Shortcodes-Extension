@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.8.96';
+$manifest['version']     = '1.10.2';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,46 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.10.2 - Reusable "Use as Section Background" helper + Before/After gains it for
+ *          BOTH types plus an Invisible design. New shared helper
+ *          includes/shortcode-background-helper.php exposes sc_section_background_field()
+ *          (a drop-in Yes/No option), sc_section_background_use() (flags the page) and a
+ *          wp_footer/priority-5 on-demand enqueue of the shared runtime
+ *          static/js/sc-bg-fill.js + static/css/sc-bg-fill.css: window.scBgFill(el) turns
+ *          any element carrying `.sc-bg-fill` into a full-bleed backdrop of its nearest
+ *          <section> (moved in as the first child, inset:0) and lifts the Section's own
+ *          content above it — so any image-type shortcode can become a Section background
+ *          in one line. Before/After now uses this: the background toggle moved to the
+ *          Design tab and works for the Comparison slider as well as Spotlight, and a new
+ *          "Invisible" design hides the divider line + handle for a chrome-less wipe that
+ *          pairs with the Follow-the-cursor interaction (a hero whose backdrop wipes under
+ *          the cursor). Comparison background mode binds its interaction to the whole
+ *          Section. No migration (dev-stage element).
+ *
+ * 1.9.8 - Before / After: new "Spotlight" type. The element now has a TYPE inline
+ *         image-picker multi-picker (Design tab) — "Comparison" (the classic slider,
+ *         default) or "Spotlight", a cursor-following circular reveal (the Lithos
+ *         effect): the top "before" layer carries a soft inverse radial mask so a
+ *         circular hole under the pointer reveals the "after" beneath. Options: radius,
+ *         edge softness, smooth follow (rAF lerp) and idle reveal. Spotlight can also
+ *         FILL its Section as a background (Use as Section Background) — the element is
+ *         moved to be the Section/row's backdrop (absolute, inset:0) and the Section's
+ *         own content is lifted on top, mirroring the Animated Backgrounds host pattern.
+ *         Comparison/Spotlight options are nested under type/<type>/... ; view.php
+ *         dispatches to sc_bac_render_comparison / sc_bac_render_spotlight. No migration
+ *         (the shortcode had no live usage).
+ *
+ * 1.8.97 - More Section / Column options. (1) OVERFLOW on the shared Advanced tab (every element):
+ *          Default / Hidden / Auto / Scroll / Clip, applied by sc_build_wrapper_attr() as a
+ *          whitelisted inline style — pairs with the Position control (clip decorative overflow,
+ *          contain absolute children). (2) SHAPE DIVIDERS on the Section (Styling tab): an SVG-shaped
+ *          edge at the top and/or bottom — Tilt / Curve / Wave / Triangle, each with Color (preset or
+ *          custom), Height and Flip, revealed by a per-edge shape multi-picker. Rendered as an
+ *          absolutely-positioned, clipped SVG band (preserveAspectRatio none), with the section
+ *          content lifted above it; the top divider is the shape rotated 180deg. (3) The Column's
+ *          Mobile Order now kicks in below 768px (was 576px) to match the new Column / Content Order
+ *          reverse — via fw-order-md-0 instead of fw-order-sm-0.
+ *
  * 1.8.96 - Column gains a "Content Order" control (Layout tab) — the element-level counterpart to the
  *          Section's Column Order, with the same three responsive levels: Reversed (all screens),
  *          Reversed on tablet and mobile (<992px), and Reversed on mobile only (<768px). Shows the

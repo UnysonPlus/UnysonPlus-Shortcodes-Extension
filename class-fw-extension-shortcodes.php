@@ -87,6 +87,11 @@ class FW_Extension_Shortcodes extends FW_Extension
 		// Resolve Dynamic Content {{tokens}} in shortcode/page-builder atts at render time.
 		require_once dirname( __FILE__ ) . '/includes/dynamic-content-resolver.php';
 
+		// Reusable "Use as Section Background" helper (option field + on-demand
+		// runtime that makes any element a full-bleed Section backdrop). Registers
+		// its own wp_footer enqueue, so require it on every request.
+		require_once dirname( __FILE__ ) . '/includes/shortcode-background-helper.php';
+
 		// WYSIWYG editor enhancements (the "List style" toolbar button + its front-end
 		// CSS). Instantiated always — the front-end style enqueue runs outside admin.
 		require_once dirname( __FILE__ ) . '/includes/class-fw-shortcodes-editor.php';

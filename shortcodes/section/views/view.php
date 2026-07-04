@@ -117,6 +117,51 @@ $container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] )
 // .fw-container (that would nest them). Sections without a Container keep the original markup.
 $has_inner_containers = ! empty( $atts['has_inner_containers'] );
 
+// --- Shape Dividers (top / bottom) — an SVG-shaped edge at the section's top and/or bottom. ---
+$divider_paths = array(
+	'tilt'     => 'M1200 120L0 16.48 0 0 1200 0 1200 120z',
+	'curve'    => 'M600 112.77C268.63 112.77 0 65.52 0 7.23V120h1200V7.23c0 58.29-268.63 105.54-600 105.54z',
+	'wave'     => 'M0 0v46.29c47.79 22.2 103.59 32.17 158 28 70.36-5.37 136.33-33.31 206.8-37.5 73.84-4.36 147.54 16.88 218.2 35.26 69.27 18 138.3 24.88 209.4 13.08 36.15-6 69.85-17.84 104.45-29.34C989.49 25 1113-14.29 1200 52.47V0z',
+	'triangle' => 'M1200 0L0 0 598.97 114.72 1200 0z',
+);
+$divider_color = function ( $cval ) {
+	// sc_color_field_compact value {predefined:'bg-slug', custom:'#hex'} → a safe CSS colour.
+	$cval   = is_array( $cval ) ? $cval : array();
+	$custom = isset( $cval['custom'] ) ? trim( (string) $cval['custom'] ) : '';
+	if ( $custom !== '' && preg_match( '/^(#[0-9a-fA-F]{3,8}|rgba?\([0-9.,%\s]+\))$/', $custom ) ) { return $custom; }
+	$pre = isset( $cval['predefined'] ) ? trim( (string) $cval['predefined'] ) : '';
+	if ( $pre !== '' ) {
+		$slug = preg_replace( '/[^a-z0-9_-]/i', '', preg_replace( '/^(?:bg|text)-/', '', $pre ) );
+		if ( $slug !== '' ) { return 'var(--color-' . $slug . ')'; }
+	}
+	return '#ffffff';
+};
+$divider_html = function ( $dv, $placement ) use ( $divider_paths, $divider_color ) {
+	if ( ! is_array( $dv ) ) { return ''; }
+	$shape = isset( $dv['shape'] ) ? (string) $dv['shape'] : 'none';
+	if ( ! isset( $divider_paths[ $shape ] ) ) { return ''; }
+	$sub   = ( isset( $dv[ $shape ] ) && is_array( $dv[ $shape ] ) ) ? $dv[ $shape ] : array();
+	$color = $divider_color( isset( $sub['color'] ) ? $sub['color'] : array() );
+	$h     = '100px';
+	if ( isset( $sub['height'] ) && is_array( $sub['height'] ) ) {
+		$num  = isset( $sub['height']['value'] ) ? trim( (string) $sub['height']['value'] ) : '';
+		$unit = ( isset( $sub['height']['unit'] ) && in_array( $sub['height']['unit'], array( 'px', 'vh', '%' ), true ) ) ? $sub['height']['unit'] : 'px';
+		if ( $num !== '' && is_numeric( $num ) ) { $h = $num . $unit; }
+	}
+	$flip = ( isset( $sub['flip'] ) && $sub['flip'] === 'yes' );
+	// Top divider = the shape rotated 180° so it reads at the top edge; flip mirrors it.
+	$tf    = ( $placement === 'top' ? 'rotate(180deg)' : '' ) . ( $flip ? ' scaleX(-1)' : '' );
+	$style = 'height:' . $h . ';' . ( trim( $tf ) !== '' ? 'transform:' . trim( $tf ) . ';' : '' );
+	return '<div class="sc-shape-divider sc-shape-divider--' . esc_attr( $placement ) . '" style="' . esc_attr( $style ) . '" aria-hidden="true">'
+		. '<svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:' . esc_attr( $color ) . '"><path d="' . esc_attr( $divider_paths[ $shape ] ) . '"></path></svg>'
+		. '</div>';
+};
+$divider_top_html    = $divider_html( isset( $atts['divider_top'] ) ? $atts['divider_top'] : array(), 'top' );
+$divider_bottom_html = $divider_html( isset( $atts['divider_bottom'] ) ? $atts['divider_bottom'] : array(), 'bottom' );
+if ( $divider_top_html !== '' || $divider_bottom_html !== '' ) {
+	$section_extra_classes .= ' section--has-divider';
+}
+
 $attr = sc_build_wrapper_attr( $atts );
 
 if ( ! empty( $section_style ) ) {
@@ -132,6 +177,10 @@ if ( ! empty( $section_extra_classes ) ) {
 }
 ?>
 <section <?php echo fw_attr_to_html( $attr ); ?>>
+<?php
+	echo $divider_top_html;    // phpcs:ignore WordPress.Security.EscapeOutput — built + value-sanitized above
+	echo $divider_bottom_html; // phpcs:ignore WordPress.Security.EscapeOutput
+?>
 <?php if ( $has_inner_containers ) : // content is already a set of .fw-container[-fluid] sibling bands ?>
 	<?php echo do_shortcode( $content ); ?>
 <?php else : ?>
