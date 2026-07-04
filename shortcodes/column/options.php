@@ -553,6 +553,18 @@ $options = array(
                         'value'   => 'column',
                         'choices' => $direction_choices,
                     ],
+                    'content_order' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Content Order', 'fw' ),
+                        'desc'    => __( 'Show this column\'s elements in reverse order without changing the markup. It flips the stack (Stacked direction) or swaps the row (Inline direction). "On mobile only" reverses just on phones — handy for e.g. an image above the text on mobile without splitting them into separate columns.', 'fw' ),
+                        'value'   => '',
+                        'choices' => array(
+                            ''       => __( 'Default', 'fw' ),
+                            'all'    => __( 'Reversed (all screens)', 'fw' ),
+                            'tablet' => __( 'Reversed on tablet and mobile', 'fw' ),
+                            'mobile' => __( 'Reversed on mobile only', 'fw' ),
+                        ),
+                    ],
                     'content_h' => [
                         'type'    => 'image-picker',
                         'label'   => __( 'Content Alignment', 'fw' ),

@@ -130,6 +130,9 @@ $content_v = (string) fw_akg( 'content_v', $atts, '' );
 $content_h = (string) fw_akg( 'content_h', $atts, '' );
 $direction = (string) fw_akg( 'content_direction', $atts, 'column' );
 $is_row    = ( $direction === 'row' );
+// Content Order — reverse the elements. Adapts to the direction below.
+$content_order = (string) fw_akg( 'content_order', $atts, '' );
+$order_ok      = in_array( $content_order, array( 'all', 'tablet', 'mobile' ), true );
 // Cross-axis values (align-items) accept only start/center/end; main-axis values
 // (justify-content) additionally accept the distribute set (between/around/evenly).
 $cv_ok      = in_array( $content_v, array( 'start','center','end','between','around','evenly' ), true ); // content_v on main axis (column)
@@ -144,9 +147,25 @@ $gap_ok   = ( $gap_slug !== '' );
 
 $content_align_tokens = array();
 $content_align_style  = '';
-if ( $cv_ok || $ch_main || $is_row || $gap_ok ) {
+if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok ) {
     $content_align_tokens[] = 'd-flex';
-    $content_align_tokens[] = $is_row ? 'flex-row' : 'flex-column';
+
+    // Direction + Content Order (reverse). Reverse adapts to the direction — inline →
+    // row-reverse, stacked → column-reverse. "mobile" reverses only <768px: the base
+    // -reverse class applies everywhere, then flex-md-{dir} resets it at md+ (>=768px).
+    $dir = $is_row ? 'row' : 'column';
+    if ( $content_order === 'all' ) {
+        $content_align_tokens[] = 'flex-' . $dir . '-reverse';
+    } elseif ( $content_order === 'tablet' ) {
+        $content_align_tokens[] = 'flex-' . $dir . '-reverse';
+        $content_align_tokens[] = 'flex-lg-' . $dir; // reset to normal at >=992px (desktop)
+    } elseif ( $content_order === 'mobile' ) {
+        $content_align_tokens[] = 'flex-' . $dir . '-reverse';
+        $content_align_tokens[] = 'flex-md-' . $dir; // reset to normal at >=768px (tablet up)
+    } else {
+        $content_align_tokens[] = 'flex-' . $dir;
+    }
+
     if ( $is_row ) { $content_align_tokens[] = 'flex-wrap'; }
 
     // Axis-aware mapping: a row swaps the flex axes, so "Content Alignment"
@@ -156,13 +175,31 @@ if ( $cv_ok || $ch_main || $is_row || $gap_ok ) {
     // The distribute values (between/around/evenly) exist only on the main axis
     // (justify-content), so they're ignored whenever an alignment lands on the
     // cross axis (align-items), which has no space-* values.
+    // Justify-content on the MAIN axis, compensated for a reversed order so the content
+    // KEEPS its position: reversing flips the main axis, so start<->end must swap to look
+    // the same (center + the distribute values are symmetric). "all" flips at every width;
+    // the responsive levels flip below their breakpoint and restore it above (justify-md/lg-*).
+    $main_justify = function ( $val, $has ) use ( $content_order, $order_ok ) {
+        $flip = array( 'start' => 'end', 'end' => 'start' );
+        $v    = $has ? $val : 'start'; // default alignment reads as start (left / top)
+        if ( ! $order_ok ) {
+            return $has ? array( 'justify-content-' . $v ) : array();
+        }
+        $f = isset( $flip[ $v ] ) ? $flip[ $v ] : $v;
+        if ( $content_order === 'all' ) {
+            return array( 'justify-content-' . $f );
+        }
+        $bp = ( $content_order === 'tablet' ) ? 'lg' : 'md';
+        return array( 'justify-content-' . $f, 'justify-content-' . $bp . '-' . $v );
+    };
+
     if ( $is_row ) {
-        if ( $ch_main ) { $content_align_tokens[] = 'justify-content-' . $content_h; }
+        $content_align_tokens = array_merge( $content_align_tokens, $main_justify( $content_h, $ch_main ) );
         if ( in_array( $content_v, array( 'start','center','end' ), true ) ) {
             $content_align_tokens[] = 'align-items-' . $content_v;
         }
     } else {
-        if ( $cv_ok ) { $content_align_tokens[] = 'justify-content-' . $content_v; }
+        $content_align_tokens = array_merge( $content_align_tokens, $main_justify( $content_v, $cv_ok ) );
         if ( $ch_cross ) { $content_align_tokens[] = 'align-items-' . $content_h; }
     }
 

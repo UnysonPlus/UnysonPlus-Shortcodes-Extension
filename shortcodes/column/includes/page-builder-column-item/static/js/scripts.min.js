@@ -230,14 +230,30 @@
 				var jc = isRow ? justifyMap[ atts.content_h ] : justifyMap[ atts.content_v ];
 				var ai = isRow ? alignMap[ atts.content_v ]   : alignMap[ atts.content_h ];
 
+				// Content Order = reverse. "all" reverses always; "tablet" in tablet + phone
+				// preview; "mobile" only in phone preview (applyLayoutPreview re-runs on the
+				// device toggle). Direction-aware: inline → row-reverse, stacked → column-reverse.
+				var order   = atts.content_order || '';
+				var dev     = window.fwPbDevice;
+				var reverse = ( order === 'all' )
+					|| ( order === 'tablet' && dev !== 'lg' )
+					|| ( order === 'mobile' && dev === 'sm' );
+
+				// When reversed, flip the main-axis justify (default reads as flex-start) so the
+				// content keeps its position — mirrors the frontend's justify compensation.
+				if ( reverse ) {
+					var effJc = jc || 'flex-start';
+					jc = ( effJc === 'flex-start' ) ? 'flex-end' : ( effJc === 'flex-end' ) ? 'flex-start' : effJc;
+				}
+
 				if ( isRow ) {
 					// Clear any stale column inline-flex (from a previous Stacked state) so the
-					// sc-col-inline row CSS wins; layer the chosen justify/align on top.
-					$items.css({ 'display': '', 'flex-direction': '', 'justify-content': jc || '', 'align-items': ai || '' });
-				} else if ( ( jc || ai ) && ! hasChildColumn ) {
+					// sc-col-inline row CSS wins; override only the direction for reverse.
+					$items.css({ 'display': '', 'flex-direction': reverse ? 'row-reverse' : '', 'justify-content': jc || '', 'align-items': ai || '' });
+				} else if ( ( jc || ai || reverse ) && ! hasChildColumn ) {
 					$items.css({
 						'display': 'flex',
-						'flex-direction': 'column',
+						'flex-direction': reverse ? 'column-reverse' : 'column',
 						'justify-content': jc || '',
 						'align-items': ai || ''
 					});

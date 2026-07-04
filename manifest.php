@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.8.93';
+$manifest['version']     = '1.8.96';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,19 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.8.96 - Column gains a "Content Order" control (Layout tab) — the element-level counterpart to the
+ *          Section's Column Order, with the same three responsive levels: Reversed (all screens),
+ *          Reversed on tablet and mobile (<992px), and Reversed on mobile only (<768px). Shows the
+ *          column's own elements in reverse order without changing the markup, adapting to Content
+ *          Direction: Stacked → column-reverse, Inline → row-reverse. Emitted with the grid's own
+ *          Bootstrap flex utilities — the base -reverse class plus a flex-lg-* (tablet) or flex-md-*
+ *          (mobile) reset. Crucially, reversing KEEPS the content's alignment: because reverse flips
+ *          the main axis, the justify-content is compensated (start<->end swapped, per breakpoint) so
+ *          e.g. left-aligned inline content stays left instead of jumping to the right — it only
+ *          changes the order, not the position. Reflected live on the builder canvas, device-aware.
+ *          Handy for e.g. an image above the text on mobile without splitting the elements into
+ *          separate columns.
+ *
  * 1.8.93 - Section gains a "Column Order" control (Layout tab) — show the columns in reverse order
  *          without changing the markup. Three responsive levels: Reversed (all screens), Reversed on
  *          tablet and mobile (<992px), and Reversed on mobile only (<768px). Where columns sit side by
