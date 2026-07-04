@@ -73,4 +73,30 @@
 	flex: 1 1 auto;
 }
 
+/* Column Order = reverse. Where columns sit side by side, row-reverse swaps them;
+   where they stack full-width on phones, column-reverse flips the stack (e.g. image
+   above text). Three levels: all screens / tablet & mobile (<992px) / mobile (<768px). */
+.section--rev .row,
+.section--rev .fw-row {
+	flex-direction: row-reverse;
+}
+
+@media (max-width: 991.98px) {
+	.section--rev-tablet .row,
+	.section--rev-tablet .fw-row {
+		flex-direction: row-reverse;
+	}
+}
+
+@media (max-width: 767.98px) {
+	.section--rev .row,
+	.section--rev .fw-row,
+	.section--rev-tablet .row,
+	.section--rev-tablet .fw-row,
+	.section--rev-mobile .row,
+	.section--rev-mobile .fw-row {
+		flex-direction: column-reverse;
+	}
+}
+
 /* Bleed layout moved to its own `bleed-section` shortcode. */

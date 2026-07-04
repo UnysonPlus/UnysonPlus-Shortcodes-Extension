@@ -99,13 +99,22 @@
 				// column row. Default (left) needs no class. render() re-runs on every
 				// atts change (ItemView listens to model 'change'), so this stays live.
 				{
-					var atts   = this.model.get('atts') || {},
-						halign = atts.column_halign ? String(atts.column_halign) : '';
+					var atts    = this.model.get('atts') || {},
+						halign  = atts.column_halign ? String(atts.column_halign) : '',
+						reverse = atts.reverse_columns ? String(atts.reverse_columns) : '';
 
-					this.$el.removeClass('section--cols-center section--cols-right section--cols-between section--cols-around section--cols-evenly');
+					this.$el.removeClass('section--cols-center section--cols-right section--cols-between section--cols-around section--cols-evenly section--rev section--rev-tablet section--rev-mobile');
 
 					if (['center', 'right', 'between', 'around', 'evenly'].indexOf(halign) !== -1) {
 						this.$el.addClass('section--cols-' + halign);
+					}
+
+					// Reflect Column Order on the canvas. device-preview.css keys off the
+					// builder root's .fw-device-{lg|md|sm} class to apply the actual reverse per
+					// preview mode (the CSS @media rules can't fire — the canvas isn't resized to
+					// the real viewport), matching the frontend's per-breakpoint behaviour.
+					if (['all', 'tablet', 'mobile'].indexOf(reverse) !== -1) {
+						this.$el.addClass(reverse === 'all' ? 'section--rev' : 'section--rev-' + reverse);
 					}
 				}
 

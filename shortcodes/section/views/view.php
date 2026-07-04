@@ -95,6 +95,18 @@ if ( in_array( $halign, array( 'center', 'right', 'between', 'around', 'evenly' 
 	$section_extra_classes .= ' section--cols-' . $halign;
 }
 
+// Reverse column order (id: reverse_columns) → modifier class on this section's row(s).
+// "all" swaps side-by-side columns (row-reverse) and reverses the mobile stack;
+// "mobile" only reverses the stack when the columns stack on phones.
+$reverse = isset( $atts['reverse_columns'] ) ? (string) $atts['reverse_columns'] : '';
+if ( $reverse === 'all' ) {
+	$section_extra_classes .= ' section--rev';
+} elseif ( $reverse === 'tablet' ) {
+	$section_extra_classes .= ' section--rev-tablet';
+} elseif ( $reverse === 'mobile' ) {
+	$section_extra_classes .= ' section--rev-mobile';
+}
+
 $container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] )
 	? 'fw-container-fluid'
 	: 'fw-container';

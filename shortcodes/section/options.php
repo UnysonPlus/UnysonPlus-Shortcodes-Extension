@@ -199,6 +199,18 @@ $options = [
 							'bottom'  => $section_valign_pick( $section_valign_uri( 'bottom', __( 'Bottom', 'fw' ) ), __( 'Bottom', 'fw' ) ),
 						],
 					],
+					'reverse_columns' => [
+						'type'    => 'select',
+						'label'   => __( 'Column Order', 'fw' ),
+						'desc'    => __( 'Show the columns in reverse order (last column first) without changing the markup. Pick which screens to reverse on. On phones — where the columns stack — it flips the stacked order, so you can e.g. put an image above the text on mobile.', 'fw' ),
+						'value'   => '',
+						'choices' => [
+							''       => __( 'Default', 'fw' ),
+							'all'    => __( 'Reversed (all screens)', 'fw' ),
+							'tablet' => __( 'Reversed on tablet and mobile', 'fw' ),
+							'mobile' => __( 'Reversed on mobile only', 'fw' ),
+						],
+					],
 				],
 			],
 		],

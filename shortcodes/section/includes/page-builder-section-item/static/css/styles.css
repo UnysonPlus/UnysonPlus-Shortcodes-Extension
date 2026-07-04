@@ -70,3 +70,24 @@
 .pb-item-type-column.section--canvas-va-top     > .builder-items.fw-pb-flex-row { align-items: flex-start; }
 .pb-item-type-column.section--canvas-va-center  > .builder-items.fw-pb-flex-row { align-items: center; }
 .pb-item-type-column.section--canvas-va-bottom  > .builder-items.fw-pb-flex-row { align-items: flex-end; }
+
+/* Column Order = reverse — canvas preview keyed to the builder's device toggle
+   (.fw-device-{lg|md|sm} on the builder root), because the frontend @media rules can't
+   fire in the un-resized canvas. "Reversed (all screens)" swaps at any preview width;
+   the responsive levels swap only at their matching preview. In phone preview the
+   columns stack, so we flip the stack with column-reverse — mirroring the front end. */
+.builder-item.section--rev > .pb-item-type-column > .builder-items.fw-pb-flex-row {
+	flex-direction: row-reverse; /* all screens — swap at any width */
+}
+
+/* Tablet & mobile — swap only in tablet (md) preview. */
+.fw-device-md .builder-item.section--rev-tablet > .pb-item-type-column > .builder-items.fw-pb-flex-row {
+	flex-direction: row-reverse;
+}
+
+/* Phone preview — flip the stacked order for every reverse level. */
+.fw-device-sm .builder-item.section--rev > .pb-item-type-column > .builder-items.fw-pb-flex-row,
+.fw-device-sm .builder-item.section--rev-tablet > .pb-item-type-column > .builder-items.fw-pb-flex-row,
+.fw-device-sm .builder-item.section--rev-mobile > .pb-item-type-column > .builder-items.fw-pb-flex-row {
+	flex-direction: column-reverse;
+}

@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.8.91';
+$manifest['version']     = '1.8.93';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,16 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.8.93 - Section gains a "Column Order" control (Layout tab) — show the columns in reverse order
+ *          without changing the markup. Three responsive levels: Reversed (all screens), Reversed on
+ *          tablet and mobile (<992px), and Reversed on mobile only (<768px). Where columns sit side by
+ *          side it swaps them (row-reverse); where they stack full-width on phones it flips the stack
+ *          (column-reverse) — the classic image-above-text-on-mobile pattern, previously only possible
+ *          with a Flexbox. Routed through .section--rev / .section--rev-tablet / .section--rev-mobile
+ *          row rules, and reflected live on the builder canvas at every level — keyed to the builder's
+ *          device-preview toggle (Desktop / Tablet / Phone), since the frontend @media rules can't
+ *          fire in the un-resized canvas.
+ *
  * 1.8.88 - Section Min Height now previews live on the builder canvas (WYSIWYG). Picking Full
  *          Viewport (100vh), one of the vh presets, or a Custom height makes the section item show
  *          that real height while editing, instead of only applying on the front end — the canvas
