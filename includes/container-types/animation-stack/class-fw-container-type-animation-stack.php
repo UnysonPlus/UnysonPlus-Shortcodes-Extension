@@ -245,6 +245,10 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			'scroll_reveal' => '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M12 4.5v15" stroke-dasharray="2 2"/><path d="M3.5 4.5h8.5v15H3.5z" fill="currentColor" stroke="none" opacity="0.28"/>',
 			// 3D Flip Card — a card with a flip arc.
 			'flip_card' => '<rect x="4.5" y="4" width="15" height="12" rx="2"/><path d="M6.5 19a5.5 2.6 0 0 0 11 0"/><path d="M15.6 17.4l2 1.6-2.2 1.1"/>',
+			// Scroll Text Highlight — text lines with a highlighted first line.
+			'scroll_text_highlight' => '<rect x="3.4" y="5.8" width="8" height="3.4" rx="1" fill="currentColor" stroke="none" opacity="0.25"/><path d="M4.2 7.5h6.8"/><path d="M4 12h14"/><path d="M4 16.5h9"/>',
+			// Scroll Color Shift — a screen whose upper band is tinted (colour morph).
+			'scroll_color_shift' => '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="4.6" y="4.6" width="14.8" height="7" rx="1.6" fill="currentColor" stroke="none" opacity="0.26"/><path d="M4 12h16"/>',
 			'_default'    => '<circle cx="12" cy="12" r="8.5"/><path d="M9 12h6M12 9v6"/>',
 		);
 		$inner = isset( $paths[ $fid ] ) ? $paths[ $fid ] : $paths['_default'];
