@@ -7,7 +7,9 @@
  * in the same visual language as the Section / Column alignment glyphs: a blue
  * (#2271b1) container with white (#fff, #dcdcde hairline) item boxes positioned
  * to show the chosen flex behavior. Gap uses the site-wide spacing presets
- * (sc_get_gap_select_choices). Width sits directly under HTML Tag.
+ * (sc_get_gap_select_choices). Layout options are split into two role groups:
+ * Container (how it arranges its children) and Placement (how it sits inside a
+ * parent Flexbox).
  */
 
 $fx_rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
@@ -143,231 +145,253 @@ $fx_alignself_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
 	return $fx_glyph( $svg, $label, $w, $icon_h );
 };
 
-// 1/12 … 12/12 reduced to lowest terms (6/12 → 1/2, 8/12 → 2/3, …) — the labels
-// users see. $first = the leading "None/Inherit" choice. Keys stay 1…12. Pass
-// $with_custom = true to append a "Custom…" choice (reveals a % input).
-$fx_col_choices = function ( $first_key, $first_label, $with_custom = false ) {
-	$reduced = array(
-		'1' => '1/12', '2' => '1/6',  '3' => '1/4', '4' => '1/3',  '5' => '5/12', '6' => '1/2',
-		'7' => '7/12', '8' => '2/3',  '9' => '3/4', '10' => '5/6', '11' => '11/12', '12' => '1/1 (full)',
-	);
-	$out = array( $first_key => $first_label ) + $reduced;
-	if ( $with_custom ) { $out['custom'] = __( 'Custom…', 'fw' ); }
-	return $out;
+// Fraction-bar thumbnails for the responsive Width Override popover (mirrors the
+// Column's width tiles): the chosen portion is one blue bar, the remainder split
+// into gray bars. 'none' (Auto / inherit) = a faint full bar; 'custom' = a dashed bar.
+$fx_width_bar = function ( $cells_on, $mode, $label ) {
+	$track = 60; $pad = 4; $W = $track + 2 * $pad; $gap = 2; $barH = 24; $H = $pad + $barH + 14;
+	$blue = '#2271b1'; $gray = '#9b9b9b';
+	$reduce = array( 1 => array( 1, 12 ), 2 => array( 1, 6 ), 3 => array( 1, 4 ), 4 => array( 1, 3 ),
+		5 => array( 5, 12 ), 6 => array( 1, 2 ), 7 => array( 7, 12 ), 8 => array( 2, 3 ),
+		9 => array( 3, 4 ), 10 => array( 5, 6 ), 11 => array( 11, 12 ), 12 => array( 1, 1 ) );
+	$rects = '<rect x="0" y="0" width="' . $W . '" height="' . $H . '" fill="#ffffff"/>';
+	if ( $mode === 'none' ) {
+		$rects .= '<rect x="' . $pad . '" y="' . $pad . '" width="' . $track . '" height="' . $barH . '" fill="#eef0f1" shape-rendering="crispEdges"/>';
+	} elseif ( $mode === 'custom' ) {
+		$rects .= '<rect x="' . $pad . '" y="' . $pad . '" width="' . $track . '" height="' . $barH . '" fill="#ffffff" stroke="#2271b1" stroke-dasharray="3 2" shape-rendering="crispEdges"/>';
+	} else {
+		list( $n, $d ) = isset( $reduce[ $cells_on ] ) ? $reduce[ $cells_on ] : array( $cells_on, 12 );
+		$fr = array( $n / $d );
+		for ( $i = 0; $i < $d - $n; $i++ ) { $fr[] = 1 / $d; }
+		$N = count( $fr ); $prev = 0; $cum = 0;
+		for ( $i = 0; $i < $N; $i++ ) {
+			$cum += $fr[ $i ];
+			$b  = ( $i === $N - 1 ) ? $track : (int) round( $cum * $track );
+			$bw = ( $N === 1 ) ? ( $b - $prev ) : max( 1, ( $b - $prev ) - $gap );
+			$rects .= '<rect x="' . ( $pad + $prev ) . '" y="' . $pad . '" width="' . $bw . '" height="' . $barH . '" fill="' . ( $i === 0 ? $blue : $gray ) . '" shape-rendering="crispEdges"/>';
+			$prev = $b;
+		}
+	}
+	$text = '<text x="' . ( $W / 2 ) . '" y="' . ( $pad + $barH + 11 ) . '" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#50575e">' . $label . '</text>';
+	$svg  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $W . ' ' . $H . '" width="' . $W . '" height="' . $H . '">' . $rects . $text . '</svg>';
+	return 'data:image/svg+xml,' . rawurlencode( $svg );
 };
+
+// Width tiles + trigger labels: Auto (none) + 1/12…1/1 (lowest-terms) + Custom.
+// Slightly shorter thumbnails (43px) than the other flex glyphs — the width bars
+// are wide, so a lower height keeps them compact in the popover.
+$fx_width_pick = function ( $uri, $label ) {
+	return array(
+		'small' => array( 'src' => $uri, 'height' => 43 ),
+		'large' => array( 'src' => $uri, 'height' => 130 ),
+		'label' => $label,
+	);
+};
+$fx_frac_lbl = array( 1 => '1/12', 2 => '1/6', 3 => '1/4', 4 => '1/3', 5 => '5/12', 6 => '1/2',
+	7 => '7/12', 8 => '2/3', 9 => '3/4', 10 => '5/6', 11 => '11/12', 12 => '1/1' );
+$fx_width_choices = array( 'none' => $fx_width_pick( $fx_width_bar( 0, 'none', __( 'Auto', 'fw' ) ), __( 'Auto', 'fw' ) ) );
+for ( $i = 1; $i <= 12; $i++ ) { $fx_width_choices[ (string) $i ] = $fx_width_pick( $fx_width_bar( $i, 'width', $fx_frac_lbl[ $i ] ), $fx_frac_lbl[ $i ] ); }
+$fx_width_choices['custom'] = $fx_width_pick( $fx_width_bar( 0, 'custom', __( 'Custom', 'fw' ) ), __( 'Custom', 'fw' ) );
+$fx_width_summary = array( 'none' => __( 'Auto', 'fw' ), 'custom' => __( 'Custom', 'fw' ) );
+for ( $i = 1; $i <= 12; $i++ ) { $fx_width_summary[ (string) $i ] = $fx_frac_lbl[ $i ]; }
 
 $options = [
 	'tab_layout' => [
 		'title'   => __( 'Layout', 'fw' ),
 		'type'    => 'tab',
 		'options' => [
-			'group_tag' => [
+			'group_container' => [
 				'type'    => 'group',
 				'options' => [
-					'html_tag' => [
-						'type'    => 'select',
-						'label'   => __( 'HTML Tag', 'fw' ),
-						'desc'    => __( 'The semantic element this container outputs.', 'fw' ),
-						'value'   => 'div',
-						'choices' => [
-							'div'     => 'div',
-							'section' => 'section',
-							'header'  => 'header',
-							'main'    => 'main',
-							'article' => 'article',
-							'aside'   => 'aside',
-							'footer'  => 'footer',
-							'nav'     => 'nav',
-						],
-					],
-					// Multi-picker: the Width select reveals the Custom Width input only
-					// when "Custom…" is chosen. Saved shape:
-					//   [ 'preset' => 'none'|'1'..'12'|'custom', 'custom' => [ 'width_custom' => {value,unit} ] ]
-					'width' => [
-						'type'         => 'multi-picker',
-						'label'        => false,
-						'desc'         => false,
-						'value'        => [ 'preset' => 'none' ],
-						'picker'       => [
-							'preset' => [
-								'label'   => __( 'Width', 'fw' ),
-								'desc'    => __( 'This container\'s own width when it sits inside another Flexbox row. "Auto" = full width. 1/12…1/1 output a Bootstrap col-md-* class (the canvas width handle sets the same value). Pick "Custom…" for an exact percentage.', 'fw' ),
-								'type'    => 'select',
-								'choices' => $fx_col_choices( 'none', __( 'Auto (full width)', 'fw' ), true ),
+					'direction' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Direction', 'fw' ),
+						'desc'    => __( 'Row (default) places children side-by-side — give each child a Width to split the row, e.g. 1/2 + 1/2. Column stacks them. Use the Phone / Tablet / Desktop tabs to change direction per device (e.g. a Row header that stacks to a Column on mobile).', 'fw' ),
+						'value'   => [ 'base' => 'row', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'image-picker',
+							'choices' => [
+								'row'    => $fx_pick( $fx_dir_uri( 'row', __( 'Row', 'fw' ) ),       __( 'Row', 'fw' ) ),
+								'column' => $fx_pick( $fx_dir_uri( 'column', __( 'Column', 'fw' ) ), __( 'Column', 'fw' ) ),
 							],
 						],
-						'choices'      => [
-							'custom' => [
-								'width_custom' => [
-									'type'  => 'unit-input',
-									'label' => __( 'Custom Width', 'fw' ),
-									'desc'  => __( 'Exact width for this box, e.g. 38%.', 'fw' ),
-									'units' => [ '%', 'px', 'rem', 'vw' ],
-									'value' => [ 'value' => '', 'unit' => '%' ],
-								],
+					],
+					'gap' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Gap', 'fw' ),
+						'desc'    => __( 'Spacing between children, from the site-wide spacing presets (Theme Settings → Default Gap). Use the Phone / Tablet / Desktop tabs to set a different gap per device (a blank device inherits the smaller one).', 'fw' ),
+						'help'    => function_exists( 'sc_styling_help_text' ) ? sc_styling_help_text( 'spacing' ) : '',
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'short-select',
+							'choices' => function_exists( 'sc_get_gap_select_choices' )
+								? sc_get_gap_select_choices( __( 'None', 'fw' ) )
+								: array( '' => __( 'None', 'fw' ) ),
+						],
+					],
+					'justify_content' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Justify (main axis)', 'fw' ),
+						'desc'    => __( 'How children are distributed along the main axis. Use the Phone / Tablet / Desktop tabs to set a different value per device (a blank device inherits the smaller one).', 'fw' ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'image-picker',
+							'choices' => [
+								''        => $fx_pick( $fx_justify_uri( 'start',   __( 'Default', 'fw' ) ), __( 'Default', 'fw' ) ),
+								'start'   => $fx_pick( $fx_justify_uri( 'start',   __( 'Start', 'fw' ) ),   __( 'Start', 'fw' ) ),
+								'center'  => $fx_pick( $fx_justify_uri( 'center',  __( 'Center', 'fw' ) ),  __( 'Center', 'fw' ) ),
+								'end'     => $fx_pick( $fx_justify_uri( 'end',     __( 'End', 'fw' ) ),     __( 'End', 'fw' ) ),
+								'between' => $fx_pick( $fx_justify_uri( 'between', __( 'Space between', 'fw' ) ), __( 'Space between', 'fw' ) ),
+								'around'  => $fx_pick( $fx_justify_uri( 'around',  __( 'Space around', 'fw' ) ),  __( 'Space around', 'fw' ) ),
+								'evenly'  => $fx_pick( $fx_justify_uri( 'evenly',  __( 'Space evenly', 'fw' ) ),  __( 'Space evenly', 'fw' ) ),
 							],
 						],
-						'show_borders' => false,
 					],
-					'width_phone' => [
-						'type'    => 'select',
-						'label'   => __( 'Phone Width', 'fw' ),
-						'desc'    => __( 'Width on phones (below the tablet breakpoint). "Inherit" leaves the element full-width (stacked) on phones — the usual responsive behavior. The main Width above applies on tablet and desktop.', 'fw' ),
-						'value'   => '',
-						'choices' => $fx_col_choices( '', __( 'Inherit (full width)', 'fw' ) ),
-					],
-					'flex_grow' => [
-						'type'         => 'switch',
-						'label'        => __( 'Grow to Fill', 'fw' ),
-						'desc'         => __( 'Let this box grow to absorb the remaining free space inside a Row/Column parent (flex-grow). Overrides the fixed Width above when there is room to grow.', 'fw' ),
-						'value'        => 'no',
-						'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
-						'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
-					],
-					'align_self' => [
-						'type'    => 'image-picker',
-						'label'   => __( 'Align Self', 'fw' ),
-						'desc'    => __( 'Override the parent\'s Align (cross axis) for just this box. Only has an effect inside a Flexbox parent.', 'fw' ),
-						'value'   => '',
-						'choices' => [
-							''         => $fx_pick( $fx_alignself_uri( '',         __( 'Default', 'fw' ) ),  __( 'Default', 'fw' ) ),
-							'start'    => $fx_pick( $fx_alignself_uri( 'start',    __( 'Start', 'fw' ) ),    __( 'Start', 'fw' ) ),
-							'center'   => $fx_pick( $fx_alignself_uri( 'center',   __( 'Center', 'fw' ) ),   __( 'Center', 'fw' ) ),
-							'end'      => $fx_pick( $fx_alignself_uri( 'end',      __( 'End', 'fw' ) ),      __( 'End', 'fw' ) ),
-							'stretch'  => $fx_pick( $fx_alignself_uri( 'stretch',  __( 'Stretch', 'fw' ) ),  __( 'Stretch', 'fw' ) ),
-							'baseline' => $fx_pick( $fx_alignself_uri( 'baseline', __( 'Baseline', 'fw' ) ), __( 'Baseline', 'fw' ) ),
+					'align_items' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Align (cross axis)', 'fw' ),
+						'desc'    => __( 'How children are aligned on the cross axis. Use the Phone / Tablet / Desktop tabs to set a different value per device (a blank device inherits the smaller one).', 'fw' ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'image-picker',
+							'choices' => [
+								''         => $fx_pick( $fx_align_uri( 'stretch',  __( 'Default', 'fw' ) ),  __( 'Default', 'fw' ) ),
+								'start'    => $fx_pick( $fx_align_uri( 'start',    __( 'Start', 'fw' ) ),    __( 'Start', 'fw' ) ),
+								'center'   => $fx_pick( $fx_align_uri( 'center',   __( 'Center', 'fw' ) ),   __( 'Center', 'fw' ) ),
+								'end'      => $fx_pick( $fx_align_uri( 'end',      __( 'End', 'fw' ) ),      __( 'End', 'fw' ) ),
+								'stretch'  => $fx_pick( $fx_align_uri( 'stretch',  __( 'Stretch', 'fw' ) ),  __( 'Stretch', 'fw' ) ),
+								'baseline' => $fx_pick( $fx_align_uri( 'baseline', __( 'Baseline', 'fw' ) ), __( 'Baseline', 'fw' ) ),
+							],
 						],
 					],
-					'order' => [
-						'type'    => 'select',
-						'label'   => __( 'Order', 'fw' ),
-						'desc'    => __( 'Reorder this box among its siblings inside a Flexbox parent (1…12, matching the column grid), without changing the markup order. Useful for swapping order responsively.', 'fw' ),
-						'value'   => '',
-						'choices' => [
-							''      => __( 'Default', 'fw' ),
-							'first' => __( 'First', 'fw' ),
-							'1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6',
-							'7' => '7', '8' => '8', '9' => '9', '10' => '10', '11' => '11', '12' => '12',
-							'last'  => __( 'Last', 'fw' ),
+					'wrap' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Wrap', 'fw' ),
+						'desc'    => __( 'Allow children to wrap to the next line when they run out of room (rows only). Use the Phone / Tablet / Desktop tabs to toggle wrapping per device (a blank device inherits the smaller one).', 'fw' ),
+						'value'   => [ 'base' => 'yes', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'         => 'switch',
+							'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
+							'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
+						],
+					],
+					'reverse' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Reverse Order', 'fw' ),
+						'desc'    => __( 'Reverse the order children are laid out (row-reverse / column-reverse) without changing the markup. Use the Phone / Tablet / Desktop tabs to flip only on some devices (a blank device inherits the smaller one) — e.g. image-above-text on phone, text-above-image on desktop.', 'fw' ),
+						'value'   => [ 'base' => 'no', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'         => 'switch',
+							'left-choice'  => [ 'value' => 'no',  'label' => __( 'Default', 'fw' ) ],
+							'right-choice' => [ 'value' => 'yes', 'label' => __( 'Reverse', 'fw' ) ],
+						],
+					],
+					'align_content' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Align Content (wrapped lines)', 'fw' ),
+						'desc'    => __( 'When children wrap onto multiple lines, how those lines are packed on the cross axis. Only has an effect with Wrap on and 2+ lines. Use the Phone / Tablet / Desktop tabs to set it per device (a blank device inherits the smaller one).', 'fw' ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'image-picker',
+							'choices' => [
+								// Default == CSS stretch (the initial value), so its glyph shows
+								// stretch and the redundant explicit "Stretch" is omitted. Start
+								// (lines packed at top, NOT stretched) is kept — it is distinct.
+								''        => $fx_pick( $fx_aligncontent_uri( 'stretch', __( 'Default', 'fw' ) ),       __( 'Default', 'fw' ) ),
+								'start'   => $fx_pick( $fx_aligncontent_uri( 'start',   __( 'Start', 'fw' ) ),         __( 'Start', 'fw' ) ),
+								'center'  => $fx_pick( $fx_aligncontent_uri( 'center',  __( 'Center', 'fw' ) ),        __( 'Center', 'fw' ) ),
+								'end'     => $fx_pick( $fx_aligncontent_uri( 'end',     __( 'End', 'fw' ) ),           __( 'End', 'fw' ) ),
+								'between' => $fx_pick( $fx_aligncontent_uri( 'between', __( 'Space between', 'fw' ) ),  __( 'Space between', 'fw' ) ),
+								'around'  => $fx_pick( $fx_aligncontent_uri( 'around',  __( 'Space around', 'fw' ) ),   __( 'Space around', 'fw' ) ),
+							],
 						],
 					],
 				],
 			],
-			'group_flex' => [
+			'group_placement' => [
 				'type'    => 'group',
 				'options' => [
-					'direction' => [
-						'type'    => 'image-picker',
-						'label'   => __( 'Direction', 'fw' ),
-						'desc'    => __( 'Row (default) places children side-by-side — give each child a Width to split the row, e.g. 1/2 + 1/2. Column stacks them.', 'fw' ),
-						'value'   => 'row',
-						'choices' => [
-							'row'    => $fx_pick( $fx_dir_uri( 'row', __( 'Row', 'fw' ) ),       __( 'Row', 'fw' ) ),
-							'column' => $fx_pick( $fx_dir_uri( 'column', __( 'Column', 'fw' ) ), __( 'Column', 'fw' ) ),
+					'width' => [
+						'type'  => 'responsive',
+						'label' => __( 'Width Override', 'fw' ),
+						'desc'  => __( 'This container\'s own width when it sits inside another Flexbox row. "Auto" leaves it to flow (full width / stacked). Pick a fraction (1/12…1/1) or "Custom…" for an exact size. Use the Phone / Tablet / Desktop tabs to set a different width per device (a blank device inherits the smaller one).', 'fw' ),
+						'help'  => __( 'Fractions output the plugin\'s own responsive grid classes; the canvas width handle sets the same base value. "Custom…" reveals an exact px / % / rem / vw input. A blank (Auto) device inherits the next smaller one — e.g. Phone Auto + Desktop 1/2 = full width on phones, half on desktop.', 'fw' ),
+						'value' => [ 'base' => [ 'preset' => 'none' ], 'md' => [ 'preset' => 'none' ], 'lg' => [ 'preset' => 'none' ] ],
+						'inner' => [
+							'type'          => 'popover',
+							'value'         => [ 'preset' => 'none' ],
+							'summary'       => $fx_width_summary,
+							'summary_key'   => 'preset',
+							'autoclose'     => false,
+							'inner-options' => [
+								'wpick' => [
+									'type'         => 'multi-picker',
+									'label'        => false,
+									'desc'         => false,
+									'value'        => [ 'preset' => 'none' ],
+									'picker'       => [
+										'preset' => [ 'type' => 'image-picker', 'label' => false, 'choices' => $fx_width_choices ],
+									],
+									'choices'      => [
+										'custom' => [
+											'width_custom' => [
+												'type'  => 'unit-input',
+												'label' => __( 'Custom Width', 'fw' ),
+												'desc'  => __( 'Exact width for this box, e.g. 38% or 320px.', 'fw' ),
+												'units' => [ '%', 'px', 'rem', 'vw' ],
+												'value' => [ 'value' => '', 'unit' => '%' ],
+											],
+										],
+									],
+									'show_borders' => false,
+								],
+							],
 						],
 					],
-					'reverse' => [
-						'type'         => 'switch',
-						'label'        => __( 'Reverse Order', 'fw' ),
-						'desc'         => __( 'Reverse the order children are laid out (row-reverse / column-reverse). Handy for flipping a layout on a specific device without re-ordering the markup.', 'fw' ),
-						'value'        => 'no',
-						'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
-						'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
-					],
-					'wrap' => [
-						'type'         => 'switch',
-						'label'        => __( 'Wrap', 'fw' ),
-						'desc'         => __( 'Allow children to wrap to the next line when they run out of room (rows only).', 'fw' ),
-						'value'        => 'yes',
-						'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
-						'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
-					],
-					'gap' => [
-						'type'    => 'short-select',
-						'label'   => __( 'Gap', 'fw' ),
-						'desc'    => __( 'Spacing between children, from the site-wide spacing presets (Theme Settings → Default Gap).', 'fw' ),
-						'help'    => function_exists( 'sc_styling_help_text' ) ? sc_styling_help_text( 'spacing' ) : '',
-						'value'   => '',
-						'choices' => function_exists( 'sc_get_gap_select_choices' )
-							? sc_get_gap_select_choices( __( 'None', 'fw' ) )
-							: array( '' => __( 'None', 'fw' ) ),
-					],
-					'justify_content' => [
-						'type'    => 'image-picker',
-						'label'   => __( 'Justify (main axis)', 'fw' ),
-						'desc'    => __( 'How children are distributed along the main axis.', 'fw' ),
-						'value'   => '',
-						'choices' => [
-							''        => $fx_pick( $fx_justify_uri( 'start',   __( 'Default', 'fw' ) ), __( 'Default', 'fw' ) ),
-							'start'   => $fx_pick( $fx_justify_uri( 'start',   __( 'Start', 'fw' ) ),   __( 'Start', 'fw' ) ),
-							'center'  => $fx_pick( $fx_justify_uri( 'center',  __( 'Center', 'fw' ) ),  __( 'Center', 'fw' ) ),
-							'end'     => $fx_pick( $fx_justify_uri( 'end',     __( 'End', 'fw' ) ),     __( 'End', 'fw' ) ),
-							'between' => $fx_pick( $fx_justify_uri( 'between', __( 'Space between', 'fw' ) ), __( 'Space between', 'fw' ) ),
-							'around'  => $fx_pick( $fx_justify_uri( 'around',  __( 'Space around', 'fw' ) ),  __( 'Space around', 'fw' ) ),
-							'evenly'  => $fx_pick( $fx_justify_uri( 'evenly',  __( 'Space evenly', 'fw' ) ),  __( 'Space evenly', 'fw' ) ),
+					'flex_grow' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Grow to Fill', 'fw' ),
+						'desc'    => __( 'Let this box grow to absorb the remaining free space inside a Row/Column parent (flex-grow). Overrides the fixed Width above when there is room to grow. Use the Phone / Tablet / Desktop tabs to toggle it per device (a blank device inherits the smaller one).', 'fw' ),
+						'value'   => [ 'base' => 'no', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'         => 'switch',
+							'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
+							'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
 						],
 					],
-					'align_items' => [
-						'type'    => 'image-picker',
-						'label'   => __( 'Align (cross axis)', 'fw' ),
-						'desc'    => __( 'How children are aligned on the cross axis.', 'fw' ),
-						'value'   => '',
-						'choices' => [
-							''         => $fx_pick( $fx_align_uri( 'stretch',  __( 'Default', 'fw' ) ),  __( 'Default', 'fw' ) ),
-							'start'    => $fx_pick( $fx_align_uri( 'start',    __( 'Start', 'fw' ) ),    __( 'Start', 'fw' ) ),
-							'center'   => $fx_pick( $fx_align_uri( 'center',   __( 'Center', 'fw' ) ),   __( 'Center', 'fw' ) ),
-							'end'      => $fx_pick( $fx_align_uri( 'end',      __( 'End', 'fw' ) ),      __( 'End', 'fw' ) ),
-							'stretch'  => $fx_pick( $fx_align_uri( 'stretch',  __( 'Stretch', 'fw' ) ),  __( 'Stretch', 'fw' ) ),
-							'baseline' => $fx_pick( $fx_align_uri( 'baseline', __( 'Baseline', 'fw' ) ), __( 'Baseline', 'fw' ) ),
+					'align_self' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Align Self', 'fw' ),
+						'desc'    => __( 'Override the parent\'s Align (cross axis) for just this box. Only has an effect inside a Flexbox parent. Use the Phone / Tablet / Desktop tabs to set it per device (a blank device inherits the smaller one).', 'fw' ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'image-picker',
+							'choices' => [
+								''         => $fx_pick( $fx_alignself_uri( '',         __( 'Default', 'fw' ) ),  __( 'Default', 'fw' ) ),
+								'start'    => $fx_pick( $fx_alignself_uri( 'start',    __( 'Start', 'fw' ) ),    __( 'Start', 'fw' ) ),
+								'center'   => $fx_pick( $fx_alignself_uri( 'center',   __( 'Center', 'fw' ) ),   __( 'Center', 'fw' ) ),
+								'end'      => $fx_pick( $fx_alignself_uri( 'end',      __( 'End', 'fw' ) ),      __( 'End', 'fw' ) ),
+								'stretch'  => $fx_pick( $fx_alignself_uri( 'stretch',  __( 'Stretch', 'fw' ) ),  __( 'Stretch', 'fw' ) ),
+								'baseline' => $fx_pick( $fx_alignself_uri( 'baseline', __( 'Baseline', 'fw' ) ), __( 'Baseline', 'fw' ) ),
+							],
 						],
 					],
-					'align_content' => [
-						'type'    => 'image-picker',
-						'label'   => __( 'Align Content (wrapped lines)', 'fw' ),
-						'desc'    => __( 'When children wrap onto multiple lines, how those lines are packed on the cross axis. Only has an effect with Wrap on and 2+ lines.', 'fw' ),
-						'value'   => '',
-						'choices' => [
-							// Default == CSS stretch (the initial value), so its glyph shows
-							// stretch and the redundant explicit "Stretch" is omitted. Start
-							// (lines packed at top, NOT stretched) is kept — it is distinct.
-							''        => $fx_pick( $fx_aligncontent_uri( 'stretch', __( 'Default', 'fw' ) ),       __( 'Default', 'fw' ) ),
-							'start'   => $fx_pick( $fx_aligncontent_uri( 'start',   __( 'Start', 'fw' ) ),         __( 'Start', 'fw' ) ),
-							'center'  => $fx_pick( $fx_aligncontent_uri( 'center',  __( 'Center', 'fw' ) ),        __( 'Center', 'fw' ) ),
-							'end'     => $fx_pick( $fx_aligncontent_uri( 'end',     __( 'End', 'fw' ) ),           __( 'End', 'fw' ) ),
-							'between' => $fx_pick( $fx_aligncontent_uri( 'between', __( 'Space between', 'fw' ) ),  __( 'Space between', 'fw' ) ),
-							'around'  => $fx_pick( $fx_aligncontent_uri( 'around',  __( 'Space around', 'fw' ) ),   __( 'Space around', 'fw' ) ),
+					'order' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Order', 'fw' ),
+						'desc'    => __( 'Reorder this box among its siblings inside a Flexbox parent (1…12), without changing the markup order. Use the Phone / Tablet / Desktop tabs to reorder per device (a blank device inherits the smaller one).', 'fw' ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'short-select',
+							'choices' => [
+								''      => __( 'Default', 'fw' ),
+								'first' => __( 'First', 'fw' ),
+								'0' => '0',
+								'1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6',
+								'7' => '7', '8' => '8', '9' => '9', '10' => '10', '11' => '11', '12' => '12',
+								'last'  => __( 'Last', 'fw' ),
+							],
 						],
-					],
-					'responsive_note' => [
-						'type'  => 'html-fixed',
-						'label' => __( 'Responsive', 'fw' ),
-						'html'  => __( 'Override Direction / Justify on smaller screens — e.g. a Row header that stacks to a Column on mobile. Leave as Inherit to keep the larger-screen value.', 'fw' ),
-					],
-					'direction_mobile' => [
-						'type'    => 'select',
-						'label'   => __( 'Direction — Mobile', 'fw' ),
-						'desc'    => __( 'Below 768px.', 'fw' ),
-						'value'   => '',
-						'choices' => [ '' => __( 'Inherit', 'fw' ), 'row' => __( 'Row', 'fw' ), 'column' => __( 'Column', 'fw' ) ],
-					],
-					'justify_content_mobile' => [
-						'type'    => 'select',
-						'label'   => __( 'Justify — Mobile', 'fw' ),
-						'value'   => '',
-						'choices' => [ '' => __( 'Inherit', 'fw' ), 'start' => __( 'Start', 'fw' ), 'center' => __( 'Center', 'fw' ), 'end' => __( 'End', 'fw' ), 'between' => __( 'Space between', 'fw' ), 'around' => __( 'Space around', 'fw' ), 'evenly' => __( 'Space evenly', 'fw' ) ],
-					],
-					'direction_tablet' => [
-						'type'    => 'select',
-						'label'   => __( 'Direction — Tablet', 'fw' ),
-						'desc'    => __( '768–991px.', 'fw' ),
-						'value'   => '',
-						'choices' => [ '' => __( 'Inherit', 'fw' ), 'row' => __( 'Row', 'fw' ), 'column' => __( 'Column', 'fw' ) ],
-					],
-					'justify_content_tablet' => [
-						'type'    => 'select',
-						'label'   => __( 'Justify — Tablet', 'fw' ),
-						'value'   => '',
-						'choices' => [ '' => __( 'Inherit', 'fw' ), 'start' => __( 'Start', 'fw' ), 'center' => __( 'Center', 'fw' ), 'end' => __( 'End', 'fw' ), 'between' => __( 'Space between', 'fw' ), 'around' => __( 'Space around', 'fw' ), 'evenly' => __( 'Space evenly', 'fw' ) ],
 					],
 				],
 			],
@@ -395,11 +419,15 @@ $options = [
 						'choices'      => function_exists( 'sc_get_border_preset_choices' ) ? sc_get_border_preset_choices() : array( '' => __( 'None', 'fw' ) ),
 					],
 					'min_height' => [
-						'type'  => 'unit-input',
+						'type'  => 'responsive',
 						'label' => __( 'Min Height', 'fw' ),
-						'desc'  => __( 'Minimum height of the container. Pair with Align (cross axis) = Center to vertically centre content — e.g. 60vh for a hero band. Leave empty to fit content.', 'fw' ),
-						'units' => [ 'vh', 'px', 'rem', '%' ],
-						'value' => [ 'value' => '', 'unit' => 'vh' ],
+						'desc'  => __( 'Minimum height of the container. Pair with Align (cross axis) = Center to vertically centre content — e.g. 60vh for a hero band. Leave empty to fit content. Use the Phone / Tablet / Desktop tabs to set a different min-height per device (a blank device inherits the smaller one).', 'fw' ),
+						'value' => [ 'base' => [ 'value' => '', 'unit' => 'vh' ], 'md' => [ 'value' => '', 'unit' => 'vh' ], 'lg' => [ 'value' => '', 'unit' => 'vh' ] ],
+						'inner' => [
+							'type'  => 'unit-input',
+							'units' => [ 'vh', 'px', 'rem', '%' ],
+							'value' => [ 'value' => '', 'unit' => 'vh' ],
+						],
 					],
 					'spacing'    => [
 						'type'  => 'spacing',

@@ -205,18 +205,21 @@ $options = [
 						'show_borders' => false,
 					],
 					'column_halign' => [
-						'type'    => 'image-picker',
+						'type'    => 'responsive',
 						'label'   => __( 'Columns Horizontal Alignment', 'fw' ),
-						'desc'    => __( 'Align this section\'s columns horizontally within the row — centre a single narrow column, or spread multiple columns apart.', 'fw' ),
+						'desc'    => __( 'Align this section\'s columns horizontally within the row. Use the Phone / Tablet / Desktop tabs to align differently per device (a blank device inherits the smaller one).', 'fw' ),
 						'help'    => __( 'Only has a visible effect when the columns don\'t already fill the row width. "Center" / "Right" position them as a group; "Space Between / Around / Evenly" distribute the gaps between multiple columns.', 'fw' ),
-						'value'   => 'default',
-						'choices' => [
-							'default' => $section_valign_pick( $section_halign_uri( 'default', __( 'Left / Default', 'fw' ) ), __( 'Left / Default', 'fw' ) ),
-							'center'  => $section_valign_pick( $section_halign_uri( 'center',  __( 'Center', 'fw' ) ),       __( 'Center', 'fw' ) ),
-							'right'   => $section_valign_pick( $section_halign_uri( 'right',   __( 'Right', 'fw' ) ),        __( 'Right', 'fw' ) ),
-							'between' => $section_valign_pick( $section_halign_uri( 'between', __( 'Space Between', 'fw' ) ),  __( 'Space Between', 'fw' ) ),
-							'around'  => $section_valign_pick( $section_halign_uri( 'around',  __( 'Space Around', 'fw' ) ),   __( 'Space Around', 'fw' ) ),
-							'evenly'  => $section_valign_pick( $section_halign_uri( 'evenly',  __( 'Space Evenly', 'fw' ) ),   __( 'Space Evenly', 'fw' ) ),
+						'value'   => [ 'base' => 'default', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'image-picker',
+							'choices' => [
+								'default' => $section_valign_pick( $section_halign_uri( 'default', __( 'Left / Default', 'fw' ) ), __( 'Left / Default', 'fw' ) ),
+								'center'  => $section_valign_pick( $section_halign_uri( 'center',  __( 'Center', 'fw' ) ),       __( 'Center', 'fw' ) ),
+								'right'   => $section_valign_pick( $section_halign_uri( 'right',   __( 'Right', 'fw' ) ),        __( 'Right', 'fw' ) ),
+								'between' => $section_valign_pick( $section_halign_uri( 'between', __( 'Space Between', 'fw' ) ),  __( 'Space Between', 'fw' ) ),
+								'around'  => $section_valign_pick( $section_halign_uri( 'around',  __( 'Space Around', 'fw' ) ),   __( 'Space Around', 'fw' ) ),
+								'evenly'  => $section_valign_pick( $section_halign_uri( 'evenly',  __( 'Space Evenly', 'fw' ) ),   __( 'Space Evenly', 'fw' ) ),
+							],
 						],
 					],
 					'column_valign' => [
@@ -231,16 +234,18 @@ $options = [
 							'bottom'  => $section_valign_pick( $section_valign_uri( 'bottom', __( 'Bottom', 'fw' ) ), __( 'Bottom', 'fw' ) ),
 						],
 					],
+					// Per-device Reverse switch (was an all/tablet/mobile select). Legacy
+					// scalar values migrate in the view. Key kept as `reverse_columns`.
 					'reverse_columns' => [
-						'type'    => 'select',
+						'type'    => 'responsive',
 						'label'   => __( 'Column Order', 'fw' ),
-						'desc'    => __( 'Show the columns in reverse order (last column first) without changing the markup. Pick which screens to reverse on. On phones — where the columns stack — it flips the stacked order, so you can e.g. put an image above the text on mobile.', 'fw' ),
-						'value'   => '',
-						'choices' => [
-							''       => __( 'Default', 'fw' ),
-							'all'    => __( 'Reversed (all screens)', 'fw' ),
-							'tablet' => __( 'Reversed on tablet and mobile', 'fw' ),
-							'mobile' => __( 'Reversed on mobile only', 'fw' ),
+						'desc'    => __( 'Show the columns in reverse order (last column first) without changing the markup. Use the Phone / Tablet / Desktop tabs to reverse only on some devices.', 'fw' ),
+						'help'    => __( 'On phones — where the columns stack — it flips the stacked order (e.g. put an image above the text on mobile). On tablet/desktop it swaps the row. A blank device inherits the smaller one; it only reorders the visual output, not the markup.', 'fw' ),
+						'value'   => [ 'base' => 'no', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'         => 'switch',
+							'left-choice'  => [ 'value' => 'no',  'label' => __( 'Default', 'fw' ) ],
+							'right-choice' => [ 'value' => 'yes', 'label' => __( 'Reverse', 'fw' ) ],
 						],
 					],
 				],
@@ -321,14 +326,17 @@ $options = [
 					// overrides on every .row inside this section.
 					// Empty = inherit Theme Settings → Default Gap.
 					'gap' => [
-						'type'    => 'short-select',
+						'type'    => 'responsive',
 						'label'   => __( 'Gap', 'fw' ),
-						'desc'    => __( 'Override the site-wide Default Gap for every Bootstrap row inside this section. Sets both horizontal and vertical column gap.', 'fw' ),
+						'desc'    => __( 'Override the site-wide Default Gap for every Bootstrap row inside this section (both horizontal and vertical column gap). Use the Phone / Tablet / Desktop tabs to set a different gap per device (a blank device inherits the smaller one).', 'fw' ),
 						'help'    => function_exists( 'sc_styling_help_text' ) ? sc_styling_help_text( 'spacing' ) : '',
-						'value'   => '',
-						'choices' => function_exists( 'sc_get_gap_select_choices' )
-							? sc_get_gap_select_choices( __( 'Use Default Gap', 'fw' ) )
-							: array( '' => __( 'Use Default Gap', 'fw' ) ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'short-select',
+							'choices' => function_exists( 'sc_get_gap_select_choices' )
+								? sc_get_gap_select_choices( __( 'Use Default Gap', 'fw' ) )
+								: array( '' => __( 'Use Default Gap', 'fw' ) ),
+						],
 					],
 					'gap_x' => [
 						'type'    => 'short-select',

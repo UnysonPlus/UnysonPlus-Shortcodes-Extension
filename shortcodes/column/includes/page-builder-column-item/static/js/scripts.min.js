@@ -148,6 +148,29 @@
 				var atts   = this.model.get('atts') || {};
 				var device = window.fwPbDevice || 'lg';
 
+				// Resolve a per-device value { base, md, lg } for the active canvas device
+				// with the frontend mobile-first cascade (sm->base, md->md||base, lg->lg||md||base).
+				// Tolerates a legacy scalar.
+				var resolveResponsive = function (v, d) {
+					if (v == null) { return ''; }
+					if (typeof v === 'string') { return v; }
+					var b = v.base || '', m = v.md || '', l = v.lg || '';
+					if (d === 'sm') { return b; }
+					if (d === 'md') { return m || b; }
+					return l || m || b;
+				};
+
+				// Per-device width/offset: prefer the merged responsive controls (col_width /
+				// col_offset), fall back to the legacy per-device atts, so the canvas preview is
+				// unchanged after the merge.
+				var cw = atts.col_width, co = atts.col_offset;
+				var w_phone   = ( cw && typeof cw === 'object' ) ? ( cw.base || '' ) : ( atts.w_phone || '' );
+				var w_tablet  = ( cw && typeof cw === 'object' ) ? ( cw.md   || '' ) : ( atts.w_tablet || '' );
+				var w_desktop = ( cw && typeof cw === 'object' ) ? ( cw.lg   || '' ) : ( atts.w_desktop || '' );
+				var o_phone   = ( co && typeof co === 'object' ) ? ( co.base || '' ) : ( atts.offset_phone || '' );
+				var o_tablet  = ( co && typeof co === 'object' ) ? ( co.md   || '' ) : ( atts.offset_tablet || '' );
+				var o_desktop = ( co && typeof co === 'object' ) ? ( co.lg   || '' ) : ( atts.offset_desktop || '' );
+
 				// Effective width for the active device (mirrors the frontend cascade):
 				//   sm (phone, xs): w_phone, else full-width (the xs base is fw-col-12)
 				//   md (tablet):    w_tablet, else the base picker width (leave empty
@@ -155,13 +178,12 @@
 				//   lg (desktop):   w_desktop → w_tablet → base picker width
 				var w = '';
 				if (device === 'sm') {
-					w = (atts.w_phone && atts.w_phone !== 'default') ? String(atts.w_phone) : '12';
+					w = (w_phone && w_phone !== 'default') ? String(w_phone) : '12';
 				} else if (device === 'md') {
-					if (atts.w_tablet && atts.w_tablet !== 'default') { w = String(atts.w_tablet); }
+					if (w_tablet && w_tablet !== 'default') { w = String(w_tablet); }
 				} else {
-					_.each(['w_desktop', 'w_tablet'], function (k) {
-						if (w === '' && atts[k] && atts[k] !== 'default') { w = String(atts[k]); }
-					});
+					if (w_desktop && w_desktop !== 'default') { w = String(w_desktop); }
+					else if (w_tablet && w_tablet !== 'default') { w = String(w_tablet); }
 				}
 				var widthCss = { 'flex': '', 'max-width': '', 'width': '' };
 				if (w === 'auto') {
@@ -172,23 +194,39 @@
 				}
 				this.$el.css(widthCss);
 
+				// Reflect the EFFECTIVE per-device width on the ◄ N ► width label too, so it
+				// matches the canvas + frontend for the previewed device. `w` is the override
+				// for this device ('' = none → restore the native base-width title). On phone
+				// `w` is '12' (columns are full-width there), so the label reads 1/1 — accurate.
+				if (this.widthChangerView && this.widthChangerView.$el) {
+					var $cur = this.widthChangerView.$el.find('.current-width');
+					if ($cur.length) {
+						if (w !== '') {
+							var fracMap = { '1':'1/12','2':'1/6','3':'1/4','4':'1/3','5':'5/12','6':'1/2','7':'7/12','8':'2/3','9':'3/4','10':'5/6','11':'11/12','12':'1/1' };
+							$cur.text(w === 'auto' ? 'Auto' : (fracMap[w] || (w + '/12')));
+						} else {
+							var nw = _.findWhere(this.widthChangerView.widths, { id: this.model.get('width') });
+							if (nw) { $cur.text(nw.title); }
+						}
+					}
+				}
+
 				// Offset → margin-left, for the active device:
 				//   sm: offset_phone | md: offset_tablet | lg: offset_desktop → offset_tablet
 				var off = '';
 				if (device === 'sm') {
-					off = (atts.offset_phone && atts.offset_phone !== 'none') ? String(atts.offset_phone) : '';
+					off = (o_phone && o_phone !== 'none') ? String(o_phone) : '';
 				} else if (device === 'md') {
-					off = (atts.offset_tablet && atts.offset_tablet !== 'none') ? String(atts.offset_tablet) : '';
+					off = (o_tablet && o_tablet !== 'none') ? String(o_tablet) : '';
 				} else {
-					_.each(['offset_desktop', 'offset_tablet'], function (k) {
-						if (off === '' && atts[k] && atts[k] !== 'none') { off = String(atts[k]); }
-					});
+					if (o_desktop && o_desktop !== 'none') { off = String(o_desktop); }
+					else if (o_tablet && o_tablet !== 'none') { off = String(o_tablet); }
 				}
 				this.$el.css('margin-left', /^([1-9]|1[01])$/.test(off) ? (parseInt(off, 10) / 12 * 100) + '%' : '');
 
 				// Column self vertical alignment (within the row).
 				var selfMap = { start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch' };
-				this.$el.css('align-self', selfMap[atts.align_self] || '');
+				this.$el.css('align-self', selfMap[ resolveResponsive( atts.align_self, device ) ] || '');
 
 				// Content alignment in the canvas — vertical + horizontal, like the live
 				// page. The content container is grown to fill the column (flex-canvas.css),
@@ -224,26 +262,28 @@
 				var isRow = ( atts.content_direction === 'row' ) && ! hasChildColumn;
 				this.$el[ isRow ? 'addClass' : 'removeClass' ]( 'sc-col-inline' );
 
+				var contentH = resolveResponsive( atts.content_h, device );
+				var contentV = resolveResponsive( atts.content_v, device );
+
 				// Axis-aware (mirrors view.php + the flexbox item): a row swaps the flex axes,
 				// so Content Alignment drives justify-content in a row but align-items in a
 				// column — and vice-versa for Content Vertical Alignment.
-				var jc = isRow ? justifyMap[ atts.content_h ] : justifyMap[ atts.content_v ];
-				var ai = isRow ? alignMap[ atts.content_v ]   : alignMap[ atts.content_h ];
+				var jc = isRow ? justifyMap[ contentH ] : justifyMap[ contentV ];
+				var ai = isRow ? alignMap[ contentV ]   : alignMap[ contentH ];
 
-				// Content Order = reverse. "all" reverses always; "tablet" in tablet + phone
-				// preview; "mobile" only in phone preview (applyLayoutPreview re-runs on the
-				// device toggle). Direction-aware: inline → row-reverse, stacked → column-reverse.
-				var order   = atts.content_order || '';
-				var dev     = window.fwPbDevice;
-				var reverse = ( order === 'all' )
-					|| ( order === 'tablet' && dev !== 'lg' )
-					|| ( order === 'mobile' && dev === 'sm' );
-
-				// When reversed, flip the main-axis justify (default reads as flex-start) so the
-				// content keeps its position — mirrors the frontend's justify compensation.
-				if ( reverse ) {
-					var effJc = jc || 'flex-start';
-					jc = ( effJc === 'flex-start' ) ? 'flex-end' : ( effJc === 'flex-end' ) ? 'flex-start' : effJc;
+				// Content Order = per-device Reverse switch { base, md, lg } of yes/no. Resolve
+				// the effective reverse for the active device (mobile-first). Tolerates a legacy
+				// scalar (all / tablet / mobile). Reverse is now LITERAL — no justify flip.
+				var dev = window.fwPbDevice;
+				var reverse;
+				var co  = atts.content_order;
+				if ( co && typeof co === 'object' ) {
+					reverse = resolveResponsive( co, dev ) === 'yes';
+				} else {
+					var order = co || '';
+					reverse = ( order === 'all' )
+						|| ( order === 'tablet' && dev !== 'lg' )
+						|| ( order === 'mobile' && dev === 'sm' );
 				}
 
 				if ( isRow ) {
@@ -274,6 +314,22 @@
 				if (_.isEmpty(this.initOptions.modalOptions)) {
 					return;
 				}
+
+					// Migrate legacy per-device Width/Offset atts into the merged responsive controls
+					// (col_width / col_offset) BEFORE the modal opens, so the switcher shows the saved
+					// values and a save persists the new { base, md, lg } shape. Mirrors view.php.
+					(function (model) {
+						var a = model.get('atts') || {}, changed = false;
+						if (a.col_width == null && (a.w_phone != null || a.w_tablet != null || a.w_desktop != null)) {
+							a.col_width = { base: a.w_phone || 'default', md: a.w_tablet || '', lg: a.w_desktop || '' };
+							changed = true;
+						}
+						if (a.col_offset == null && (a.offset_phone != null || a.offset_tablet != null || a.offset_desktop != null)) {
+							a.col_offset = { base: a.offset_phone || 'none', md: a.offset_tablet || '', lg: a.offset_desktop || '' };
+							changed = true;
+						}
+						if (changed) { model.set('atts', a); }
+					})(this.model);
 
 				var eventData = {modalSettings: {buttons: []}};
 

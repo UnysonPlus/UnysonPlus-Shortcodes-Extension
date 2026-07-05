@@ -77,6 +77,23 @@
 	justify-content: space-evenly;
 }
 
+/* Per-device overrides for Columns Horizontal Alignment (mobile-first). base applies
+   at all widths via the rules above; md/lg override from their breakpoint up. */
+@media (min-width: 768px) {
+	.section--cols-md-center .row,  .section--cols-md-center .fw-row  { justify-content: center !important; }
+	.section--cols-md-right .row,   .section--cols-md-right .fw-row   { justify-content: flex-end !important; }
+	.section--cols-md-between .row, .section--cols-md-between .fw-row { justify-content: space-between !important; }
+	.section--cols-md-around .row,  .section--cols-md-around .fw-row  { justify-content: space-around !important; }
+	.section--cols-md-evenly .row,  .section--cols-md-evenly .fw-row  { justify-content: space-evenly !important; }
+}
+@media (min-width: 992px) {
+	.section--cols-lg-center .row,  .section--cols-lg-center .fw-row  { justify-content: center !important; }
+	.section--cols-lg-right .row,   .section--cols-lg-right .fw-row   { justify-content: flex-end !important; }
+	.section--cols-lg-between .row, .section--cols-lg-between .fw-row { justify-content: space-between !important; }
+	.section--cols-lg-around .row,  .section--cols-lg-around .fw-row  { justify-content: space-around !important; }
+	.section--cols-lg-evenly .row,  .section--cols-lg-evenly .fw-row  { justify-content: space-evenly !important; }
+}
+
 /* Columns Vertical Alignment = "Default / Stretched" — the columns fill a taller
    (min-height) section. The section becomes a flex column and the container + row
    grow to fill it; the row's columns already stretch to each other (flex default),
@@ -125,6 +142,18 @@
 	.section--rev-mobile .fw-row {
 		flex-direction: column-reverse;
 	}
+}
+
+/* Per-device overrides for Column Order (mobile-first). base = .section--rev above
+   (row-reverse from md up, column-reverse where the columns stack); these toggle the
+   reverse from md / lg up so a different value per device is possible. */
+@media (min-width: 768px) {
+	.section--rev-md-on .row,  .section--rev-md-on .fw-row  { flex-direction: row-reverse !important; }
+	.section--rev-md-off .row, .section--rev-md-off .fw-row { flex-direction: row !important; }
+}
+@media (min-width: 992px) {
+	.section--rev-lg-on .row,  .section--rev-lg-on .fw-row  { flex-direction: row-reverse !important; }
+	.section--rev-lg-off .row, .section--rev-lg-off .fw-row { flex-direction: row !important; }
 }
 
 /* Shape Dividers — an SVG-shaped edge at the section's top and/or bottom. The band is

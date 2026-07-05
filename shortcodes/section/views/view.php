@@ -27,7 +27,17 @@ if ( $variant !== '' ) {
 
 // Per-section column-gap modifier classes — picked up by css-tokens.php's
 // `.section--gap-{slug} .row` / `-x-` / `-y-` rules.
-foreach ( array( 'gap' => 'section--gap-', 'gap_x' => 'section--gap-x-', 'gap_y' => 'section--gap-y-' ) as $att_key => $class_prefix ) {
+// Gap is now per-device: array( base, md, lg ). base = section--gap-{slug} (all
+// widths); md/lg add section--gap-{bp}-{slug} overrides. A legacy scalar folds into base.
+$gap_resp = fw_akg( 'gap', $atts, array() );
+if ( ! is_array( $gap_resp ) ) { $gap_resp = array( 'base' => (string) $gap_resp ); }
+foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+	$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) ( isset( $gap_resp[ $layer ] ) ? $gap_resp[ $layer ] : '' ) );
+	if ( $slug === '' ) { continue; }
+	$section_extra_classes .= ' section--gap' . $infix . '-' . strtolower( $slug );
+}
+// Gap X / Y single-value overrides (apply at all widths; only bite once Gap is set).
+foreach ( array( 'gap_x' => 'section--gap-x-', 'gap_y' => 'section--gap-y-' ) as $att_key => $class_prefix ) {
 	if ( empty( $atts[ $att_key ] ) ) { continue; }
 	$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $atts[ $att_key ] );
 	if ( $slug === '' ) { continue; }
@@ -87,25 +97,41 @@ if ( $valign === 'stretch' ) {
 	$section_style .= 'display:flex;flex-direction:column;justify-content:' . $justify . ';';
 }
 
-// Columns Horizontal Alignment (id: column_halign). Routed through a modifier
-// class so it can reach this section's auto-generated .fw-row(s) — same pattern
-// as the section--gap-* classes above. Default (left) needs no class.
-$halign = isset( $atts['column_halign'] ) ? (string) $atts['column_halign'] : '';
-if ( in_array( $halign, array( 'center', 'right', 'between', 'around', 'evenly' ), true ) ) {
-	$section_extra_classes .= ' section--cols-' . $halign;
+// Columns Horizontal Alignment (id: column_halign) — now a per-device value:
+// array( base, md, lg ). Routed through a modifier class so it can reach this
+// section's auto-generated .fw-row(s). base = section--cols-{v} (all widths); md/lg
+// add section--cols-{bp}-{v} overrides (styles.css). Default (left) needs no class.
+// A legacy scalar folds into base.
+$halign_resp = fw_akg( 'column_halign', $atts, array() );
+if ( ! is_array( $halign_resp ) ) { $halign_resp = array( 'base' => (string) $halign_resp ); }
+$halign_valid = array( 'center', 'right', 'between', 'around', 'evenly' );
+foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+	$hv = isset( $halign_resp[ $layer ] ) ? (string) $halign_resp[ $layer ] : '';
+	if ( in_array( $hv, $halign_valid, true ) ) {
+		$section_extra_classes .= ' section--cols' . $infix . '-' . $hv;
+	}
 }
 
-// Reverse column order (id: reverse_columns) → modifier class on this section's row(s).
-// "all" swaps side-by-side columns (row-reverse) and reverses the mobile stack;
-// "mobile" only reverses the stack when the columns stack on phones.
-$reverse = isset( $atts['reverse_columns'] ) ? (string) $atts['reverse_columns'] : '';
-if ( $reverse === 'all' ) {
-	$section_extra_classes .= ' section--rev';
-} elseif ( $reverse === 'tablet' ) {
-	$section_extra_classes .= ' section--rev-tablet';
-} elseif ( $reverse === 'mobile' ) {
-	$section_extra_classes .= ' section--rev-mobile';
+// Reverse column order (id: reverse_columns) → modifier classes on this section's
+// row(s). Now a per-device switch: array( base, md, lg ) of yes/no/''. base = the
+// existing `.section--rev` (row-reverse from md up, column-reverse where the columns
+// stack); md/lg add on/off overrides from their breakpoint up. A LEGACY select value
+// migrates: all → reverse everywhere; tablet → reverse < lg (base on, lg off); mobile →
+// reverse < md (base on, md off).
+$rev_raw = fw_akg( 'reverse_columns', $atts, array() );
+if ( ! is_array( $rev_raw ) ) {
+	$legacy = (string) $rev_raw;
+	if ( $legacy === 'all' )        { $rev_raw = array( 'base' => 'yes' ); }
+	elseif ( $legacy === 'mobile' ) { $rev_raw = array( 'base' => 'yes', 'md' => 'no' ); }
+	elseif ( $legacy === 'tablet' ) { $rev_raw = array( 'base' => 'yes', 'lg' => 'no' ); }
+	else                            { $rev_raw = array(); }
 }
+$rb = ( isset( $rev_raw['base'] ) && $rev_raw['base'] === 'yes' );
+$rm = ( isset( $rev_raw['md'] ) && $rev_raw['md'] !== '' ) ? ( $rev_raw['md'] === 'yes' ) : $rb;
+$rl = ( isset( $rev_raw['lg'] ) && $rev_raw['lg'] !== '' ) ? ( $rev_raw['lg'] === 'yes' ) : $rm;
+if ( $rb ) { $section_extra_classes .= ' section--rev'; }
+if ( $rm !== $rb ) { $section_extra_classes .= $rm ? ' section--rev-md-on' : ' section--rev-md-off'; }
+if ( $rl !== $rm ) { $section_extra_classes .= $rl ? ' section--rev-lg-on' : ' section--rev-lg-off'; }
 
 $container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] )
 	? 'fw-container-fluid'

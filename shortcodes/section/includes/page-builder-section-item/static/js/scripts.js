@@ -1,4 +1,19 @@
 (function (fwe) {
+	// Live section item views, re-previewed when the device toggle changes (Columns
+	// Horizontal Alignment + Column Order are now per-device). One handler on fwEvents
+	// (a plain bus, not Backbone) with a lazily-pruned registry — mirrors the column item.
+	var fwDeviceSectionViews = [];
+	fwe.on('fw:builder:device-preview', function () {
+		for (var i = fwDeviceSectionViews.length - 1; i >= 0; i--) {
+			var v = fwDeviceSectionViews[i];
+			if (!v || !v.model || !v.el || !document.body.contains(v.el)) {
+				fwDeviceSectionViews.splice(i, 1);
+				continue;
+			}
+			try { v.applyColsPreview(); } catch (e) {}
+		}
+	});
+
 	fwe.on('fw-builder:' + 'page-builder' + ':register-items', function (builder) {
 		var PageBuilderSectionItem,
 			PageBuilderSectionItemView,
@@ -34,6 +49,43 @@
 
 				this.initOptions = options;
 				this.initOptions.templateData = this.initOptions.templateData || {};
+
+				fwDeviceSectionViews.push(this); // re-preview cols/order on device toggle
+			},
+
+			// Reflect the per-device Columns Horizontal Alignment + Column Order (Reverse)
+			// on the canvas for the ACTIVE preview device. The canvas CSS
+			// (.section--cols-{v} justifies the flex row; .section--rev → row-reverse,
+			// .fw-device-sm .section--rev → column-reverse) does the visual; here we just
+			// resolve the effective value per device and toggle the base class.
+			applyColsPreview: function () {
+				if (!this.model || !this.$el) { return; }
+				var atts   = this.model.get('atts') || {};
+				var device = window.fwPbDevice || 'lg';
+				var resolveResp = function (v, d) {
+					if (v == null) { return ''; }
+					if (typeof v === 'string') { return v; }       // legacy scalar
+					var b = v.base || '', m = v.md || '', l = v.lg || '';
+					if (d === 'sm') { return b; }
+					if (d === 'md') { return m || b; }
+					return l || m || b;                              // lg
+				};
+
+				this.$el.removeClass('section--cols-center section--cols-right section--cols-between section--cols-around section--cols-evenly section--rev section--rev-tablet section--rev-mobile');
+
+				var halign = resolveResp(atts.column_halign, device);
+				if (['center', 'right', 'between', 'around', 'evenly'].indexOf(halign) !== -1) {
+					this.$el.addClass('section--cols-' + halign);
+				}
+
+				var co = atts.reverse_columns, reverse;
+				if (co && typeof co === 'object') {
+					reverse = resolveResp(co, device) === 'yes';
+				} else {
+					var rl = co || '';
+					reverse = (rl === 'all') || (rl === 'tablet' && device !== 'lg') || (rl === 'mobile' && device === 'sm');
+				}
+				if (reverse) { this.$el.addClass('section--rev'); }
 			},
 			template: _.template(
 				'<div class="pb-item-type-column pb-item custom-section">' +
@@ -92,31 +144,10 @@
 
 				this.$el[this.model.get('fw-collapse') ? 'addClass' : 'removeClass']('pb-item-section-collapsed');
 
-				// Reflect "Columns Horizontal Alignment" (atts.column_halign) on the
-				// canvas so the builder preview matches the frontend, which routes it
-				// through .section--cols-{center,right} on the <section>. The matching
-				// rule in this item's styles.css justifies the section's own flex
-				// column row. Default (left) needs no class. render() re-runs on every
-				// atts change (ItemView listens to model 'change'), so this stays live.
-				{
-					var atts    = this.model.get('atts') || {},
-						halign  = atts.column_halign ? String(atts.column_halign) : '',
-						reverse = atts.reverse_columns ? String(atts.reverse_columns) : '';
-
-					this.$el.removeClass('section--cols-center section--cols-right section--cols-between section--cols-around section--cols-evenly section--rev section--rev-tablet section--rev-mobile');
-
-					if (['center', 'right', 'between', 'around', 'evenly'].indexOf(halign) !== -1) {
-						this.$el.addClass('section--cols-' + halign);
-					}
-
-					// Reflect Column Order on the canvas. device-preview.css keys off the
-					// builder root's .fw-device-{lg|md|sm} class to apply the actual reverse per
-					// preview mode (the CSS @media rules can't fire — the canvas isn't resized to
-					// the real viewport), matching the frontend's per-breakpoint behaviour.
-					if (['all', 'tablet', 'mobile'].indexOf(reverse) !== -1) {
-						this.$el.addClass(reverse === 'all' ? 'section--rev' : 'section--rev-' + reverse);
-					}
-				}
+				// Reflect Columns Horizontal Alignment + Column Order (both per-device) on
+				// the canvas. Extracted to applyColsPreview() so the global
+				// fw:builder:device-preview handler can re-run it on a device toggle.
+				this.applyColsPreview();
 
 				// Reflect Min Height (atts.min_height) live on the canvas — WYSIWYG, so a
 				// Full-Viewport (100vh) or Custom section shows its real height while editing

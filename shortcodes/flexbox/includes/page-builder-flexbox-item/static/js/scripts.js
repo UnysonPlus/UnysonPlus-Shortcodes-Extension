@@ -1,4 +1,13 @@
 (function (fwe) {
+	var fwDeviceFlexViews = [];
+	fwe.on('fw:builder:device-preview', function () {
+		for (var i = fwDeviceFlexViews.length - 1; i >= 0; i--) {
+			var v = fwDeviceFlexViews[i];
+			if (!v || !v.model || !v.el || !document.body.contains(v.el)) { fwDeviceFlexViews.splice(i, 1); continue; }
+			try { v.applyFlexPreview(); } catch (e) {}
+		}
+	});
+
 	fwe.on('fw-builder:' + 'page-builder' + ':register-items', function (builder) {
 		var PageBuilderFlexboxItem,
 			PageBuilderFlexboxItemView,
@@ -61,10 +70,15 @@
 				this.listenTo(this.model, 'change:atts', this.render);
 				this.render();
 			},
-			// The width is a multi-picker: atts.width = { preset, custom:{ width_custom } }.
+			// Width is now responsive: atts.width = { base, md, lg }, each layer a
+			// multi-picker value { preset, custom:{ width_custom } }. The stepper drives
+			// the BASE (phone / small) layer — the per-device overrides live in the modal.
+			// A legacy flat { preset, custom } (pre-responsive) is treated as the base.
 			widthObj: function () {
 				var w = (this.model.get('atts') || {}).width;
-				return (w && typeof w === 'object') ? w : {};
+				if (!w || typeof w !== 'object') { return {}; }
+				if (typeof w.base !== 'undefined') { return (w.base && typeof w.base === 'object') ? w.base : {}; }
+				return w; // legacy flat { preset, custom }
 			},
 			preset: function () {
 				var p = this.widthObj().preset;
@@ -78,12 +92,21 @@
 				return _.findWhere(this.widths, { id: p }) ? p : 'none';
 			},
 			setId: function (id) {
-				// Stepping always sets a non-custom preset (so it overrides a Custom %).
+				// Stepping always sets a non-custom preset on the BASE layer (so it
+				// overrides a Custom %); keeps any md/lg overrides intact.
 				var a = _.extend({}, this.model.get('atts') || {});
-				var w = _.extend({}, this.widthObj());
-				if (String(w.preset) !== String(id)) {
-					w.preset = id;
-					a.width = w;
+				var w = (a.width && typeof a.width === 'object') ? a.width : {};
+				var isResp = typeof w.base !== 'undefined';
+				var base = _.extend({}, isResp
+					? ((w.base && typeof w.base === 'object') ? w.base : {})
+					: ((typeof w.preset !== 'undefined') ? w : {}));
+				if (String(base.preset) !== String(id)) {
+					base.preset = id;
+					var nw = isResp ? _.extend({}, w) : {};
+					nw.base = base;
+					if (typeof nw.md === 'undefined') { nw.md = { preset: 'none' }; }
+					if (typeof nw.lg === 'undefined') { nw.lg = { preset: 'none' }; }
+					a.width = nw;
 					this.model.set('atts', a);
 				}
 			},
@@ -177,32 +200,64 @@
 
 				this.$el[this.model.get('fw-collapse') ? 'addClass' : 'removeClass']('pb-item-section-collapsed');
 
-				// Canvas preview: reflect Direction (row = side-by-side, column = stacked)
-				// in the editor. CSS keys off fx-dir-row / fx-dir-col on the wrapper.
-				var fxAtts = this.model.get('atts') || {};
-				// Row is the DEFAULT — only an explicit 'column' stacks (a freshly dropped
-				// flexbox may have no `direction` saved yet; treat missing as row).
-				var fxIsRow = (fxAtts.direction !== 'column');
-				this.$el.toggleClass('fx-dir-row', fxIsRow);
-				this.$el.toggleClass('fx-dir-col', !fxIsRow);
-
 				// Mount the width stepper in the panel (defaultRender rebuilt the slot).
 				this.$el.find('.fx-width-slot:first').append(this.widthChangerView.$el);
 				this.widthChangerView.delegateEvents();
 
+				// Canvas preview (device-aware): direction, width sizing, justify/align.
+				// Registered on the device-preview bus so a device toggle re-runs it.
+				if (fwDeviceFlexViews.indexOf(this) === -1) { fwDeviceFlexViews.push(this); }
+				this.applyFlexPreview();
+
+				fwEvents.trigger('fw:page-builder:shortcode:flexbox:controls', {
+					$controls: this.$('.controls:first'),
+					model: this.model,
+					builder: builder
+				});
+			},
+
+			applyFlexPreview: function () {
+				var fxAtts = this.model.get('atts') || {};
+				var device = window.fwPbDevice || 'lg';
+
+				// Resolve a per-device value { base, md, lg } with the mobile-first cascade
+				// (sm->base, md->md||base, lg->lg||md||base); tolerates a legacy scalar.
+				var fxResolve = function (v, d) {
+					if (v == null) { return ''; }
+					if (typeof v === 'string') { return v; }
+					var b = v.base || '', m = v.md || '', l = v.lg || '';
+					if (d === 'sm') { return b; }
+					if (d === 'md') { return m || b; }
+					return l || m || b;
+				};
+
+				// Direction (row = side-by-side, column = stacked). CSS keys off fx-dir-row/col.
+				var fxIsRow = ( fxResolve(fxAtts.direction, device) !== 'column' );
+				this.$el.toggleClass('fx-dir-row', fxIsRow);
+				this.$el.toggleClass('fx-dir-col', !fxIsRow);
+
 				// Canvas COLUMN SIZING: size the box to its width so the editor mirrors the
-				// real layout — a 1/2 + 1/2 pair sits SIDE-BY-SIDE (the builder container is
-				// a flex row), Auto = full width. This is the proper column behavior.
-				//   • Root / Row parent      -> flex 0 0 N% + max-width N%  (flows side-by-side)
-				//   • Column parent          -> max-width N% only           (stacked, capped)
-				//   • Grow-to-Fill (not col) -> flex 1 1 0                  (absorbs free space)
-				// Parent is the owner of THIS model's sibling collection (Backbone `_item`);
-				// read it off this.model.collection (a View has no `.collection`).
+				// real layout. Parent is the owner of THIS model's sibling collection.
 				var fxParent     = this.model.collection && this.model.collection._item;
 				var fxParentType = (fxParent && fxParent.get) ? fxParent.get('type') : null;
-				var fxParentCol  = ( fxParentType === 'flexbox' && ( fxParent.get('atts') || {} ).direction === 'column' );
+				var fxParentCol  = ( fxParentType === 'flexbox' && fxResolve( ( fxParent.get('atts') || {} ).direction, device ) === 'column' );
 
-				var fxWidthObj = (fxAtts.width && typeof fxAtts.width === 'object') ? fxAtts.width : {};
+				// Width: pick the active device's layer from the responsive { base, md, lg }
+				// (each layer = { preset, custom }), mobile-first; tolerate a legacy flat shape.
+				var fxWidthObj;
+				(function () {
+					var wr = fxAtts.width;
+					if (wr && typeof wr === 'object' && typeof wr.base !== 'undefined') {
+						var lay  = function (x) { return (x && typeof x === 'object') ? x : {}; };
+						var setP = function (x) { x = lay(x); return x.preset && x.preset !== 'none' && x.preset !== ''; };
+						var b = lay(wr.base);
+						if (device === 'sm')      { fxWidthObj = b; }
+						else if (device === 'md') { fxWidthObj = setP(wr.md) ? lay(wr.md) : b; }
+						else                      { fxWidthObj = setP(wr.lg) ? lay(wr.lg) : (setP(wr.md) ? lay(wr.md) : b); }
+					} else {
+						fxWidthObj = (wr && typeof wr === 'object') ? wr : {};
+					}
+				})();
 				var fxPreset   = fxWidthObj.preset ? String(fxWidthObj.preset) : 'none';
 				var fxWidthCss = '';
 				if (fxPreset === 'custom') {
@@ -214,53 +269,37 @@
 					fxWidthCss = (parseInt(fxPreset, 10) / 12 * 100) + '%';
 				}
 
-				if (fxAtts.flex_grow === 'yes' && !fxParentCol) {
+				if (fxResolve(fxAtts.flex_grow, device) === 'yes' && !fxParentCol) {
 					this.$el.css({ 'flex': '1 1 0', 'max-width': '' });
 				} else if (fxWidthCss && fxParentCol) {
 					this.$el.css({ 'flex': '', 'max-width': fxWidthCss });
 				} else if (fxWidthCss) {
 					this.$el.css({ 'flex': '0 0 ' + fxWidthCss, 'max-width': fxWidthCss });
 				} else {
-					// Auto width. A nested flexbox CONTAINER spans the FULL row (Auto =
-					// full width) — force 100% so the canvas content-sizing default (which
-					// shrinks plain ELEMENTS to their content) doesn't also shrink this
-					// container. In a Column parent it is already full-width, so leave it.
 					this.$el.css({ 'flex': fxParentCol ? '' : '0 0 100%', 'max-width': '', 'width': '' });
 				}
 
-				// Canvas preview: Justify (main axis) + Align (cross axis) applied to the
-				// flexbox's child container, plus a little height when a cross-axis align
-				// is set so the effect is visible (the real Min Height isn't used on the
-				// canvas — it would make the editor item huge).
+				// Justify (main axis) + Align (cross axis) on the flexbox's child container.
 				var $fxBox = this.$el.children('.custom-flexbox').children('.builder-items').first();
 				if ($fxBox.length) {
 					var jcMap = { start: 'flex-start', center: 'center', end: 'flex-end', between: 'space-between', around: 'space-around', evenly: 'space-evenly' };
 					var aiMap = { start: 'flex-start', center: 'center', end: 'flex-end', stretch: 'stretch', baseline: 'baseline' };
-					$fxBox.css({
-						'justify-content': jcMap[ fxAtts.justify_content ] || '',
-						'align-items':     aiMap[ fxAtts.align_items ] || ''
-					});
-					this.$el.toggleClass('fx-has-align', !!( fxAtts.align_items && aiMap[ fxAtts.align_items ] && fxAtts.align_items !== 'stretch' ));
-					this.$el.toggleClass('fx-justify', fxIsRow && !!( fxAtts.justify_content && jcMap[ fxAtts.justify_content ] ));
+					var jcv = fxResolve(fxAtts.justify_content, device);
+					var aiv = fxResolve(fxAtts.align_items, device);
+					$fxBox.css({ 'justify-content': jcMap[ jcv ] || '', 'align-items': aiMap[ aiv ] || '' });
+					this.$el.toggleClass('fx-has-align', !!( aiv && aiMap[ aiv ] && aiv !== 'stretch' ));
+					this.$el.toggleClass('fx-justify', fxIsRow && !!( jcv && jcMap[ jcv ] ));
 				}
 
-				// A direct child flexbox's width preview depends on THIS flexbox's
-				// direction (side-by-side only inside a Row). Re-render child flexboxes so
-				// their preview updates immediately when this direction changes.
+				// A direct child flexbox's width preview depends on THIS direction; re-run theirs.
 				var fxKids = this.model.get('_items');
 				if (fxKids && typeof fxKids.each === 'function') {
 					fxKids.each(function (kid) {
-						if (kid && kid.view && kid.get && kid.get('type') === 'flexbox' && typeof kid.view.render === 'function') {
-							kid.view.render();
+						if (kid && kid.view && kid.get && kid.get('type') === 'flexbox' && typeof kid.view.applyFlexPreview === 'function') {
+							kid.view.applyFlexPreview();
 						}
 					});
 				}
-
-				fwEvents.trigger('fw:page-builder:shortcode:flexbox:controls', {
-					$controls: this.$('.controls:first'),
-					model: this.model,
-					builder: builder
-				});
 			},
 			events: {
 				'click': 'editOptions',
@@ -275,6 +314,85 @@
 				if (_.isEmpty(this.initOptions.modalOptions)) {
 					return;
 				}
+
+				// Migrate legacy flat responsive atts to the new { base, md, lg } shape
+				// BEFORE the modal reads them, so a pre-existing flexbox keeps its
+				// per-device Direction / Justify when re-saved (mirrors views/view.php).
+				// Idempotent: skips values already in the new shape; collapses layers
+				// that equal the one below them so the DOM stays clean.
+				(function (self) {
+					var a = _.extend({}, self.model.get('atts') || {});
+					var changed = false;
+					var isObj = function (v) { return v && typeof v === 'object'; };
+					var collapse = function (base, mid, top) {
+						var md = (mid !== base) ? mid : '';
+						var lg = (top !== (md || base)) ? top : '';
+						return { base: base, md: md, lg: lg };
+					};
+
+					// Direction: mobile-first — base = mobile||desktop, tablet, desktop.
+					if (!isObj(a.direction)) {
+						var dBase = (a.direction === 'column') ? 'column' : 'row';
+						var dMob = (a.direction_mobile === 'row' || a.direction_mobile === 'column') ? a.direction_mobile : dBase;
+						var dTab = (a.direction_tablet === 'row' || a.direction_tablet === 'column') ? a.direction_tablet : dBase;
+						a.direction = collapse(dMob, dTab, dBase);
+						changed = true;
+					}
+
+					// Justify: synthesize md/lg only if a flat override exists.
+					if (!isObj(a.justify_content)) {
+						var jcValid = ['start', 'center', 'end', 'between', 'around', 'evenly'];
+						var jBase = String(a.justify_content || '');
+						var jMob = jcValid.indexOf(a.justify_content_mobile) !== -1 ? a.justify_content_mobile : '';
+						var jTab = jcValid.indexOf(a.justify_content_tablet) !== -1 ? a.justify_content_tablet : '';
+						if (jMob || jTab) {
+							var norm = function (v) { return jcValid.indexOf(v) !== -1 ? v : 'start'; };
+							a.justify_content = collapse(norm(jMob || jBase), norm(jTab || jBase), norm(jBase));
+						} else {
+							a.justify_content = { base: jBase, md: '', lg: '' };
+						}
+						changed = true;
+					}
+
+					// gap / align_items / align_self / order / reverse / wrap / align_content /
+					// flex_grow had no flat per-device companions — fold a legacy scalar into base.
+					['gap', 'align_items', 'align_self', 'order', 'reverse', 'wrap', 'align_content', 'flex_grow'].forEach(function (k) {
+						if (!isObj(a[k])) { a[k] = { base: String(a[k] || ''), md: '', lg: '' }; changed = true; }
+					});
+
+					// Min Height: legacy flat { value, unit } → base; else default responsive.
+					if (a.min_height && isObj(a.min_height) && typeof a.min_height.base === 'undefined') {
+						a.min_height = { base: a.min_height, md: { value: '', unit: 'vh' }, lg: { value: '', unit: 'vh' } };
+						changed = true;
+					} else if (!isObj(a.min_height)) {
+						a.min_height = { base: { value: '', unit: 'vh' }, md: { value: '', unit: 'vh' }, lg: { value: '', unit: 'vh' } };
+						changed = true;
+					}
+
+					// Width: legacy flat multi-picker { preset, custom } applied tablet-up
+					// (md); the retired Phone Width (width_phone) → base. New shape is
+					// { base, md, lg }, each a { preset, custom } layer.
+					if (a.width && isObj(a.width) && typeof a.width.base === 'undefined') {
+						var frac = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+						var wp = String(a.width_phone || '');
+						a.width = {
+							base: (frac.indexOf(wp) !== -1) ? { preset: wp } : { preset: 'none' },
+							md:   a.width,
+							lg:   { preset: 'none' }
+						};
+						changed = true;
+					} else if (!isObj(a.width)) {
+						a.width = { base: { preset: 'none' }, md: { preset: 'none' }, lg: { preset: 'none' } };
+						changed = true;
+					}
+
+					// Drop the retired flat overrides so they don't linger in saved atts.
+					['direction_mobile', 'direction_tablet', 'justify_content_mobile', 'justify_content_tablet', 'responsive_note', 'width_phone'].forEach(function (k) {
+						if (typeof a[k] !== 'undefined') { delete a[k]; changed = true; }
+					});
+
+					if (changed) { self.model.set('atts', a); }
+				})(this);
 
 				var eventData = {modalSettings: {buttons: []}};
 

@@ -243,29 +243,39 @@ $direction_choices = array(
     'row'    => $pick( $dir_uri( 'row',    __( 'Inline', 'fw' ) ),   __( 'Inline', 'fw' ), 64, 150 ),
 );
 
-// Responsive width choices: Default + 1/12…12/12 + Auto (image-picker).
+// Twelfths → lowest-terms fraction, matching the NATIVE column-width titles in the
+// builder (config.php grid.columns: 1/2, 1/3, 2/3, …) so the responsive picker reads
+// the same way instead of showing raw "6/12".
+$frac12 = array(
+    1 => '1/12', 2 => '1/6', 3 => '1/4', 4 => '1/3', 5 => '5/12', 6 => '1/2',
+    7 => '7/12', 8 => '2/3', 9 => '3/4', 10 => '5/6', 11 => '11/12', 12 => '1/1',
+);
+
+// Responsive width choices: Default + 1/12…1/1 (lowest-terms) + Auto (image-picker).
 // 45px thumbnails (1.5× the 30px base) so the bars read clearly.
 $width_choices = array( 'default' => $pick( $col_bar_uri( 0, 'default', __( 'Default', 'fw' ) ), __( 'Default', 'fw' ), 45 ) );
 for ( $i = 1; $i <= 12; $i++ ) {
-    $width_choices[ (string) $i ] = $pick( $col_bar_uri( $i, 'width', $i . '/12' ), $i . '/12', 45 );
+    $lbl = $frac12[ $i ];
+    $width_choices[ (string) $i ] = $pick( $col_bar_uri( $i, 'width', $lbl ), $lbl, 45 );
 }
 $width_choices['auto'] = $pick( $col_bar_uri( 0, 'auto', __( 'Auto', 'fw' ) ), __( 'Auto', 'fw' ), 45 );
 
-// Offset choices: None + 1/12…11/12 (image-picker).
+// Offset choices: None + 1/12…11/12 (lowest-terms) (image-picker).
 $offset_choices = array( 'none' => $pick( $col_bar_uri( 0, 'default', __( 'None', 'fw' ) ), __( 'None', 'fw' ), 45 ) );
 for ( $i = 1; $i <= 11; $i++ ) {
-    $offset_choices[ (string) $i ] = $pick( $col_bar_uri( $i, 'offset', $i . '/12' ), $i . '/12', 45 );
+    $lbl = $frac12[ $i ];
+    $offset_choices[ (string) $i ] = $pick( $col_bar_uri( $i, 'offset', $lbl ), $lbl, 45 );
 }
 
-// Trigger labels (value => label) for the popover-collapsed width/offset pickers.
-$frac_name     = array( 3 => '1/4', 4 => '1/3', 6 => '1/2', 8 => '2/3', 9 => '3/4', 12 => __( 'Full', 'fw' ) );
+// Trigger labels (value => label) for the popover-collapsed width/offset pickers —
+// same lowest-terms fractions as the tiles.
 $width_summary = array( 'default' => __( 'Default', 'fw' ), 'auto' => __( 'Auto', 'fw' ) );
 for ( $i = 1; $i <= 12; $i++ ) {
-    $width_summary[ (string) $i ] = $i . '/12' . ( isset( $frac_name[ $i ] ) ? ' (' . $frac_name[ $i ] . ')' : '' );
+    $width_summary[ (string) $i ] = $frac12[ $i ];
 }
 $offset_summary = array( 'none' => __( 'None', 'fw' ) );
 for ( $i = 1; $i <= 11; $i++ ) {
-    $offset_summary[ (string) $i ] = $i . '/12';
+    $offset_summary[ (string) $i ] = $frac12[ $i ];
 }
 
 // Mobile Order stays a plain select (First/Last are textual).
@@ -529,22 +539,25 @@ $options = array(
         'title'   => __( 'Layout', 'fw' ),
         'type'    => 'tab',
         'options' => [
-            'full_height' => [
-                'type'  => 'switch',
-                'label' => __( 'Full Height', 'fw' ),
-                'desc'  => __( 'Stretches this column\'s inner content area to the full height of its row, so colored cards line up at equal heights next to sibling columns. Adds the Bootstrap `h-100` class to the column\'s inner wrapper; the wrapper is auto-created when no other Styling pick triggers it.', 'fw' ),
-                'help'  => __( 'Turn this on for every column in a row when you want matching card heights regardless of text length. Has no visible effect on a single-column row.', 'fw' ),
-                'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
-                'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
-                'value'        => 'no',
-            ],
-
-            // ---- Alignment (content + column) — placed first, right after Full
-            // Height, because Content Alignment is the primary, recommended way to
-            // align a whole column's content at once (especially to center it). ----
-            'group_alignment' => [
+            // ---- Content arrangement + the column box, ordered by how often they are
+            // used: Content Alignment leads (the primary, recommended way to align/center
+            // a column's content at once), then Direction, Vertical Alignment, Full Height,
+            // Gap, and the column's own vertical alignment. Grouped (borderless) so they
+            // read as one cohesive block. ----
+            'group_layout' => [
                 'type'    => 'group',
                 'options' => [
+                    'content_h' => [
+                        'type'    => 'responsive',
+                        'label'   => __( 'Content Alignment', 'fw' ),
+                        'desc'    => __( 'Align the whole column\'s content at once — the simplest way to center it. Use the Phone / Tablet / Desktop tabs to set a different value per device (a blank device inherits the smaller one).', 'fw' ),
+                        'help'    => __( 'Set this to Center and the whole column\'s content centers as one, including a Special Heading\'s overline. This is usually all a centered section needs — only reach for an element\'s own alignment when a single item has to differ from the rest of the column.', 'fw' ),
+                        'value'   => [ 'base' => 'default', 'md' => '', 'lg' => '' ],
+                        'inner'   => [
+                            'type'    => 'image-picker',
+                            'choices' => $halign_choices,
+                        ],
+                    ],
                     'content_direction' => [
                         'type'    => 'image-picker',
                         'label'   => __( 'Content Direction', 'fw' ),
@@ -553,139 +566,124 @@ $options = array(
                         'value'   => 'column',
                         'choices' => $direction_choices,
                     ],
-                    'content_order' => [
-                        'type'    => 'select',
-                        'label'   => __( 'Content Order', 'fw' ),
-                        'desc'    => __( 'Show this column\'s elements in reverse order without changing the markup. It flips the stack (Stacked direction) or swaps the row (Inline direction). "On mobile only" reverses just on phones — handy for e.g. an image above the text on mobile without splitting them into separate columns.', 'fw' ),
-                        'value'   => '',
-                        'choices' => array(
-                            ''       => __( 'Default', 'fw' ),
-                            'all'    => __( 'Reversed (all screens)', 'fw' ),
-                            'tablet' => __( 'Reversed on tablet and mobile', 'fw' ),
-                            'mobile' => __( 'Reversed on mobile only', 'fw' ),
-                        ),
-                    ],
-                    'content_h' => [
-                        'type'    => 'image-picker',
-                        'label'   => __( 'Content Alignment', 'fw' ),
-                        'desc'    => __( 'Align the whole column\'s content at once — the simplest way to center it.', 'fw' ),
-                        'help'    => __( 'Set this to Center and the whole column\'s content centers as one, including a Special Heading\'s overline. This is usually all a centered section needs — only reach for an element\'s own alignment when a single item has to differ from the rest of the column.', 'fw' ),
-                        'value'   => 'default',
-                        'choices' => $halign_choices,
-                    ],
                     'content_v' => [
-                        'type'    => 'image-picker',
+                        'type'    => 'responsive',
                         'label'   => __( 'Content Vertical Alignment', 'fw' ),
-                        'desc'    => __( 'Position the elements within the column height.', 'fw' ),
+                        'desc'    => __( 'Position the elements within the column height. Use the Phone / Tablet / Desktop tabs to set a different value per device (a blank device inherits the smaller one).', 'fw' ),
                         'help'    => __( '"Top / Default" keeps them at the top. Middle / Bottom / Space Between only show when the column is taller than its content (equal-height row or Full Height on); Space Between spreads 2+ elements from top to bottom.', 'fw' ),
-                        'value'   => 'default',
-                        'choices' => $contentvalign_choices,
+                        'value'   => [ 'base' => 'default', 'md' => '', 'lg' => '' ],
+                        'inner'   => [
+                            'type'    => 'image-picker',
+                            'choices' => $contentvalign_choices,
+                        ],
+                    ],
+                    'full_height' => [
+                        'type'  => 'switch',
+                        'label' => __( 'Full Height', 'fw' ),
+                        'desc'  => __( 'Stretches this column\'s inner content area to the full height of its row, so colored cards line up at equal heights next to sibling columns. Adds the Bootstrap `h-100` class to the column\'s inner wrapper; the wrapper is auto-created when no other Styling pick triggers it.', 'fw' ),
+                        'help'  => __( 'Turn this on for every column in a row when you want matching card heights regardless of text length. Has no visible effect on a single-column row.', 'fw' ),
+                        'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                        'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
+                        'value'        => 'no',
                     ],
                     'content_gap' => [
-                        'type'    => 'short-select',
+                        'type'    => 'responsive',
                         'label'   => __( 'Gap', 'fw' ),
-                        'desc'    => __( 'Space between the column\'s elements. Uses the site Gap Scale (Theme Settings → General → Spacing → Gaps).', 'fw' ),
+                        'desc'    => __( 'Space between the column\'s elements. Uses the site Gap Scale (Theme Settings → General → Spacing → Gaps). Use the Phone / Tablet / Desktop tabs to set a different gap per device (a blank device inherits the smaller one).', 'fw' ),
                         'help'    => __( 'Works in both Stacked and Inline directions. Sizes follow your Gap Scale, so changing the scale in Theme Settings updates every column at once. Only takes effect once the column has 2+ elements.', 'fw' ),
-                        'value'   => '',
-                        'choices' => function_exists( 'sc_get_gap_select_choices' )
-                            ? sc_get_gap_select_choices( __( 'None', 'fw' ) )
-                            : array( '' => __( 'None', 'fw' ) ),
+                        'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+                        'inner'   => [
+                            'type'    => 'short-select',
+                            'choices' => function_exists( 'sc_get_gap_select_choices' )
+                                ? sc_get_gap_select_choices( __( 'None', 'fw' ) )
+                                : array( '' => __( 'None', 'fw' ) ),
+                        ],
                     ],
                     'align_self' => [
-                        'type'    => 'image-picker',
+                        'type'    => 'responsive',
                         'label'   => __( 'Column Vertical Alignment', 'fw' ),
-                        'desc'    => __( 'Align this column against its row siblings.', 'fw' ),
+                        'desc'    => __( 'Align this column against its row siblings. Use the Phone / Tablet / Desktop tabs to set a different value per device (a blank device inherits the smaller one).', 'fw' ),
                         'help'    => __( 'Only visible when the row has unequal-height columns. Default stretches to match the tallest; Top / Middle / Bottom position the column without stretching.', 'fw' ),
-                        'value'   => 'default',
-                        'choices' => $colvalign_choices,
-                    ],
-                ],
-            ],
-
-            'mobile_order' => [
-                'type'    => 'short-select',
-                'label'   => __( 'Mobile Order', 'fw' ),
-                'desc'    => __( 'Reorder this column on mobile (under 768px). Columns return to their normal order on larger screens.', 'fw' ),
-                'help'    => __( '"Default" keeps the natural order. Lower numbers appear first; "First"/"Last" jump to the ends. For predictable results, set a value on each column in the row (columns left at Default group together first).', 'fw' ),
-                'value'   => '',
-                'choices' => $order_choices,
-            ],
-
-            // ---- Responsive width (overrides the width picker per device) ----
-            'group_responsive_width' => [
-                'type'    => 'group',
-                'options' => [
-                    'w_phone' => [
-                        'type'          => 'popover',
-                        'label'         => __( 'Width — Phone', 'fw' ),
-                        'desc'          => __( 'Custom Column width overrides on phones.', 'fw' ),
-                        'help'          => __( 'Phones (under 576px). "Default" inherits full width. The width picker sets the small/tablet-up default.', 'fw' ),
-                        'value'         => 'default',
-                        'summary'       => $width_summary,
-                        'inner-options' => [
-                            'width' => [ 'type' => 'image-picker', 'label' => false, 'value' => 'default', 'choices' => $width_choices ],
-                        ],
-                    ],
-                    'w_tablet' => [
-                        'type'          => 'popover',
-                        'label'         => __( 'Width — Tablet', 'fw' ),
-                        'desc'          => __( 'Custom Column width overrides on tablets & up.', 'fw' ),
-                        'help'          => __( 'Overrides the column width from the tablet breakpoint up (md, ≥768px). "Default" keeps the inherited width.', 'fw' ),
-                        'value'         => 'default',
-                        'summary'       => $width_summary,
-                        'inner-options' => [
-                            'width' => [ 'type' => 'image-picker', 'label' => false, 'value' => 'default', 'choices' => $width_choices ],
-                        ],
-                    ],
-                    'w_desktop' => [
-                        'type'          => 'popover',
-                        'label'         => __( 'Width — Desktop', 'fw' ),
-                        'desc'          => __( 'Custom Column width overrides on desktops & up.', 'fw' ),
-                        'help'          => __( 'Overrides the column width from the desktop breakpoint up (lg, ≥992px). "Default" keeps the inherited width.', 'fw' ),
-                        'value'         => 'default',
-                        'summary'       => $width_summary,
-                        'inner-options' => [
-                            'width' => [ 'type' => 'image-picker', 'label' => false, 'value' => 'default', 'choices' => $width_choices ],
+                        'value'   => [ 'base' => 'default', 'md' => '', 'lg' => '' ],
+                        'inner'   => [
+                            'type'    => 'image-picker',
+                            'choices' => $colvalign_choices,
                         ],
                     ],
                 ],
             ],
 
-            // ---- Offset (indent the column) ----
-            'group_offset' => [
+            // ---- Width Override, Offset & Reordering — how the column sits in its row.
+            // Width/Offset replace the former six per-device popovers (Width/Offset ×
+            // Phone/Tablet/Desktop); each is a `responsive` wrapper around the original
+            // popover. Legacy w_phone/w_tablet/w_desktop + offset_phone/tablet/desktop atts
+            // migrate in the column item's scripts.js and are read as a fallback in view.php.
+            // `content_order` (Reverse Order) + `mobile_order` (Order) keep their legacy keys
+            // for back-compat with saved values. ----
+            // Width Override + Offset — how wide the column is and where it sits in its row.
+            'group_sizing' => [
                 'type'    => 'group',
                 'options' => [
-                    'offset_phone' => [
-                        'type'          => 'popover',
-                        'label'         => __( 'Offset — Phone', 'fw' ),
-                        'desc'          => __( 'Indent the column on phones.', 'fw' ),
-                        'help'          => __( 'Pushes the column right by this many 12ths on phones (under 576px). "None" = no indent.', 'fw' ),
-                        'value'         => 'none',
-                        'summary'       => $offset_summary,
-                        'inner-options' => [
-                            'offset' => [ 'type' => 'image-picker', 'label' => false, 'value' => 'none', 'choices' => $offset_choices ],
+                    'col_width' => [
+                        'type'  => 'responsive',
+                        'label' => __( 'Width Override', 'fw' ),
+                        'desc'  => __( 'Override the column\'s base width on specific devices. "Default" keeps the base width. Use the Phone / Tablet / Desktop tabs to set a different width per device.', 'fw' ),
+                        'help'  => __( 'The base width is the one you set by resizing the column (or with the ◄ N ► handle) — it applies from the small breakpoint up. This control only OVERRIDES it per device; leave a device on "Default" to inherit. "Auto" makes the column shrink to fit its content instead of taking a set fraction.', 'fw' ),
+                        'value' => [ 'base' => 'default', 'md' => '', 'lg' => '' ],
+                        'inner' => [
+                            'type'          => 'popover',
+                            'value'         => 'default',
+                            'summary'       => $width_summary,
+                            'inner-options' => [
+                                'width' => [ 'type' => 'image-picker', 'label' => false, 'value' => 'default', 'choices' => $width_choices ],
+                            ],
                         ],
                     ],
-                    'offset_tablet' => [
-                        'type'          => 'popover',
-                        'label'         => __( 'Offset — Tablet', 'fw' ),
-                        'desc'          => __( 'Indent from tablet up.', 'fw' ),
-                        'help'          => __( 'Pushes the column right by this many 12ths from the tablet breakpoint up (md, ≥768px). "None" keeps the inherited offset.', 'fw' ),
-                        'value'         => 'none',
-                        'summary'       => $offset_summary,
-                        'inner-options' => [
-                            'offset' => [ 'type' => 'image-picker', 'label' => false, 'value' => 'none', 'choices' => $offset_choices ],
+
+                    'col_offset' => [
+                        'type'  => 'responsive',
+                        'label' => __( 'Offset', 'fw' ),
+                        'desc'  => __( 'Indent the column — push it right in 12ths of the row. "None" = no indent. Use the Phone / Tablet / Desktop tabs to indent per device.', 'fw' ),
+                        'help'  => __( 'Adds a left margin equal to the chosen fraction of the row, leaving a gap before the column (e.g. a 1/4 offset pushes a 1/2 column into the right half). Combine with Width Override to place a column precisely without extra empty columns. A blank device inherits the smaller one.', 'fw' ),
+                        'value' => [ 'base' => 'none', 'md' => '', 'lg' => '' ],
+                        'inner' => [
+                            'type'          => 'popover',
+                            'value'         => 'none',
+                            'summary'       => $offset_summary,
+                            'inner-options' => [
+                                'offset' => [ 'type' => 'image-picker', 'label' => false, 'value' => 'none', 'choices' => $offset_choices ],
+                            ],
                         ],
                     ],
-                    'offset_desktop' => [
-                        'type'          => 'popover',
-                        'label'         => __( 'Offset — Desktop', 'fw' ),
-                        'desc'          => __( 'Indent from desktop up.', 'fw' ),
-                        'help'          => __( 'Pushes the column right by this many 12ths from the desktop breakpoint up (lg, ≥992px). "None" keeps the inherited offset.', 'fw' ),
-                        'value'         => 'none',
-                        'summary'       => $offset_summary,
-                        'inner-options' => [
-                            'offset' => [ 'type' => 'image-picker', 'label' => false, 'value' => 'none', 'choices' => $offset_choices ],
+                ],
+            ],
+
+            // Reverse Order + Order — reorder the column’s content / the column itself.
+            'group_reorder' => [
+                'type'    => 'group',
+                'options' => [
+                    'content_order' => [
+                        'type'    => 'responsive',
+                        'label'   => __( 'Reverse Order', 'fw' ),
+                        'desc'    => __( 'Show this column\'s elements in reverse order without changing the markup. Use the Phone / Tablet / Desktop tabs to reverse only on some devices.', 'fw' ),
+                        'help'    => __( 'Reversing flips the stack (Stacked direction) or swaps the row (Inline direction). A blank device inherits the smaller one. Handy for e.g. an image above the text on mobile but below it on desktop — set Phone to Reverse and Desktop to Default. It only reorders the visual output; the underlying markup order is unchanged.', 'fw' ),
+                        'value'   => [ 'base' => 'no', 'md' => '', 'lg' => '' ],
+                        'inner'   => [
+                            'type'         => 'switch',
+                            'left-choice'  => [ 'value' => 'no',  'label' => __( 'Default', 'fw' ) ],
+                            'right-choice' => [ 'value' => 'yes', 'label' => __( 'Reverse', 'fw' ) ],
+                        ],
+                    ],
+
+                    'mobile_order' => [
+                        'type'    => 'responsive',
+                        'label'   => __( 'Order', 'fw' ),
+                        'desc'    => __( 'Reorder this column relative to its row siblings. Use the Phone / Tablet / Desktop tabs to set the order per device (a blank device inherits the smaller one).', 'fw' ),
+                        'help'    => __( '"Default" keeps the natural order. Lower numbers appear first; "First"/"Last" jump to the ends. For predictable results, set a value on each column in the row (columns left at Default group together first). Tip: set Phone to reorder on mobile and Tablet to "0" to restore the natural order on larger screens.', 'fw' ),
+                        'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+                        'inner'   => [
+                            'type'    => 'short-select',
+                            'choices' => $order_choices,
                         ],
                     ],
                 ],

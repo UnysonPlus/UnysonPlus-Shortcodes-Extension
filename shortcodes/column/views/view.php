@@ -19,9 +19,20 @@ $col_token = function ( $bp, $v ) {
     return ( $v === 'auto' ) ? $seg : $seg . '-' . $v;
 };
 
-$w_phone   = (string) fw_akg( 'w_phone', $atts, '' );
-$w_tablet  = (string) fw_akg( 'w_tablet', $atts, '' );
-$w_desktop = (string) fw_akg( 'w_desktop', $atts, '' );
+// Per-device width overrides — now one responsive control `col_width` (base / md / lg).
+// Falls back to the legacy per-device atts (w_phone / w_tablet / w_desktop) so columns
+// saved before the merge keep rendering identically. Emit logic below is unchanged.
+$cw = fw_akg( 'col_width', $atts, null );
+if ( ! is_array( $cw ) ) {
+    $cw = array(
+        'base' => (string) fw_akg( 'w_phone', $atts, '' ),
+        'md'   => (string) fw_akg( 'w_tablet', $atts, '' ),
+        'lg'   => (string) fw_akg( 'w_desktop', $atts, '' ),
+    );
+}
+$w_phone   = (string) ( isset( $cw['base'] ) ? $cw['base'] : '' );
+$w_tablet  = (string) ( isset( $cw['md'] )   ? $cw['md']   : '' );
+$w_desktop = (string) ( isset( $cw['lg'] )   ? $cw['lg']   : '' );
 
 $w_tokens = array_values( array_filter( preg_split( '/\s+/', trim( (string) $width_class ) ) ) );
 
@@ -86,15 +97,27 @@ if ( ! empty( $width_class ) ) {
     }
 }
 
-// Mobile ordering. The row is a flex container, so CSS `order` on the column
-// (the flex item) reorders it. `fw-order-{v}` applies below the `md` breakpoint
-// (mobile + phones, <768px — matching the Column/Content Order reverse) and
-// `fw-order-md-0` resets to the natural authoring order from `md` up (where columns
-// go side-by-side). Reuses the existing utilities in
-// builder/static/css/frontend-grid.css — no new CSS.
-$mobile_order = (string) fw_akg( 'mobile_order', $atts, '' );
-if ( in_array( $mobile_order, array( 'first', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'last' ), true ) ) {
-    $attr['class'] = trim( $attr['class'] . ' fw-order-' . $mobile_order . ' fw-order-md-0' );
+// Order. The row is a flex container, so CSS `order` on the column (the flex item)
+// reorders it. Now a per-device value: array( base, md, lg ), each emitting a
+// `fw-order{-bp}-{v}` utility (frontend-grid.css). A LEGACY scalar meant "order <v>
+// below md, natural (0) from md up", so it migrates to { base:<v>, md:'0' } to
+// reproduce that exactly. base applies at all widths; md/lg override upward.
+$order_resp = fw_akg( 'mobile_order', $atts, array() );
+if ( ! is_array( $order_resp ) ) {
+    $order_resp = ( (string) $order_resp !== '' )
+        ? array( 'base' => (string) $order_resp, 'md' => '0' )
+        : array();
+}
+$order_valid   = array( 'first', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'last' );
+$order_classes = array();
+foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+    $ov = isset( $order_resp[ $layer ] ) ? (string) $order_resp[ $layer ] : '';
+    if ( in_array( $ov, $order_valid, true ) ) {
+        $order_classes[] = 'fw-order' . $infix . '-' . $ov;
+    }
+}
+if ( ! empty( $order_classes ) ) {
+    $attr['class'] = trim( $attr['class'] . ' ' . implode( ' ', $order_classes ) );
 }
 
 /*
@@ -106,18 +129,35 @@ if ( in_array( $mobile_order, array( 'first', '1', '2', '3', '4', '5', '6', '7',
 $outer_extra  = array();
 $offset_valid = array( '1','2','3','4','5','6','7','8','9','10','11' );
 
-// Offsets (phone = fw-offset-N, then md / lg).
-$o_phone = (string) fw_akg( 'offset_phone', $atts, '' );
+// Offsets — now one responsive control `col_offset` (base / md / lg). Falls back to the
+// legacy per-device atts (offset_phone / offset_tablet / offset_desktop). base =
+// fw-offset-N (all widths), then md / lg overrides.
+$co = fw_akg( 'col_offset', $atts, null );
+if ( ! is_array( $co ) ) {
+    $co = array(
+        'base' => (string) fw_akg( 'offset_phone', $atts, '' ),
+        'md'   => (string) fw_akg( 'offset_tablet', $atts, '' ),
+        'lg'   => (string) fw_akg( 'offset_desktop', $atts, '' ),
+    );
+}
+$o_phone = (string) ( isset( $co['base'] ) ? $co['base'] : '' );
+$o_tab   = (string) ( isset( $co['md'] )   ? $co['md']   : '' );
+$o_desk  = (string) ( isset( $co['lg'] )   ? $co['lg']   : '' );
 if ( in_array( $o_phone, $offset_valid, true ) ) { $outer_extra[] = 'fw-offset-' . $o_phone; }
-$o_tab = (string) fw_akg( 'offset_tablet', $atts, '' );
-if ( in_array( $o_tab, $offset_valid, true ) ) { $outer_extra[] = 'fw-offset-md-' . $o_tab; }
-$o_desk = (string) fw_akg( 'offset_desktop', $atts, '' );
-if ( in_array( $o_desk, $offset_valid, true ) ) { $outer_extra[] = 'fw-offset-lg-' . $o_desk; }
+if ( in_array( $o_tab, $offset_valid, true ) )   { $outer_extra[] = 'fw-offset-md-' . $o_tab; }
+if ( in_array( $o_desk, $offset_valid, true ) )  { $outer_extra[] = 'fw-offset-lg-' . $o_desk; }
 
-// Column self vertical alignment within the row.
-$align_self = (string) fw_akg( 'align_self', $atts, '' );
-if ( in_array( $align_self, array( 'start','center','end','stretch' ), true ) ) {
-    $outer_extra[] = 'align-self-' . $align_self;
+// Column self vertical alignment within the row — now per-device: array( base, md, lg ).
+// Each set layer emits align-self{-bp}-{v}. 'default' maps to no class (natural stretch).
+// A legacy scalar folds into base.
+$as_resp = fw_akg( 'align_self', $atts, array() );
+if ( ! is_array( $as_resp ) ) { $as_resp = array( 'base' => (string) $as_resp ); }
+$as_valid = array( 'start', 'center', 'end', 'stretch' );
+foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+    $av = isset( $as_resp[ $layer ] ) ? (string) $as_resp[ $layer ] : '';
+    if ( in_array( $av, $as_valid, true ) ) {
+        $outer_extra[] = 'align-self' . $infix . '-' . $av;
+    }
 }
 
 // Content alignment — make a flex column and position its content. These must
@@ -127,13 +167,42 @@ if ( in_array( $align_self, array( 'start','center','end','stretch' ), true ) ) 
 // wrapper exists, they'd only move the single wrapper block — "Space Between"
 // (needs 2+ children) would do nothing. We compute the tokens here and route
 // them below, once we know whether an inner wrapper is needed.
-$content_v = (string) fw_akg( 'content_v', $atts, '' );
-$content_h = (string) fw_akg( 'content_h', $atts, '' );
+// Content Alignment + Content Vertical Alignment are now per-device values:
+// array( base, md, lg ). The BASE token drives the (unchanged) axis-aware mapping
+// below; the md / lg tokens are appended as breakpoint-infixed override utilities
+// further down. A legacy scalar (pre-responsive save) folds into the base layer.
+$content_h_resp = fw_akg( 'content_h', $atts, array() );
+if ( ! is_array( $content_h_resp ) ) { $content_h_resp = array( 'base' => (string) $content_h_resp ); }
+$content_h = isset( $content_h_resp['base'] ) ? (string) $content_h_resp['base'] : '';
+$ch_md     = isset( $content_h_resp['md'] )   ? (string) $content_h_resp['md']   : '';
+$ch_lg     = isset( $content_h_resp['lg'] )   ? (string) $content_h_resp['lg']   : '';
+
+$content_v_resp = fw_akg( 'content_v', $atts, array() );
+if ( ! is_array( $content_v_resp ) ) { $content_v_resp = array( 'base' => (string) $content_v_resp ); }
+$content_v = isset( $content_v_resp['base'] ) ? (string) $content_v_resp['base'] : '';
+$cv_md     = isset( $content_v_resp['md'] )   ? (string) $content_v_resp['md']   : '';
+$cv_lg     = isset( $content_v_resp['lg'] )   ? (string) $content_v_resp['lg']   : '';
 $direction = (string) fw_akg( 'content_direction', $atts, 'column' );
 $is_row    = ( $direction === 'row' );
 // Content Order — reverse the elements. Adapts to the direction below.
-$content_order = (string) fw_akg( 'content_order', $atts, '' );
-$order_ok      = in_array( $content_order, array( 'all', 'tablet', 'mobile' ), true );
+// Content Order → per-device "Reverse" switch: array( base, md, lg ) of yes/no/''.
+// A LEGACY select value migrates: all → reverse everywhere; mobile → reverse < md (base
+// on, md off); tablet → reverse < lg (base on, lg off). base applies at all widths; md/lg
+// override upward. Reverse is literal — it no longer compensates the alignment.
+$order_raw = fw_akg( 'content_order', $atts, array() );
+if ( ! is_array( $order_raw ) ) {
+    $legacy = (string) $order_raw;
+    if ( $legacy === 'all' )        { $order_raw = array( 'base' => 'yes' ); }
+    elseif ( $legacy === 'mobile' ) { $order_raw = array( 'base' => 'yes', 'md' => 'no' ); }
+    elseif ( $legacy === 'tablet' ) { $order_raw = array( 'base' => 'yes', 'lg' => 'no' ); }
+    else                            { $order_raw = array(); }
+}
+$rev_base  = ( isset( $order_raw['base'] ) && $order_raw['base'] === 'yes' );
+$rev_md_st = ( isset( $order_raw['md'] ) && $order_raw['md'] !== '' );
+$rev_lg_st = ( isset( $order_raw['lg'] ) && $order_raw['lg'] !== '' );
+$rev_md    = $rev_md_st ? ( $order_raw['md'] === 'yes' ) : $rev_base;
+$rev_lg    = $rev_lg_st ? ( $order_raw['lg'] === 'yes' ) : $rev_md;
+$order_ok  = ( $rev_base || $rev_md_st || $rev_lg_st ); // any Reverse layer set
 // Cross-axis values (align-items) accept only start/center/end; main-axis values
 // (justify-content) additionally accept the distribute set (between/around/evenly).
 $cv_ok      = in_array( $content_v, array( 'start','center','end','between','around','evenly' ), true ); // content_v on main axis (column)
@@ -143,68 +212,92 @@ $ch_main    = in_array( $content_h, array( 'start','center','end','between','aro
 // Gap between elements → flex `gap` via the theme-aware `--gap-{slug}` CSS
 // variable (generated from the Gap Scale in css-tokens.php). Slug is
 // sanitised so a tampered att can't inject anything into the var() ref.
-$gap_slug = preg_replace( '/[^a-z0-9_-]/i', '', (string) fw_akg( 'content_gap', $atts, '' ) );
-$gap_ok   = ( $gap_slug !== '' );
+// Gap is now a per-device value: array( base, md, lg ) of Gap-Scale slugs. Each set
+// layer emits a `sc-cgap{-bp}-{slug}` utility (generated in css-tokens.php →
+// gap:var(--gap-{slug})). A legacy scalar folds into base.
+$gap_resp = fw_akg( 'content_gap', $atts, array() );
+if ( ! is_array( $gap_resp ) ) { $gap_resp = array( 'base' => (string) $gap_resp ); }
+$gap_base = preg_replace( '/[^a-z0-9_-]/i', '', (string) ( isset( $gap_resp['base'] ) ? $gap_resp['base'] : '' ) );
+$gap_md   = preg_replace( '/[^a-z0-9_-]/i', '', (string) ( isset( $gap_resp['md'] )   ? $gap_resp['md']   : '' ) );
+$gap_lg   = preg_replace( '/[^a-z0-9_-]/i', '', (string) ( isset( $gap_resp['lg'] )   ? $gap_resp['lg']   : '' ) );
+$gap_ok   = ( $gap_base !== '' || $gap_md !== '' || $gap_lg !== '' );
 
 $content_align_tokens = array();
 $content_align_style  = '';
-if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok ) {
+if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $ch_lg !== '' || $cv_md !== '' || $cv_lg !== '' ) {
     $content_align_tokens[] = 'd-flex';
 
-    // Direction + Content Order (reverse). Reverse adapts to the direction — inline →
-    // row-reverse, stacked → column-reverse. "mobile" reverses only <768px: the base
-    // -reverse class applies everywhere, then flex-md-{dir} resets it at md+ (>=768px).
+    // Direction + Reverse (Content Order). Direction is a single value; Reverse is now a
+    // per-device switch. Each layer picks flex-{dir} or flex-{dir}-reverse, emitted only
+    // when its effective reverse differs from the smaller layer (mobile-first cascade).
     $dir = $is_row ? 'row' : 'column';
-    if ( $content_order === 'all' ) {
-        $content_align_tokens[] = 'flex-' . $dir . '-reverse';
-    } elseif ( $content_order === 'tablet' ) {
-        $content_align_tokens[] = 'flex-' . $dir . '-reverse';
-        $content_align_tokens[] = 'flex-lg-' . $dir; // reset to normal at >=992px (desktop)
-    } elseif ( $content_order === 'mobile' ) {
-        $content_align_tokens[] = 'flex-' . $dir . '-reverse';
-        $content_align_tokens[] = 'flex-md-' . $dir; // reset to normal at >=768px (tablet up)
-    } else {
-        $content_align_tokens[] = 'flex-' . $dir;
+    $content_align_tokens[] = $rev_base ? 'flex-' . $dir . '-reverse' : 'flex-' . $dir;
+    if ( $rev_md !== $rev_base ) {
+        $content_align_tokens[] = $rev_md ? 'flex-md-' . $dir . '-reverse' : 'flex-md-' . $dir;
+    }
+    if ( $rev_lg !== $rev_md ) {
+        $content_align_tokens[] = $rev_lg ? 'flex-lg-' . $dir . '-reverse' : 'flex-lg-' . $dir;
     }
 
     if ( $is_row ) { $content_align_tokens[] = 'flex-wrap'; }
 
-    // Axis-aware mapping: a row swaps the flex axes, so "Content Alignment"
-    // (always meaning horizontal) drives justify-content in a row but
-    // align-items in a column — and vice-versa for "Content Vertical
-    // Alignment" — keeping both option labels honest in either direction.
-    // The distribute values (between/around/evenly) exist only on the main axis
-    // (justify-content), so they're ignored whenever an alignment lands on the
-    // cross axis (align-items), which has no space-* values.
-    // Justify-content on the MAIN axis, compensated for a reversed order so the content
-    // KEEPS its position: reversing flips the main axis, so start<->end must swap to look
-    // the same (center + the distribute values are symmetric). "all" flips at every width;
-    // the responsive levels flip below their breakpoint and restore it above (justify-md/lg-*).
-    $main_justify = function ( $val, $has ) use ( $content_order, $order_ok ) {
-        $flip = array( 'start' => 'end', 'end' => 'start' );
-        $v    = $has ? $val : 'start'; // default alignment reads as start (left / top)
-        if ( ! $order_ok ) {
-            return $has ? array( 'justify-content-' . $v ) : array();
-        }
-        $f = isset( $flip[ $v ] ) ? $flip[ $v ] : $v;
-        if ( $content_order === 'all' ) {
-            return array( 'justify-content-' . $f );
-        }
-        $bp = ( $content_order === 'tablet' ) ? 'lg' : 'md';
-        return array( 'justify-content-' . $f, 'justify-content-' . $bp . '-' . $v );
-    };
-
+    // Axis-aware mapping: a row swaps the flex axes, so "Content Alignment" drives
+    // justify-content in a row but align-items in a column — and vice-versa for "Content
+    // Vertical Alignment". Reverse is now LITERAL (no alignment compensation), so Order and
+    // Alignment are fully independent. The distribute values (between/around/evenly) exist
+    // only on the main axis (justify-content).
     if ( $is_row ) {
-        $content_align_tokens = array_merge( $content_align_tokens, $main_justify( $content_h, $ch_main ) );
+        if ( $ch_main ) { $content_align_tokens[] = 'justify-content-' . $content_h; }
         if ( in_array( $content_v, array( 'start','center','end' ), true ) ) {
             $content_align_tokens[] = 'align-items-' . $content_v;
         }
     } else {
-        $content_align_tokens = array_merge( $content_align_tokens, $main_justify( $content_v, $cv_ok ) );
+        if ( $cv_ok ) { $content_align_tokens[] = 'justify-content-' . $content_v; }
         if ( $ch_cross ) { $content_align_tokens[] = 'align-items-' . $content_h; }
     }
 
-    if ( $gap_ok ) { $content_align_style = 'gap:var(--gap-' . $gap_slug . ');'; }
+    // Responsive Content-alignment overrides (md / lg) — additive breakpoint-infixed
+    // utilities layered ON TOP of the base mapping above, so existing (base-only)
+    // columns render byte-for-byte as before. Axis-aware like the base: a row swaps
+    // the flex axes, so Content Alignment drives justify-content in a row / align-items
+    // in a column, and Content Vertical Alignment does the opposite. Only emitted for a
+    // device the user actually set.
+    $ch_emit = function ( $token, $bp ) use ( $is_row ) {
+        $infix = '-' . $bp;
+        if ( $is_row ) {
+            $ok = in_array( $token, array( 'start', 'center', 'end', 'between', 'around', 'evenly' ), true );
+            return $ok ? 'justify-content' . $infix . '-' . $token : '';
+        }
+        $ok = in_array( $token, array( 'start', 'center', 'end' ), true );
+        return $ok ? 'align-items' . $infix . '-' . $token : '';
+    };
+    // content_v is the opposite axis of content_h: main (justify) in a column, cross
+    // (align-items) in a row.
+    $cv_emit = function ( $token, $bp ) use ( $is_row ) {
+        $infix = '-' . $bp;
+        if ( $is_row ) {
+            $ok = in_array( $token, array( 'start', 'center', 'end' ), true );
+            return $ok ? 'align-items' . $infix . '-' . $token : '';
+        }
+        $ok = in_array( $token, array( 'start', 'center', 'end', 'between', 'around', 'evenly' ), true );
+        return $ok ? 'justify-content' . $infix . '-' . $token : '';
+    };
+    foreach ( array( 'md' => $ch_md, 'lg' => $ch_lg ) as $bp => $tok ) {
+        if ( $tok === '' ) { continue; }
+        $cls = $ch_emit( $tok, $bp );
+        if ( $cls !== '' ) { $content_align_tokens[] = $cls; }
+    }
+    foreach ( array( 'md' => $cv_md, 'lg' => $cv_lg ) as $bp => $tok ) {
+        if ( $tok === '' ) { continue; }
+        $cls = $cv_emit( $tok, $bp );
+        if ( $cls !== '' ) { $content_align_tokens[] = $cls; }
+    }
+
+    // Gap → per-breakpoint flex-gap utilities (base + md/lg), replacing the old inline
+    // gap style so a different gap per device is possible.
+    if ( $gap_base !== '' ) { $content_align_tokens[] = 'sc-cgap-' . $gap_base; }
+    if ( $gap_md !== '' )   { $content_align_tokens[] = 'sc-cgap-md-' . $gap_md; }
+    if ( $gap_lg !== '' )   { $content_align_tokens[] = 'sc-cgap-lg-' . $gap_lg; }
 }
 
 // Position + Z-Index now come from the shared Advanced-tab control (element_position),
