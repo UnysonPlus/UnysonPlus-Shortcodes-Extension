@@ -1,0 +1,7 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "classic" design is used. */
+/* =============================================================================
+ * Design skins
+ * ========================================================================== */
+/* Classic — bordered cards, featured accent border. */
+.fw-pt--design-classic .fw-pt__plan { border: 1px solid rgba(0, 0, 0, .12); }
+.fw-pt--design-classic .fw-pt__plan.is-featured { border-color: var(--pt-accent); box-shadow: 0 0 0 1px var(--pt-accent); }

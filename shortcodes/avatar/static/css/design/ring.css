@@ -1,0 +1,8 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "ring" design is used. */
+/* Accent Ring — a gap between the avatar and the ring (Instagram-style). */
+.fw-avatar-sc.fw-avatar--ring .fw-avatar {
+	box-shadow:
+		0 0 0 max(2px, calc(var(--av-size) * 0.05)) #fff,
+		0 0 0 max(4px, calc(var(--av-size) * 0.10)) var(--av-ring);
+}
+.fw-avatar-sc.fw-avatar--ring { --av-ring: #4a90d9; }

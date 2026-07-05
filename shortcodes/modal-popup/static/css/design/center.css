@@ -1,0 +1,7 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "center" design is used. */
+/* Centered card ------------------------------------------------------------ */
+.fw-mp--design-center { align-items: center; justify-content: center; padding: 5vh 1rem; }
+.fw-mp--design-center .fw-mp__dialog { width: 100%; max-height: 90vh; border-radius: .8rem; padding: 2rem; }
+.fw-mp--design-center.fw-mp--size-sm .fw-mp__dialog { max-width: 420px; }
+.fw-mp--design-center.fw-mp--size-md .fw-mp__dialog { max-width: 620px; }
+.fw-mp--design-center.fw-mp--size-lg .fw-mp__dialog { max-width: 880px; }

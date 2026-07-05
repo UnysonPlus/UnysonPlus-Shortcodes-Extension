@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "overlay-center" design is used. */
+/* overlay-center — centered icon/title, full scrim */
+.imgbox--design-overlay-center .imgbox__overlay { justify-content: center; align-items: center; text-align: center; }
+.imgbox--design-overlay-center .imgbox__overlay-inner { align-items: center; }

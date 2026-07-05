@@ -1,0 +1,9 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "badge" design is used. */
+/* Badge */
+.imgbox--design-badge .imgbox__frame-box {
+    border: 3px solid var(--imgbox-accent);
+    border-radius: var(--imgbox-radius);
+    padding: 8px;
+}
+.imgbox--design-badge .imgbox__media { border-radius: 2px; }
+.imgbox--design-badge .imgbox__body { padding: .65rem .35rem .25rem; }

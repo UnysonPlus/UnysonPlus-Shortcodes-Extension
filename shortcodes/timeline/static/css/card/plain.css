@@ -1,0 +1,3 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "plain" design is used. */
+.fw-tl--card-plain .fw-tl__card { background: transparent; padding: 0; }
+.fw-tl--card-plain .fw-tl__image { margin: 0 0 .9rem; border-radius: .5rem; }

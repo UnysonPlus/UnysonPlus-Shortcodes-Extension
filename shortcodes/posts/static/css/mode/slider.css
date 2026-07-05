@@ -1,0 +1,29 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "slider" design is used. */
+/* Slider: horizontal scroll-snap (no library dependency) */
+.posts--mode-slider .posts__grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: var(--posts-col-gap);
+    scrollbar-width: thin;
+}
+.posts--mode-slider .posts__card {
+    flex: 0 0 calc((100% - (var(--posts-cols-d) - 1) * var(--posts-col-gap)) / var(--posts-cols-d));
+    scroll-snap-align: start;
+}
+
+/* ==========================================================================
+   Slider arrow / dot positioning
+   ========================================================================== */
+.posts--mode-slider                          { position: relative; }
+.posts--mode-slider[data-slider-arrows="hidden"] .posts__slider-arrow { display: none; }
+.posts--mode-slider[data-slider-arrows="outside"] .posts__slider-arrow--prev { left: -2.5rem; }
+.posts--mode-slider[data-slider-arrows="outside"] .posts__slider-arrow--next { right: -2.5rem; }
+.posts--mode-slider[data-slider-arrows="above"]   { padding-top: 3rem; }
+.posts--mode-slider[data-slider-arrows="above"] .posts__slider-arrow { top: 0; transform: none; }
+.posts--mode-slider[data-slider-arrows="above"] .posts__slider-arrow--prev { left: auto; right: 3rem; }
+.posts--mode-slider[data-slider-arrows="above"] .posts__slider-arrow--next { right: 0; }
+.posts--mode-slider[data-slider-dots="hidden"] .posts__slider-dots { display: none; }
+.posts--mode-slider[data-slider-dots="overlay-bottom"] .posts__slider-dots {
+    position: absolute; bottom: 0.5rem; left: 0; right: 0; margin: 0; z-index: 2;
+}

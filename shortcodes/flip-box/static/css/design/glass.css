@@ -1,0 +1,9 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "glass" design is used. */
+/* Glass — translucent + blur (best over a section background / image). */
+.fw-fb--design-glass .fw-fb__face {
+	background: rgba(255, 255, 255, .14);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, .35);
+	color: #fff;
+}

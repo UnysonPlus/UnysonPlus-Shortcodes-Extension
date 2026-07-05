@@ -1,0 +1,11 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "marker" design is used. */
+/* Marker — highlighter swipe behind the text. */
+.fw-hl--fx-marker .fw-hl__text {
+	background: linear-gradient(120deg, var(--hl-accent) 0%, var(--hl-accent) 100%);
+	background-repeat: no-repeat;
+	background-size: 100% .55em;
+	background-position: 0 80%;
+	padding: 0 .08em;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+}

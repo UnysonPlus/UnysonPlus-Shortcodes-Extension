@@ -1,0 +1,7 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "outline" design is used. */
+/* Outline — transparent cards with an accent outline on featured. */
+.fw-pt--design-outline .fw-pt__plan { background: transparent; border: 2px solid rgba(0, 0, 0, .12); }
+.fw-pt--design-outline .fw-pt__plan.is-featured { border-color: var(--pt-accent); }
+.fw-pt--design-outline .fw-pt__btn { background: transparent; color: var(--pt-accent); }
+.fw-pt--design-outline .fw-pt__plan.is-featured .fw-pt__btn,
+.fw-pt--design-outline .fw-pt__btn:hover { background: var(--pt-accent); color: #fff; }

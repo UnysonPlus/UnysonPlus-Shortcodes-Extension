@@ -34,3 +34,29 @@ if ( ! function_exists( '_fw_tl_enqueue_design_css' ) ) :
 	}
 	add_action( 'fw_ext_shortcodes_enqueue_static:timeline', '_fw_tl_enqueue_design_css' );
 endif;
+
+/* Per-CARD-STYLE CSS gating — only the chosen card style (outline / plain;
+   'card' is the default, covered by the base) loads. */
+if ( ! function_exists( '_fw_tl_enqueue_card_css' ) ) :
+	function _fw_tl_enqueue_card_css( $data ) {
+		$atts = shortcode_parse_atts( $data['atts_string'] );
+		if ( ! is_array( $atts ) ) { return; }
+		$post_id = ( isset( $data['post'] ) && isset( $data['post']->ID ) ) ? $data['post']->ID : 0;
+		$atts    = fw_ext_shortcodes_decode_attr( $atts, 'timeline', $post_id );
+		if ( is_wp_error( $atts ) || ! is_array( $atts ) ) { return; }
+		$card = fw_akg( 'card_style', $atts, 'card' );
+		$card = is_string( $card ) ? sanitize_file_name( $card ) : 'card';
+		if ( $card === '' ) { return; }
+		$path = dirname( __FILE__ ) . '/static/css/card/' . $card . '.css';
+		if ( file_exists( $path ) ) {
+			$ext = fw_ext( 'shortcodes' );
+			wp_enqueue_style(
+				'fw-shortcode-timeline-card-' . $card,
+				$ext->get_declared_URI( '/shortcodes/timeline/static/css/card/' . $card . '.css' ),
+				array( 'fw-shortcode-timeline' ),
+				$ext->manifest->get_version()
+			);
+		}
+	}
+	add_action( 'fw_ext_shortcodes_enqueue_static:timeline', '_fw_tl_enqueue_card_css' );
+endif;

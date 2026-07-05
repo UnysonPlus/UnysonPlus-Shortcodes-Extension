@@ -61,8 +61,10 @@
 	background: color-mix(in srgb, var(--ev, var(--ev-blue)) 13%, transparent);
 	color: var(--cal-text);
 	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}@supports not (background: color-mix(in srgb, red, blue)) {
+ .fw-cal__ev { background: rgba(74,144,217,.13); }
 }
-@supports not (background: color-mix(in srgb, red, blue)) { .fw-cal__ev { background: rgba(74,144,217,.13); } }
+
 .fw-cal__ev:hover { filter: brightness(.97); }
 .fw-cal__ev-time { font-weight: 700; margin-right: .3em; color: var(--ev, var(--ev-blue)); }
 .fw-cal__ev--blue { --ev: var(--ev-blue); } .fw-cal__ev--green { --ev: var(--ev-green); }
@@ -76,8 +78,10 @@
 .fw-cal__list ul { list-style: none; margin: 0; padding: 0; }
 .fw-cal__li { display: flex; align-items: center; gap: .9rem; padding: .55rem 0; border-bottom: 1px solid var(--cal-line); }
 .fw-cal__li:last-child { border-bottom: 0; }
-.fw-cal__li-date { flex: 0 0 auto; width: 2.8rem; text-align: center; line-height: 1; padding: .35rem 0; border-radius: .5rem; background: color-mix(in srgb, var(--ev, var(--ev-blue)) 12%, transparent); }
-@supports not (background: color-mix(in srgb, red, blue)) { .fw-cal__li-date { background: rgba(74,144,217,.12); } }
+.fw-cal__li-date { flex: 0 0 auto; width: 2.8rem; text-align: center; line-height: 1; padding: .35rem 0; border-radius: .5rem; background: color-mix(in srgb, var(--ev, var(--ev-blue)) 12%, transparent); }@supports not (background: color-mix(in srgb, red, blue)) {
+ .fw-cal__li-date { background: rgba(74,144,217,.12); }
+}
+
 .fw-cal__li--blue { --ev: var(--ev-blue); } .fw-cal__li--green { --ev: var(--ev-green); } .fw-cal__li--amber { --ev: var(--ev-amber); }
 .fw-cal__li--red { --ev: var(--ev-red); } .fw-cal__li--purple { --ev: var(--ev-purple); } .fw-cal__li--teal { --ev: var(--ev-teal); }
 .fw-cal__li-d { display: block; font-size: 1.25rem; font-weight: 800; color: var(--ev, var(--ev-blue)); }
@@ -87,37 +91,6 @@
 a.fw-cal__li-title:hover { color: var(--cal-accent); }
 .fw-cal__li-time { display: block; font-size: .8rem; color: var(--cal-muted); }
 
-/* =============================================================================
- * Designs
- * ========================================================================== */
-/* Minimal — borderless, airy. */
-.fw-cal--design-minimal .fw-cal__cell { border: 0; background: transparent; min-height: 5.4rem; }
-.fw-cal--design-minimal .fw-cal__grid .fw-cal__cell { border: 0; }
-.fw-cal--design-minimal .fw-cal__cell.is-out { background: transparent; opacity: .5; }
-.fw-cal--design-minimal .fw-cal__btn { border-color: transparent; background: transparent; }
-
-/* Cards — each day a floating card. */
-.fw-cal--design-cards .fw-cal__grid { gap: .5rem; }
-.fw-cal--design-cards .fw-cal__weekdays { margin-bottom: .25rem; }
-.fw-cal--design-cards .fw-cal__cell { border: 1px solid var(--cal-line); border-radius: .7rem; box-shadow: 0 4px 14px rgba(20,40,80,.05); }
-.fw-cal--design-cards .fw-cal__grid .fw-cal__cell { border: 1px solid var(--cal-line); }
-.fw-cal--design-cards .fw-cal__cell.is-out { box-shadow: none; opacity: .65; }
-
-/* Bordered — strong grid + header band. */
-.fw-cal--design-bordered .fw-cal__weekdays { background: var(--cal-accent); border-radius: .5rem .5rem 0 0; }
-.fw-cal--design-bordered .fw-cal__wd { color: #fff; }
-.fw-cal--design-bordered .fw-cal__cell { border-color: #d7dee7; }
-.fw-cal--design-bordered .fw-cal__grid { border-right: 1px solid #d7dee7; border-bottom: 1px solid #d7dee7; }
-
-/* Dark. */
-.fw-cal--design-dark {
-	--cal-text: #e7ecf2; --cal-muted: #8b97a8; --cal-line: #2b3441;
-	--cal-cell-bg: #1b222c; --cal-out: #161b23; --cal-bg: #11161d;
-	background: var(--cal-bg); padding: 1.1rem; border-radius: .8rem;
-}
-.fw-cal--design-dark .fw-cal__btn { background: #232c38; }
-.fw-cal--design-dark .fw-cal__ev { color: #e7ecf2; }
-
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {
 	.fw-cal__cell { min-height: 4.4rem; padding: .25rem .2rem; }
@@ -125,5 +98,6 @@ a.fw-cal__li-title:hover { color: var(--cal-accent); }
 	.fw-cal__ev-title, .fw-cal__ev-time { display: none; }
 	.fw-cal__events { flex-direction: row; flex-wrap: wrap; gap: .2rem; }
 	.fw-cal__more { font-size: .6rem; }
+}@media (prefers-reduced-motion: reduce) {
+ .fw-cal__btn { transition: none; }
 }
-@media (prefers-reduced-motion: reduce) { .fw-cal__btn { transition: none; } }

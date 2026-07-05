@@ -1,0 +1,8 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "minimal" design is used. */
+/* Minimal — borderless with divider lines. */
+.fw-pt--design-minimal .fw-pt__plan { background: transparent; border-right: 1px solid rgba(0, 0, 0, .08); border-radius: 0; }
+.fw-pt--design-minimal .fw-pt__grid > .fw-pt__plan:last-child { border-right: 0; }
+.fw-pt--design-minimal .fw-pt__plan.is-featured { background: rgba(0, 0, 0, .03); }@media (max-width: 576px) {
+
+	.fw-pt--design-minimal .fw-pt__plan { border-right: 0; border-bottom: 1px solid rgba(0, 0, 0, .08); }
+}

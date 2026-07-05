@@ -1,0 +1,14 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "masonry" design is used. */
+/* Masonry: CSS multi-column layout (no JS dependency) */
+.posts--mode-masonry .posts__grid {
+    display: block;
+    column-count: var(--posts-cols-d);
+    column-gap: var(--posts-col-gap);
+}
+.posts--mode-masonry .posts__card {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: var(--posts-row-gap);
+    break-inside: avoid;
+}
+.posts--mode-masonry .posts__card--span-2 { column-span: all; }

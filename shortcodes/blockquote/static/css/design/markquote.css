@@ -1,0 +1,6 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "markquote" design is used. */
+/* Big quote mark behind the text. */
+.fw-bq--design-markquote { position: relative; padding: 2.5rem 0 .5rem 1rem; background: var(--bq-bg); }
+.fw-bq--design-markquote .fw-bq__mark { position: absolute; top: -.2rem; left: -.2rem; font-size: 6rem; line-height: 1; color: var(--bq-accent); opacity: .18; z-index: 0; }
+.fw-bq--design-markquote .fw-bq__quote { position: relative; z-index: 1; }
+.fw-bq--design-markquote .fw-bq__text { font-size: 1.45rem; }

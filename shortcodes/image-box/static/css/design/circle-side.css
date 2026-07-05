@@ -1,0 +1,10 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "circle-side" design is used. */
+/* ==========================================================================
+   MORE DESIGNS
+   ========================================================================== */
+
+/* Circle Side — round image beside text (reuses the side part) */
+.imgbox--design-circle-side .imgbox__media {
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50%;
+}

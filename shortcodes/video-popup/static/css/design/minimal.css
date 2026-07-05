@@ -1,0 +1,7 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "minimal" design is used. */
+/* The separating ring doesn't suit the borderless / pre-ringed skins. */
+.fw-vp--design-minimal .fw-vp__btn::before,
+.fw-vp--design-outline .fw-vp__btn::before,
+.fw-vp--design-pulse   .fw-vp__btn::before { display: none; }
+.fw-vp--design-minimal .fw-vp__btn { background: transparent; box-shadow: none; color: #fff; }
+.fw-vp--design-minimal .fw-vp__triangle { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); width: 70%; height: 70%; }

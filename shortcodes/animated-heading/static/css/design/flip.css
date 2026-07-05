@@ -1,0 +1,2 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "flip" design is used. */
+.fw-ah--anim-flip  .fw-ah__word.run { animation-name: fw-ah-flip; transform-origin: top center; }

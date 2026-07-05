@@ -1,0 +1,14 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "horizontal" design is used. */
+/* ---------- Horizontal ---------- */
+.fw-steps--design-horizontal { display: flex; gap: 1rem; }
+.fw-steps--design-horizontal .fw-steps__item { flex: 1 1 0; text-align: center; padding: 0 .5rem; }
+.fw-steps--design-horizontal .fw-steps__marker { margin: 0 auto .9rem; }
+.fw-steps--design-horizontal .fw-steps__connector {
+	display: block; position: absolute; top: calc(var(--st-size) / 2);
+	left: calc(-50% + (var(--st-size) / 2)); width: calc(100% - var(--st-size));
+	height: 2px; background: var(--st-line); z-index: 0;
+}
+.fw-steps--design-horizontal .fw-steps__item:first-child .fw-steps__connector { display: none; }
+
+/* ---------- Connector styles ---------- */
+.fw-steps--connector-dashed.fw-steps--design-horizontal .fw-steps__connector { background: none; border-top: 2px dashed var(--st-line); height: 0; }

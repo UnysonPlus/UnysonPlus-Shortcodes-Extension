@@ -1,0 +1,17 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "overlay-frame" design is used. */
+/* overlay-frame — inset border line draws in on hover, content centered */
+.imgbox--design-overlay-frame .imgbox__overlay { justify-content: center; align-items: center; text-align: center; }
+.imgbox--design-overlay-frame .imgbox__overlay-inner { align-items: center; }
+.imgbox--design-overlay-frame .imgbox__frame-line {
+    display: block;
+    position: absolute;
+    inset: 14px;
+    z-index: 2;
+    border: 1px solid rgba(255,255,255,.7);
+    opacity: 0;
+    transform: scale(1.04);
+    transition: opacity var(--imgbox-dur) ease, transform var(--imgbox-dur) ease;
+    pointer-events: none;
+}
+.imgbox--design-overlay-frame:hover .imgbox__frame-line,
+.imgbox--design-overlay-frame .imgbox__link:hover .imgbox__frame-line { opacity: 1; transform: scale(1); }

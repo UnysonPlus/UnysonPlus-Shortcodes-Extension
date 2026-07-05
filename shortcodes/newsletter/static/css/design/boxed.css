@@ -1,0 +1,2 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "boxed" design is used. */
+.fw-nl--design-boxed { background: var(--nl-bg); border-radius: .9rem; padding: 2rem; }

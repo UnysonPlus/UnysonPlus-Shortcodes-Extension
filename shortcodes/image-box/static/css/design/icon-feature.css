@@ -1,0 +1,11 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "icon-feature" design is used. */
+/* ==========================================================================
+   FEATURE (small image, content below)
+   ========================================================================== */
+.imgbox--design-icon-feature .imgbox__media {
+    width: 96px;
+    margin: 0 auto;
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+}
+.imgbox--design-icon-feature .imgbox__body { text-align: center; padding-top: 1rem; }

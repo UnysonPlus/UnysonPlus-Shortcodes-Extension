@@ -1,0 +1,12 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "gradient" design is used. */
+/* Gradient fill. */
+.fw-hl--fx-gradient .fw-hl__text {
+	background: linear-gradient(135deg, var(--hl-accent), var(--hl-accent2));
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	-webkit-text-fill-color: transparent;
+}@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+
+	.fw-hl--fx-gradient .fw-hl__text { color: var(--hl-accent2); -webkit-text-fill-color: currentColor; }
+}

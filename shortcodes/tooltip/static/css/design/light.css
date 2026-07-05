@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "light" design is used. */
+/* Themes ------------------------------------------------------------------- */
+.fw-tt--design-light { --tt-bg: #ffffff; --tt-color: #1f2530; }
+.fw-tt--design-light .fw-tt__bubble { border: 1px solid rgba(0, 0, 0, .1); }

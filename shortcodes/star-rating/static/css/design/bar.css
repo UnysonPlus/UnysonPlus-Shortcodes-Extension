@@ -1,0 +1,11 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "bar" design is used. */
+/* Bar ---------------------------------------------------------------------- */
+.fw-sr--design-bar .fw-sr__symbols {
+	display: block;
+	width: 180px;
+	height: calc(var(--sr-size) * .55);
+	background: var(--sr-empty);
+	border-radius: 1em;
+	overflow: hidden;
+}
+.fw-sr--design-bar .fw-sr__bar { height: 100%; background: var(--sr-fill); border-radius: 1em; }

@@ -1,0 +1,7 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "cards" design is used. */
+/* Cards — each day a floating card. */
+.fw-cal--design-cards .fw-cal__grid { gap: .5rem; }
+.fw-cal--design-cards .fw-cal__weekdays { margin-bottom: .25rem; }
+.fw-cal--design-cards .fw-cal__cell { border: 1px solid var(--cal-line); border-radius: .7rem; box-shadow: 0 4px 14px rgba(20,40,80,.05); }
+.fw-cal--design-cards .fw-cal__grid .fw-cal__cell { border: 1px solid var(--cal-line); }
+.fw-cal--design-cards .fw-cal__cell.is-out { box-shadow: none; opacity: .65; }

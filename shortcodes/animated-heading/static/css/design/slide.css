@@ -1,0 +1,2 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "slide" design is used. */
+.fw-ah--anim-slide .fw-ah__word.run { animation-name: fw-ah-slide; }

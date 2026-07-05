@@ -23,10 +23,11 @@
 	font: inherit;
 	border-radius: .45rem;
 }
-.fw-nl__input:focus { outline: none; border-color: var(--nl-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--nl-accent) 25%, transparent); }
-@supports not (box-shadow: 0 0 0 3px color-mix(in srgb, red 25%, transparent)) {
+.fw-nl__input:focus { outline: none; border-color: var(--nl-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--nl-accent) 25%, transparent); }@supports not (box-shadow: 0 0 0 3px color-mix(in srgb, red 25%, transparent)) {
+
 	.fw-nl__input:focus { box-shadow: 0 0 0 3px rgba(74, 144, 217, .25); }
 }
+
 .fw-nl__btn {
 	flex: 0 0 auto;
 	padding: .8em 1.5em;
@@ -57,20 +58,8 @@
 .fw-nl__msg { margin-top: .7rem; font-weight: 600; min-height: 1.2em; }
 .fw-nl__msg.is-success { color: #2e9e5b; }
 .fw-nl__msg.is-error { color: #c0392b; }
-
-/* Designs ------------------------------------------------------------------ */
-.fw-nl--design-stacked .fw-nl__fields { flex-direction: column; }
-.fw-nl--design-stacked .fw-nl__btn { width: 100%; }
-
-.fw-nl--design-boxed { background: var(--nl-bg); border-radius: .9rem; padding: 2rem; }
 .fw-nl--text-center { text-align: center; }
-.fw-nl--text-center .fw-nl__fields { justify-content: center; }
-.fw-nl--text-center.fw-nl--design-stacked .fw-nl__fields { max-width: 420px; margin: 0 auto; }
+.fw-nl--text-center .fw-nl__fields { justify-content: center; }@media (prefers-reduced-motion: reduce) {
 
-@media (max-width: 540px) {
-	.fw-nl--design-inline .fw-nl__fields { flex-direction: column; }
-	.fw-nl--design-inline .fw-nl__btn { width: 100%; }
-}
-@media (prefers-reduced-motion: reduce) {
 	.fw-nl__btn { transition: none; }
 }

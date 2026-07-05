@@ -1,0 +1,17 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "horizontal" design is used. */
+/* =============================================================================
+ * Horizontal (scrolling)
+ * ========================================================================== */
+.fw-tl--design-horizontal .fw-tl__track {
+	display: flex;
+	overflow-x: auto;
+	scroll-snap-type: x proximity;
+	padding: 8px 0;
+	-webkit-overflow-scrolling: touch;
+}
+.fw-tl--design-horizontal .fw-tl__track::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: var(--tl-line); transform: translateY(-50%); }
+.fw-tl--design-horizontal .fw-tl__item { position: relative; flex: 0 0 260px; height: 360px; padding: 0 14px; scroll-snap-align: center; }
+.fw-tl--design-horizontal .fw-tl__marker { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.fw-tl--design-horizontal .fw-tl__content { position: absolute; left: 14px; right: 14px; }
+.fw-tl--design-horizontal .fw-tl__item:nth-child(odd) .fw-tl__content { bottom: calc(50% + 28px); }
+.fw-tl--design-horizontal .fw-tl__item:nth-child(even) .fw-tl__content { top: calc(50% + 28px); }

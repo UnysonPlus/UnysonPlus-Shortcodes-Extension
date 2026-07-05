@@ -1,0 +1,8 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "gradient" design is used. */
+/* Gradient header — colored top with the plan name + price over the accent. */
+.fw-pt--design-gradient .fw-pt__plan { border: 1px solid rgba(0, 0, 0, .08); overflow: hidden; padding-top: 0; }
+.fw-pt--design-gradient .fw-pt__head { margin: 0 -1.5rem 0; padding: 1.75rem 1.5rem 1rem; background: linear-gradient(135deg, var(--pt-accent), rgba(0, 0, 0, .15)); color: #fff; }
+.fw-pt--design-gradient .fw-pt__name,
+.fw-pt--design-gradient .fw-pt__subtitle,
+.fw-pt--design-gradient .fw-pt__icon { color: #fff; }
+.fw-pt--design-gradient .fw-pt__price { margin-top: 1.25rem; }

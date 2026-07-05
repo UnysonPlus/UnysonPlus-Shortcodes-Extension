@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "mono" design is used. */
+/* Monochrome — dark filled buttons. */
+.fw-ss--design-mono .fw-ss__btn { background: #2b2f36; color: #fff; }
+.fw-ss--design-mono .fw-ss__btn:hover { background: var(--ss-color); }

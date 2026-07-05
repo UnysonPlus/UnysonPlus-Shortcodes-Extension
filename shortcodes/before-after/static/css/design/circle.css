@@ -1,0 +1,16 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "circle" design is used. */
+/* =============================================================================
+ * Design skins
+ * ========================================================================== */
+
+/* Circle knob — larger, translucent. */
+.fw-bac--design-circle .fw-bac__knob {
+	background: rgba(255, 255, 255, .25);
+	-webkit-backdrop-filter: blur(3px);
+	backdrop-filter: blur(3px);
+	border: 2px solid #fff;
+	color: #fff;
+	width: calc(var(--bac-knob, 42px) + 12px);
+	height: calc(var(--bac-knob, 42px) + 12px);
+}
+.fw-bac--design-circle .fw-bac__line { width: 2px; }

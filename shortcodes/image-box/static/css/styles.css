@@ -208,55 +208,6 @@
 .imgbox--hover-reveal:hover .imgbox__scrim,
 .imgbox--hover-reveal .imgbox__link:hover .imgbox__scrim { opacity: var(--imgbox-ov-opacity); }
 
-/* overlay-fade — straightforward fade (default reveal) */
-
-/* overlay-slide — content slides up while fading in */
-.imgbox--design-overlay-slide .imgbox__overlay-inner {
-    transform: translateY(14px);
-    transition: transform var(--imgbox-dur) ease;
-}
-.imgbox--design-overlay-slide:hover .imgbox__overlay-inner,
-.imgbox--design-overlay-slide .imgbox__link:hover .imgbox__overlay-inner { transform: translateY(0); }
-
-/* overlay-center — centered icon/title, full scrim */
-.imgbox--design-overlay-center .imgbox__overlay { justify-content: center; align-items: center; text-align: center; }
-.imgbox--design-overlay-center .imgbox__overlay-inner { align-items: center; }
-
-/* overlay-scrim — always-on bottom gradient (no hover needed) */
-.imgbox--design-overlay-scrim .imgbox__scrim {
-    opacity: 1;
-    background: linear-gradient(to top, var(--imgbox-ov-color) 0%, rgba(17,22,29,0) 70%);
-}
-.imgbox--design-overlay-scrim .imgbox__overlay { opacity: 1; }
-
-/* overlay-frame — inset border line draws in on hover, content centered */
-.imgbox--design-overlay-frame .imgbox__overlay { justify-content: center; align-items: center; text-align: center; }
-.imgbox--design-overlay-frame .imgbox__overlay-inner { align-items: center; }
-.imgbox--design-overlay-frame .imgbox__frame-line {
-    display: block;
-    position: absolute;
-    inset: 14px;
-    z-index: 2;
-    border: 1px solid rgba(255,255,255,.7);
-    opacity: 0;
-    transform: scale(1.04);
-    transition: opacity var(--imgbox-dur) ease, transform var(--imgbox-dur) ease;
-    pointer-events: none;
-}
-.imgbox--design-overlay-frame:hover .imgbox__frame-line,
-.imgbox--design-overlay-frame .imgbox__link:hover .imgbox__frame-line { opacity: 1; transform: scale(1); }
-
-/* caption-bar — solid colour bar pinned to the bottom (always visible) */
-.imgbox--design-caption-bar .imgbox__overlay {
-    justify-content: flex-end;
-    padding: 0;
-}
-.imgbox--design-caption-bar .imgbox__overlay-inner {
-    background: var(--imgbox-ov-color);
-    padding: .9rem 1.1rem;
-}
-.imgbox--design-caption-bar .imgbox__scrim { display: none; }
-
 /* ==========================================================================
    SIDE FAMILY
    ========================================================================== */
@@ -266,10 +217,8 @@
     gap: 1.5rem;
 }
 .imgbox--part-side .imgbox__media { flex: 0 0 var(--imgbox-media-w); width: var(--imgbox-media-w); }
-.imgbox--part-side .imgbox__body  { flex: 1 1 auto; padding-top: 0; }
-.imgbox--design-side-right .imgbox__row { flex-direction: row-reverse; }
+.imgbox--part-side .imgbox__body  { flex: 1 1 auto; padding-top: 0; }@media (max-width: 600px) {
 
-@media (max-width: 600px) {
     .imgbox--part-side .imgbox__row { flex-direction: column; align-items: stretch; }
     .imgbox--part-side .imgbox__media { width: 100%; flex-basis: auto; }
     .imgbox--part-side .imgbox__body { padding-top: .85rem; }
@@ -279,75 +228,12 @@
    CARD FAMILY
    ========================================================================== */
 .imgbox--part-card .imgbox__card { height: 100%; }
-.imgbox--design-card .imgbox__card {
-    border: 1px solid #e6e9ec;
-    border-radius: var(--imgbox-radius);
-    overflow: hidden;
-    background: #fff;
-}
-.imgbox--design-card .imgbox__media { border-radius: 0; }
-.imgbox--design-card .imgbox__body { padding: 1.1rem 1.25rem 1.35rem; }
-
-.imgbox--design-caption-below .imgbox__body { padding: .85rem 0 0; }
 
 /* ==========================================================================
    FRAME FAMILY
    ========================================================================== */
 .imgbox--part-frame .imgbox__frame-box { display: inline-block; max-width: 100%; }
 .imgbox--is-center.imgbox--part-frame { text-align: center; }
-
-/* Polaroid */
-.imgbox--design-polaroid .imgbox__frame-box {
-    background: #fff;
-    padding: 12px 12px 0;
-    box-shadow: 0 10px 30px rgba(17,22,29,.16);
-    border-radius: 2px;
-}
-.imgbox--design-polaroid .imgbox__media { border-radius: 0; }
-.imgbox--design-polaroid .imgbox__body { padding: .75rem .25rem 1rem; text-align: center; }
-.imgbox--design-polaroid .imgbox__title { font-family: Georgia, "Times New Roman", serif; font-style: italic; }
-
-/* Postcard */
-.imgbox--design-postcard .imgbox__frame-box {
-    background: #fff;
-    padding: 10px;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 2px 0 #e0e0e0, 0 4px 0 #efefef;
-}
-.imgbox--design-postcard .imgbox__media { border-radius: 0; }
-.imgbox--design-postcard .imgbox__body { padding: .75rem .25rem .25rem; }
-
-/* Badge */
-.imgbox--design-badge .imgbox__frame-box {
-    border: 3px solid var(--imgbox-accent);
-    border-radius: var(--imgbox-radius);
-    padding: 8px;
-}
-.imgbox--design-badge .imgbox__media { border-radius: 2px; }
-.imgbox--design-badge .imgbox__body { padding: .65rem .35rem .25rem; }
-
-/* ==========================================================================
-   FEATURE (small image, content below)
-   ========================================================================== */
-.imgbox--design-icon-feature .imgbox__media {
-    width: 96px;
-    margin: 0 auto;
-    border-radius: 50%;
-    aspect-ratio: 1 / 1;
-}
-.imgbox--design-icon-feature .imgbox__body { text-align: center; padding-top: 1rem; }
-
-.imgbox--design-stacked-center .imgbox__body { text-align: center; }
-
-/* ==========================================================================
-   MORE DESIGNS
-   ========================================================================== */
-
-/* Circle Side — round image beside text (reuses the side part) */
-.imgbox--design-circle-side .imgbox__media {
-    aspect-ratio: 1 / 1 !important;
-    border-radius: 50%;
-}
 
 /* Split Panel — image + solid accent content panel, equal height */
 .imgbox--part-split .imgbox__row { gap: 0; align-items: stretch; }
@@ -373,8 +259,8 @@
 .imgbox--part-split .imgbox__split-panel .imgbox__text { color: rgba(255,255,255,.9); }
 .imgbox--part-split .imgbox__split-panel .imgbox__eyebrow { color: rgba(255,255,255,.85); }
 .imgbox--part-split .imgbox__split-panel .imgbox__icon { color: #fff; }
-.imgbox--part-split .imgbox__split-panel .imgbox__btn--button { background: #fff; color: var(--imgbox-accent); }
-@media (max-width: 600px) {
+.imgbox--part-split .imgbox__split-panel .imgbox__btn--button { background: #fff; color: var(--imgbox-accent); }@media (max-width: 600px) {
+
     .imgbox--part-split .imgbox__row { flex-direction: column; align-items: stretch; }
     .imgbox--part-split .imgbox__media {
         width: 100%;
@@ -384,39 +270,6 @@
     }
     .imgbox--part-split .imgbox__media-inner,
     .imgbox--part-split .imgbox__img { height: 100%; }
-}
-
-/* Photo Stack — layered offset frames behind the image (reuses the frame part) */
-.imgbox--design-photo-stack .imgbox__frame-box {
-    position: relative;
-    background: #fff;
-    padding: 10px;
-    box-shadow: 0 8px 22px rgba(17,22,29,.14);
-}
-.imgbox--design-photo-stack .imgbox__frame-box::before,
-.imgbox--design-photo-stack .imgbox__frame-box::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: #fff;
-    border: 1px solid #e6e9ec;
-    box-shadow: 0 8px 18px rgba(17,22,29,.10);
-    z-index: -1;
-}
-.imgbox--design-photo-stack .imgbox__frame-box::before { transform: rotate(-4deg) translate(-5px, 4px); }
-.imgbox--design-photo-stack .imgbox__frame-box::after  { transform: rotate(3deg) translate(5px, 2px); }
-.imgbox--design-photo-stack .imgbox__media { border-radius: 0; }
-.imgbox--design-photo-stack .imgbox__body { padding: .75rem .25rem .25rem; }
-
-/* Editorial Cover — full-bleed image, title anchored at the TOP under a rule */
-.imgbox--design-editorial-cover .imgbox__overlay { justify-content: flex-start; opacity: 1; }
-.imgbox--design-editorial-cover .imgbox__scrim {
-    opacity: 1;
-    background: linear-gradient(to bottom, var(--imgbox-ov-color) 0%, rgba(17,22,29,0) 62%);
-}
-.imgbox--design-editorial-cover .imgbox__overlay-inner {
-    padding-bottom: .65rem;
-    border-bottom: 2px solid rgba(255,255,255,.55);
 }
 
 /* ==========================================================================

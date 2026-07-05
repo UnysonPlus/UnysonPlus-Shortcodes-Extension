@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "minimal" design is used. */
+/* Minimal design ----------------------------------------------------------- */
+.fw-pc--design-minimal .fw-pc__card { background: transparent; box-shadow: none; }
+.fw-pc--design-minimal .fw-pc__body { padding: 0; border-left: 3px solid var(--pc-accent); padding-left: 1.1rem; }

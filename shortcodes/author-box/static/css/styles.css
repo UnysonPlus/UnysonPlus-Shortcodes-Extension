@@ -37,26 +37,7 @@
 .fw-ab__posts { color: var(--ab-accent); font-weight: 600; text-decoration: none; }
 .fw-ab__posts:hover { text-decoration: underline; }
 
-.fw-ab__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }
+.fw-ab__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }@media (prefers-reduced-motion: reduce) {
 
-/* Designs ------------------------------------------------------------------ */
-.fw-ab--design-card,
-.fw-ab--design-banner { background: var(--ab-card-bg); border-radius: .8rem; padding: 1.5rem; box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
-.fw-ab--design-banner { gap: 1.75rem; align-items: center; }
-.fw-ab--design-banner .fw-ab__avatar img { box-shadow: 0 4px 14px rgba(0, 0, 0, .15); }
-
-.fw-ab--design-centered { flex-direction: column; align-items: center; text-align: center; background: var(--ab-card-bg); border-radius: .8rem; padding: 1.75rem; box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
-.fw-ab--design-centered .fw-ab__footer { justify-content: center; }
-.fw-ab--design-centered .fw-ab__bio { max-width: 540px; }
-
-.fw-ab--design-minimal { background: transparent; box-shadow: none; padding: 0; }
-
-@media (max-width: 576px) {
-	.fw-ab--design-card,
-	.fw-ab--design-banner { flex-direction: column; align-items: center; text-align: center; }
-	.fw-ab--design-card .fw-ab__footer,
-	.fw-ab--design-banner .fw-ab__footer { justify-content: center; }
-}
-@media (prefers-reduced-motion: reduce) {
 	.fw-ab__social { transition: none; }
 }

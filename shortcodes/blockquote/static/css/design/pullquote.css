@@ -1,0 +1,6 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "pullquote" design is used. */
+/* Pullquote — large centered. */
+.fw-bq--design-pullquote { text-align: center; background: var(--bq-bg); padding: 1rem 0; }
+.fw-bq--design-pullquote .fw-bq__text { font-size: 2rem; font-weight: 600; line-height: 1.35; }
+.fw-bq--design-pullquote .fw-bq__mark { display: block; font-size: 3rem; line-height: .6; margin-bottom: .4rem; }
+.fw-bq--design-pullquote .fw-bq__cite { align-items: center; }

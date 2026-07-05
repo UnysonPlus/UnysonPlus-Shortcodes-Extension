@@ -1,0 +1,6 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "soft" design is used. */
+/* Soft Tint — muted initials chip + faint border (modern "no photo" look). */
+.fw-avatar-sc.fw-avatar--soft { --av-initials-bg: #eef2f7; --av-initials-fg: #475569; }
+.fw-avatar-sc.fw-avatar--soft .fw-avatar {
+	box-shadow: inset 0 0 0 1px rgba(2, 6, 23, .08);
+}

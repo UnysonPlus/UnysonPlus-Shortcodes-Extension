@@ -1,0 +1,12 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "overlay" design is used. */
+/* Overlay design ----------------------------------------------------------- */
+.fw-pc--design-overlay .fw-pc__card { position: relative; }
+.fw-pc--design-overlay .fw-pc__media { position: absolute; inset: 0; aspect-ratio: auto; }
+.fw-pc--design-overlay .fw-pc__media .fw-pc__img { height: 100%; }
+.fw-pc--design-overlay .fw-pc__card { min-height: 320px; }
+.fw-pc--design-overlay .fw-pc__scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, .8) 0%, rgba(0, 0, 0, .1) 60%, rgba(0, 0, 0, 0) 100%); }
+.fw-pc--design-overlay .fw-pc__body { position: relative; z-index: 2; margin-top: auto; color: #fff; }
+.fw-pc--design-overlay .fw-pc__title a,
+.fw-pc--design-overlay .fw-pc__meta,
+.fw-pc--design-overlay .fw-pc__date { color: #fff; }
+.fw-pc--design-overlay .fw-pc__more { color: #fff; }

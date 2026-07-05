@@ -1,0 +1,5 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "stacked" design is used. */
+/* Designs ------------------------------------------------------------------ */
+.fw-nl--design-stacked .fw-nl__fields { flex-direction: column; }
+.fw-nl--design-stacked .fw-nl__btn { width: 100%; }
+.fw-nl--text-center.fw-nl--design-stacked .fw-nl__fields { max-width: 420px; margin: 0 auto; }

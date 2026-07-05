@@ -1,0 +1,2 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "gradient" design is used. */
+.fw-tt--design-gradient .fw-tt__bubble { background: linear-gradient(135deg, var(--tt-accent), #7a4bd8); }

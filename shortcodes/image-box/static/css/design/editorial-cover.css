@@ -1,0 +1,11 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "editorial-cover" design is used. */
+/* Editorial Cover — full-bleed image, title anchored at the TOP under a rule */
+.imgbox--design-editorial-cover .imgbox__overlay { justify-content: flex-start; opacity: 1; }
+.imgbox--design-editorial-cover .imgbox__scrim {
+    opacity: 1;
+    background: linear-gradient(to bottom, var(--imgbox-ov-color) 0%, rgba(17,22,29,0) 62%);
+}
+.imgbox--design-editorial-cover .imgbox__overlay-inner {
+    padding-bottom: .65rem;
+    border-bottom: 2px solid rgba(255,255,255,.55);
+}

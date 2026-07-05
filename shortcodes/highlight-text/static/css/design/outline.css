@@ -1,0 +1,8 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "outline" design is used. */
+/* Outline text. */
+.fw-hl--fx-outline .fw-hl__text {
+	color: transparent;
+	-webkit-text-fill-color: transparent;
+	-webkit-text-stroke: 1.5px var(--hl-accent2);
+	text-stroke: 1.5px var(--hl-accent2);
+}

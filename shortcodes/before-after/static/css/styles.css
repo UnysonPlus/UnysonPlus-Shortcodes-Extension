@@ -181,69 +181,8 @@
 	color: #6c757d;
 	text-align: center;
 	font-size: .9rem;
-}
+}@media (prefers-reduced-motion: reduce) {
 
-/* =============================================================================
- * Design skins
- * ========================================================================== */
-
-/* Circle knob — larger, translucent. */
-.fw-bac--design-circle .fw-bac__knob {
-	background: rgba(255, 255, 255, .25);
-	-webkit-backdrop-filter: blur(3px);
-	backdrop-filter: blur(3px);
-	border: 2px solid #fff;
-	color: #fff;
-	width: calc(var(--bac-knob, 42px) + 12px);
-	height: calc(var(--bac-knob, 42px) + 12px);
-}
-.fw-bac--design-circle .fw-bac__line { width: 2px; }
-
-/* Arrows — no knob ring, just chevrons. */
-.fw-bac--design-arrows .fw-bac__knob {
-	background: transparent;
-	box-shadow: none;
-	color: var(--bac-divider, #fff);
-	width: auto;
-	height: auto;
-	gap: 6px;
-	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5));
-}
-.fw-bac--design-arrows .fw-bac__chev { width: 18px; height: 18px; stroke-width: 2.8; }
-.fw-bac--design-arrows .fw-bac__line { width: 2px; }
-
-/* Minimal line — tiny grip dot, no chevrons. */
-.fw-bac--design-line .fw-bac__chev { display: none; }
-.fw-bac--design-line .fw-bac__knob {
-	width: 16px;
-	height: 16px;
-	box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
-}
-.fw-bac--design-line .fw-bac__line { width: 2px; }
-
-/* Labeled — emphasised badges. */
-.fw-bac--design-labeled .fw-bac__label {
-	font-size: .82rem;
-	text-transform: uppercase;
-	letter-spacing: .06em;
-}
-
-/* Framed — card chrome around the comparison. */
-.fw-bac--design-framed {
-	background: #fff;
-	padding: 10px;
-	border-radius: 16px;
-	box-shadow: 0 12px 32px rgba(0, 0, 0, .14);
-}
-.fw-bac--design-framed .fw-bac__media { border-radius: 9px; }
-.fw-bac--design-framed .fw-bac__label {
-	top: auto;
-	bottom: 12px;
-	background: rgba(0, 0, 0, .65);
-}
-.fw-bac--design-framed.fw-bac--vertical .fw-bac__label--before { bottom: auto; top: 12px; }
-
-@media (prefers-reduced-motion: reduce) {
 	.fw-bac__before,
 	.fw-bac__handle,
 	.fw-bac--int-toggle .fw-bac__before { transition: none; }
@@ -270,11 +209,6 @@
 	-webkit-mask-image: none;
 	        mask-image: none;
 }
-
-/* Invisible design — no visible divider line or handle. Great with the
- * "Follow the cursor" interaction (and as a full-bleed background) for a clean,
- * chrome-less wipe between the two images. The reveal still works (clip-path). */
-.fw-bac--design-invisible .fw-bac__handle { display: none; }
 
 /* Background mode: the shared `.sc-bg-fill` runtime (sc-bg-fill.css + sc-bg-fill.js)
  * handles the full-bleed positioning + lifting the Section content. Here we only

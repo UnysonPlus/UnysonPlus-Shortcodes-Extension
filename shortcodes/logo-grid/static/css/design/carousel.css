@@ -1,0 +1,5 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "carousel" design is used. */
+/* Carousel ----------------------------------------------------------------- */
+.fw-lg--design-carousel .fw-lg__carousel { visibility: hidden; }
+.fw-lg--design-carousel .fw-lg__carousel.is-initialized { visibility: visible; }
+.fw-lg--design-carousel .splide__slide { display: flex; align-items: center; justify-content: center; }

@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "outline" design is used. */
+/* Outline front — transparent with a border, colored back. */
+.fw-fb--design-outline { --fb-front-color: #2b6cb0; }
+.fw-fb--design-outline .fw-fb__front { background: transparent; color: var(--fb-front-bg); border: 2px solid currentColor; }

@@ -8,67 +8,8 @@
 	margin: 0;
 	color: var(--hl-text);
 }
-.fw-hl__empty { color: #6c757d; font-style: italic; }
+.fw-hl__empty { color: #6c757d; font-style: italic; }@media (prefers-reduced-motion: reduce) {
 
-/* Marker — highlighter swipe behind the text. */
-.fw-hl--fx-marker .fw-hl__text {
-	background: linear-gradient(120deg, var(--hl-accent) 0%, var(--hl-accent) 100%);
-	background-repeat: no-repeat;
-	background-size: 100% .55em;
-	background-position: 0 80%;
-	padding: 0 .08em;
-	box-decoration-break: clone;
-	-webkit-box-decoration-break: clone;
-}
-
-/* Gradient fill. */
-.fw-hl--fx-gradient .fw-hl__text {
-	background: linear-gradient(135deg, var(--hl-accent), var(--hl-accent2));
-	-webkit-background-clip: text;
-	background-clip: text;
-	color: transparent;
-	-webkit-text-fill-color: transparent;
-}
-@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
-	.fw-hl--fx-gradient .fw-hl__text { color: var(--hl-accent2); -webkit-text-fill-color: currentColor; }
-}
-
-/* Underline — thick accent rule under the text. */
-.fw-hl--fx-underline .fw-hl__text {
-	background: linear-gradient(var(--hl-accent), var(--hl-accent));
-	background-repeat: no-repeat;
-	background-size: 100% .14em;
-	background-position: 0 100%;
-	padding-bottom: .08em;
-	box-decoration-break: clone;
-	-webkit-box-decoration-break: clone;
-}
-
-/* Outline text. */
-.fw-hl--fx-outline .fw-hl__text {
-	color: transparent;
-	-webkit-text-fill-color: transparent;
-	-webkit-text-stroke: 1.5px var(--hl-accent2);
-	text-stroke: 1.5px var(--hl-accent2);
-}
-
-/* Glow. */
-.fw-hl--fx-glow .fw-hl__text {
-	color: var(--hl-text, #fff);
-	text-shadow: 0 0 6px var(--hl-accent), 0 0 18px var(--hl-accent2);
-}
-
-/* Drop cap — large first letter (use with a Paragraph tag). */
-.fw-hl--fx-dropcap .fw-hl__text::first-letter {
-	float: left;
-	font-size: 3.2em;
-	line-height: .82;
-	font-weight: 800;
-	margin: .05em .12em 0 0;
-	color: var(--hl-accent2);
-}
-
-@media (prefers-reduced-motion: reduce) {
 	.fw-hl__text { transition: none; }
 }
 

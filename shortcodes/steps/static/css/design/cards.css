@@ -1,0 +1,5 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "cards" design is used. */
+/* ---------- Cards ---------- */
+.fw-steps--design-cards { display: flex; gap: 1.1rem; flex-wrap: wrap; }
+.fw-steps--design-cards .fw-steps__item { flex: 1 1 200px; background: #fff; border: 1px solid #eef0f4; border-radius: .9rem; padding: 1.6rem 1.4rem; box-shadow: 0 8px 26px rgba(20,40,80,.06); }
+.fw-steps--design-cards .fw-steps__marker { margin-bottom: 1rem; }

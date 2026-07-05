@@ -1,0 +1,9 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "line" design is used. */
+/* Minimal line — tiny grip dot, no chevrons. */
+.fw-bac--design-line .fw-bac__chev { display: none; }
+.fw-bac--design-line .fw-bac__knob {
+	width: 16px;
+	height: 16px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, .4);
+}
+.fw-bac--design-line .fw-bac__line { width: 2px; }

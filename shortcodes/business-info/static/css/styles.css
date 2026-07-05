@@ -39,22 +39,7 @@
 .fw-bi__row a:hover { text-decoration: underline; }
 .fw-bi__maplink { font-size: .85rem; }
 
-.fw-bi__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }
+.fw-bi__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }@media (prefers-reduced-motion: reduce) {
 
-/* Designs ------------------------------------------------------------------ */
-.fw-bi--design-card { background: var(--bi-card-bg); border-radius: .8rem; padding: 1.75rem; box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
-.fw-bi--design-card .fw-bi__contact { margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(0, 0, 0, .08); }
-
-.fw-bi--design-split { background: var(--bi-card-bg); border-radius: .8rem; padding: 1.75rem; box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
-.fw-bi--design-split .fw-bi__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
-
-.fw-bi--design-compact .fw-bi__day { padding: .3rem 1rem .3rem 0; }
-.fw-bi--design-compact .fw-bi__time { padding: .3rem 0; }
-.fw-bi--design-compact .fw-bi__contact { margin-top: 1rem; }
-
-@media (max-width: 600px) {
-	.fw-bi--design-split .fw-bi__cols { grid-template-columns: 1fr; gap: 1.25rem; }
-}
-@media (prefers-reduced-motion: reduce) {
 	.fw-bi__status.is-open .fw-bi__dot { animation: none; }
 }

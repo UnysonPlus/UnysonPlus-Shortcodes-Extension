@@ -1,0 +1,10 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "overlay-slide" design is used. */
+/* overlay-fade — straightforward fade (default reveal) */
+
+/* overlay-slide — content slides up while fading in */
+.imgbox--design-overlay-slide .imgbox__overlay-inner {
+    transform: translateY(14px);
+    transition: transform var(--imgbox-dur) ease;
+}
+.imgbox--design-overlay-slide:hover .imgbox__overlay-inner,
+.imgbox--design-overlay-slide .imgbox__link:hover .imgbox__overlay-inner { transform: translateY(0); }

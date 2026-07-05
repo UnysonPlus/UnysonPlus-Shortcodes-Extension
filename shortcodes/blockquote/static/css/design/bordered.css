@@ -1,0 +1,6 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "bordered" design is used. */
+/* Bordered — top & bottom rules. */
+.fw-bq--design-bordered { text-align: center; padding: 1.5rem 0; border-top: 2px solid var(--bq-accent); border-bottom: 2px solid var(--bq-accent); background: var(--bq-bg); }
+.fw-bq--design-bordered .fw-bq__text { font-size: 1.5rem; }
+.fw-bq--design-bordered .fw-bq__mark { display: none; }
+.fw-bq--design-bordered .fw-bq__cite { align-items: center; }

@@ -1,0 +1,10 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "boxed" design is used. */
+.fw-lg--design-boxed .fw-lg__item {
+	background: var(--lg-box-bg, #fff);
+	border: 1px solid rgba(0, 0, 0, .08);
+	border-radius: .6rem;
+	padding: 1.25rem 1rem;
+	min-height: calc(var(--lg-h) + 2.5rem);
+	transition: box-shadow .25s ease, transform .25s ease;
+}
+.fw-lg--design-boxed .fw-lg__item:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, .08); transform: translateY(-2px); }

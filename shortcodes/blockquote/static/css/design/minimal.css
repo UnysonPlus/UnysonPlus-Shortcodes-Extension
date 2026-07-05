@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "minimal" design is used. */
+/* Minimal — italic, no chrome. */
+.fw-bq--design-minimal .fw-bq__text { font-style: italic; font-size: 1.35rem; }
+.fw-bq--design-minimal .fw-bq__mark { display: none; }

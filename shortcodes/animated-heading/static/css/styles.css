@@ -22,16 +22,10 @@
 
 /* Caret (typewriter only). */
 .fw-ah__caret { display: none; width: .08em; min-width: 2px; align-self: stretch; margin-left: .06em; background: currentColor; animation: fw-ah-blink 1s steps(1) infinite; }
-.fw-ah--anim-typewriter .fw-ah__caret { display: inline-block; }
 @keyframes fw-ah-blink { 50% { opacity: 0; } }
 
 /* Enter animations (retriggered by JS adding .run). */
 .fw-ah__word.run { animation-duration: var(--ah-dur); animation-fill-mode: both; }
-.fw-ah--anim-fade  .fw-ah__word.run { animation-name: fw-ah-fade; }
-.fw-ah--anim-slide .fw-ah__word.run { animation-name: fw-ah-slide; }
-.fw-ah--anim-flip  .fw-ah__word.run { animation-name: fw-ah-flip; transform-origin: top center; }
-.fw-ah--anim-zoom  .fw-ah__word.run { animation-name: fw-ah-zoom; }
-.fw-ah--anim-clip  .fw-ah__word.run { animation-name: fw-ah-clip; }
 
 @keyframes fw-ah-fade  { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fw-ah-slide { from { opacity: 0; transform: translateY(.55em); } to { opacity: 1; transform: none; } }
@@ -39,9 +33,8 @@
 @keyframes fw-ah-zoom  { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
 @keyframes fw-ah-clip  { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 
-.fw-ah__empty { color: #6c757d; font-style: italic; }
+.fw-ah__empty { color: #6c757d; font-style: italic; }@media (prefers-reduced-motion: reduce) {
 
-@media (prefers-reduced-motion: reduce) {
 	.fw-ah__word.run { animation: none; }
 	.fw-ah__caret { animation: none; }
 }

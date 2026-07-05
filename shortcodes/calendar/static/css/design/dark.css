@@ -1,0 +1,9 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "dark" design is used. */
+/* Dark. */
+.fw-cal--design-dark {
+	--cal-text: #e7ecf2; --cal-muted: #8b97a8; --cal-line: #2b3441;
+	--cal-cell-bg: #1b222c; --cal-out: #161b23; --cal-bg: #11161d;
+	background: var(--cal-bg); padding: 1.1rem; border-radius: .8rem;
+}
+.fw-cal--design-dark .fw-cal__btn { background: #232c38; }
+.fw-cal--design-dark .fw-cal__ev { color: #e7ecf2; }

@@ -1,0 +1,19 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "marquee" design is used. */
+/* Marquee ------------------------------------------------------------------ */
+.fw-lg--design-marquee .fw-lg__marquee {
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+	mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.fw-lg--design-marquee .fw-lg__track {
+	display: flex;
+	width: max-content;
+	align-items: center;
+	animation: fw-lg-marquee var(--lg-dur, 28s) linear infinite;
+}
+.fw-lg--design-marquee .fw-lg__marquee--right .fw-lg__track { animation-direction: reverse; }
+.fw-lg--design-marquee .fw-lg__marquee:hover .fw-lg__track { animation-play-state: paused; }
+.fw-lg--design-marquee .fw-lg__item { flex: 0 0 auto; }@media (prefers-reduced-motion: reduce) {
+
+	.fw-lg--design-marquee .fw-lg__track { animation: none; }
+}

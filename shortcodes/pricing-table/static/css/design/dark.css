@@ -1,0 +1,8 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "dark" design is used. */
+/* Dark cards. */
+.fw-pt--design-dark .fw-pt__plan { background: #1f2530; color: #cfd6df; }
+.fw-pt--design-dark .fw-pt__name,
+.fw-pt--design-dark .fw-pt__amount,
+.fw-pt--design-dark .fw-pt__currency { color: #fff; }
+.fw-pt--design-dark .fw-pt__feature { border-bottom-color: rgba(255, 255, 255, .1); }
+.fw-pt--design-dark .fw-pt__plan.is-featured { box-shadow: 0 0 0 2px var(--pt-accent); }

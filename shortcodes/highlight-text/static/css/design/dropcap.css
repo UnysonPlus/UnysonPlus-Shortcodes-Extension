@@ -1,0 +1,10 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "dropcap" design is used. */
+/* Drop cap — large first letter (use with a Paragraph tag). */
+.fw-hl--fx-dropcap .fw-hl__text::first-letter {
+	float: left;
+	font-size: 3.2em;
+	line-height: .82;
+	font-weight: 800;
+	margin: .05em .12em 0 0;
+	color: var(--hl-accent2);
+}

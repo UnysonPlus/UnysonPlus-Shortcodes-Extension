@@ -1,0 +1,22 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "photo-stack" design is used. */
+/* Photo Stack — layered offset frames behind the image (reuses the frame part) */
+.imgbox--design-photo-stack .imgbox__frame-box {
+    position: relative;
+    background: #fff;
+    padding: 10px;
+    box-shadow: 0 8px 22px rgba(17,22,29,.14);
+}
+.imgbox--design-photo-stack .imgbox__frame-box::before,
+.imgbox--design-photo-stack .imgbox__frame-box::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    border: 1px solid #e6e9ec;
+    box-shadow: 0 8px 18px rgba(17,22,29,.10);
+    z-index: -1;
+}
+.imgbox--design-photo-stack .imgbox__frame-box::before { transform: rotate(-4deg) translate(-5px, 4px); }
+.imgbox--design-photo-stack .imgbox__frame-box::after  { transform: rotate(3deg) translate(5px, 2px); }
+.imgbox--design-photo-stack .imgbox__media { border-radius: 0; }
+.imgbox--design-photo-stack .imgbox__body { padding: .75rem .25rem .25rem; }

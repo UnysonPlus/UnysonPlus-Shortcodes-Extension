@@ -1,0 +1,7 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "brand" design is used. */
+/* =============================================================================
+ * Designs
+ * ========================================================================== */
+/* Brand — filled with the brand color. */
+.fw-ss--design-brand .fw-ss__btn { background: var(--ss-color); color: #fff; }
+.fw-ss--design-brand .fw-ss__btn:hover { filter: brightness(1.08); }

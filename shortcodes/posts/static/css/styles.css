@@ -51,37 +51,6 @@
     row-gap: var(--posts-row-gap);
 }
 
-/* List = single column always */
-.posts--mode-list .posts__grid {
-    grid-template-columns: minmax(0, 1fr);
-}
-
-/* Masonry: CSS multi-column layout (no JS dependency) */
-.posts--mode-masonry .posts__grid {
-    display: block;
-    column-count: var(--posts-cols-d);
-    column-gap: var(--posts-col-gap);
-}
-.posts--mode-masonry .posts__card {
-    display: inline-block;
-    width: 100%;
-    margin-bottom: var(--posts-row-gap);
-    break-inside: avoid;
-}
-
-/* Slider: horizontal scroll-snap (no library dependency) */
-.posts--mode-slider .posts__grid {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: var(--posts-col-gap);
-    scrollbar-width: thin;
-}
-.posts--mode-slider .posts__card {
-    flex: 0 0 calc((100% - (var(--posts-cols-d) - 1) * var(--posts-col-gap)) / var(--posts-cols-d));
-    scroll-snap-align: start;
-}
-
 /* ==========================================================================
    Equal-height
    ========================================================================== */
@@ -103,7 +72,6 @@
 
 /* Featured first-post span */
 .posts__card--span-2 { grid-column: span 2; }
-.posts--mode-masonry .posts__card--span-2 { column-span: all; }
 
 /* Image */
 .posts__image {
@@ -260,12 +228,6 @@
 
 .posts__filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1em; }
 .posts__filter  { cursor: pointer; padding: 0.35em 0.8em; }
-
-/* ==========================================================================
-   Slider arrow / dot positioning
-   ========================================================================== */
-.posts--mode-slider                          { position: relative; }
-.posts--mode-slider[data-slider-arrows="hidden"] .posts__slider-arrow { display: none; }
 .posts__slider-arrow {
     position: absolute; top: 50%; transform: translateY(-50%);
     z-index: 2; width: 2rem; height: 2rem;
@@ -274,18 +236,8 @@
 }
 .posts__slider-arrow--prev { left: 0.5rem; }
 .posts__slider-arrow--next { right: 0.5rem; }
-.posts--mode-slider[data-slider-arrows="outside"] .posts__slider-arrow--prev { left: -2.5rem; }
-.posts--mode-slider[data-slider-arrows="outside"] .posts__slider-arrow--next { right: -2.5rem; }
-.posts--mode-slider[data-slider-arrows="above"]   { padding-top: 3rem; }
-.posts--mode-slider[data-slider-arrows="above"] .posts__slider-arrow { top: 0; transform: none; }
-.posts--mode-slider[data-slider-arrows="above"] .posts__slider-arrow--prev { left: auto; right: 3rem; }
-.posts--mode-slider[data-slider-arrows="above"] .posts__slider-arrow--next { right: 0; }
 
 .posts__slider-dots                          { display: flex; gap: 0.4em; justify-content: center; margin-top: 0.75em; }
-.posts--mode-slider[data-slider-dots="hidden"] .posts__slider-dots { display: none; }
-.posts--mode-slider[data-slider-dots="overlay-bottom"] .posts__slider-dots {
-    position: absolute; bottom: 0.5rem; left: 0; right: 0; margin: 0; z-index: 2;
-}
 
 /* ==========================================================================
    Empty state

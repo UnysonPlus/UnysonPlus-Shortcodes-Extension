@@ -1,0 +1,7 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "overlay-scrim" design is used. */
+/* overlay-scrim — always-on bottom gradient (no hover needed) */
+.imgbox--design-overlay-scrim .imgbox__scrim {
+    opacity: 1;
+    background: linear-gradient(to top, var(--imgbox-ov-color) 0%, rgba(17,22,29,0) 70%);
+}
+.imgbox--design-overlay-scrim .imgbox__overlay { opacity: 1; }

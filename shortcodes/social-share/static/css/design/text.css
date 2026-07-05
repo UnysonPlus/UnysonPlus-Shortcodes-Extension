@@ -1,0 +1,5 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "text" design is used. */
+/* Minimal — icon + label, no button chrome. */
+.fw-ss--design-text .fw-ss__btn { background: transparent; color: var(--ss-icon, inherit); width: auto; height: auto; padding: .2em .2em; border-radius: 0; }
+.fw-ss--design-text .fw-ss__btn:hover { color: var(--ss-color); transform: none; }
+.fw-ss--design-text .fw-ss__icon svg { width: 20px; height: 20px; }

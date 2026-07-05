@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "centered" design is used. */
+.fw-ab--design-centered { flex-direction: column; align-items: center; text-align: center; background: var(--ab-card-bg); border-radius: .8rem; padding: 1.75rem; box-shadow: 0 6px 22px rgba(0, 0, 0, .07); }
+.fw-ab--design-centered .fw-ab__footer { justify-content: center; }
+.fw-ab--design-centered .fw-ab__bio { max-width: 540px; }

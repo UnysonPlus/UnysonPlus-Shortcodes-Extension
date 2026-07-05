@@ -1,0 +1,13 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "arrows" design is used. */
+/* Arrows — no knob ring, just chevrons. */
+.fw-bac--design-arrows .fw-bac__knob {
+	background: transparent;
+	box-shadow: none;
+	color: var(--bac-divider, #fff);
+	width: auto;
+	height: auto;
+	gap: 6px;
+	filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5));
+}
+.fw-bac--design-arrows .fw-bac__chev { width: 18px; height: 18px; stroke-width: 2.8; }
+.fw-bac--design-arrows .fw-bac__line { width: 2px; }

@@ -1,0 +1,10 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "postcard" design is used. */
+/* Postcard */
+.imgbox--design-postcard .imgbox__frame-box {
+    background: #fff;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 0 #e0e0e0, 0 4px 0 #efefef;
+}
+.imgbox--design-postcard .imgbox__media { border-radius: 0; }
+.imgbox--design-postcard .imgbox__body { padding: .75rem .25rem .25rem; }

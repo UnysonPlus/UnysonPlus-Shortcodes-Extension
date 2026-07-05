@@ -1,0 +1,13 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "alternating" design is used. */
+/* image still full width of card */
+
+/* =============================================================================
+ * Vertical: ALTERNATING
+ * ========================================================================== */
+.fw-tl--design-alternating .fw-tl__track::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 50%; width: 2px; background: var(--tl-line); transform: translateX(-50%); }
+.fw-tl--design-alternating .fw-tl__item { position: relative; width: 50%; box-sizing: border-box; margin-bottom: 1.75rem; }
+.fw-tl--design-alternating .fw-tl__item:nth-child(odd) { left: 0; padding-right: 44px; text-align: right; }
+.fw-tl--design-alternating .fw-tl__item:nth-child(even) { left: 50%; padding-left: 44px; text-align: left; }
+.fw-tl--design-alternating .fw-tl__marker { position: absolute; top: 2px; }
+.fw-tl--design-alternating .fw-tl__item:nth-child(odd) .fw-tl__marker { right: -17px; }
+.fw-tl--design-alternating .fw-tl__item:nth-child(even) .fw-tl__marker { left: -17px; }

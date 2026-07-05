@@ -1,0 +1,2 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "accent" design is used. */
+.fw-tt--design-accent { --tt-bg: var(--tt-accent); --tt-color: #fff; }

@@ -1,0 +1,2 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "side-right" design is used. */
+.imgbox--design-side-right .imgbox__row { flex-direction: row-reverse; }

@@ -1,0 +1,12 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "alternating" design is used. */
+/* ---------- Alternating ---------- */
+.fw-steps--design-alternating { position: relative; }
+.fw-steps--design-alternating::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--st-line); transform: translateX(-50%); }
+.fw-steps--design-alternating .fw-steps__item { width: 50%; padding: 0 2.2rem 2rem; box-sizing: border-box; }
+.fw-steps--design-alternating .fw-steps__item:nth-child(odd) { margin-left: 0; text-align: right; }
+.fw-steps--design-alternating .fw-steps__item:nth-child(even) { margin-left: 50%; text-align: left; }
+.fw-steps--design-alternating .fw-steps__marker { position: absolute; top: 0; }
+.fw-steps--design-alternating .fw-steps__item:nth-child(odd) .fw-steps__marker { right: calc((var(--st-size) / 2) * -1); }
+.fw-steps--design-alternating .fw-steps__item:nth-child(even) .fw-steps__marker { left: calc((var(--st-size) / 2) * -1); }
+.fw-steps--connector-none .fw-steps__connector,
+.fw-steps--connector-none.fw-steps--design-alternating::before { display: none; }

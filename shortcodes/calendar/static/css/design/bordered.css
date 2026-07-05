@@ -1,0 +1,6 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "bordered" design is used. */
+/* Bordered — strong grid + header band. */
+.fw-cal--design-bordered .fw-cal__weekdays { background: var(--cal-accent); border-radius: .5rem .5rem 0 0; }
+.fw-cal--design-bordered .fw-cal__wd { color: #fff; }
+.fw-cal--design-bordered .fw-cal__cell { border-color: #d7dee7; }
+.fw-cal--design-bordered .fw-cal__grid { border-right: 1px solid #d7dee7; border-bottom: 1px solid #d7dee7; }

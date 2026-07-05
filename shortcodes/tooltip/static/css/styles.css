@@ -74,14 +74,7 @@
 .fw-tt--pos-left   .fw-tt__arrow { right: -4px;  top: 50%;  transform: translateY(-50%) rotate(45deg); }
 .fw-tt--pos-right  .fw-tt__arrow { left: -4px;   top: 50%;  transform: translateY(-50%) rotate(45deg); }
 
-/* Themes ------------------------------------------------------------------- */
-.fw-tt--design-light { --tt-bg: #ffffff; --tt-color: #1f2530; }
-.fw-tt--design-light .fw-tt__bubble { border: 1px solid rgba(0, 0, 0, .1); }
-.fw-tt--design-accent { --tt-bg: var(--tt-accent); --tt-color: #fff; }
-.fw-tt--design-gradient .fw-tt__bubble { background: linear-gradient(135deg, var(--tt-accent), #7a4bd8); }
+.fw-tt__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }@media (prefers-reduced-motion: reduce) {
 
-.fw-tt__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }
-
-@media (prefers-reduced-motion: reduce) {
 	.fw-tt__bubble { transition: opacity .18s ease, visibility .18s ease; }
 }

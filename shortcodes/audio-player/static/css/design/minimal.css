@@ -1,0 +1,8 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "minimal" design is used. */
+/* =============================================================================
+ * Designs
+ * ========================================================================== */
+/* Minimal — bare, compact. */
+.fw-ap--design-minimal .fw-ap__player { border: 0; background: transparent; padding: .4rem .25rem; gap: .6rem; }
+.fw-ap--design-minimal .fw-ap__info { display: none; }
+.fw-ap--design-minimal .fw-ap__play { width: 2.4em; height: 2.4em; }

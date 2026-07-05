@@ -1,0 +1,9 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "pulse" design is used. */
+/* Pulse design. */
+.fw-hs--design-pulse .fw-hs__ring { animation: fw-hs-pulse 2s ease-out infinite; }
+/* Plain dot has no number/icon. */
+.fw-hs--design-dot .fw-hs__pin,
+.fw-hs--design-pulse .fw-hs__pin { font-size: 0; }@media (prefers-reduced-motion: reduce) {
+
+	.fw-hs--design-pulse .fw-hs__ring { animation: none; }
+}

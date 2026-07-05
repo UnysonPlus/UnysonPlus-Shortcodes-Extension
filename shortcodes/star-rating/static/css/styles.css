@@ -33,14 +33,3 @@
    into a smaller star instead of letting overflow:hidden clip it to a HALF star. */
 .fw-sr__sym svg { width: 1em; height: 1em; max-width: none; display: block; fill: currentColor; }
 .fw-sr__sym-fill svg { width: 1em; max-width: none; }
-
-/* Bar ---------------------------------------------------------------------- */
-.fw-sr--design-bar .fw-sr__symbols {
-	display: block;
-	width: 180px;
-	height: calc(var(--sr-size) * .55);
-	background: var(--sr-empty);
-	border-radius: 1em;
-	overflow: hidden;
-}
-.fw-sr--design-bar .fw-sr__bar { height: 100%; background: var(--sr-fill); border-radius: 1em; }

@@ -1,0 +1,10 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "left" design is used. */
+/* =============================================================================
+ * Vertical: LEFT
+ * ========================================================================== */
+.fw-tl--design-left .fw-tl__track::before,
+.fw-tl--design-right .fw-tl__track::before { content: ""; position: absolute; top: 4px; bottom: 4px; width: 2px; background: var(--tl-line); }
+.fw-tl--design-left .fw-tl__track::before { left: 16px; }
+.fw-tl--design-left .fw-tl__item { position: relative; padding-left: 52px; margin-bottom: 1.5rem; }
+.fw-tl--design-left .fw-tl__item:last-child { margin-bottom: 0; }
+.fw-tl--design-left .fw-tl__marker { position: absolute; left: 0; top: 2px; }

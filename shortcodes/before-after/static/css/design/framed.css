@@ -1,0 +1,15 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "framed" design is used. */
+/* Framed — card chrome around the comparison. */
+.fw-bac--design-framed {
+	background: #fff;
+	padding: 10px;
+	border-radius: 16px;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, .14);
+}
+.fw-bac--design-framed .fw-bac__media { border-radius: 9px; }
+.fw-bac--design-framed .fw-bac__label {
+	top: auto;
+	bottom: 12px;
+	background: rgba(0, 0, 0, .65);
+}
+.fw-bac--design-framed.fw-bac--vertical .fw-bac__label--before { bottom: auto; top: 12px; }

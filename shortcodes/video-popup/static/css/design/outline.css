@@ -1,0 +1,8 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "outline" design is used. */
+/* The separating ring doesn't suit the borderless / pre-ringed skins. */
+.fw-vp--design-minimal .fw-vp__btn::before,
+.fw-vp--design-outline .fw-vp__btn::before,
+.fw-vp--design-pulse   .fw-vp__btn::before { display: none; }
+
+/* Design skins ------------------------------------------------------------- */
+.fw-vp--design-outline .fw-vp__btn { background: transparent; border: 3px solid var(--vp-accent); color: var(--vp-accent); }

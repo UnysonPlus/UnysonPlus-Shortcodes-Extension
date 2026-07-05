@@ -1,0 +1,5 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "list" design is used. */
+/* List = single column always */
+.posts--mode-list .posts__grid {
+    grid-template-columns: minmax(0, 1fr);
+}

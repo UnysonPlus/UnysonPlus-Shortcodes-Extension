@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "dot" design is used. */
+/* Plain dot has no number/icon. */
+.fw-hs--design-dot .fw-hs__pin,
+.fw-hs--design-pulse .fw-hs__pin { font-size: 0; }

@@ -1,0 +1,13 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "bordered" design is used. */
+/* ------------------------------- designs -------------------------------- */
+/* Plain = no extra chrome. */
+
+/* Bordered — solid ring in the ring color (defaults to white: great for
+   separating overlapping group avatars against a colored background). */
+.fw-avatar-sc.fw-avatar--bordered .fw-avatar {
+	box-shadow: 0 0 0 max(2px, calc(var(--av-size) * 0.06)) var(--av-ring);
+}
+/* The bordered/ring designs also frame the counter so it matches the stack. */
+.fw-avatar-sc.fw-avatar--bordered .fw-avatar__more {
+	box-shadow: 0 0 0 max(2px, calc(var(--av-size) * 0.06)) var(--av-ring);
+}

@@ -1,0 +1,11 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "vertical" design is used. */
+/* ---------- Vertical timeline ---------- */
+.fw-steps--design-vertical .fw-steps__item { display: grid; grid-template-columns: var(--st-size) 1fr; gap: 0 1.1rem; padding-bottom: 1.9rem; }
+.fw-steps--design-vertical .fw-steps__item:last-child { padding-bottom: 0; }
+.fw-steps--design-vertical .fw-steps__body { padding-top: calc((var(--st-size) - 1.5rem) / 2); }
+.fw-steps--design-vertical .fw-steps__connector {
+	display: block; position: absolute; left: calc(var(--st-size) / 2 - 1px);
+	top: var(--st-size); bottom: 0; width: 2px; background: var(--st-line);
+}
+.fw-steps--design-vertical .fw-steps__item:last-child .fw-steps__connector { display: none; }
+.fw-steps--connector-dashed.fw-steps--design-vertical .fw-steps__connector { background: none; border-left: 2px dashed var(--st-line); width: 0; }

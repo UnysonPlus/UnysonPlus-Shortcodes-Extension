@@ -1,0 +1,5 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "shadow" design is used. */
+/* Soft Shadow — floats the avatar off the page. */
+.fw-avatar-sc.fw-avatar--shadow .fw-avatar {
+	box-shadow: 0 6px 16px rgba(16, 24, 40, .18), 0 2px 4px rgba(16, 24, 40, .10);
+}

@@ -65,48 +65,6 @@
 
 .fw-fb__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
 
-/* =============================================================================
- * Designs — each a distinct look. Color-driven designs read the --fb-* vars (so the
- * Styling-tab colors override them); each also sets a signature default palette on the
- * wrapper that the color pickers override. Themed designs (glass / neumorph) paint
- * their own surface.
- * ========================================================================== */
-
-/* Solid — flat colors straight from the vars (base behavior; no override needed). */
-
-/* Elevated — clean white card + soft drop shadow. */
-.fw-fb--design-elevated { --fb-front-bg: #ffffff; --fb-front-color: #1f2937; --fb-back-bg: #ffffff; --fb-back-color: #1f2937; }
-.fw-fb--design-elevated .fw-fb__face { box-shadow: 0 14px 34px rgba(15, 23, 42, .18); }
-
-/* Minimal — light, hairline border, no shadow. */
-.fw-fb--design-minimal { --fb-front-bg: #ffffff; --fb-front-color: #1f2937; --fb-back-bg: #f8fafc; --fb-back-color: #1f2937; }
-.fw-fb--design-minimal .fw-fb__face { border: 1px solid #e5e7eb; }
-
-/* Outline front — transparent with a border, colored back. */
-.fw-fb--design-outline { --fb-front-color: #2b6cb0; }
-.fw-fb--design-outline .fw-fb__front { background: transparent; color: var(--fb-front-bg); border: 2px solid currentColor; }
-
-/* Gradient — each face color fades to a darker tint. */
-.fw-fb--design-gradient .fw-fb__front { background: linear-gradient(135deg, var(--fb-front-bg), rgba(0, 0, 0, .4)); }
-.fw-fb--design-gradient .fw-fb__back  { background: linear-gradient(135deg, var(--fb-back-bg), rgba(0, 0, 0, .4)); }
-
-/* Glass — translucent + blur (best over a section background / image). */
-.fw-fb--design-glass .fw-fb__face {
-	background: rgba(255, 255, 255, .14);
-	-webkit-backdrop-filter: blur(10px);
-	backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, .35);
-	color: #fff;
-}
-
-/* Dark. */
-.fw-fb--design-dark { --fb-front-bg: #111827; --fb-back-bg: #0b1220; }
-.fw-fb--design-dark .fw-fb__face { border: 1px solid #374151; }
-
-/* Neumorphic — soft extruded surface (needs a light section bg to read best). */
-.fw-fb--design-neumorph { --fb-front-color: #334155; --fb-back-color: #334155; }
-.fw-fb--design-neumorph .fw-fb__face { background: #e0e5ec; box-shadow: 8px 8px 18px #b8bec9, -8px -8px 18px #ffffff; }
-
 /* Front / back background image + dark overlay — applies to ANY design as soon as a
    Front/Back Background Image is set (not just the "Image front" design). */
 .fw-fb--has-front-image .fw-fb__front,
@@ -179,9 +137,8 @@
 .fw-fb--parallax .fw-fb__content {
 	transform: translateZ(55px) scale(.9);
 	transition: transform var(--fb-speed, .6s) var(--fb-ease, ease);
-}
+}@media (prefers-reduced-motion: reduce) {
 
-@media (prefers-reduced-motion: reduce) {
 	.fw-fb__inner,
 	.fw-fb--mode-reveal .fw-fb__face,
 	.fw-fb--parallax .fw-fb__content { transition: none; }

@@ -1,0 +1,7 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "labeled" design is used. */
+/* Labeled — emphasised badges. */
+.fw-bac--design-labeled .fw-bac__label {
+	font-size: .82rem;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+}

@@ -1,0 +1,13 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "circles" design is used. */
+/* ---------- Circles ---------- */
+.fw-steps--design-circles { display: flex; gap: 1.4rem; flex-wrap: wrap; }
+.fw-steps--design-circles .fw-steps__item { flex: 1 1 160px; text-align: center; }
+.fw-steps--design-circles .fw-steps__marker {
+	--st-size: 78px; width: var(--st-size); height: var(--st-size); font-size: 1.7rem;
+	margin: 0 auto 1rem;
+	background: linear-gradient(135deg, var(--st-accent), color-mix(in srgb, var(--st-accent) 55%, #000 0%));
+	box-shadow: 0 10px 24px color-mix(in srgb, var(--st-accent) 35%, transparent);
+}@supports not (color: color-mix(in srgb, red, blue)) {
+
+	.fw-steps--design-circles .fw-steps__marker { background: var(--st-accent); box-shadow: 0 10px 24px rgba(74,144,217,.35); }
+}

@@ -1,0 +1,9 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "card" design is used. */
+.imgbox--design-card .imgbox__card {
+    border: 1px solid #e6e9ec;
+    border-radius: var(--imgbox-radius);
+    overflow: hidden;
+    background: #fff;
+}
+.imgbox--design-card .imgbox__media { border-radius: 0; }
+.imgbox--design-card .imgbox__body { padding: 1.1rem 1.25rem 1.35rem; }

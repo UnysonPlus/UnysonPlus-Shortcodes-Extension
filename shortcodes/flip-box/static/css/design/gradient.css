@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "gradient" design is used. */
+/* Gradient — each face color fades to a darker tint. */
+.fw-fb--design-gradient .fw-fb__front { background: linear-gradient(135deg, var(--fb-front-bg), rgba(0, 0, 0, .4)); }
+.fw-fb--design-gradient .fw-fb__back  { background: linear-gradient(135deg, var(--fb-back-bg), rgba(0, 0, 0, .4)); }

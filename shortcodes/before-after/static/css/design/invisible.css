@@ -1,0 +1,5 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "invisible" design is used. */
+/* Invisible design — no visible divider line or handle. Great with the
+ * "Follow the cursor" interaction (and as a full-bleed background) for a clean,
+ * chrome-less wipe between the two images. The reveal still works (clip-path). */
+.fw-bac--design-invisible .fw-bac__handle { display: none; }

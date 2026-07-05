@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "dark" design is used. */
+/* Dark. */
+.fw-fb--design-dark { --fb-front-bg: #111827; --fb-back-bg: #0b1220; }
+.fw-fb--design-dark .fw-fb__face { border: 1px solid #374151; }

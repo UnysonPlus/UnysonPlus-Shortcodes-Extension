@@ -1,0 +1,12 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "pulse" design is used. */
+/* The separating ring doesn't suit the borderless / pre-ringed skins. */
+.fw-vp--design-minimal .fw-vp__btn::before,
+.fw-vp--design-outline .fw-vp__btn::before,
+.fw-vp--design-pulse   .fw-vp__btn::before { display: none; }
+
+.fw-vp--design-pulse .fw-vp__pulse { box-shadow: 0 0 0 0 var(--vp-accent); animation: fw-vp-pulse 2.2s ease-out infinite; }
+.fw-vp--design-pulse .fw-vp__pulse::before { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: 0 0 0 0 var(--vp-accent); animation: fw-vp-pulse 2.2s ease-out infinite 1.1s; }@media (prefers-reduced-motion: reduce) {
+
+	.fw-vp--design-pulse .fw-vp__pulse,
+	.fw-vp--design-pulse .fw-vp__pulse::before { animation: none; }
+}

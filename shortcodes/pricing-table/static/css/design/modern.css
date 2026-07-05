@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "modern" design is used. */
+/* Modern — soft shadow, no border. */
+.fw-pt--design-modern .fw-pt__plan { box-shadow: 0 8px 30px rgba(0, 0, 0, .08); }
+.fw-pt--design-modern .fw-pt__plan.is-featured { box-shadow: 0 18px 50px rgba(0, 0, 0, .16); }

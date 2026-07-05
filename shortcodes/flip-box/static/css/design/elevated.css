@@ -1,0 +1,13 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "elevated" design is used. */
+/* =============================================================================
+ * Designs — each a distinct look. Color-driven designs read the --fb-* vars (so the
+ * Styling-tab colors override them); each also sets a signature default palette on the
+ * wrapper that the color pickers override. Themed designs (glass / neumorph) paint
+ * their own surface.
+ * ========================================================================== */
+
+/* Solid — flat colors straight from the vars (base behavior; no override needed). */
+
+/* Elevated — clean white card + soft drop shadow. */
+.fw-fb--design-elevated { --fb-front-bg: #ffffff; --fb-front-color: #1f2937; --fb-back-bg: #ffffff; --fb-back-color: #1f2937; }
+.fw-fb--design-elevated .fw-fb__face { box-shadow: 0 14px 34px rgba(15, 23, 42, .18); }

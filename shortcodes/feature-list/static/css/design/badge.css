@@ -1,0 +1,11 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "badge" design is used. */
+/* Badge — boxed icon. */
+.fw-fl--design-badge .fw-fl__marker--icon {
+	width: 2.2em; height: 2.2em; border-radius: .55rem;
+	background: color-mix(in srgb, var(--fl-marker) 14%, #fff);
+}@supports not (background: color-mix(in srgb, red 10%, white)) {
+
+	.fw-fl--design-badge .fw-fl__marker--icon { background: rgba(74, 144, 217, .12); }
+}
+
+.fw-fl--design-badge .fw-fl__item { align-items: center; }

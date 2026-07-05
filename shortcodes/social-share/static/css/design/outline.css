@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "outline" design is used. */
+/* Outline — bordered, brand-colored icon; fills on hover. */
+.fw-ss--design-outline .fw-ss__btn { background: transparent; border-color: var(--ss-color); color: var(--ss-color); }
+.fw-ss--design-outline .fw-ss__btn:hover { background: var(--ss-color); color: #fff; }

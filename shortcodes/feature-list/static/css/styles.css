@@ -45,18 +45,7 @@ a.fw-fl__body:hover .fw-fl__text { text-decoration: underline; }
 	background: var(--fl-marker); color: #fff;
 	font-size: .8rem; font-weight: 700;
 }
-.fw-fl__marker--bullet { width: .55em; height: .55em; border-radius: 50%; background: var(--fl-marker); margin-top: .45em; }
+.fw-fl__marker--bullet { width: .55em; height: .55em; border-radius: 50%; background: var(--fl-marker); margin-top: .45em; }@media (max-width: 768px) {
 
-/* Badge — boxed icon. */
-.fw-fl--design-badge .fw-fl__marker--icon {
-	width: 2.2em; height: 2.2em; border-radius: .55rem;
-	background: color-mix(in srgb, var(--fl-marker) 14%, #fff);
-}
-@supports not (background: color-mix(in srgb, red 10%, white)) {
-	.fw-fl--design-badge .fw-fl__marker--icon { background: rgba(74, 144, 217, .12); }
-}
-.fw-fl--design-badge .fw-fl__item { align-items: center; }
-
-@media (max-width: 768px) {
 	.fw-fl { grid-template-columns: 1fr; }
 }

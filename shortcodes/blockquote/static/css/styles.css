@@ -19,35 +19,3 @@
 .fw-bq__author a:hover { text-decoration: underline; }
 .fw-bq__role { font-size: .9rem; color: var(--bq-author); }
 .fw-bq__empty { padding: 1rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; }
-
-/* Classic — accent left border. */
-.fw-bq--design-classic { padding: .25rem 0 .25rem 1.5rem; border-left: 4px solid var(--bq-accent); background: var(--bq-bg); }
-.fw-bq--design-classic .fw-bq__text { font-style: italic; }
-.fw-bq--design-classic .fw-bq__mark { display: none; }
-
-/* Pullquote — large centered. */
-.fw-bq--design-pullquote { text-align: center; background: var(--bq-bg); padding: 1rem 0; }
-.fw-bq--design-pullquote .fw-bq__text { font-size: 2rem; font-weight: 600; line-height: 1.35; }
-.fw-bq--design-pullquote .fw-bq__mark { display: block; font-size: 3rem; line-height: .6; margin-bottom: .4rem; }
-.fw-bq--design-pullquote .fw-bq__cite { align-items: center; }
-
-/* Card — boxed with shadow. */
-.fw-bq--design-card { background: var(--bq-bg, #fff); padding: 2rem; border-radius: .8rem; box-shadow: 0 10px 30px rgba(0, 0, 0, .08); position: relative; }
-.fw-bq--design-card .fw-bq__text { font-style: italic; }
-.fw-bq--design-card .fw-bq__mark { color: var(--bq-accent); font-size: 2rem; line-height: 0; vertical-align: -.2em; margin-right: .15em; }
-
-/* Big quote mark behind the text. */
-.fw-bq--design-markquote { position: relative; padding: 2.5rem 0 .5rem 1rem; background: var(--bq-bg); }
-.fw-bq--design-markquote .fw-bq__mark { position: absolute; top: -.2rem; left: -.2rem; font-size: 6rem; line-height: 1; color: var(--bq-accent); opacity: .18; z-index: 0; }
-.fw-bq--design-markquote .fw-bq__quote { position: relative; z-index: 1; }
-.fw-bq--design-markquote .fw-bq__text { font-size: 1.45rem; }
-
-/* Minimal — italic, no chrome. */
-.fw-bq--design-minimal .fw-bq__text { font-style: italic; font-size: 1.35rem; }
-.fw-bq--design-minimal .fw-bq__mark { display: none; }
-
-/* Bordered — top & bottom rules. */
-.fw-bq--design-bordered { text-align: center; padding: 1.5rem 0; border-top: 2px solid var(--bq-accent); border-bottom: 2px solid var(--bq-accent); background: var(--bq-bg); }
-.fw-bq--design-bordered .fw-bq__text { font-size: 1.5rem; }
-.fw-bq--design-bordered .fw-bq__mark { display: none; }
-.fw-bq--design-bordered .fw-bq__cite { align-items: center; }

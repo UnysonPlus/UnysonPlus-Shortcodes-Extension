@@ -1,0 +1,11 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "underline" design is used. */
+/* Underline — thick accent rule under the text. */
+.fw-hl--fx-underline .fw-hl__text {
+	background: linear-gradient(var(--hl-accent), var(--hl-accent));
+	background-repeat: no-repeat;
+	background-size: 100% .14em;
+	background-position: 0 100%;
+	padding-bottom: .08em;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+}

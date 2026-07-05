@@ -96,54 +96,15 @@
 /* Empty state -------------------------------------------------------------- */
 .fw-pt__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
 
-/* =============================================================================
- * Design skins
- * ========================================================================== */
-/* Classic — bordered cards, featured accent border. */
-.fw-pt--design-classic .fw-pt__plan { border: 1px solid rgba(0, 0, 0, .12); }
-.fw-pt--design-classic .fw-pt__plan.is-featured { border-color: var(--pt-accent); box-shadow: 0 0 0 1px var(--pt-accent); }
-
-/* Modern — soft shadow, no border. */
-.fw-pt--design-modern .fw-pt__plan { box-shadow: 0 8px 30px rgba(0, 0, 0, .08); }
-.fw-pt--design-modern .fw-pt__plan.is-featured { box-shadow: 0 18px 50px rgba(0, 0, 0, .16); }
-
-/* Minimal — borderless with divider lines. */
-.fw-pt--design-minimal .fw-pt__plan { background: transparent; border-right: 1px solid rgba(0, 0, 0, .08); border-radius: 0; }
-.fw-pt--design-minimal .fw-pt__grid > .fw-pt__plan:last-child { border-right: 0; }
-.fw-pt--design-minimal .fw-pt__plan.is-featured { background: rgba(0, 0, 0, .03); }
-
-/* Gradient header — colored top with the plan name + price over the accent. */
-.fw-pt--design-gradient .fw-pt__plan { border: 1px solid rgba(0, 0, 0, .08); overflow: hidden; padding-top: 0; }
-.fw-pt--design-gradient .fw-pt__head { margin: 0 -1.5rem 0; padding: 1.75rem 1.5rem 1rem; background: linear-gradient(135deg, var(--pt-accent), rgba(0, 0, 0, .15)); color: #fff; }
-.fw-pt--design-gradient .fw-pt__name,
-.fw-pt--design-gradient .fw-pt__subtitle,
-.fw-pt--design-gradient .fw-pt__icon { color: #fff; }
-.fw-pt--design-gradient .fw-pt__price { margin-top: 1.25rem; }
-
-/* Dark cards. */
-.fw-pt--design-dark .fw-pt__plan { background: #1f2530; color: #cfd6df; }
-.fw-pt--design-dark .fw-pt__name,
-.fw-pt--design-dark .fw-pt__amount,
-.fw-pt--design-dark .fw-pt__currency { color: #fff; }
-.fw-pt--design-dark .fw-pt__feature { border-bottom-color: rgba(255, 255, 255, .1); }
-.fw-pt--design-dark .fw-pt__plan.is-featured { box-shadow: 0 0 0 2px var(--pt-accent); }
-
-/* Outline — transparent cards with an accent outline on featured. */
-.fw-pt--design-outline .fw-pt__plan { background: transparent; border: 2px solid rgba(0, 0, 0, .12); }
-.fw-pt--design-outline .fw-pt__plan.is-featured { border-color: var(--pt-accent); }
-.fw-pt--design-outline .fw-pt__btn { background: transparent; color: var(--pt-accent); }
-.fw-pt--design-outline .fw-pt__plan.is-featured .fw-pt__btn,
-.fw-pt--design-outline .fw-pt__btn:hover { background: var(--pt-accent); color: #fff; }
-
 /* Responsive --------------------------------------------------------------- */
 @media (max-width: 992px) {
 	.fw-pt__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 	.fw-pt--raise .fw-pt__plan.is-featured { transform: none; }
-}
-@media (max-width: 576px) {
+}@media (max-width: 576px) {
+
 	.fw-pt__grid { grid-template-columns: 1fr; }
-	.fw-pt--design-minimal .fw-pt__plan { border-right: 0; border-bottom: 1px solid rgba(0, 0, 0, .08); }
 }
 @media (prefers-reduced-motion: reduce) {
+
 	.fw-pt__plan, .fw-pt__btn { transition: none; }
 }

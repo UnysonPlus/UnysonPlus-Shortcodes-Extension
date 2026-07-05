@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "neumorph" design is used. */
+/* Neumorphic — soft extruded surface (needs a light section bg to read best). */
+.fw-fb--design-neumorph { --fb-front-color: #334155; --fb-back-color: #334155; }
+.fw-fb--design-neumorph .fw-fb__face { background: #e0e5ec; box-shadow: 8px 8px 18px #b8bec9, -8px -8px 18px #ffffff; }

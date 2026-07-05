@@ -1,0 +1,4 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "compact" design is used. */
+.fw-bi--design-compact .fw-bi__day { padding: .3rem 1rem .3rem 0; }
+.fw-bi--design-compact .fw-bi__time { padding: .3rem 0; }
+.fw-bi--design-compact .fw-bi__contact { margin-top: 1rem; }

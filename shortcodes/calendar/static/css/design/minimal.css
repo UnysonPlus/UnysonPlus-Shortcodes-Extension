@@ -1,0 +1,9 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "minimal" design is used. */
+/* =============================================================================
+ * Designs
+ * ========================================================================== */
+/* Minimal — borderless, airy. */
+.fw-cal--design-minimal .fw-cal__cell { border: 0; background: transparent; min-height: 5.4rem; }
+.fw-cal--design-minimal .fw-cal__grid .fw-cal__cell { border: 0; }
+.fw-cal--design-minimal .fw-cal__cell.is-out { background: transparent; opacity: .5; }
+.fw-cal--design-minimal .fw-cal__btn { border-color: transparent; background: transparent; }
