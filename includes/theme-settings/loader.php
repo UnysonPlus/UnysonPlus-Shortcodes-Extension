@@ -212,8 +212,11 @@ add_filter( 'fw_settings_options', function ( $options ) {
 				),
 			);
 
-			// Place it right after the first section (General).
-			if ( is_array( $options ) && count( $options ) > 0 ) {
+			// Place it after General + Header (order: General, Header, Components, …).
+			// Insert at index 2 when there are at least that many sections, else fall back.
+			if ( is_array( $options ) && count( $options ) >= 2 ) {
+				array_splice( $options, 2, 0, array( $components_section ) );
+			} elseif ( is_array( $options ) && count( $options ) > 0 ) {
 				array_splice( $options, 1, 0, array( $components_section ) );
 			} else {
 				$options[] = $components_section;
