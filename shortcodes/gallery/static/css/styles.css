@@ -133,6 +133,10 @@ a.fw-gallery__media[href]:not([data-fw-lightbox]) { cursor: pointer; }
 .fw-gallery .splide__arrow--prev { left: 12px; }
 .fw-gallery .splide__arrow--next { right: 12px; }
 .fw-gallery .splide__arrow svg { width: 18px; height: 18px; fill: #fff; transition: none; }
+/* Splide ships one arrow SVG for both buttons and the FULL theme flips the prev
+   one; we load only splide-core (no theme), so flip the prev arrow ourselves.
+   Flip the SVG (not the button) so the button's hover transform can't undo it. */
+.fw-gallery .splide__arrow--prev svg { transform: scaleX(-1); }
 .fw-gallery .splide__arrow:hover:not(:disabled) { background: rgba(0, 0, 0, .85); transform: translateY(-50%) scale(1.08); }
 .fw-gallery .splide__arrow:disabled { opacity: .3; cursor: default; }
 .fw-gallery .splide__arrow:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }

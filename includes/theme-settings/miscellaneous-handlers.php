@@ -249,3 +249,81 @@ add_filter( 'template_include', function ( $template ) {
 	$view = __DIR__ . '/views/404-page.php';
 	return is_file( $view ) ? $view : $template;
 }, 99 );
+
+/* ===================== Media — Custom Image Sizes ===================== */
+/*
+ * Schema in miscellaneous-media.php (Miscellaneous → Media). Registers the sizes
+ * defined under the `theme_image_sizes` key and — for sizes with "Show in editor"
+ * on — exposes them in the media library / block editor size dropdown. Read via
+ * fw_get_db_settings_option( 'theme_image_sizes' ), the same key the theme used, so
+ * existing saves carry over with no migration. Registered on `init` (fires reliably
+ * after the extension loads) rather than after_setup_theme.
+ */
+
+if ( ! function_exists( 'upw_ts_image_size_crop_map' ) ) :
+	/** Saved crop value → add_image_size() $crop argument. */
+	function upw_ts_image_size_crop_map() {
+		return array(
+			'false'         => false,
+			'true'          => true,
+			'top-left'      => array( 'left', 'top' ),
+			'top-center'    => array( 'center', 'top' ),
+			'top-right'     => array( 'right', 'top' ),
+			'center-left'   => array( 'left', 'center' ),
+			'center'        => array( 'center', 'center' ),
+			'center-right'  => array( 'right', 'center' ),
+			'bottom-left'   => array( 'left', 'bottom' ),
+			'bottom-center' => array( 'center', 'bottom' ),
+			'bottom-right'  => array( 'right', 'bottom' ),
+		);
+	}
+endif;
+
+if ( ! function_exists( 'upw_ts_register_image_sizes' ) ) :
+	function upw_ts_register_image_sizes() {
+		if ( ! function_exists( 'fw_get_db_settings_option' ) ) { return; }
+		$sizes = fw_get_db_settings_option( 'theme_image_sizes' );
+		if ( empty( $sizes ) || ! is_array( $sizes ) ) { return; }
+
+		$crop_map = upw_ts_image_size_crop_map();
+		$reserved = array( 'thumbnail', 'medium', 'medium_large', 'large', 'full', 'post-thumbnail', '1536x1536', '2048x2048' );
+
+		foreach ( $sizes as $size ) {
+			if ( empty( $size['name'] ) ) { continue; }
+			$name   = sanitize_title_with_dashes( $size['name'] );
+			$width  = (int) preg_replace( '/[^0-9]/', '', isset( $size['width'] ) ? $size['width'] : '' );
+			$height = (int) preg_replace( '/[^0-9]/', '', isset( $size['height'] ) ? $size['height'] : '' );
+			if ( $name === '' || in_array( $name, $reserved, true ) || ( $width === 0 && $height === 0 ) ) { continue; }
+			$crop_key = isset( $size['crop'] ) ? $size['crop'] : 'false';
+			$crop     = array_key_exists( $crop_key, $crop_map ) ? $crop_map[ $crop_key ] : false;
+			add_image_size( $name, $width, $height, $crop );
+		}
+	}
+endif;
+add_action( 'init', 'upw_ts_register_image_sizes', 20 );
+
+if ( ! function_exists( 'upw_ts_selectable_image_sizes' ) ) :
+	/**
+	 * Expose custom sizes (with "Show in editor" on) in the media / block-editor
+	 * size dropdown. Without this a registered size is usable only from template code.
+	 *
+	 * @param array $sizes slug => label map WordPress offers in the picker.
+	 * @return array
+	 */
+	function upw_ts_selectable_image_sizes( $sizes ) {
+		if ( ! function_exists( 'fw_get_db_settings_option' ) ) { return $sizes; }
+		$defined = fw_get_db_settings_option( 'theme_image_sizes' );
+		if ( empty( $defined ) || ! is_array( $defined ) ) { return $sizes; }
+
+		$reserved = array( 'thumbnail', 'medium', 'medium_large', 'large', 'full', 'post-thumbnail' );
+		foreach ( $defined as $size ) {
+			if ( empty( $size['name'] ) ) { continue; }
+			if ( isset( $size['show_in_editor'] ) && $size['show_in_editor'] === 'no' ) { continue; }
+			$slug = sanitize_title_with_dashes( $size['name'] );
+			if ( $slug === '' || in_array( $slug, $reserved, true ) ) { continue; }
+			$sizes[ $slug ] = $size['name']; // human label as typed
+		}
+		return $sizes;
+	}
+endif;
+add_filter( 'image_size_names_choose', 'upw_ts_selectable_image_sizes' );

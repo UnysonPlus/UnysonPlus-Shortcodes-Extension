@@ -44,6 +44,7 @@ if ( ! function_exists( 'upw_ts_misc_subtabs' ) ) :
 			'tab_custom_scripts' => array( 'title' => __( 'Custom Scripts', 'fw' ),        'file' => 'miscellaneous-scripts' ),
 			'tab_analytics'      => array( 'title' => __( 'Analytics & Tracking', 'fw' ),  'file' => 'miscellaneous-analytics' ),
 			'tab_performance'    => array( 'title' => __( 'Performance', 'fw' ),           'file' => 'miscellaneous-performance' ),
+			'tab_media'          => array( 'title' => __( 'Media', 'fw' ),                 'file' => 'miscellaneous-media' ),
 			'tab_404'            => array( 'title' => __( '404 Page', 'fw' ),              'file' => 'miscellaneous-404' ),
 			'tab_maintenance'    => array( 'title' => __( 'Maintenance Mode', 'fw' ),      'file' => 'miscellaneous-maintenance' ),
 			'tab_export_import'  => array( 'title' => __( 'Export / Import', 'fw' ),       'file' => 'miscellaneous-export-import' ),
