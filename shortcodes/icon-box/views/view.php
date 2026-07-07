@@ -203,81 +203,34 @@ $attr = sc_build_wrapper_attr( $atts );
 if ( ! function_exists( 'sc_iconbox_render_icon_markup' ) ) {
     /**
      * Render the inner markup for the icon container.
-     * Priority: custom_icon (emoji / inline SVG) > icon-v2 picked icon.
+     * Priority: the picked icon (the unified picker now covers font / SVG /
+     * emoji / Lucide) wins when set; a legacy Custom Icon value is the fallback
+     * for content saved before the picker gained those kinds.
      * The caller is responsible for the surrounding container (with aria-hidden).
      */
     function sc_iconbox_render_icon_markup( $custom_icon, $picked_icon ) {
 
-        // 1. Custom icon override (emoji or inline SVG)
-        if ( is_string( $custom_icon ) && $custom_icon !== '' ) {
-
-            // Allow inline SVG markup, while still filtering anything dangerous.
-			$svg_allowed = [
-				'svg'      => [ 
-					'xmlns'           => true, 
-					'viewbox'         => true, 
-					'width'           => true, 
-					'height'          => true, 
-					'fill'            => true, 
-					'stroke'          => true, 
-					'stroke-width'    => true, 
-					'stroke-linecap'  => true, // Added
-					'stroke-linejoin' => true, // Added
-					'class'           => true, 
-					'role'            => true, 
-					'aria-hidden'     => true, 
-					'focusable'       => true 
-				],
-				'g'        => [ 'fill' => true, 'stroke' => true, 'transform' => true, 'class' => true ],
-				'path'     => [ 
-					'd'               => true, 
-					'fill'            => true, 
-					'stroke'          => true, 
-					'stroke-width'    => true, 
-					'stroke-linecap'  => true, 
-					'stroke-linejoin' => true, 
-					'class'           => true 
-				],
-				'circle'   => [ 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true ],
-				'rect'     => [ 
-					'x'               => true, 
-					'y'               => true, 
-					'width'           => true, 
-					'height'          => true, 
-					'rx'              => true, 
-					'ry'              => true, 
-					'fill'            => true, 
-					'stroke'          => true, 
-					'stroke-width'    => true, // Added to prevent potential styling drops on rects
-					'stroke-linecap'  => true, // Added
-					'stroke-linejoin' => true, // Added
-					'class'           => true 
-				],
-				'line'     => [ 
-					'x1'              => true, 
-					'y1'              => true, 
-					'x2'              => true, 
-					'y2'              => true, 
-					'stroke'          => true, 
-					'stroke-width'    => true, 
-					'stroke-linecap'  => true, // Added
-					'stroke-linejoin' => true, // Added
-					'class'           => true 
-				],
-				'polyline' => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ],
-				'polygon'  => [ 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ],
-				'title'    => [],
-				'desc'     => [],
-			];
-
-            if ( stripos( $custom_icon, '<svg' ) !== false ) {
-                return wp_kses( $custom_icon, $svg_allowed );
+        // 1. icon-v2 picked icon (font / svg / emoji / upload) via the central
+        // renderer. Only return it when non-empty so a legacy Custom Icon still
+        // shows for content where the picker was left as none.
+        if ( function_exists( 'sc_icon_render' ) ) {
+            $picked_html = sc_icon_render( $picked_icon, array(
+                'aria_hidden' => false,
+                'font_class'  => 'icon-box__icon-font',
+                'img_class'   => 'icon-box__icon-image',
+            ) );
+            if ( $picked_html !== '' ) {
+                return $picked_html;
             }
-
-            // Emoji / plain text fallback
-            return esc_html( $custom_icon );
         }
 
+        // 2. Legacy Custom Icon (emoji / inline SVG) fallback — the field is
+        //    retired, so only pre-existing content has a value here.
+        if ( is_string( $custom_icon ) && $custom_icon !== '' && function_exists( 'sc_icon_custom_markup' ) ) {
+            return sc_icon_custom_markup( $custom_icon );
+        }
+
+        // Fallback (helper not loaded):
         // 2. icon-v2 image upload
         if (
             is_array( $picked_icon ) &&

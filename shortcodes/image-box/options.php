@@ -77,14 +77,15 @@ $options = [
                         'label'        => __( 'Icon', 'fw' ),
                         'preview_size' => 'small',
                         'modal_size'   => 'medium',
-                        'desc'         => __( 'Optional icon. Shown over the image on overlay designs, or above the title on stacked/feature designs.', 'fw' ),
-                        'help'         => __( 'Recolour it via Icon Color in the Styling tab. For an emoji or your own SVG, use Custom Icon below instead.', 'fw' ),
+                        'desc'         => __( 'Optional icon — a font icon, a Lucide SVG, an emoji, or your own pasted/uploaded SVG, all from the one picker. Shown over the image on overlay designs, or above the title on stacked/feature designs.', 'fw' ),
+                        'help'         => __( 'Font icons and currentColor SVGs recolour via Icon Color in the Styling tab; emoji colours are fixed.', 'fw' ),
                     ],
+                    // Retired — the picker above now covers emoji + SVG. Kept as a
+                    // hidden option so pre-existing values are preserved on re-save
+                    // and still render (the picked icon takes precedence when set).
                     'custom_icon' => [
-                        'type'  => 'text',
-                        'label' => __( 'Custom Icon (Emoji / SVG)', 'fw' ),
-                        'desc'  => __( 'Optional. If filled, overrides the Icon picker above. Accepts an emoji (e.g. 🔗) or inline SVG markup.', 'fw' ),
-                        'help'  => __( 'Emoji and pasted SVG colours are fixed, so the Icon Color option will not affect them.', 'fw' ),
+                        'type'  => 'hidden',
+                        'label' => false,
                     ],
                 ],
             ],

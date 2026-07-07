@@ -84,53 +84,43 @@ $use_new_icon_markup = ( $custom_icon !== '' || ! empty( $picked_icon ) );
 if ( ! function_exists( 'sc_notification_render_icon' ) ) {
 	function sc_notification_render_icon( $custom_icon, $picked_icon, $type, $default_icons ) {
 
-		// 1. Custom icon override (emoji or inline SVG)
-		if ( is_string( $custom_icon ) && $custom_icon !== '' ) {
-
-			$svg_allowed = [
-				'svg'      => [ 'xmlns' => true, 'viewbox' => true, 'width' => true, 'height' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true, 'role' => true, 'aria-hidden' => true, 'focusable' => true ],
-				'g'        => [ 'fill' => true, 'stroke' => true, 'transform' => true, 'class' => true ],
-				'path'     => [ 'd' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ],
-				'circle'   => [ 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true ],
-				'rect'     => [ 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true, 'class' => true ],
-				'line'     => [ 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true ],
-				'polyline' => [ 'points' => true, 'fill' => true, 'stroke' => true, 'class' => true ],
-				'polygon'  => [ 'points' => true, 'fill' => true, 'stroke' => true, 'class' => true ],
-				'title'    => [],
-				'desc'     => [],
-			];
-
-			if ( stripos( $custom_icon, '<svg' ) !== false ) {
-				return wp_kses( $custom_icon, $svg_allowed );
+		// 1. icon-v2 picked icon (font / svg / emoji / upload) via the central
+		// renderer. Only return it when non-empty, so a legacy Custom Icon (2)
+		// or the per-type default (3) still applies when nothing was picked.
+		// img keeps its alert__icon-image class.
+		if ( function_exists( 'sc_icon_render' ) ) {
+			$picked_html = sc_icon_render( $picked_icon, array(
+				'aria_hidden' => false,
+				'img_class'   => 'alert__icon-image',
+			) );
+			if ( $picked_html !== '' ) {
+				return $picked_html;
 			}
-
-			return esc_html( $custom_icon );
+		} else {
+			// Fallback (helper not loaded):
+			if (
+				is_array( $picked_icon ) && isset( $picked_icon['type'] ) &&
+				$picked_icon['type'] === 'custom-upload' && ! empty( $picked_icon['url'] )
+			) {
+				return sprintf(
+					'<img src="%s" alt="" class="alert__icon-image" loading="lazy">',
+					esc_url( $picked_icon['url'] )
+				);
+			}
+			if (
+				is_array( $picked_icon ) && isset( $picked_icon['type'] ) &&
+				$picked_icon['type'] === 'icon-font' && ! empty( $picked_icon['icon-class'] )
+			) {
+				return '<i class="' . esc_attr( $picked_icon['icon-class'] ) . '"></i>';
+			}
 		}
 
-		// 2. icon-v2 image upload
-		if (
-			is_array( $picked_icon ) &&
-			isset( $picked_icon['type'] ) &&
-			$picked_icon['type'] === 'custom-upload' &&
-			! empty( $picked_icon['url'] )
-		) {
-			return sprintf(
-				'<img src="%s" alt="" class="alert__icon-image" loading="lazy">',
-				esc_url( $picked_icon['url'] )
-			);
+		// 2. Legacy Custom Icon (emoji / inline SVG) fallback — field retired.
+		if ( is_string( $custom_icon ) && $custom_icon !== '' && function_exists( 'sc_icon_custom_markup' ) ) {
+			return sc_icon_custom_markup( $custom_icon );
 		}
 
-		// 3. icon-v2 font icon
-		if (
-			is_array( $picked_icon ) &&
-			isset( $picked_icon['type'] ) &&
-			$picked_icon['type'] === 'icon-font' &&
-			! empty( $picked_icon['icon-class'] )
-		) {
-			return '<i class="' . esc_attr( $picked_icon['icon-class'] ) . '"></i>';
-		}
-
-		// 4. Default per-type Font Awesome icon
+		// 3. Default per-type Font Awesome icon
 		if ( ! empty( $default_icons[ $type ] ) ) {
 			return '<i class="' . esc_attr( $default_icons[ $type ] ) . '"></i>';
 		}

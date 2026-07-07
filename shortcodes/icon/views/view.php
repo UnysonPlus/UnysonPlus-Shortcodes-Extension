@@ -6,17 +6,7 @@
  * @var array $atts
  */
 
-/*
-|--------------------------------------------------------------------------
-| Enqueue icon-v2 frontend CSS (only when icon is used)
-|--------------------------------------------------------------------------
-*/
-if (
-    ! empty( $atts['icon'] ) &&
-    isset( fw()->backend->option_type( 'icon-v2' )->packs_loader )
-) {
-    fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_pack_for_icon( $atts['icon'] );
-}
+// Icon pack CSS is enqueued by sc_icon_render() below (single source of truth).
 
 // Route per-element color picks to specific inner elements (kept out of wrapper).
 // Keeps the Styling tab's general "Text Color" as the wrapper-level base; named
@@ -37,20 +27,19 @@ $attr = sc_build_wrapper_attr( $atts );
 
 // icon-v2 stores its value as an array: ['type' => 'icon-font'|'custom-upload'|'none', ...]
 $icon      = is_array( $atts['icon'] ?? null ) ? $atts['icon'] : array();
-$icon_type = $icon['type'] ?? '';
-
-$icon_classes  = $icon_type === 'icon-font' ? array( trim( (string) ( $icon['icon-class'] ?? '' ) ) ) : array( 'icon-image' );
-$icon_classes  = array_merge( $icon_classes, $icon_extras );
 $title_classes = array_merge( array( 'list-title' ), $title_extras );
-$icon_style_attr  = $icon_style  !== '' ? ' style="' . esc_attr( $icon_style ) . '"'  : '';
 $title_style_attr = $title_style !== '' ? ' style="' . esc_attr( $title_style ) . '"' : '';
+
+// Central icon render: font <i> keeps the icon-color classes/style; a custom
+// upload keeps its 'icon-image' base class. Pack CSS is auto-enqueued.
+$icon_html = sc_icon_render( $icon, array(
+    'class'     => implode( ' ', $icon_extras ),
+    'img_class' => 'icon-image',
+    'style'     => $icon_style,
+) );
 ?>
 <span <?php echo fw_attr_to_html( $attr ); ?>>
-    <?php if ( $icon_type === 'icon-font' && ! empty( $icon['icon-class'] ) ) : ?>
-        <i class="<?php echo esc_attr( trim( implode( ' ', $icon_classes ) ) ); ?>"<?php echo $icon_style_attr; ?> aria-hidden="true"></i>
-    <?php elseif ( $icon_type === 'custom-upload' && ! empty( $icon['url'] ) ) : ?>
-        <img src="<?php echo esc_url( $icon['url'] ); ?>" alt="<?php echo esc_attr( $icon['alt'] ?? '' ); ?>" class="<?php echo esc_attr( trim( implode( ' ', $icon_classes ) ) ); ?>"<?php echo $icon_style_attr; ?> loading="lazy">
-    <?php endif; ?>
+    <?php echo $icon_html; // already escaped by sc_icon_render() ?>
 
     <?php if ( ! empty( $atts['title'] ) ) : ?>
         <span class="<?php echo esc_attr( implode( ' ', $title_classes ) ); ?>"<?php echo $title_style_attr; ?>><?php echo esc_html( $atts['title'] ); ?></span>

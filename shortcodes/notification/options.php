@@ -55,15 +55,17 @@ $options = [
                 'label'        => __( 'Icon', 'fw' ),
                 'preview_size' => 'medium',
                 'modal_size'   => 'medium',
-                'desc'         => __( 'Pick an icon from the library. Will be ignored if "Custom Icon" below is filled.', 'fw' ),
-                'help'         => __( 'Leave this on its default to show the icon that matches the chosen Type. Pick a specific icon only when you want something other than the type default.', 'fw' ),
+                'desc'         => __( 'Leave empty to show the icon that matches the chosen Type. Otherwise pick a font icon, a Lucide SVG, an emoji, or your own SVG from the picker.', 'fw' ),
+                'help'         => __( 'Font icons and currentColor SVGs recolour via the Icon Color setting; emoji colours are fixed.', 'fw' ),
             ],
 
+            // Retired — the picker above now covers emoji + SVG. Kept as a hidden
+            // option so pre-existing values are preserved on re-save and still
+            // render (the picked icon takes precedence when set; otherwise the
+            // per-Type default still applies).
             'custom_icon' => [
-                'type'  => 'text',
-                'label' => __( 'Custom Icon (Emoji / SVG)', 'fw' ),
-                'desc'  => __( 'Optional. If filled, this overrides the Icon picker above. Accepts an emoji (e.g. ⭐) or inline SVG markup.', 'fw' ),
-                'help'  => __( 'Handy for a quick emoji without browsing the icon library, or for pasting a brand-specific SVG. The Icon Color setting does not apply to emoji.', 'fw' ),
+                'type'  => 'hidden',
+                'label' => false,
             ],
             'layout' => [
                 'label'   => __('Layout Style', 'fw'),

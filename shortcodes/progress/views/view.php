@@ -56,6 +56,14 @@ if ( ! function_exists( 'fw_progress_icon_html' ) ) {
 		if ( empty( $icon ) || ! is_array( $icon ) ) {
 			return '';
 		}
+		// Central icon renderer (auto-enqueues pack CSS). Keeps the
+		// fw-progress__icon wrapper class on both the <i> and the <img>.
+		if ( function_exists( 'sc_icon_render' ) ) {
+			return sc_icon_render( $icon, array(
+				'font_class' => 'fw-progress__icon',
+				'img_class'  => 'fw-progress__icon',
+			) );
+		}
 		if ( isset( fw()->backend->option_type( 'icon-v2' )->packs_loader ) ) {
 			fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_pack_for_icon( $icon );
 		}

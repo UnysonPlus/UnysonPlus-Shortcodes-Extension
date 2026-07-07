@@ -175,11 +175,19 @@ if (!empty($attr['class'])) {
 }
 
 // Icon inherits the button's text color (currentColor) from the Style preset.
+// Central icon renderer; aria_hidden => false keeps the button's original bare
+// <i>, and enqueue => false because the pack is already enqueued above.
 $icon_html = '';
 if (!empty($atts['icon']) && is_array($atts['icon'])) {
-    $icon_class = !empty($atts['icon']['icon-class']) ? $atts['icon']['icon-class'] : '';
-    if (!empty($icon_class) && is_string($icon_class)) {
-        $icon_html = '<i class="' . esc_attr($icon_class) . '"></i>';
+    if ( function_exists( 'sc_icon_render' ) ) {
+        $icon_html = sc_icon_render( $atts['icon'], array( 'aria_hidden' => false, 'enqueue' => false ) );
+    } else {
+        $icon_class = !empty($atts['icon']['icon-class']) ? $atts['icon']['icon-class'] : '';
+        if (!empty($icon_class) && is_string($icon_class)) {
+            $icon_html = '<i class="' . esc_attr($icon_class) . '"></i>';
+        }
+    }
+    if ( $icon_html !== '' ) {
         // Deterministic hook for the flex centering CSS — more reliable than a
         // :has() selector (which silently no-ops on older browsers).
         $classes[] = 'has-icon';

@@ -50,15 +50,19 @@ $classes[] = 'sc-social--' . sanitize_html_class( $size );
 		if ( $link === '' ) {
 			continue;
 		}
-		$icon_class = ! empty( $p['icon']['icon-class'] ) ? $p['icon']['icon-class'] : '';
+		// Central icon renderer (auto-enqueues pack CSS; aria-hidden by default).
+		if ( function_exists( 'sc_icon_render' ) ) {
+			$icon_html = sc_icon_render( $p['icon'] );
+		} else {
+			$icon_class = ! empty( $p['icon']['icon-class'] ) ? $p['icon']['icon-class'] : '';
 			if ( $icon_class !== '' && $upw_social_icon_loader ) { $upw_social_icon_loader->enqueue_pack_for_icon( $p['icon'] ); }
+			$icon_html  = $icon_class !== '' ? '<i class="' . esc_attr( $icon_class ) . '" aria-hidden="true"></i>' : '';
+		}
 		$sr         = ! empty( $p['label'] ) ? $p['label'] : $link;
 		?>
 		<li class="sc-social__item">
 			<a class="sc-social__link" href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer">
-				<?php if ( $icon_class ) : ?>
-					<i class="<?php echo esc_attr( $icon_class ); ?>" aria-hidden="true"></i>
-				<?php endif; ?>
+				<?php echo $icon_html; // already escaped by sc_icon_render() ?>
 				<span class="screen-reader-text"><?php echo esc_html( $sr ); ?></span>
 			</a>
 		</li>

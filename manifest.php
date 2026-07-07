@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.10.34';
+$manifest['version']     = '1.10.40';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,46 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.10.39 - Retired the per-element "Custom Icon (Emoji / SVG)" text field on
+ *          icon-box, image-box and notification — the unified icon picker now
+ *          handles emoji, Lucide and pasted/uploaded SVG for every element, so the
+ *          separate field is redundant. The field is kept as a HIDDEN option (never
+ *          removed) so any value saved before the picker gained those kinds is
+ *          preserved through re-save and still renders. The three views now give the
+ *          PICKED icon precedence when set and fall back to the legacy custom_icon
+ *          only when the picker is empty (safe because the picker default is `none`);
+ *          notification keeps its per-Type default below that.
+ *
+ * 1.10.38 - Icon renderer gains two new kinds: `emoji` ({ type:'emoji', char }) →
+ *          an escaped <span role="img">, and `svg` ({ type:'svg', svg-id | markup |
+ *          url }) → inline sanitised SVG (currentColor-colourable) or an <img> for a
+ *          URL-only upload. Because every consumer already routes through
+ *          sc_icon_render(), they all render the new kinds automatically once the
+ *          picker can create them (Phase 2B). Added a SINGLE shared inline-SVG
+ *          sanitiser — `sc_icon_svg_allowed()` / `sc_icon_sanitize_svg()` and the
+ *          emoji-or-SVG `sc_icon_custom_markup()` — replacing the three copy-pasted
+ *          wp_kses allowlists that icon-box, image-box and notification each carried
+ *          (one allowlist to audit now). `sc_icon_svg_library_markup()` resolves a
+ *          library id like 'lucide/star' (filterable; the Lucide set is bundled in
+ *          Phase 2B).
+ *
+ * 1.10.36 - Central icon renderer `sc_icon_render( $value, $args )` (plus
+ *          `sc_icon_enqueue_pack()` and `sc_icon_join_classes()`) added to
+ *          shortcode-styling-helper.php — one source of truth that turns an
+ *          icon-v2 value (or a legacy class string) into HTML and auto-enqueues
+ *          the pack CSS it needs. This replaces the per-shortcode hand-rolled
+ *          `<i class>` / `<img>` blocks so that new icon kinds (SVG, emoji,
+ *          Lottie planned) light up across every consumer from one place. All
+ *          17 icon consumers now render through it — icon, feature-list,
+ *          flip-box, modal-popup, pricing-table, steps, timeline, tooltip,
+ *          progress, scroll-to-top, social-icons, announcement-pill, button,
+ *          icon-box, image-box, notification, image-hotspots — each keeping a
+ *          local fallback if the helper is unavailable. The two elements that
+ *          also expose a separate Custom Icon (emoji / inline SVG) field
+ *          (icon-box, image-box) route only their picked-icon branch through
+ *          the helper; folding that field into the icon type itself is planned
+ *          next. Verified byte-for-byte output parity across all call patterns.
+ *
  * 1.10.3 - Section-Background effects are now pluggable from a child theme's functions.php.
  *          New `sc_section_background_effects` filter registers named effects
  *          (`id => [ label, css, js, ver, deps, class, render ]`); `sc_section_background_render(

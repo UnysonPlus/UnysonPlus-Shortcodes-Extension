@@ -59,22 +59,26 @@ if ( ! function_exists( 'sc_announce_render' ) ) {
 		}
 		foreach ( array( 'pill_color', 'text_color', 'tag_color', 'gradient_from', 'gradient_to' ) as $ck ) { unset( $atts[ $ck ] ); }
 
-		// --- icons (icon-v2 value arrays → "<i class>") ---
-		$icon_class = function ( $v ) {
-			return ( is_array( $v ) && ! empty( $v['icon-class'] ) && is_string( $v['icon-class'] ) ) ? $v['icon-class'] : '';
+		// --- icons (icon-v2 → central renderer; slot class stays on the <i>) ---
+		$render_icon = function ( $v, $slot ) {
+			if ( function_exists( 'sc_icon_render' ) ) {
+				return sc_icon_render( $v, array( 'font_class' => $slot ) );
+			}
+			$c = ( is_array( $v ) && ! empty( $v['icon-class'] ) && is_string( $v['icon-class'] ) ) ? $v['icon-class'] : '';
+			return $c !== '' ? '<i class="' . esc_attr( $slot ) . ' ' . esc_attr( $c ) . '" aria-hidden="true"></i>' : '';
 		};
-		$lead_icon  = $leading === 'icon' ? $icon_class( $get( 'leading_icon', null ) ) : '';
-		$trail_icon = $icon_class( $get( 'trailing_icon', null ) );
+		$lead_icon  = $leading === 'icon' ? $render_icon( $get( 'leading_icon', null ), 'ap-pill__lead' ) : '';
+		$trail_icon = $render_icon( $get( 'trailing_icon', null ), 'ap-pill__trail' );
 
 		// --- inner content (clean DOM: classes only on structural spans) ---
 		$inner = '';
 		if ( $leading === 'dot' )        { $inner .= '<span class="ap-pill__dot" aria-hidden="true"></span>'; }
 		elseif ( $leading === 'pulse' )  { $inner .= '<span class="ap-pill__dot ap-pill__dot--pulse" aria-hidden="true"></span>'; }
-		elseif ( $lead_icon !== '' )     { $inner .= '<i class="ap-pill__lead ' . esc_attr( $lead_icon ) . '" aria-hidden="true"></i>'; }
+		elseif ( $lead_icon !== '' )     { $inner .= $lead_icon; }
 		if ( $tag_text !== '' && $tstyle !== 'none' ) { $inner .= '<span class="ap-pill__tag">' . esc_html( $tag_text ) . '</span>'; }
 		elseif ( $tag_text !== '' )                   { $inner .= '<span class="ap-pill__tag ap-pill__tag--plain">' . esc_html( $tag_text ) . '</span>'; }
 		if ( $message !== '' )    { $inner .= '<span class="ap-pill__msg">' . esc_html( $message ) . '</span>'; }
-		if ( $trail_icon !== '' ) { $inner .= '<i class="ap-pill__trail ' . esc_attr( $trail_icon ) . '" aria-hidden="true"></i>'; }
+		if ( $trail_icon !== '' ) { $inner .= $trail_icon; }
 
 		// --- SEO link attributes ---
 		$aria  = trim( (string) $get( 'aria_label', '' ) );

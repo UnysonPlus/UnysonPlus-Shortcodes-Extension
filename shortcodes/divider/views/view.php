@@ -140,21 +140,22 @@ $class_output = ' class="' . implode( ' ', array_unique( $classes ) ) . '"';
         if ( $line['content_type'] === 'text' && ! empty( $text_extras ) ) {
             $inner_classes = array_merge( $inner_classes, $text_extras );
         }
-        $icon_classes = array( $line['icon'] ?? '' );
-        if ( $line['content_type'] === 'icon' && ! empty( $icon_extras ) ) {
-            $icon_classes = array_merge( $icon_classes, $icon_extras );
-        }
         $inner_style_attr = ( $line['content_type'] === 'text' && $text_style !== '' )
             ? ' style="' . esc_attr( $text_style ) . '"'
             : '';
-        $icon_style_attr = ( $line['content_type'] === 'icon' && $icon_style !== '' )
-            ? ' style="' . esc_attr( $icon_style ) . '"'
-            : '';
+        // Icon rendered via the central sc_icon_render(): it tolerates both the
+        // legacy `icon` string value and the reclaimed `icon` (v2) array, keeps
+        // the icon-color classes/style, and adds no aria (the divider glyph is
+        // inline, matching the original markup).
         ?>
         <span class="<?php echo esc_attr( implode( ' ', $inner_classes ) ); ?>"<?php echo $inner_style_attr; ?>>
-            <?php if ( $line['content_type'] === 'icon' && ! empty( $line['icon'] ) ) : ?>
-                <i class="<?php echo esc_attr( trim( implode( ' ', $icon_classes ) ) ); ?>"<?php echo $icon_style_attr; ?>></i>
-            <?php elseif ( $line['content_type'] === 'text' ) : ?>
+            <?php if ( $line['content_type'] === 'icon' && ! empty( $line['icon'] ) ) :
+                echo sc_icon_render( $line['icon'], array(
+                    'class'       => implode( ' ', (array) $icon_extras ),
+                    'style'       => $icon_style,
+                    'aria_hidden' => false,
+                ) );
+            elseif ( $line['content_type'] === 'text' ) : ?>
                 <?php echo esc_html( $line['title'] ); ?>
             <?php endif; ?>
         </span>

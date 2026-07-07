@@ -16,15 +16,18 @@ $options = [
                         'label'        => __( 'Icon', 'fw' ),
                         'preview_size' => 'medium',
                         'modal_size'   => 'medium',
-                        'desc'         => __( 'Pick an icon from the library. Will be ignored if "Custom Icon" below is filled.', 'fw' ),
-                        'help'         => __( 'Use this for standard font icons so you can recolour them via the Icon Color option in the Styling tab. For an emoji or your own SVG, leave this empty and fill Custom Icon instead.', 'fw' ),
+                        'desc'         => __( 'Pick a font icon, a Lucide SVG, an emoji, or paste/upload your own SVG — all from the one picker.', 'fw' ),
+                        'help'         => __( 'Font icons and SVGs recolour via the Icon Color option in the Styling tab (SVGs that use fill="currentColor"); emoji colours are fixed.', 'fw' ),
                     ],
 
+                    // Retired: the picker above now handles emoji + SVG for every
+                    // element, so the separate Custom Icon field is gone. Kept as a
+                    // hidden option so any value saved before the picker gained those
+                    // kinds is preserved and still rendered (see the view — the
+                    // picked icon takes precedence when set).
                     'custom_icon' => [
-                        'type'  => 'text',
-                        'label' => __( 'Custom Icon (Emoji / SVG)', 'fw' ),
-                        'desc'  => __( 'Optional. If filled, this overrides the Icon picker above. Accepts an emoji (e.g. ⭐) or inline SVG markup.', 'fw' ),
-                        'help'  => __( 'Handy for brand glyphs or multicolour symbols the icon library does not include. Note that emoji and pasted SVG colours are fixed, so the Icon Color option will not affect them.', 'fw' ),
+                        'type'  => 'hidden',
+                        'label' => false,
                     ],
 
                     'title' => [

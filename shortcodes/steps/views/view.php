@@ -16,6 +16,11 @@ if ( ! function_exists( 'sc_get' ) ) {
 
 if ( ! function_exists( 'sc_steps_icon' ) ) {
 	function sc_steps_icon( $picked ) {
+		// Central icon renderer (single source of truth). aria_hidden => false
+		// preserves this element's original decorative-icon markup.
+		if ( function_exists( 'sc_icon_render' ) ) {
+			return sc_icon_render( $picked, array( 'aria_hidden' => false ) );
+		}
 		if ( is_array( $picked ) && isset( $picked['type'] ) ) {
 			if ( $picked['type'] === 'icon-font' && ! empty( $picked['icon-class'] ) ) {
 				return '<i class="' . esc_attr( $picked['icon-class'] ) . '"></i>';
@@ -25,6 +30,7 @@ if ( ! function_exists( 'sc_steps_icon' ) ) {
 			}
 		}
 		return '';
+
 	}
 }
 

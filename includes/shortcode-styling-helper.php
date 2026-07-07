@@ -2006,3 +2006,247 @@ if ( ! function_exists( 'sc_migrate_atts' ) ) :
 		return $atts;
 	}
 endif;
+
+/* -----------------------------------------------------------------------------
+ * Icon rendering — the single source of truth for turning an icon-v2 value
+ * into HTML. Every shortcode that displays a picked icon should call this
+ * instead of hand-rolling <i class> / <img>, so that when a new icon kind is
+ * added (SVG, emoji, Lottie…) it lights up everywhere from one place.
+ *
+ * Accepts the icon-v2 value array (['type' => 'icon-font'|'custom-upload'|
+ * 'none', ...]) or a legacy bare class string ('fa fa-star'). Returns escaped
+ * HTML, or '' when there is nothing to render. Also enqueues the pack CSS the
+ * chosen font icon needs (so callers no longer need a separate
+ * enqueue_pack_for_icon() call), unless 'enqueue' => false.
+ *
+ * $args:
+ *   'class'       => ''      extra classes on BOTH the <i> and the <img>
+ *   'font_class'  => ''      extra classes only on the font <i> (after its own icon-class)
+ *   'img_class'   => ''      extra classes only on the uploaded <img>
+ *   'style'       => ''      inline style string on the element
+ *   'aria_hidden' => true    add aria-hidden="true" to the font <i> (decorative default)
+ *   'img_alt'     => null    <img> alt; null → use the value's own 'alt' (or '')
+ *   'img_loading' => 'lazy'  <img> loading attr ('' to omit)
+ *   'enqueue'     => true    auto-enqueue the pack CSS for font icons
+ *   'attr'        => array() extra HTML attributes (assoc; keys+values escaped)
+ * -------------------------------------------------------------------------- */
+if ( ! function_exists( 'sc_icon_enqueue_pack' ) ) :
+	/**
+	 * Enqueue only the icon pack CSS a single icon-v2 value needs. Safe to call
+	 * repeatedly (WP dedupes by handle). No-op for uploads / none / unknown.
+	 */
+	function sc_icon_enqueue_pack( $value ) {
+		if ( ! function_exists( 'fw' ) ) { return; }
+		$ot = fw()->backend->option_type( 'icon-v2' );
+		if ( $ot && isset( $ot->packs_loader ) ) {
+			$ot->packs_loader->enqueue_pack_for_icon( $value );
+		}
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_join_classes' ) ) :
+	/** Join class fragments, dropping empties and collapsing internal gaps. */
+	function sc_icon_join_classes( $parts ) {
+		$parts = array_filter( array_map( 'trim', (array) $parts ), 'strlen' );
+		return implode( ' ', $parts );
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_render' ) ) :
+	function sc_icon_render( $value, $args = array() ) {
+		$args = array_merge( array(
+			'class'       => '',
+			'font_class'  => '',
+			'img_class'   => '',
+			'style'       => '',
+			'aria_hidden' => true,
+			'img_alt'     => null,
+			'img_loading' => 'lazy',
+			'enqueue'     => true,
+			'attr'        => array(),
+		), $args );
+
+		// Legacy bare-string value → treat as a font icon class (or nothing).
+		if ( is_string( $value ) ) {
+			$value = ( $value === '' )
+				? array( 'type' => 'none' )
+				: array( 'type' => 'icon-font', 'icon-class' => $value );
+		}
+
+		if ( ! is_array( $value ) ) { return ''; }
+
+		$type = isset( $value['type'] ) ? $value['type'] : '';
+
+		// Shared attribute fragment (style + any extra attributes). aria-hidden
+		// is handled per-element below because it only applies to the font <i>.
+		$extra = '';
+		if ( $args['style'] !== '' ) {
+			$extra .= ' style="' . esc_attr( $args['style'] ) . '"';
+		}
+		foreach ( (array) $args['attr'] as $k => $v ) {
+			$extra .= ' ' . esc_attr( $k ) . '="' . esc_attr( $v ) . '"';
+		}
+
+		if ( $type === 'icon-font' ) {
+			$icon_class = isset( $value['icon-class'] ) ? trim( (string) $value['icon-class'] ) : '';
+			if ( $icon_class === '' ) { return ''; }
+
+			if ( $args['enqueue'] ) { sc_icon_enqueue_pack( $value ); }
+
+			$cls  = sc_icon_join_classes( array( $icon_class, $args['font_class'], $args['class'] ) );
+			$aria = $args['aria_hidden'] ? ' aria-hidden="true"' : '';
+
+			return '<i class="' . esc_attr( $cls ) . '"' . $extra . $aria . '></i>';
+		}
+
+		if ( $type === 'custom-upload' ) {
+			$url = isset( $value['url'] ) ? (string) $value['url'] : '';
+			if ( $url === '' ) { return ''; }
+
+			$alt = ( $args['img_alt'] !== null )
+				? $args['img_alt']
+				: ( isset( $value['alt'] ) ? $value['alt'] : '' );
+
+			$cls      = sc_icon_join_classes( array( $args['img_class'], $args['class'] ) );
+			$cls_attr = ( $cls !== '' ) ? ' class="' . esc_attr( $cls ) . '"' : '';
+			$load     = ( $args['img_loading'] !== '' ) ? ' loading="' . esc_attr( $args['img_loading'] ) . '"' : '';
+
+			return '<img src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '"' . $cls_attr . $extra . $load . '>';
+		}
+
+		if ( $type === 'emoji' ) {
+			$char = isset( $value['char'] ) ? trim( (string) $value['char'] ) : '';
+			if ( $char === '' ) { return ''; }
+			$cls      = sc_icon_join_classes( array( $args['font_class'], $args['class'] ) );
+			$cls_attr = ( $cls !== '' ) ? ' class="' . esc_attr( $cls ) . '"' : '';
+			// Emoji colour is fixed, so no colour plumbing; role/aria for a11y.
+			$role     = $args['aria_hidden'] ? ' aria-hidden="true"' : ' role="img"';
+			return '<span' . $cls_attr . $extra . $role . '>' . esc_html( $char ) . '</span>';
+		}
+
+		if ( $type === 'svg' ) {
+			// Resolve markup: a library pick (svg-id) resolves from the bundled
+			// set; otherwise use the stored inline/pasted markup. Both are run
+			// through the shared sanitiser (defence-in-depth — library markup is
+			// trusted, user markup is not).
+			// Decide by svg-source so a stale library svg-id left over from a
+			// previous pick can't win over freshly pasted/uploaded markup:
+			// only a `library` source resolves the id; inline/upload use markup.
+			$source = isset( $value['svg-source'] ) ? (string) $value['svg-source'] : '';
+			$markup = '';
+			if ( $source !== 'inline' && $source !== 'upload' && ! empty( $value['svg-id'] ) ) {
+				$markup = sc_icon_svg_library_markup( (string) $value['svg-id'] );
+			}
+			if ( $markup === '' && ! empty( $value['markup'] ) ) {
+				$markup = (string) $value['markup'];
+			}
+
+			if ( $markup !== '' ) {
+				$markup   = sc_icon_sanitize_svg( $markup );
+				$cls      = sc_icon_join_classes( array( $args['font_class'], $args['class'] ) );
+				$cls_attr = ( $cls !== '' ) ? ' class="' . esc_attr( $cls ) . '"' : '';
+				$aria     = $args['aria_hidden'] ? ' aria-hidden="true"' : '';
+				// Wrap so classes/style attach without editing the <svg> tag; the
+				// inner SVG uses currentColor, so it inherits the wrapper colour.
+				return '<span' . $cls_attr . $extra . $aria . '>' . $markup . '</span>';
+			}
+
+			// Uploaded SVG stored only as a URL → render as an <img> (same path
+			// as a custom-upload; loses currentColor but is safe and simple).
+			$url = isset( $value['url'] ) ? (string) $value['url'] : '';
+			if ( $url !== '' ) {
+				$alt      = ( $args['img_alt'] !== null ) ? $args['img_alt'] : ( isset( $value['alt'] ) ? $value['alt'] : '' );
+				$cls      = sc_icon_join_classes( array( $args['img_class'], $args['class'] ) );
+				$cls_attr = ( $cls !== '' ) ? ' class="' . esc_attr( $cls ) . '"' : '';
+				$load     = ( $args['img_loading'] !== '' ) ? ' loading="' . esc_attr( $args['img_loading'] ) . '"' : '';
+				return '<img src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '"' . $cls_attr . $extra . $load . '>';
+			}
+
+			return '';
+		}
+
+		// 'none' / unknown. Lottie plugs in here in a later phase — every
+		// consumer that already calls sc_icon_render() then renders it too.
+		return '';
+	}
+endif;
+
+/* -----------------------------------------------------------------------------
+ * Shared inline-SVG sanitiser + custom-icon (emoji / SVG) renderer.
+ *
+ * Promoted from the per-shortcode copies that icon-box / image-box /
+ * notification each hand-rolled, so there is ONE allowlist to audit. Any
+ * element that accepts pasted/inline SVG (or the icon type's SVG kind) runs it
+ * through sc_icon_sanitize_svg(); a "Custom Icon (emoji / SVG)" text value goes
+ * through sc_icon_custom_markup() (SVG → sanitised, anything else → escaped as
+ * emoji/text).
+ * -------------------------------------------------------------------------- */
+if ( ! function_exists( 'sc_icon_svg_allowed' ) ) :
+	/** wp_kses allowlist for inline icon SVG (scripts / handlers / external refs stripped). */
+	function sc_icon_svg_allowed() {
+		$stroke = array(
+			'fill' => true, 'stroke' => true, 'stroke-width' => true,
+			'stroke-linecap' => true, 'stroke-linejoin' => true,
+			'fill-rule' => true, 'clip-rule' => true, 'class' => true,
+		);
+		return array(
+			'svg'      => array(
+				'xmlns' => true, 'viewbox' => true, 'width' => true, 'height' => true,
+				'fill' => true, 'stroke' => true, 'stroke-width' => true,
+				'stroke-linecap' => true, 'stroke-linejoin' => true,
+				'preserveaspectratio' => true, 'class' => true, 'role' => true,
+				'aria-hidden' => true, 'aria-label' => true, 'focusable' => true,
+			),
+			'g'        => array_merge( $stroke, array( 'transform' => true ) ),
+			'path'     => array_merge( $stroke, array( 'd' => true ) ),
+			'circle'   => array_merge( $stroke, array( 'cx' => true, 'cy' => true, 'r' => true ) ),
+			'ellipse'  => array_merge( $stroke, array( 'cx' => true, 'cy' => true, 'rx' => true, 'ry' => true ) ),
+			'rect'     => array_merge( $stroke, array( 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true ) ),
+			'line'     => array_merge( $stroke, array( 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true ) ),
+			'polyline' => array_merge( $stroke, array( 'points' => true ) ),
+			'polygon'  => array_merge( $stroke, array( 'points' => true ) ),
+			'title'    => array(),
+			'desc'     => array(),
+		);
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_sanitize_svg' ) ) :
+	/** Sanitise inline SVG markup against the shared allowlist. Returns '' if not SVG. */
+	function sc_icon_sanitize_svg( $markup ) {
+		$markup = (string) $markup;
+		if ( stripos( $markup, '<svg' ) === false ) { return ''; }
+		return wp_kses( $markup, sc_icon_svg_allowed() );
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_custom_markup' ) ) :
+	/**
+	 * Render a free-form "Custom Icon (emoji / SVG)" value: inline SVG is
+	 * sanitised, anything else (an emoji or short text) is HTML-escaped.
+	 */
+	function sc_icon_custom_markup( $custom ) {
+		if ( ! is_string( $custom ) || $custom === '' ) { return ''; }
+		if ( stripos( $custom, '<svg' ) !== false ) {
+			return sc_icon_sanitize_svg( $custom );
+		}
+		return esc_html( $custom );
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_svg_library_markup' ) ) :
+	/**
+	 * Resolve a library SVG id (e.g. 'lucide/star') to its raw markup. The
+	 * bundled Lucide set is wired in Phase 2B; until then this is filterable so
+	 * a set can be provided without touching this file. Returns '' if unknown.
+	 */
+	function sc_icon_svg_library_markup( $id ) {
+		$markup = '';
+		// Built-in Lucide set (resolver lives in core, with the bundled data).
+		if ( strpos( (string) $id, 'lucide/' ) === 0 && function_exists( 'fw_icon_lucide_markup' ) ) {
+			$markup = fw_icon_lucide_markup( $id );
+		}
+		// Other libraries can register via the filter.
+		return (string) apply_filters( 'sc_icon_svg_library_markup', $markup, $id );
+	}
+endif;

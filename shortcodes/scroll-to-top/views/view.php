@@ -60,10 +60,13 @@ if ( ! function_exists( 'sc_stt_render' ) ) {
 		$attr['data-stt'] = '1';
 		$attr['data-after'] = $after;
 
-		// Icon (icon-v2) with arrow fallback.
+		// Icon (icon-v2) with arrow fallback. Central renderer; img_loading => ''
+		// preserves this element's original <img> (no loading attribute).
 		$icon  = sc_get( 'icon', $atts, null );
 		$icon_html = '';
-		if ( is_array( $icon ) && isset( $icon['type'] ) ) {
+		if ( function_exists( 'sc_icon_render' ) ) {
+			$icon_html = sc_icon_render( $icon, array( 'aria_hidden' => false, 'img_loading' => '' ) );
+		} elseif ( is_array( $icon ) && isset( $icon['type'] ) ) {
 			if ( $icon['type'] === 'icon-font' && ! empty( $icon['icon-class'] ) ) {
 				$icon_html = '<i class="' . esc_attr( $icon['icon-class'] ) . '"></i>';
 			} elseif ( $icon['type'] === 'custom-upload' && ! empty( $icon['url'] ) ) {

@@ -108,23 +108,23 @@ if ( ! function_exists( 'sc_imgbox_sanitize_clip' ) ) {
 */
 if ( ! function_exists( 'sc_imgbox_icon_markup' ) ) {
     function sc_imgbox_icon_markup( $custom_icon, $picked_icon ) {
-        if ( is_string( $custom_icon ) && $custom_icon !== '' ) {
-            $svg_allowed = array(
-                'svg'      => array( 'xmlns' => true, 'viewbox' => true, 'width' => true, 'height' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true, 'role' => true, 'aria-hidden' => true, 'focusable' => true ),
-                'g'        => array( 'fill' => true, 'stroke' => true, 'transform' => true, 'class' => true ),
-                'path'     => array( 'd' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ),
-                'circle'   => array( 'cx' => true, 'cy' => true, 'r' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true ),
-                'rect'     => array( 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'rx' => true, 'ry' => true, 'fill' => true, 'stroke' => true, 'stroke-width' => true, 'class' => true ),
-                'line'     => array( 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true, 'stroke' => true, 'stroke-width' => true, 'stroke-linecap' => true, 'class' => true ),
-                'polyline' => array( 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ),
-                'polygon'  => array( 'points' => true, 'fill' => true, 'stroke' => true, 'stroke-linecap' => true, 'stroke-linejoin' => true, 'class' => true ),
-                'title'    => array(),
-                'desc'     => array(),
-            );
-            if ( stripos( $custom_icon, '<svg' ) !== false ) {
-                return wp_kses( $custom_icon, $svg_allowed );
+        // Picked icon (font / svg / emoji / upload) via the central renderer;
+        // named wrapper classes stay on the element. Only return when non-empty
+        // so a legacy Custom Icon still shows where the picker was left as none.
+        if ( function_exists( 'sc_icon_render' ) ) {
+            $picked_html = sc_icon_render( $picked_icon, array(
+                'aria_hidden' => false,
+                'font_class'  => 'imgbox__icon-font',
+                'img_class'   => 'imgbox__icon-image',
+            ) );
+            if ( $picked_html !== '' ) {
+                return $picked_html;
             }
-            return esc_html( $custom_icon );
+        }
+
+        // Legacy Custom Icon (emoji / inline SVG) fallback — field retired.
+        if ( is_string( $custom_icon ) && $custom_icon !== '' && function_exists( 'sc_icon_custom_markup' ) ) {
+            return sc_icon_custom_markup( $custom_icon );
         }
 
         if ( is_array( $picked_icon ) && isset( $picked_icon['type'] ) ) {
