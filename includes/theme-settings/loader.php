@@ -29,6 +29,7 @@
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/miscellaneous-handlers.php';
 require_once __DIR__ . '/settings-export-import.php';
+require_once __DIR__ . '/icons.php';
 
 if ( ! function_exists( 'upw_ts_misc_subtabs' ) ) :
 	/**
@@ -119,6 +120,11 @@ add_action( 'admin_enqueue_scripts', function () {
 	// The built-in Miscellaneous sub-tabs use code-editor (CodeMirror) etc.; the
 	// framework's settings enqueue does not reliably cover filter-injected options.
 	fw()->backend->enqueue_options_static( upw_ts_misc_subtabs() );
+
+	// Icons tab (the checkboxes library selector) — same reason.
+	if ( function_exists( 'unysonplus_icons_settings_options' ) ) {
+		fw()->backend->enqueue_options_static( unysonplus_icons_settings_options() );
+	}
 
 	$ext = fw_ext( 'shortcodes' );
 	if ( ! $ext ) {
@@ -222,6 +228,23 @@ add_filter( 'fw_settings_options', function ( $options ) {
 			} else {
 				$options[] = $components_section;
 			}
+		}
+	}
+
+	// --- Icons (enable/disable the icon libraries the picker offers) ---
+	if ( function_exists( 'unysonplus_icons_settings_options' ) ) {
+		$icons_section = array(
+			'icons_container' => array(
+				'title'   => __( 'Icons', 'fw' ),
+				'type'    => 'tab',
+				'options' => unysonplus_icons_settings_options(),
+			),
+		);
+		// Place after General/Header/Components; append if there are fewer sections.
+		if ( is_array( $options ) && count( $options ) >= 3 ) {
+			array_splice( $options, 3, 0, array( $icons_section ) );
+		} elseif ( is_array( $options ) ) {
+			$options[] = $icons_section;
 		}
 	}
 
