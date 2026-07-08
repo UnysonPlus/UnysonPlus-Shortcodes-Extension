@@ -2091,6 +2091,14 @@ if ( ! function_exists( 'sc_icon_render' ) ) :
 			$icon_class = isset( $value['icon-class'] ) ? trim( (string) $value['icon-class'] ) : '';
 			if ( $icon_class === '' ) { return ''; }
 
+			// Normalise legacy Font Awesome 4 classes (`fa fa-twitter`) to FA6.
+			// No-op for FA6 / non-FA classes. Keep $value in sync so the pack
+			// enqueue resolves the (migrated) class too.
+			if ( function_exists( 'fw_fa4_to_fa6' ) ) {
+				$icon_class          = fw_fa4_to_fa6( $icon_class );
+				$value['icon-class'] = $icon_class;
+			}
+
 			if ( $args['enqueue'] ) { sc_icon_enqueue_pack( $value ); }
 
 			$cls  = sc_icon_join_classes( array( $icon_class, $args['font_class'], $args['class'] ) );
@@ -2192,6 +2200,7 @@ if ( ! function_exists( 'sc_icon_svg_allowed' ) ) :
 		return array(
 			'svg'      => array(
 				'xmlns' => true, 'viewbox' => true, 'width' => true, 'height' => true,
+				'x' => true, 'y' => true,
 				'fill' => true, 'stroke' => true, 'stroke-width' => true,
 				'stroke-linecap' => true, 'stroke-linejoin' => true,
 				'preserveaspectratio' => true, 'class' => true, 'role' => true,
@@ -2236,17 +2245,18 @@ endif;
 
 if ( ! function_exists( 'sc_icon_svg_library_markup' ) ) :
 	/**
-	 * Resolve a library SVG id (e.g. 'lucide/star') to its raw markup. The
-	 * bundled Lucide set is wired in Phase 2B; until then this is filterable so
-	 * a set can be provided without touching this file. Returns '' if unknown.
+	 * Resolve a library SVG id ('<pack>/<name>', e.g. 'lucide/star',
+	 * 'tabler/home') to its raw inline-<svg> markup via the multi-pack engine.
+	 * Filterable so extra libraries can be provided. Returns '' if unknown.
 	 */
 	function sc_icon_svg_library_markup( $id ) {
 		$markup = '';
-		// Built-in Lucide set (resolver lives in core, with the bundled data).
-		if ( strpos( (string) $id, 'lucide/' ) === 0 && function_exists( 'fw_icon_lucide_markup' ) ) {
+		if ( function_exists( 'fw_icon_svg_pack_markup' ) ) {
+			$markup = fw_icon_svg_pack_markup( (string) $id );
+		} elseif ( strpos( (string) $id, 'lucide/' ) === 0 && function_exists( 'fw_icon_lucide_markup' ) ) {
+			// Fallback if only the legacy Lucide resolver is present.
 			$markup = fw_icon_lucide_markup( $id );
 		}
-		// Other libraries can register via the filter.
 		return (string) apply_filters( 'sc_icon_svg_library_markup', $markup, $id );
 	}
 endif;

@@ -14,27 +14,54 @@
  */
 if ( ! function_exists( 'unysonplus_icons_settings_options' ) ) :
 	function unysonplus_icons_settings_options() {
-		$choices = function_exists( 'unysonplus_icon_pack_choices' ) ? unysonplus_icon_pack_choices() : array();
-
-		// Default = all enabled (no change for existing content).
-		$default = array();
-		foreach ( array_keys( $choices ) as $id ) { $default[ $id ] = true; }
+		// Canonical settings-tab layout (mirrors blog-settings.php etc.):
+		//   container tab (Icons, from the loader) -> box -> sub-tabs -> box -> fields.
+		// The installer is split across three sub-tabs — Library (webfont/SVG on-off
+		// toggles + Remove), Browse (catalog packs to Install), Upload (custom JSON) —
+		// each an html-full container that installer.js renders into. The old "Enabled
+		// libraries" checklist is folded into the Library tab's On/Off toggles.
+		$panel = function ( $id ) {
+			return array(
+				'group_' . $id => array(
+					'type'    => 'group',
+					'options' => array(
+						'icon_pack_' . $id => array(
+							'type'  => 'html-full',
+							'label' => false,
+							'desc'  => false,
+							'html'  => '<div id="upw-ipk-' . $id . '" class="upw-ipk">'
+								. '<div class="upw-ipk__empty">' . esc_html__( 'Loading…', 'fw' ) . '</div>'
+								. '</div>',
+						),
+					),
+				),
+			);
+		};
 
 		return array(
-			'icon_libraries_box' => array(
-				'title'   => __( 'Icon Libraries', 'fw' ),
+			'icons' => array(
+				'title'   => __( 'Icon Settings', 'fw' ),
 				'type'    => 'box',
 				'options' => array(
-					'group_icon_libraries' => array(
-						'type'    => 'group',
+					'tab_library' => array(
+						'title'   => __( 'Library', 'fw' ),
+						'type'    => 'tab',
 						'options' => array(
-							'icon_packs_enabled' => array(
-								'type'    => 'checkboxes',
-								'label'   => __( 'Enabled libraries', 'fw' ),
-								'desc'    => __( 'Choose which icon libraries appear in the icon picker. Disabling a library only hides it when picking NEW icons — icons already used on your pages keep rendering. Icons play a big role on a site, so pick the sets that match your design and leave the rest off to keep the picker tidy.', 'fw' ),
-								'value'   => $default,
-								'choices' => $choices,
-							),
+							'library_box' => array( 'title' => '', 'type' => 'box', 'options' => $panel( 'library' ) ),
+						),
+					),
+					'tab_browse' => array(
+						'title'   => __( 'Browse', 'fw' ),
+						'type'    => 'tab',
+						'options' => array(
+							'browse_box' => array( 'title' => '', 'type' => 'box', 'options' => $panel( 'browse' ) ),
+						),
+					),
+					'tab_upload' => array(
+						'title'   => __( 'Upload', 'fw' ),
+						'type'    => 'tab',
+						'options' => array(
+							'upload_box' => array( 'title' => '', 'type' => 'box', 'options' => $panel( 'upload' ) ),
 						),
 					),
 				),
