@@ -27,8 +27,8 @@
 .fw-fl--dividers .fw-fl__item:last-child { border-bottom: 0; }
 
 .fw-fl__marker { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; color: var(--fl-marker); }
-.fw-fl__marker svg { width: 1.25em; height: 1.25em; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-.fw-fl__marker img { width: 1.25em; height: 1.25em; object-fit: contain; }
+.fw-fl__marker svg { width: var(--fl-marker-size, 1.25em); height: var(--fl-marker-size, 1.25em); fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.fw-fl__marker img { width: var(--fl-marker-size, 1.25em); height: var(--fl-marker-size, 1.25em); object-fit: contain; }
 
 .fw-fl__body { text-decoration: none; color: inherit; display: flex; flex-direction: column; }
 a.fw-fl__body:hover .fw-fl__text { text-decoration: underline; }

@@ -1,102 +1,135 @@
 ---
 type: shortcode
 name: media-video
-since: original Unyson
+since: original Unyson (rewritten 1.11.16 — self-hosted + facade)
 provides: leaf-shortcode
 ---
 
 # Video (Media)
 
-Embed a video from YouTube, Vimeo, or Dailymotion by pasting a public
-URL. The shortcode auto-detects the host and converts the URL to the
-correct embed `<iframe src>`. Six aspect-ratio presets (including
-portrait).
+Show a video two ways, chosen by a **Video Source** picker (Content tab):
+
+1. **Embed** — paste a public YouTube / Vimeo / oEmbed page URL; WordPress oEmbed
+   turns it into a player `<iframe>`. (The original behaviour.)
+2. **Self-hosted** — upload / link an MP4 (+ optional WebM); renders a real HTML5
+   `<video>`. **This is the ONLY way to get a muted, looping, autoplaying
+   background / hero clip** — an embed can't do that.
 
 Page-builder tab: **Media Elements** (NOT Content Elements).
+
+> **Never paste a raw `<video>` (or a provider iframe) into a `text_block` to show a
+> video** — that bloats the DOM and undercuts the clean-markup pitch. Use this element
+> in self-hosted (file) or embed (URL) mode. The Site Converter now maps a source
+> `<video>` / provider `<iframe>` to this element for the same reason (see the demo
+> conversion playbook).
 
 ## Registration
 
 No custom class file — leaf shortcode auto-instantiated. No item class.
 
-`config.php` declares a `title_template` with significant inline
-JavaScript that performs the YouTube / Vimeo / Dailymotion URL parsing
-and aspect-ratio math on the canvas so the preview renders the actual
-embed. The same logic should exist in `views/view.php` for the frontend.
+`config.php`'s `title_template` branches on the source type for the canvas preview:
+self-hosted → a `<video>` (or the poster `<img>` if only a poster is set); embed →
+the same YouTube / Vimeo / Dailymotion URL-parse-to-iframe as before. Both compute
+`max-width` from the `width` unit-input and the aspect from `ratio`.
 
 ## Options schema (atts)
 
-Source of truth: `options.php`. Two tabs + Animations + Advanced.
+Source of truth: `options.php`. Content + Styling + Animations + Advanced.
 
-### Tab: Content
+### Tab: Content — `group_content` (flattens)
 
-All Content fields are wrapped in a single flattening `group` (`group_content`),
-so the group key does **not** appear in att paths.
+A **`source_type` multi-picker** (inline; `'label' => false` on the top level, label on
+the `source` picker per the inline-multi-picker rule). Picker `source` = a `select`
+(`embed` default / `self_hosted`). `choices` reveal per source:
 
-| Att | Type | Default | Description |
-|-----|------|---------|-------------|
-| `url` | `text` (`dynamic_content` off) | — | Public video URL — frontend uses WP oEmbed (any provider), so far more than the three the canvas preview parses |
-| `width` | `unit-input` (`px`/`%`/`vw`/`rem`/`em`) | `{value:600,unit:'px'}` | Max width. Saved as `array('value','unit')`; the view compiles it to a CSS length (`FW_Option_Type_Unit_Input::to_string`) and applies it as `max-width` on the wrapper. Legacy bare-number saves migrate to `<n>px`. Height follows `ratio` |
-| `ratio` | `select` (`16x9` / `4x3` / `1x1` / `21x9` / `9x16` / `3x4`) | `16x9` | Aspect ratio. Last two are portrait orientations |
+**`embed`:**
 
-### Tab: Styling
+| Att | Type | Default | Notes |
+|-----|------|---------|-------|
+| `url` | `text` | — | Public oEmbed page URL (frontend uses WP oEmbed → any provider) |
+| `youtube_nocookie` | `switch` | `no` | Route YouTube through `youtube-nocookie.com` (no cookies until play) |
+| `lazy_facade` | `switch` | `no` | Show a poster + play button; load the heavy iframe only on click |
+| `poster` | `upload` (images) | — | Facade still; falls back to the YouTube thumbnail |
 
-Wrapped in `group_colors` + `group_spacings` (both flatten).
+**`self_hosted`:**
 
-| Att | Type | Default | Description |
-|-----|------|---------|-------------|
-| `bg_color` | `sc_color_field_compact` (bg) | — | Wrapper background |
-| `spacing` | `sc_spacing_field` | — | Wrapper margin/padding |
+| Att | Type | Default | Notes |
+|-----|------|---------|-------|
+| `video_file` | `upload` | — | MP4 (H.264, widest support) |
+| `video_webm` | `upload` | — | Optional smaller WebM source (offered first) |
+| `video_url` | `text` | — | External CDN file URL, used only if no upload |
+| `poster` | `upload` (images) | — | Still shown before load/play |
+| `autoplay` | `switch` | `no` | Forces `muted` (browsers require it) + tags `data-upw-autoplay` |
+| `muted` | `switch` | `no` | — |
+| `loop` | `switch` | `no` | Seamless background/hero clips |
+| `controls` | `switch` | `yes` | Off for a clean background video |
+| `playsinline` | `switch` | `yes` | iOS inline play (don't force fullscreen) |
+| `preload` | `select` | `metadata` | `metadata` / `auto` / `none` |
+| `object_fit` | `select` | `contain` | `contain` (letterbox) / `cover` (fill+crop) |
 
-### Tabs: Animations + Advanced
+**Shared (both sources):** `width` (`unit-input`, default `{600,px}` → wrapper
+`max-width`) and `ratio` (`select`: `16x9`/`4x3`/`1x1`/`21x9`/`9x16`/`3x4`).
 
-Standard.
+**Saved multi-picker shape:** `source_type = { source, embed:{…}, self_hosted:{…} }`.
+**Legacy** instances (a bare `url`, no `source_type`) resolve as an **embed**
+automatically — the view falls back to `$atts['url']`.
 
-## Rendering
+### Tab: Styling — `group_colors` + `group_spacings`
 
-`views/view.php` delegates to **WordPress oEmbed**
-(`$wp_embed->run_shortcode('[embed]' . $url . '[/embed]')`) — it does **not**
-hand-parse the URL. So the frontend embeds any provider WP's oEmbed supports
-(YouTube, Vimeo, Dailymotion, TikTok, SoundCloud, Spotify, …), and WP returns the
-final `<iframe>` (already sanitized; WP 5.7+ adds `loading="lazy"`). The view wraps
-that in a Bootstrap responsive `.ratio.ratio-{r}` box and sets `max-width:{width}px;
-margin:auto` on the wrapper. Empty / unembeddable URLs render nothing.
+`bg_color` (`sc_color_field_compact` bg) + `spacing`.
 
-The wrapper carries the Styling-tab background color + spacing
-(`sc_build_wrapper_attr()`); the view **appends** `max-width` to that inline style
-rather than overwriting it, so a custom bg color survives (visible where padding
-exists). Structural classes `video-wrapper shortcode-container mx-auto` are appended
-if missing.
+## Rendering (`views/view.php`)
 
-**Canvas preview vs frontend mismatch:** `config.php`'s `title_template` hand-parses
-only YouTube / Vimeo / Dailymotion (client-side JS can't call WP oEmbed). So the
-*editor preview* is limited to those three (other hosts show the raw URL), while the
-*frontend* embeds the full oEmbed provider list. The preview's ID extraction strips
-query strings and handles `youtu.be` / `/shorts/` / `/live/`.
+- **Self-hosted:** a real `<video class="video-el">` with `<source webm>` + `<source
+  mp4>` (video_url is the external fallback), the playback switches, `object-fit`, and
+  `poster`. Autoplay always forces `muted`. Autoplay videos get `data-upw-autoplay="1"`.
+- **Embed:** WP oEmbed (`$wp_embed->run_shortcode('[embed]…[/embed]')`). No-cookie via
+  `str_replace` on the embed HTML. Lazy facade: `preg_match` the iframe `src`, render a
+  `<button class="video-facade" data-video-src>` with the poster (or YouTube thumbnail)
+  — the JS injects the real iframe (autoplay) on click.
+- Wrapper: `sc_build_wrapper_attr()` + `video-wrapper shortcode-container mx-auto`,
+  `max-width` appended (not overwriting bg), wrapped in a `.ratio.ratio-{r}` box.
 
-## Pitfalls
+## Frontend assets (`static.php` + `static/`)
 
-1. **Frontend supports all oEmbed providers; the canvas preview only previews 3.**
-   A Wistia/Twitch/etc. URL embeds fine on the frontend but shows as plain text in
-   the builder preview. Self-hosted `.mp4` files are not oEmbed — paste a provider
-   page URL, not a raw media file or an iframe embed snippet.
-2. **`width` is max-width, not fixed** — the wrapper gets `max-width:{width}px` and
-   is centered (`mx-auto`); the embed is responsive within it.
-3. **Aspect ratio uses Bootstrap `.ratio`** — default Bootstrap ships
-   `ratio-1x1/4x3/16x9/21x9`; the portrait `ratio-9x16` and `ratio-3x4` rely on
-   theme CSS defining those `--bs-aspect-ratio` custom classes.
+`static.php` enqueues (front end only): `fw-ext-builder-frontend-grid` (the `.ratio*`
+classes), `css/media-video.css` (facade styling + the wrapper-width fix), and
+`js/media-video.js` (facade click-to-load + pause `data-upw-autoplay` videos on
+`prefers-reduced-motion`).
+
+## Pitfalls (READ — these bit us)
+
+1. **`.ratio` collapse in a shrink-to-fit / centered flex column.** The `<video>` is
+   `position:absolute` inside the `.ratio` box, so `.ratio` has NO in-flow content. If
+   the wrapper has no definite width, it collapses to **0×0** (and `padding-top:%` of a
+   0-width box is 0) — the video silently *disappears*. Fixed by `.video-wrapper {
+   width:100% }` in `media-video.css`. A raw `<video>` never had this (it has intrinsic
+   size); the native element does. **Never remove that rule.**
+2. **The aspect var is `--fw-aspect-ratio`, NOT `--bs-aspect-ratio`.** `frontend-grid.css`
+   defines `.ratio::before { padding-top: var(--fw-aspect-ratio, 56.25%) }` and
+   `.ratio-1x1{--fw-aspect-ratio:100%}` etc. To fine-tune a child-theme aspect, override
+   `--fw-aspect-ratio` (e.g. `105%` for a ≈0.95 near-square). `--bs-aspect-ratio` is a
+   no-op here.
+3. **Headless Chromium can't decode H.264 MP4** — a self-hosted `.mp4` shows
+   `readyState:0 / networkState:3 / videoWidth:0` and won't play in Playwright/Puppeteer,
+   even though the file is 200. The **poster still renders**, which is enough to verify
+   layout. A real browser (Chrome/Edge/Safari) plays it. Don't chase this as a bug.
+4. **Frontend supports all oEmbed providers; the canvas preview only parses 3**
+   (YouTube/Vimeo/Dailymotion). A Wistia/Twitch URL embeds fine on the frontend but shows
+   raw in the builder preview.
+5. **Portrait ratios** (`9x16`, `3x4`) rely on `frontend-grid.css` defining those
+   `--fw-aspect-ratio` classes (it does).
 
 ## Verification
 
-1. Drag Video from Media Elements → modal opens.
-2. Paste a YouTube watch URL → reload → embedded YouTube iframe renders.
-3. Switch to Vimeo URL → renders as Vimeo embed.
-4. Switch `ratio: 9x16` → iframe renders portrait.
-5. Set `width: 800` → iframe max-width is 800px.
+1. Content → Video Source **Self-hosted** → pick an MP4 + poster, autoplay+loop → the
+   hero clip plays muted/looping; the box is correctly sized (not 0-height).
+2. Video Source **Embed** → paste a YouTube URL → iframe renders; toggle **Privacy** →
+   `youtube-nocookie.com`; toggle **Lazy-load** → poster + play button, iframe loads on
+   click.
+3. `ratio: 9x16` → portrait; `width: 800` → wrapper max-width 800.
 
 ## Files
 
-- `config.php` (with URL-parsing JS in `title_template`)
-- `options.php`, `views/view.php`
-
-**No `static.php`** — no frontend asset enqueue (just an iframe + inline
-styles).
+- `config.php` (source-branching `title_template`), `options.php`, `views/view.php`
+- `static.php` + `static/css/media-video.css` + `static/js/media-video.js`

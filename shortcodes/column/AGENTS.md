@@ -40,6 +40,11 @@ bundle — same shape as `section`'s but adds:
   the 1/12 → 12/12 width-picker thumbnails shown in the Layout Elements
   tab
 
+`config.php` only sets the page-builder edit-modal: `'type' => 'column'`
+(so `get_shortcode_builder_data()` bails early — no duplicate element /
+"No Page Builder tab specified" warning) and `'popup_size' => 'medium'`
+(read by `get_item_data()`).
+
 The Templates component (`includes/template-component/…`) is unique to
 this shortcode — it's how the "Columns" tab in the Templates dropdown
 works. Mirror structure to `section/includes/template-component/`.
@@ -67,41 +72,60 @@ to keep column editing focused.
 
 ### Tab: Layout
 
-All Layout-tab atts below are **whitelisted in `view.php`** before becoming class
-names, and (except where noted) land on the **outer** column (the flex item/slot).
-**Width / Offset / Alignment are all `image-picker`s** with inline data-URI SVG
-thumbnails generated in `options.php` (no asset files) — built by `$col_bar_uri()`
-(a 12-cell bar on a 60-unit grid + `shape-rendering="crispEdges"` so the many-cell
-bars stay sharp) and `$align_uri()` / `$valign_uri()` for the alignment glyphs. The
-shared `$pick()` helper sets the **large hover preview to 2× the thumbnail height**.
-In all cases the value is the same plain string the view whitelists (`'default'` /
-`'none'` = unset sentinels, ignored; `'auto'` = flex-fill).
+Grouped into `group_layout` (content arrangement) + `group_sizing` (width / offset) +
+`group_reorder` (reordering) — all borderless `group`s that flatten. Every Layout-tab att
+is **whitelisted in `view.php`** before becoming a class name. **Content Alignment /
+Content Vertical Alignment / Content Direction / Column Vertical Alignment are
+`image-picker`s**; **Width Override / Offset are `popover`→`image-picker`s**; all are
+wrapped in the **`responsive`** option type (`base` / `md` / `lg`) EXCEPT `content_direction`
+(a single value). Thumbnails are inline data-URI SVGs generated in `options.php` (no asset
+files) — `$col_bar_uri()` draws the width/offset fraction bars (one blue chosen column + gray
+remainder, drawn in lowest terms on a 60-unit `shape-rendering="crispEdges"` track) and
+`$align_uri()` / `$valign_uri()` / `$dir_uri()` draw the alignment/direction glyphs. The
+shared `$pick()` helper renders the large hover preview at up to 3× the thumbnail height.
+Values are the plain strings the view whitelists (`'default'` / `'none'` = unset sentinels,
+ignored; `'auto'` = flex-fill).
+
+**Responsive atts** store `array( 'base' => …, 'md' => …, 'lg' => … )` (a blank device
+inherits the smaller one). Each also **falls back to the legacy scalar / per-device atts** in
+`view.php` so columns saved before the merge render identically.
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
-| `full_height` | `switch` (`yes` / `no`) | `no` | Stretch the inner content area to full row height (`h-100`). **Adds the inner wrapper** when set |
-| `mobile_order` | `select` (`''`/`first`/`1`–`5`/`last`) | `''` | Phone (`<576px`) order → `fw-order-{v} fw-order-sm-0` (reorders while stacked, resets from `sm` up). **The only order field** — md/lg order was removed as rarely used |
-| `w_phone` / `w_tablet` / `w_desktop` / `w_large` | `image-picker` (`default`/`1`–`12`/`auto`) | `default` | **Responsive width overrides** layered on the width picker (= the `sm`/default width). Emit `fw-col-{N}` (phone, replaces the base xs token) / `fw-col-md-` / `fw-col-lg-` / `fw-col-xl-`. `default` = inherit; `auto` = `fw-col[-bp]` (flex-fill, not a fixed fraction) |
-| `offset_phone` / `offset_tablet` / `offset_desktop` | `image-picker` (`none`/`1`–`11`) | `none` | Indent → `fw-offset-{N}` / `fw-offset-md-` / `fw-offset-lg-` |
-| `align_self` | `image-picker` (`default`/`start`/`center`/`end`/`stretch`) | `default` | Column's own vertical alignment vs siblings → `align-self-{v}` |
-| `content_v` / `content_h` | `image-picker` (`default`/`start`/`center`/`end`[/`between` for v]) | `default` | Content alignment — when either set, the outer column becomes `d-flex flex-column` + `justify-content-{v}` (vertical) / `align-items-{h}` (horizontal). Vertical needs column height (Full Height or a taller sibling) |
-| `position` | `select` (`static`/`relative`/`absolute`/`sticky`/`fixed`) | `''` | `position-{v}` on the outer column; `sticky` also adds `top-0`. `absolute`/`fixed` leave the grid flow |
-| `z_index` | `short-text` (number) | `''` | Inline `z-index` on the outer column (effective only with a Position) |
+| `content_h` | `responsive` → `image-picker` | `{base:'default',md:'',lg:''}` | **Content Alignment** (the primary way to align a column's content). Choices `default`/`start`/`center`/`end`/`between`/`around`/`evenly`. Makes the content container `d-flex` and maps **axis-aware**: `align-items-*` in a column, `justify-content-*` in a row. Distribute (`between`/`around`/`evenly`) apply only on the main axis |
+| `content_direction` | `image-picker` (`column` / `row`) | `column` | **Content Direction** — Stacked (`flex-column`) vs Inline (`flex-row` + `flex-wrap`) |
+| `content_v` | `responsive` → `image-picker` | `{base:'default',md:'',lg:''}` | **Content Vertical Alignment**. Choices `default`/`center`/`end`/`between`. Column main axis → `justify-content-*` (also adds `h-100` to the container so there is height to align within); row cross axis → `align-items-*` |
+| `full_height` | `switch` (`yes` / `no`) | `no` | **Full Height** — adds `h-100` to the inner content area for equal-height cards. **Adds the inner wrapper** when set |
+| `content_gap` | `responsive` → `short-select` | `{base:'',md:'',lg:''}` | **Gap** between elements. Gap-Scale slugs (`sc_get_gap_select_choices`) → `sc-cgap{-bp}-{slug}` (→ `gap:var(--gap-{slug})`) |
+| `align_self` | `responsive` → `image-picker` | `{base:'default',md:'',lg:''}` | **Column Vertical Alignment** vs row siblings. Choices `default`/`start`/`center`/`end` → `align-self{-bp}-{v}` |
+| `col_width` | `responsive` → `popover`(`image-picker`) | `{base:'default',md:'',lg:''}` | **Width Override** per device. Choices `default`/`1`–`12`/`15`/`25`/`35`/`45` (twelfths + fifths)/`auto`. Base **replaces** the phone (xs) width token; `md`/`lg` add `fw-col-md-*`/`fw-col-lg-*`; `auto` = flex-fill `fw-col[-bp]`. Legacy `w_phone`/`w_tablet`/`w_desktop` read as fallback |
+| `col_offset` | `responsive` → `popover`(`image-picker`) | `{base:'none',md:'',lg:''}` | **Offset** (indent) per device. Choices `none`/`1`–`11`/`15`/`25`/`35`/`45` → `fw-offset{-bp}-{v}`. Legacy `offset_phone`/`offset_tablet`/`offset_desktop` fallback |
+| `content_order` | `responsive` → `switch` (`no` / `yes`) | `{base:'no',md:'',lg:''}` | **Reverse Order** — flips the stack/row via `flex-{dir}-reverse` per breakpoint (literal — no alignment compensation). Legacy select `all`/`mobile`/`tablet` migrates |
+| `mobile_order` | `responsive` → `short-select` | `{base:'',md:'',lg:''}` | **Order** vs row siblings. Choices `''`/`first`/`1`–`12`/`last` → `fw-order{-bp}-{v}`. Legacy scalar migrates to `{base:v, md:'0'}` |
+
+**Position & Z-Index are no longer column options** — they come from the shared Advanced-tab
+`element_position` control, applied to the outer column as inline style by
+`sc_build_wrapper_attr()`.
 
 ### Tab: Styling
 
-Wrapped in `group_colors` + `group_spacings` + `group_border_effects` (all flatten).
+Wrapped in `group_colors` + `group_border_effects` + `group_spacings` (all flatten).
 **Typography fields intentionally absent** — columns are layout containers, and
 typography on the wrapper would cascade to nested shortcodes (rarely desired). The
 visual atts below land on the **inner card wrapper** and trigger its rendering.
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
-| `bg_color` | `sc_color_field_compact` (bg) | — | Inner-wrapper background. **Triggers inner-wrapper rendering** |
-| `spacing` | `sc_spacing_field` | — | Inner-wrapper margin/padding. **Triggers inner-wrapper rendering** |
-| `border_sides` / `border_color` / `border_width` | `select` | `''` | `border`/`border-{side}` + optional `border-{color}` / `border-{1-5}` (color/width apply only with a side set) |
-| `rounded` | `select` | `''` | `rounded-1` / `rounded` / `rounded-3` / `rounded-pill` / `rounded-circle` |
-| `shadow` | `select` | `''` | `shadow-sm` / `shadow` / `shadow-lg` |
+| `bg_color` | `sc_color_field_compact` (bg) | — | Inner-wrapper background (Background Color). **Triggers inner-wrapper rendering** |
+| `border_preset` | `border-style-picker` (Box Preset) | `''` | Reusable box style (border + corners + shadow + optional bg fill + hover), defined in Theme Settings → Components → Box Presets. Value is a `boxp-{name}` slug → `.boxp-{name}` class on the inner card. Replaces the old manual border / rounded / shadow fields |
+| `spacing` | `spacing` (Margin & Padding) | — | Inner-wrapper margin/padding. **Triggers inner-wrapper rendering** |
+
+**Legacy render-only atts** (removed from the editor, but still rendered by `view.php`
+for columns saved before Box Preset): `border_sides` (`all`/`top`/`end`/`bottom`/`start` →
+`border`/`border-{side}`), `border_color` (bootstrap color → `border-{color}`, only with a
+side), `border_width` (`1`–`5` → `border-{N}`, only with a side), `rounded`
+(`rounded-1`/`rounded`/`rounded-3`/`rounded-pill`/`rounded-circle`), `shadow`
+(`shadow-sm`/`shadow`/`shadow-lg`) — all land on the inner card wrapper.
 
 ### Tabs: Animations + Advanced
 
@@ -120,13 +144,19 @@ preserving option order (PHP arrays preserve insertion order).
 
 `views/view.php`:
 - Outputs the **outer** Bootstrap grid column. Its width is rebuilt from the
-  picker's `frontend_class` with the `w_*` per-breakpoint overrides applied, then
-  the layout utilities (offset / `fw-order-*` / `align-self-*` / `d-flex flex-column`
-  content alignment / `position-*` + inline `z-index`) are appended. These all live
-  on the outer column (the flex item/slot), alongside width/animation classes.
-- When `inner_class` is set OR any Styling/border/effect pick triggers it, wraps the
-  content in an **inner card** `<div>` carrying `{inner_class}` + background + spacing
-  + `border*` / `rounded*` / `shadow*`.
+  picker's `frontend_class` with the `col_width` per-breakpoint overrides applied
+  (legacy `w_*` fallback), then the outer layout utilities (`col_offset` →
+  `fw-offset-*` / `fw-order-*` / `align-self-*`) are appended. These live on the outer
+  column (the flex item/slot), alongside width/animation classes. **Position & Z-Index**
+  arrive as an inline style via the shared Advanced `element_position` control (through
+  `sc_build_wrapper_attr()`), not as column-specific classes.
+- **Content alignment** (`d-flex` + axis-aware `justify-content-*` / `align-items-*`),
+  **direction** (`flex-row`/`flex-column` [`-reverse`] + `flex-wrap`), and **gap**
+  (`sc-cgap-*`) are routed onto whichever element directly holds the content — the inner
+  wrapper if one exists, otherwise the outer column (so "Space Between" can see 2+ children).
+- When `inner_class` is set OR any Styling / Box Preset / Full Height pick triggers it, wraps
+  the content in an **inner card** `<div>` carrying `{inner_class}` + background + spacing +
+  `.boxp-{name}` + the legacy `border*` / `rounded*` / `shadow*` + `h-100`.
 - Otherwise the content sits directly inside the column wrapper.
 - All new utility values are reused theme/Bootstrap classes (no new CSS). The desktop
   editor canvas does not preview the responsive (per-breakpoint) behavior.
@@ -139,8 +169,9 @@ preserving option order (PHP arrays preserve insertion order).
    `bg_color` automatically wraps content in an inner div.
 2. **A large commented-out legacy block remains at the top of `options.php`** —
    the original 8-tab Unyson column. The **active** set is the Layout / Styling /
-   Animations / Advanced tabs below it (Layout now also carries responsive width,
-   offset, breakpoint order, alignment, and position). Don't be misled by the
+   Animations / Advanced tabs below it (Layout now carries responsive Content
+   Alignment / Vertical Alignment / Direction / Gap / Column Vertical Alignment +
+   responsive Width Override / Offset / Reverse Order / Order). Don't be misled by the
    commented blocks — edit the active arrays.
 3. **No typography in Styling** — text color / font size / weight aren't
    on the column. Set those on the inner leaf shortcodes (text-block,

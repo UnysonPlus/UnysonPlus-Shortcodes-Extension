@@ -2,6 +2,12 @@
    The .ratio container already absolutely-fills its direct child (Bootstrap ratio),
    so both the <video> and the facade button fill the aspect box. */
 
+/* Give the wrapper a DEFINITE width. The inner video is `position:absolute` inside the
+   `.ratio` box, so `.ratio` has no in-flow content — without an explicit width the wrapper
+   collapses to 0 (and `padding-top:%` of a 0-width box is 0) inside a shrink-to-fit / centered
+   flex column, hiding the video entirely. `width:100%` + the inline `max-width` + `mx-auto`
+   keeps it responsive and centered. */
+.video-wrapper { width: 100%; }
 .video-wrapper .video-el { border: 0; background: #000; }
 
 /* Lazy-load facade: a poster (background-image) with a centered play button. */

@@ -18,7 +18,7 @@ This is a **simple/leaf** shortcode (like `media-image`), not section-like — i
 has no class file and no page-builder item; the shortcodes loader auto-discovers
 the folder via `config.php` and registers the tag `image_box`.
 
-## Design system — 6 FAMILIES (popover multi-picker) → flat design keys
+## Design system — 5 FAMILIES (popover multi-picker) → flat design keys
 
 The Design control is a **popover `multi-picker`** (att id **`design_settings`**) of **5 layout
 families**: **Stacked / Side / Overlay / Card / Frame**. (A flip look is intentionally NOT here —
@@ -68,9 +68,9 @@ back to the flat `design` att when `design_settings` is absent, using the regist
 
 Axes that compose on top of the family:
 - **Design family + variation** (`design_settings`).
-- **Image Size** (`image_size` select, universal) — full / large / medium / small / xsmall; shrinks
+- **Image Size** (`image_size` short-select, universal) — full / large / medium / small / xsmall; shrinks
   + centres the media on image-top families (`imgbox--size-*`). Side uses Media Width; overlay fills.
-- **Image Mask** (`image_mask` image-picker, universal, 23 shapes + None) — clip the media to a
+- **Image Mask** (`image_mask` multi-picker, universal, 22 shapes + None) — clip the media to a
   shape (`imgbox--mask-*`): border-radius (rounded / rounded-xl / circle / squircle / arch / leaf),
   clip-path (hexagon / diamond / triangle / pentagon / star / chevron / octagon / shield), SVG mask
   (heart / flower / brush / water-splash / grunge-frame / blob-1 / blob-2). Shape masks
@@ -120,14 +120,14 @@ parts; the rest are CSS variants. The split back-panel colours from `--imgbox-ac
 | `subtitle` | text | '' | Eyebrow line above the title. |
 | `title` | text | '' | Main heading. |
 | `title_tag` | select | `h3` | h2–h6 / span / p. |
-| `text` | textarea | '' | Body text (wpautop + wp_kses_post). |
-| `icon` | icon-v2 | — | Optional icon. |
-| `custom_icon` | text | '' | Emoji / inline SVG; overrides `icon`. |
+| `text` | wp-editor | '' | Body text (wpautop + wp_kses_post). |
+| `icon` | icon-v2 | — | Optional icon. Takes precedence over `custom_icon`. |
+| `custom_icon` | hidden | '' | Retired/legacy (emoji / inline SVG). Rendered only as a fallback when the `icon` picker is empty. |
 | `button_style` | select | `none` | none / button / link / arrow. |
 | `button_label` | text | Read More | Button text. |
 | `design_settings` | multi-picker (popover) | `{ family: 'stacked' }` | Family + variation values (see table above). Legacy `design` scalar still resolves. `media_width` (Side), `overlay_color` / `overlay_opacity` (Overlay) live INSIDE this. |
 | `image_ratio` | select | `ratio-4-3` | original / 1-1 / 4-3 / 3-2 / 16-9 / 3-4 / 2-3. |
-| `image_size` | select | `full` | Universal. full/large/medium/small/xsmall → `imgbox--size-*` (image-top families). |
+| `image_size` | short-select | `full` | Universal. full/large/medium/small/xsmall → `imgbox--size-*` (image-top families). |
 | `image_mask` | multi-picker | `{ mask: 'none' }` | Universal. `mask` = shape key → `imgbox--mask-*`; `custom` reveals `custom_svg` / `custom_upload` / `custom_clip` → `imgbox--maskcustom-svg|clip` + `--imgbox-mask` / `--imgbox-clip`. |
 | `content_align` | image-picker | inherit | left/center/right (`sc_alignment_field`). |
 | `hover_effect` | select | `zoom-in` | none / zoom-in / zoom-out / grayscale / blur / shine / lift / tilt. |
@@ -143,8 +143,10 @@ parts; the rest are CSS variants. The split back-panel colours from `--imgbox-ac
 `views/view.php` builds the reusable fragments (image, icon, eyebrow, title,
 text, button), resolves the link/lightbox shell, then `include`s the dispatched
 `parts/box-<part>.php`, which only arranges those fragments. Wrapper carries
-`imgbox imgbox--design-<key> imgbox--part-<part> imgbox--ratio-<r> imgbox--fx-<fx>`
-plus `--imgbox-media-w / --imgbox-ov-opacity / --imgbox-accent / --imgbox-ov-color`
+`imgbox imgbox--design-<key> imgbox--part-<part> imgbox--ratio-<r> imgbox--fx-<fx> imgbox--speed-<speed>`
+(plus conditional `imgbox--is-* / --content-over / --hover-reveal / --linked / --no-image /
+--size-<s> / --mask-<m> / --stack-<order> / --maskcustom-svg|clip`)
+plus `--imgbox-media-w / --imgbox-ov-opacity / --imgbox-accent / --imgbox-ov-color / --imgbox-mask / --imgbox-clip`
 CSS vars. Per-element colors use `sc_extract_styling_atts` (preset class OR
 custom-hex inline). The whole inner content becomes an `<a>` when the box is a
 link; the button then renders as a `<span>` (never nest anchors).

@@ -47,6 +47,14 @@ $options = [
                         'label' => __( 'Icon Color', 'fw' ),
                         'desc'  => __( 'Color preset applied to the icon glyph (font icons only).', 'fw' ),
                     ) ),
+                    'icon_size' => array(
+                        'type'  => 'unit-input',
+                        'label' => __( 'Icon Size', 'fw' ),
+                        'desc'  => __( 'The glyph size (Ex: 24px, 2rem). Leave empty for the default.', 'fw' ),
+                        'help'  => __( 'Sets the icon\'s size. Scales BOTH font icons and inline-SVG icons (the SVG is normalised to 1em, so this one control resizes either kind). Leave the number empty to keep the theme default.', 'fw' ),
+                        'value' => array( 'value' => '', 'unit' => 'px' ),
+                        'units' => array( 'px', 'rem', 'em' ),
+                    ),
                 ],
             ],
             'group_spacings' => [

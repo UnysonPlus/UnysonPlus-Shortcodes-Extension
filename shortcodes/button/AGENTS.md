@@ -10,7 +10,7 @@ provides: leaf-shortcode
 Renders a styled link / button with a preset-driven look (sourced from
 Theme Settings → General → Buttons), optional icon, width/alignment
 controls, button state (normal/active/disabled), and a hover-animation
-catalog. The Content Elements tab's canonical "call to action" element.
+catalog. The Components tab's canonical "call to action" element.
 
 ## Registration
 
@@ -19,9 +19,13 @@ Button has no `class-fw-shortcode-button.php` file — leaf shortcode, default
 class needed; renders inside columns via the `[simple]` item path. Add a
 class file only if custom registration hooks (AJAX, filters) are needed.
 
-`config.php` declares a `title_template` of
-`'<span class="fw-btn">{{= o.label }}</span>'` so the page-builder canvas
-shows the button's label as the in-canvas item title.
+`config.php` (`tab` = **Components**, `popup_size` = `large`) declares a rich
+`title_template` that renders the label as a filled button-chip in the
+page-builder canvas — blue background, corner radius echoing the chosen
+`shape` — with the icon drawn inline (svg `markup` resized to 14px, or a
+font-icon `<i>` / emoji / uploaded `<img>`) before or after the label per
+`icon_position`, so a Button reads as a button in the builder. It's a builder
+affordance only and does NOT mirror the frontend skin.
 
 ## Options schema (atts)
 
@@ -48,10 +52,10 @@ field). Both flatten on save.
 |-----|------|---------|-------------|
 | `style` | `button-style-picker` | first preset from `sc_get_button_style_choices()` (typically `primary`) | Button style preset — drives all color/border/gradient. `allow_none: false` (a styleless button is rarely intended; use the `link` preset for text-only) |
 | `size` | `button-style-picker` | (first from `sc_get_button_size_choices()`) | Button size preset — sourced from Theme Settings → Buttons → Sizes |
-| `shape` | `image-picker` | `''` (Default — from Size) | Corner rounding OVERRIDE — `pill` / `rounded` / `square` emit `.btn-shape-{v}` which beats the Size preset's radius (specificity + !important, see `static/css/styles.css`). Default keeps the Size radius. Decouples "pill" from "large" |
+| `shape` | `image-picker` | `default` (keep the Size radius) | Corner rounding OVERRIDE — `pill` / `rounded` / `square` emit `.btn-shape-{v}` which beats the Size preset's radius (see `static/css/styles.css`); the `default` choice adds no class. Choices are picker tiles from `static/img/shapes/*.svg`. Decouples "pill" from "large" |
 | `width.mode` | `multi-picker` (`''` / `w-100` / `custom`) | `''` (auto) | Width strategy: auto-fit, full-width, or custom |
 | `width.custom.custom_width` | `unit-input` (px / % / rem / em / vw) | — | Only present when `width.mode === 'custom'`. Saved as `{ value, unit }` |
-| `alignment` | `select` (`''` / `left` / `center` / `right`) | `''` (inherit) | Wraps in a `text-align: {value}` div when set. No effect when `width.mode === 'w-100'` |
+| `alignment` | `select` (`''` / `left` / `center` / `right`) | `''` (inherit) | Wraps in a `<div class="sc-btn-align" style="text-align: {value}">` when set to a non-empty value. No visual effect when `width.mode === 'w-100'` |
 | `state` | `select` (`''` / `active` / `disabled`) | `''` (normal) | Renders with the corresponding Bootstrap state class |
 | `hover_animation` | `button-hover-animation` | (first from `sc_get_hover_animation_choices()`) | A `.btnfx-*` effect class added on top of the style preset — animates transform/shadow only, doesn't override colors |
 | `spacing` | `sc_spacing_field` (mode: margin) | — | Wrapper margin only (padding comes from the size preset, not exposed here) |
@@ -91,17 +95,27 @@ Minimal generated `atts` (defaults safe to omit — the builder fills them from 
 
 ## Rendering
 
-`views/view.php` (not read in this draft — refer to file for canonical
-form) composes:
+`views/view.php` composes:
 
-- An `<a>` (or `<button>` in some states) with classes:
-  `btn btn-{style} btn-{size}` plus any width mode (`w-100`), state
-  (`active` / `disabled`), and hover-animation class (`btnfx-*`).
-- The label, with the icon prepended or appended based on `icon_position`.
-- Wrapped in a `<div style="text-align: {alignment}">` when alignment is
-  set and width is NOT `w-100`.
-- Wrapper margin from the spacing field is applied as inline style or
-  responsive utility class.
+- Always an `<a>` element (never a `<button>`) with classes:
+  `btn btn-{style} btn-{size}` plus `btn-shape-{pill|rounded|square}` (when
+  shape overrides), any width mode (`w-100`), state (`active` / `disabled`),
+  hover-animation class (`btnfx-*`, guarded by `/^btnfx-[a-z0-9-]+$/`), a
+  per-element unique class `btn-{hex}`, and `has-icon` when an icon renders.
+- The label — run through `sc_button_kses_label()` (a widened `wp_kses` that
+  permits an inline `<svg>` + basic inline formatting so a pasted-SVG label
+  renders, while stripping scripts/handlers) — with the icon (via
+  `sc_icon_render()`) prepended or appended based on `icon_position`.
+- `state: 'disabled'` also emits `aria-disabled="true" tabindex="-1"` on the
+  `<a>` (plus the `.disabled` class).
+- `width.mode === 'custom'` → an inline `width: {value}{unit}` style
+  (`FW_Option_Type_Unit_Input::to_string`) appended to the `<a>`'s style.
+- Wrapped in a `<div class="sc-btn-align" style="text-align: {alignment}">`
+  when alignment is set to left/center/right.
+- Wrapper margin from the `spacing` field auto-applies as `m-*`/`p-*` utility
+  classes via the `sc_apply_styling_classes` filter (padding comes from the
+  Size preset). `static.php` also enqueues only the `icon-v2` pack the chosen
+  icon needs.
 
 Frontend CSS: `static/css/styles.css` for the base button, plus
 `static/css/hover-fx.css` for the `.btnfx-*` effect classes. The hover-fx
@@ -127,14 +141,14 @@ No frontend JS — animations are pure CSS.
    `preview_base: 'btn btn-primary'` is admin-only; in the rendered
    output the actual chosen `style` preset's classes apply, NOT
    `btn-primary`.
-5. **The `state: 'disabled'` value** — drives a Bootstrap `.disabled`
-   class but the `<a>` element is still clickable in the browser unless
-   you also set `aria-disabled` + `pointer-events: none` in CSS. Check
-   the view if "disabled" looks clickable on the front-end.
+5. **The `state: 'disabled'` value** — adds the `.disabled` class AND
+   emits `aria-disabled="true" tabindex="-1"` on the `<a>` (the element
+   is still an anchor, so `pointer-events: none` in `styles.css` is what
+   actually blocks the click). It's a visual/AT state, not a security gate.
 
 ## Verification
 
-1. Drag Button from Content Elements → renders as a primary button
+1. Drag Button from Components → renders as a primary button
    labeled "Submit" linking to `#`.
 2. Edit options → set label, link, icon (after) → reload → button shows
    text + icon after.
@@ -149,14 +163,16 @@ No frontend JS — animations are pure CSS.
 
 ## Files
 
-- `config.php` — page-builder config (`Content Elements` tab, large
-  popup, in-canvas `title_template`)
+- `config.php` — page-builder config (`Components` tab, large
+  popup, rich in-canvas button-chip `title_template`)
 - `options.php` — 4 tabs (Content, Styling, Animations, Advanced)
 - `static.php` — frontend CSS enqueue (`styles.css` + `hover-fx.css`)
 - `views/view.php` — frontend HTML
 - `static/css/styles.css` — base button styles
 - `static/css/hover-fx.css` — `.btnfx-*` hover animations (also loaded
   in admin via the `hover_animation` option's `fx_css` config)
-- `static/img/page_builder.png` — Layout Elements thumbnail
+- `static/img/shapes/{default,pill,rounded,square}.svg` — the `shape`
+  image-picker tiles
+- `static/img/page_builder.svg` — Components thumbnail
 
 No JS, no admin-side asset, no item class — standard leaf layout.

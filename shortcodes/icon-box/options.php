@@ -223,6 +223,13 @@ $options = [
                         'label' => __( 'Icon Color', 'fw' ),
                         'desc'  => __( 'Color applied to the icon (font icons only).', 'fw' ),
                     ) ),
+                    'icon_size' => array(
+                        'type'  => 'unit-input',
+                        'label' => __( 'Icon Size', 'fw' ),
+                        'desc'  => __( 'The icon size (Ex: 32px, 2.5rem). Leave empty for the default (2rem). Scales both font icons and inline-SVG icons.', 'fw' ),
+                        'value' => array( 'value' => '', 'unit' => 'px' ),
+                        'units' => array( 'px', 'rem', 'em' ),
+                    ),
                     'icon_badge_color' => sc_color_field_compact( array(
                         'label' => __( 'Icon Badge Color', 'fw' ),
                         'kind'  => 'bg',

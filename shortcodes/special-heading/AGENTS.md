@@ -48,7 +48,7 @@ to a Bootstrap `text-*` class with `sc_alignment_class()` (both in
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
-| `alignment` | `image-picker` (`left` / `center` / `right`) | `left` | **Master** alignment for the whole heading. Supersedes the legacy `centered` switch (still honored: `centered:"yes"` → center when `alignment` unset) |
+| `alignment` | `image-picker` (`''` / `left` / `center` / `right`) | `''` | **Master** alignment for the whole heading (`''` = Inherit → forces nothing, follows the theme / parent). Supersedes the legacy `centered` switch (still honored: `centered:"yes"` → center when `alignment` unset) |
 | `overline_align` | `image-picker` (`''` / `left` / `center` / `right`) | `''` | Overline alignment; `''` = inherit the master `alignment` |
 | `title_align` | `image-picker` (`''` / `left` / `center` / `right`) | `''` | Title alignment; `''` = inherit |
 | `subtitle_align` | `image-picker` (`''` / `left` / `center` / `right`) | `''` | Subtitle alignment; `''` = inherit |
@@ -84,8 +84,9 @@ Two new groups. **No wrapper `font_size_preset`** — the title's size comes fro
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
 | `display_size` | `select` (`''` / `display-1`…`display-6`) | `''` | Visually enlarge the title independently of its tag (Bootstrap `.display-*` class on the title). `''` = use the tag's own size |
+| `title_max_width` | `unit-input` (units `px` / `%` / `rem` / `em` / `ch` / `vw`; default unit `px`) | `{value:'',unit:'px'}` | Readability measure for the **title** only (independent of the whole-block `block_max_width`), e.g. `16ch` / `640px` (inline `max-width` on the title; auto-centered when the title is center-aligned). Value is `{value,unit}` — legacy plain strings still resolve |
 | `subtitle_size` | `sc_font_size_field` | `''` | Named font-size preset applied to the subtitle only (value **is** the CSS class) |
-| `subtitle_max_width` | `unit-input` (units `ch` / `px` / `rem` / `em` / `%` / `vw`; default unit `ch`) | `{value:'',unit:'ch'}` | Readability measure for the subtitle, e.g. `60ch` / `600px` (inline `max-width`; auto-centered when the subtitle is centered). Value is `{value,unit}` — legacy plain strings still resolve |
+| `subtitle_max_width` | `unit-input` (units `px` / `rem` / `em` / `ch` / `%` / `vw`; default unit `rem`) | `{value:'',unit:'rem'}` | Readability measure for the subtitle, e.g. `60ch` / `600px` (inline `max-width`; auto-centered when the subtitle is centered). Value is `{value,unit}` — legacy plain strings still resolve |
 
 `group_colors`:
 
@@ -104,8 +105,10 @@ Two new groups. **No wrapper `font_size_preset`** — the title's size comes fro
 
 ### Tab: Advanced
 
-Standard `sc_get_advanced_tab()` plus two extra fields specific to this
-shortcode (both inside the `advanced_settings` group, which flattens):
+Standard `sc_get_advanced_tab()` plus three extra fields specific to this
+shortcode. `options.php` injects them **into the CSS group, right below CSS
+Class** (so all the class targets read as one group), and also strips the
+`dynamic_content` picker from this shortcode's CSS ID / CSS Class:
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -119,30 +122,37 @@ Standard.
 
 ## Rendering
 
-`views/view.php` outputs (in order) an optional `<div class="heading-overline …">`,
+`views/view.php` outputs (in order) an optional `<p class="heading-overline …">`,
 then `<h{n} class="heading-title …">{title}</h{n}>` where `{n}` comes from `heading`,
-then `<div class="heading-subtitle …">{subtitle}</div>`. The three are wrapped in a
+then `<p class="heading-subtitle …">{subtitle}</p>` (both the overline and subtitle are
+semantic `<p>` elements, not `<div>`s). The three are wrapped in a
 `<div class="heading heading-{tag} …">` **only when needed** (`sc_needs_wrapper()`, a
-non-default `element_spacing`, or a `block_max_width`); otherwise they render bare.
+non-default `element_spacing`, a `block_max_width`, or a user-supplied CSS Class / CSS ID);
+otherwise they render bare. Empty overline / title / subtitle values emit no element at all.
 
 **Alignment is per-element**, applied as a Bootstrap `text-*` class **on each element**
 (not the wrapper): each element resolves its own `*_align` value, falling back to the
 master `alignment` when empty (`sc_alignment_class()` maps `left→text-start`,
-`center→text-center`, `right→text-end`). The `kicker-rule` overline is `display:flex`,
-so its alignment class drives `justify-content` instead (CSS in `static/css/styles.css`).
+`center→text-center`, `right→text-end`). The `.heading-overline` element is always
+`display:flex`, so its alignment class drives `justify-content` instead of `text-align`
+(CSS in `static/css/styles.css`).
 `element_spacing` adds `.heading--space-{tight|relaxed}` to the wrapper; `block_max_width`
 is an inline `max-width` on the wrapper (auto-centered when master `alignment:center`).
 
 Per-element color picks (`overline_color` / `title_color` / `subtitle_color`) are pulled
 off the wrapper with `sc_extract_styling_atts()` and applied to their own element (class
 or inline hex). `display_size` adds a `.display-*` class to the title; `subtitle_size`'s
-value IS the font-size class appended to the subtitle; `subtitle_max_width` is an inline
-`max-width` on the subtitle.
+value IS the font-size class appended to the subtitle; `title_max_width` / `subtitle_max_width`
+are inline `max-width` values on the title / subtitle (each auto-centered when that element is
+center-aligned).
 
 **Overline markup & styling:** the text is wrapped in an inner
-`<span class="heading-overline__label">`. The outer `.heading-overline` is a flex row whose
-`justify-content` follows the overline alignment class; the inner label shrink-wraps and carries
-the case / marker / container. The three Layout-tab axes add independent modifier classes on the
+`<span class="heading-overline__label">` **only when a marker or a container is set**
+(`$overline_needs_label`) — a plain / kicker-only overline renders as bare
+`<p class="heading-overline">…</p>` (one fewer node), with the case styling living on
+`.heading-overline` itself. The outer `.heading-overline` is a flex row whose
+`justify-content` follows the overline alignment class; when present, the inner label
+shrink-wraps and carries the marker / container (the pill / underline hugs the text). The three Layout-tab axes add independent modifier classes on the
 outer element — `--kicker` (uppercase), markers `--rule` / `--dot` / `--lines` / `--bar` (leading
 line / dot / flanking lines / vertical bar via `::before`/`::after`, with `--mark-after` flipping a
 single marker past the text via flex `order`), and containers `--pill` / `--pill-outline` /
@@ -190,6 +200,6 @@ CSS in `static/css/styles.css`.
 
 - `config.php`, `options.php`, `static.php`, `views/view.php`
 - `static/css/styles.css` (via static.php)
-- `static/img/page_builder.png` — Layout Elements thumbnail
+- `static/img/page_builder.svg` — Layout Elements thumbnail
 
 No JS, no item class — minimal leaf layout.

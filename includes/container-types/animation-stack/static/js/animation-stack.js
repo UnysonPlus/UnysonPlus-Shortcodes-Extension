@@ -58,6 +58,9 @@
 		var $catalog = $(this).closest('.upw-anim-catalog');
 		$catalog.find('.upw-anim-tab').removeClass('is-on');
 		$(this).addClass('is-on');
+		// Spell out the active group's behavior model (why the groups differ).
+		var desc = $(this).attr('data-desc');
+		if (desc) { $catalog.find('.upw-anim-cat-desc').text(desc); }
 		filterTiles($catalog);
 	});
 
@@ -90,38 +93,10 @@
 
 		$tile.closest('.upw-anim-catalog').prop('hidden', true);
 
-		// Inactive cards ship as empty placeholders (the heavy per-effect options aren't rendered up
-		// front — that's what OOMed the builder). Fetch this card's options once, inject + init them,
-		// then reveal & open. Already-rendered cards fall straight through.
-		if ($card.attr('data-anim-lazy') === '1') {
-			lazyLoadCard($card, function () { revealCard($card, $stack); });
-		} else {
-			revealCard($card, $stack);
-		}
+		// Every card's options are rendered up front (hidden via `is-hidden`), so "adding" one is
+		// just a reveal — no fetch.
+		revealCard($card, $stack);
 	});
-
-	// Fetch one card's options HTML over AJAX, inject into its body, and initialise the FW option
-	// types inside (so the multi-picker / image-picker become interactive). Guards against a double
-	// fetch. On failure the card still reveals (empty) rather than trapping the user.
-	function lazyLoadCard($card, done) {
-		$card.removeAttr('data-anim-lazy').addClass('upw-anim-card-loading');
-		var cfg = window.upwAnimStack || {};
-		$.ajax({
-			url: cfg.ajaxurl || window.ajaxurl,
-			method: 'POST',
-			data: { action: 'upw_anim_render_card', slot: $card.attr('data-anim-slot'), nonce: cfg.nonce || '' }
-		}).done(function (res) {
-			if (res && res.success && res.data && res.data.html) {
-				$card.find('.upw-anim-card-body').html(res.data.html);
-				if (window.fwEvents && typeof fwEvents.trigger === 'function') {
-					fwEvents.trigger('fw:options:init', { $elements: $card });
-				}
-			}
-		}).always(function () {
-			$card.removeClass('upw-anim-card-loading');
-			done();
-		});
-	}
 
 	// Reveal a card and open its popover picker so the user picks an effect immediately.
 	function revealCard($card, $stack) {
@@ -165,5 +140,31 @@
 		$stack.find('.upw-anim-tile[data-target="' + id + '"]').removeClass('is-added');
 		updateEmpty($stack);
 	});
+
+
+	// ── Move a card's attached settings INTO its effect popover ─────────────────────────────────
+	// The Entrance card's shared settings panel (.upw-anim-card-extra — Trigger / Speed / Advanced)
+	// is rendered as a sibling of the effect popover. Visually it reads nicer tucked INSIDE the
+	// popover panel (so the card is just the effect picker, and its settings appear when you open
+	// it). Saves are unaffected: FW collects values by input name, not DOM position, so relocating
+	// the node within the same modal changes nothing about what's persisted. Only cards that have
+	// BOTH a popover and an attached panel are touched (today: just Entrance).
+	function tuckSettingsIntoPopover(root) {
+		$(root || document).find('.upw-anim-card').each(function () {
+			var $card  = $(this);
+			var $panel = $card.find('.fw-mp-pop-panel').first();
+			var $extra = $card.find('.upw-anim-card-extra').first();
+			if ($panel.length && $extra.length && !$panel.find('.upw-anim-card-extra').length) {
+				$panel.append($extra);
+			}
+		});
+	}
+
+	$(function () { tuckSettingsIntoPopover(document); });
+	if (window.fwEvents && typeof fwEvents.on === 'function') {
+		fwEvents.on('fw:options:init', function (data) {
+			tuckSettingsIntoPopover(data && data.$elements ? data.$elements : document);
+		});
+	}
 
 })(jQuery);

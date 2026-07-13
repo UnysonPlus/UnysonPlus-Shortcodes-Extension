@@ -59,14 +59,14 @@
 }
 
 .icon-box__icon-font {
-    font-size: 2rem;
+    font-size: inherit; /* inherit the container's font-size so Icon Size (set on .icon-box__icon) drives it */
     line-height: 1;
 }
 
 .icon-box__icon svg {
     display: block;
-    width: 2rem;
-    height: 2rem;
+    width: 1em;  /* scale with the icon font-size (default 2rem via .icon-box__icon) */
+    height: 1em;
 }
 
 /* --------------------------------------------------------------------------

@@ -26,51 +26,99 @@
         return;
     }
 
-    if (!('IntersectionObserver' in window)) {
-        document.querySelectorAll('[data-sc-anim]').forEach(function (el) {
-            applyAnimation(el);
-        });
-        return;
-    }
-
-    function applyAnimation(el) {
+    function play(el) {
         var classes = (el.getAttribute('data-sc-anim') || '').split(/\s+/).filter(Boolean);
         if (!classes.length) return;
         classes.forEach(function (c) { el.classList.add(c); });
         el.classList.remove('sc-anim-pending');
     }
 
-    function resetForReplay(el) {
+    // Strip the animate classes. keepHidden re-adds sc-anim-pending so the "view" replay hides the
+    // element until it re-enters the viewport; for click/hover the element stays visible so it can
+    // simply be re-triggered.
+    function reset(el, keepHidden) {
         var classes = (el.getAttribute('data-sc-anim') || '').split(/\s+/).filter(Boolean);
         classes.forEach(function (c) { el.classList.remove(c); });
-        el.classList.add('sc-anim-pending');
+        if (keepHidden) { el.classList.add('sc-anim-pending'); }
     }
 
-    var observer = new IntersectionObserver(function (entries) {
+    // Play once, then on end strip the classes so the SAME element can replay on the next event.
+    // __scAnimBusy ignores repeat triggers until the current run finishes.
+    function playReplayable(el) {
+        if (el.__scAnimBusy) { return; }
+        el.__scAnimBusy = true;
+        play(el);
+        var onEnd = function () {
+            el.removeEventListener('animationend', onEnd);
+            reset(el, false);
+            el.__scAnimBusy = false;
+        };
+        el.addEventListener('animationend', onEnd);
+    }
+
+    var observer = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
             if (!entry.isIntersecting) return;
             var el = entry.target;
-            applyAnimation(el);
 
+            // An element that ALSO has a click/hover trigger must end with its animate classes
+            // removed (so the interaction can cleanly re-trigger). Play it replayably, then stop
+            // observing — the interaction handlers own subsequent replays.
+            if (el.__scAnimInteractive) {
+                playReplayable(el);
+                observer.unobserve(el);
+                return;
+            }
+
+            play(el);
             if (el.getAttribute('data-sc-anim-replay') === '1') {
                 var onEnd = function () {
                     el.removeEventListener('animationend', onEnd);
-                    resetForReplay(el);
+                    reset(el, true);
                 };
                 el.addEventListener('animationend', onEnd);
             } else {
                 observer.unobserve(el);
             }
         });
-    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
+    }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }) : null;
+
+    // Route each element by its trigger(s). data-sc-anim-trigger is a SPACE-SEPARATED list
+    // (view / load / click / hover); a missing attr = the classic scroll-into-view. An element can
+    // carry several — e.g. "view click" reveals on scroll and replays on click.
+    function bind(el) {
+        if (el.__scAnimBound) { return; }
+        el.__scAnimBound = true;
+
+        var triggers = (el.getAttribute('data-sc-anim-trigger') || 'view').split(/\s+/).filter(Boolean);
+        if (!triggers.length) { triggers = ['view']; }
+        var has = function (t) { return triggers.indexOf(t) >= 0; };
+        var replay = el.getAttribute('data-sc-anim-replay') === '1';
+        // "Interactive" = has a click/hover replay trigger. Such elements play their entrance
+        // replayably (classes cleared on end) so a later click/hover restarts cleanly.
+        var interactive = has('click') || has('hover');
+        el.__scAnimInteractive = interactive;
+        var entrancePlay = interactive ? playReplayable : play;
+
+        // Page load fires immediately and pre-empts scroll-into-view (load wins).
+        if (has('load')) {
+            entrancePlay(el);
+        }
+        if (has('view') && !has('load')) {
+            if (observer) { observer.observe(el); } else { entrancePlay(el); }
+        } else if (has('view') && has('load') && replay && observer) {
+            observer.observe(el); // load already played; keep observing only to honor replay-on-scroll
+        }
+        if (has('click')) {
+            el.addEventListener('click', function () { playReplayable(el); });
+        }
+        if (has('hover')) {
+            el.addEventListener('mouseenter', function () { playReplayable(el); });
+        }
+    }
 
     function scan(root) {
-        (root || document).querySelectorAll('[data-sc-anim]').forEach(function (el) {
-            if (!el.__scAnimObserved) {
-                el.__scAnimObserved = true;
-                observer.observe(el);
-            }
-        });
+        (root || document).querySelectorAll('[data-sc-anim]').forEach(bind);
     }
 
     if (document.readyState === 'loading') {
@@ -84,12 +132,7 @@
             muts.forEach(function (m) {
                 m.addedNodes && m.addedNodes.forEach(function (n) {
                     if (n.nodeType !== 1) return;
-                    if (n.hasAttribute && n.hasAttribute('data-sc-anim')) {
-                        if (!n.__scAnimObserved) {
-                            n.__scAnimObserved = true;
-                            observer.observe(n);
-                        }
-                    }
+                    if (n.hasAttribute && n.hasAttribute('data-sc-anim')) { bind(n); }
                     if (n.querySelectorAll) scan(n);
                 });
             });

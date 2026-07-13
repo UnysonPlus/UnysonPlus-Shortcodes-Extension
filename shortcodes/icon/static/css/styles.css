@@ -14,3 +14,9 @@
 	display: inline-block;
 	line-height: normal;
 }
+/* Icon Size support — one lever (font-size) scales font icons AND inline SVGs. The SVG
+   wrapper (.sc-icon-glyph) is normalised to 1em; give it the font-icon default size so an
+   unset Icon Size stays consistent (and doesn't shrink SVGs). The Icon Size option sets an
+   inline font-size on the same element, overriding this. */
+.icon .sc-icon-glyph { font-size: 28px; line-height: 1; }
+.icon .sc-icon-glyph svg { width: 1em; height: 1em; display: inline-block; vertical-align: middle; }

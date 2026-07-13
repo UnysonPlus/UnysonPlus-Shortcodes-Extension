@@ -169,6 +169,43 @@ $options = [
 						'help'  => __( 'On: the section background spans edge-to-edge while content stays in the container. Off: the whole section is constrained to the container width.', 'fw' ),
 						'type'  => 'switch',
 					],
+					// Container Width — constrain THIS section's content band to a narrower
+					// max-width than the global Container Width (General → Layout). Multi-picker
+					// canonical shape (label/desc/help on the picker; Custom reveals a unit-input).
+					'container_width' => [
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'value'        => [ 'preset' => 'inherit' ],
+						'picker'       => [
+							'preset' => [
+								'label'   => __( 'Container Width', 'fw' ),
+								'desc'    => __( 'Constrain this section\'s content to a narrower band than the site-wide Container Width. "Inherit" uses the global width (General → Layout).', 'fw' ),
+								'help'    => __( 'Great for CTAs, prose, or forms that read better narrower than the full page container. The section background still spans as usual; only the centered content band narrows. "Custom" sets an exact max-width.', 'fw' ),
+								'type'    => 'select',
+								'choices' => [
+									'inherit' => __( 'Inherit (global width)', 'fw' ),
+									'narrow'  => __( 'Narrow (768px)', 'fw' ),
+									'medium'  => __( 'Medium (896px)', 'fw' ),
+									'wide'    => __( 'Wide (1024px)', 'fw' ),
+									'custom'  => __( 'Custom…', 'fw' ),
+								],
+							],
+						],
+						'choices'      => [
+							// Revealed only when "Custom…" is picked.
+							'custom' => [
+								'custom_width' => [
+									'type'  => 'unit-input',
+									'label' => __( 'Custom Width', 'fw' ),
+									'desc'  => false,
+									'units' => [ 'px', 'rem', '%', 'vw' ],
+									'value' => [ 'value' => '900', 'unit' => 'px' ],
+								],
+							],
+						],
+						'show_borders' => false,
+					],
 					// Multi-picker — canonical shape (see demo.php / CLAUDE.md):
 					// label/desc/help live on the PICKER sub-option; the top-level
 					// label/desc are false; the default is the top-level `value`

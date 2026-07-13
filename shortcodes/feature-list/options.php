@@ -127,6 +127,13 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'marker_color' => sc_color_field_compact( array( 'label' => __( 'Marker Color', 'fw' ), 'kind' => 'bg' ) ),
+					'marker_size'  => array(
+						'type'  => 'unit-input',
+						'label' => __( 'Icon Size', 'fw' ),
+						'desc'  => __( 'Marker / icon size (Ex: 20px, 1.5rem). Leave empty for the default.', 'fw' ),
+						'value' => array( 'value' => '', 'unit' => 'px' ),
+						'units' => array( 'px', 'rem', 'em' ),
+					),
 					'text_color'   => sc_color_field_compact( array( 'label' => __( 'Text Color', 'fw' ) ) ),
 					'sub_color'    => sc_color_field_compact( array( 'label' => __( 'Sub-text Color', 'fw' ) ) ),
 					'font_size_preset' => sc_font_size_field(),

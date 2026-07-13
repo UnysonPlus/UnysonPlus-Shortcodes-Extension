@@ -50,7 +50,9 @@ item; the base class was factored out to support custom variants).
 
 ## Options schema (atts)
 
-Source of truth: `options.php`. Six tabs.
+Source of truth: `options.php`. Four tabs (Layout, Styling, Animations,
+Advanced). The editor modal is `medium` (`config.php`'s `'popup_size' =>
+'medium'`).
 
 ### Tab: Layout
 
@@ -58,51 +60,43 @@ Wrapped in `group_layout` (flattens on save).
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
-| `variant` | `select` (`''` / `alt` / `light` / `dark`) | `''` (Default) | Named visual preset. Pairs with `background_color` — variant sets the overall theme, bg-color overrides for one-off colors |
-| `is_fullwidth` | `switch` | (off) | Full-bleed (breaks out of container width) |
-| `background_color` | `color-picker` | — | Legacy field from original Unyson — kept for backwards compatibility. Prefer `variant` or the preset `bg_color` on the Styling tab |
-| `background_image` | `background-image` | — | Parallax background (with bleed / position / repeat sub-options) |
-| `video` | `text` (URL) | — | Background video URL |
+| `variant` | `select` | `''` (Default) | A **Section Style** preset slug. Choices come from `unysonplus_section_style_choices()` (Theme Settings → Components → Section Styles), so user-defined styles appear automatically; falls back to `'' / alt / light / dark` if the getter is unavailable. Pairs with the Styling-tab Background |
+| `is_fullwidth` | `switch` | (off) | On: the bg spans edge-to-edge (`fw-container-fluid`), content stays in the container. Off: the whole section is constrained (`fw-container`) |
+| `min_height` | `multi-picker` (picker id `preset`) | `{ preset: 'auto' }` | Minimum section height. `preset` ∈ `auto` / `40vh` / `60vh` / `80vh` / `100vh` / `custom`. `custom` reveals `custom_height` (`unit-input`, units `px/%/vh/vw/rem/em`, default `{value:600, unit:px}`) under `min_height.custom.custom_height`. `auto` emits no min-height |
+| `column_halign` | `responsive` → `image-picker` | `{ base:'default', md:'', lg:'' }` | Columns Horizontal Alignment: `default` / `center` / `right` / `between` / `around` / `evenly`, per device (blank device inherits smaller) |
+| `column_valign` | `image-picker` | `stretch` | Columns Vertical Alignment: `stretch` (Default / Stretched) / `top` / `center` / `bottom`. Most visible with a Min Height set. The renderer also tolerates the old key `content_valign` as a fallback |
+| `reverse_columns` | `responsive` → `switch` (`no`/`yes`) | `{ base:'no', md:'', lg:'' }` | Column Order — reverse per device. Legacy scalar `all` / `tablet` / `mobile` migrates in the view |
 
-### Tab: Bleed Layout
+### Tab: Styling
 
-A multi-picker gated by `bleed_layout.bleed_enabled` (`no` / `yes`). When
-enabled, splits the section into a content side (with bg color) and a
-full-bleed image side. Wrapped in `group_bleed_layout`.
-
-| Att | Type | Default | Description |
-|-----|------|---------|-------------|
-| `bleed_layout.bleed_enabled` | `switch` (`no` / `yes`) | `no` | Master enable for bleed layout |
-| `bleed_layout.yes.bleed_bg_color` | `color-picker` | — | Content side bg color (bleeds to viewport edge) |
-| `bleed_layout.yes.bleed_image` | `upload` | — | Image filling the opposite side, bleeding to viewport edge |
-| `bleed_layout.yes.bleed_image_position` | `select` (9 positions) | `center` | CSS `background-position` for the image |
-| `bleed_layout.yes.bleed_image_side` | `select` (`right` / `left`) | `right` | Which side the image is on |
-| `bleed_layout.yes.bleed_image_ratio` | `select` (11 ratios from `1-11` to `11-1`) | `5-7` | Image vs content width split using col-md-N pairs |
-| `bleed_layout.yes.bleed_vertical_align` | `select` (`align-items-start` / `center` / `end`) | `align-items-center` | Content vertical alignment |
-| `bleed_layout.yes.bleed_content_padding` | `select` (`0` / `2rem` / `3rem` / `5rem`) | `3rem` | Vertical content padding |
-| `bleed_layout.yes.bleed_mobile_stacking` | `select` (`content-first` / `image-first`) | `content-first` | Mobile stacking order |
-
-The `bleed_illustration` field is an `html-full` (no value) that renders
-the visual reference diagram in the modal. It's metadata-only — no atts
-contribution.
-
-### Tab: Spacing & Style
-
-Wrapped in `group_colors` + `group_spacings` (both flatten on save).
+Three groups: `group_background`, `group_dividers`, `group_spacings`
+(all flatten on save).
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
-| `bg_color` | `sc_color_field_compact` (kind: bg) | — | Preset background color from theme palette OR custom hex via inline picker. Layers over the legacy `background_color` on the Layout tab |
-| `padding_top` | `sc_spacing_field` (prefix: `pt`, `responsive`) | `{base,md,lg}` | Vertical padding above section content — per-device (Phone/Tablet/Desktop). Legacy scalar folds into `base` |
-| `padding_bottom` | `sc_spacing_field` (prefix: `pb`, `responsive`) | `{base,md,lg}` | Vertical padding below — per-device. Legacy scalar folds into `base` |
-| `gap` | `responsive` | `{base,md,lg}` | Override site-wide Default Gap for every Bootstrap row inside this section. Sets both horizontal + vertical gutter, per-device |
-| `gap_x` | `responsive` | `{base,md,lg}` (inherit `gap`) | Horizontal-only gap override, per-device |
-| `gap_y` | `responsive` | `{base,md,lg}` (inherit `gap`) | Vertical-only gap override, per-device |
+| `background` | `background-pro` | — | Stacked color / gradient / image / video background layers. **Replaces** the old separate `background_color` / `background_image` / `video` / `bg_color` fields — legacy sections are migrated in the view (see `includes/migration.php`) |
+| `divider_top` | `multi-picker` (picker id `shape`) | `{ shape: 'none' }` | Top Shape Divider. `shape` ∈ `none` / `tilt` / `curve` / `wave` / `triangle`. Any non-`none` shape reveals sub-fields under `divider_top.{shape}.{…}` (see divider sub-fields below) |
+| `divider_bottom` | `multi-picker` (picker id `shape`) | `{ shape: 'none' }` | Bottom Shape Divider — same shape choices + sub-fields, under `divider_bottom.{shape}.{…}` |
+| `padding_top` | `sc_spacing_field` (prefix `pt`, `responsive`) | `{base,md,lg}` | Vertical padding above content, per device (blank device inherits smaller). Legacy scalar folds into `base` |
+| `padding_bottom` | `sc_spacing_field` (prefix `pb`, `responsive`) | `{base,md,lg}` | Vertical padding below content, per device |
+| `gap` | `responsive` → `short-select` | `{ base:'', md:'', lg:'' }` | Override the site-wide Default Gap (both H + V column gutter) for every Bootstrap row in this section, per device. Choices from `sc_get_gap_select_choices()`; empty = inherit |
+| `gap_x` | `responsive` → `short-select` | `{ base:'', md:'', lg:'' }` | Horizontal-only gap override, per device. Only bites once `gap` is set |
+| `gap_y` | `responsive` → `short-select` | `{ base:'', md:'', lg:'' }` | Vertical-only gap override, per device. Only bites once `gap` is set |
+
+**Shape-divider sub-fields** (each revealed shape carries the same three,
+stored under `divider_{top,bottom}.{shape}`):
+
+| Sub-att | Type | Default | Description |
+|---------|------|---------|-------------|
+| `color` | `sc_color_field_compact` (kind `bg`) | — | Divider fill. Compact preset picker → `{predefined, custom}`; resolved to `var(--color-{slug})` or the custom hex (falls back to `#ffffff`) |
+| `height` | `unit-input` (units `px/vh/%`) | `{value:'100', unit:'px'}` | Height of the divider band |
+| `flip` | `switch` (`yes`/`no`) | `no` | Flip the shape horizontally (`scaleX(-1)`) |
 
 ### Tabs: Animations + Advanced
 
-`sc_get_animation_fields()` + `sc_get_advanced_tab()`. Standard shared
-shape.
+`sc_get_animation_fields()` (under tab `tab_animation`) +
+`sc_get_advanced_tab()` (wrapped in `advanced_settings` group under
+`tab_advanced`). Standard shared shape.
 
 ### Generator note
 
@@ -121,34 +115,56 @@ needed since every field defaults to a usable value:
 ```
 
 For richer sections, generate the high-impact fields: `variant`,
-`is_fullwidth`, `bg_color`, `padding_top`, `padding_bottom`,
-`background_image`, plus the bleed-layout multi-picker if a split design
-is desired.
+`is_fullwidth`, `min_height`, `column_valign`, `padding_top`,
+`padding_bottom`, and the `background` (background-pro) value.
 
 ## Rendering
 
-`views/view.php` outputs the section wrapper with:
+`views/view.php` outputs the section wrapper (`sc_build_wrapper_attr()`
+base attrs + extra classes / inline style) with:
 
-- `<section class="section section--{variant} {is_fullwidth class} ...">`
-- Bg color / bg image / bg video layers
-- The bleed-layout split-screen markup when enabled (a 2-column row inside
-  the section with the bleed image filling one side via negative-margin
-  trickery)
-- Inner content (the rendered rows / columns / shortcodes) wrapped in a
-  Bootstrap container (or NOT, when `is_fullwidth` is on)
-- Gap modifier classes (`section--gap-{slug}`, `section--gap-x-{slug}`,
-  `section--gap-y-{slug}`) that `framework/includes/css-tokens.php`
-  translates into `--bs-gutter-x` / `--bs-gutter-y` overrides on every
-  `.row` inside this section
+- `<section class="section section--{variant} ...">` — `variant` is
+  sanitized to a css-safe slug and validated against
+  `unysonplus_section_style_preset_slug_map()` (falls back to
+  `alt / light / dark`); an unknown slug is dropped
+- **Background** via `sc_bg_pro_style()` / `sc_bg_pro_video_attr()` on the
+  `background` value — or, when that's empty, on the value synthesized by
+  `section_migrate_legacy_background( $atts )` from the legacy
+  `background_color` / `background_image` / `video` / `bg_color` atts. A
+  video bg adds the `background-video` class + data-attrs
+- **Min height + vertical alignment**: `min_height` resolves to a
+  `min-height` inline style (preset string or `custom_height`
+  `{value}{unit}`; tolerates a legacy plain string). `column_valign` =
+  `stretch` adds `section--valign-stretch` (only with a min-height); `top`
+  / `center` / `bottom` emit `display:flex;flex-direction:column;justify-content:{flex-start|center|flex-end};`
+- **Columns horizontal alignment**: `column_halign` per-device → modifier
+  classes `section--cols-{v}` / `section--cols-{md|lg}-{v}` (styles.css)
+- **Reverse order**: `reverse_columns` per-device → `section--rev` +
+  `section--rev-{md|lg}-{on|off}` overrides
+- **Gap** modifier classes `section--gap[-md|-lg]-{slug}`,
+  `section--gap-x[-md|-lg]-{slug}`, `section--gap-y[-md|-lg]-{slug}` that
+  `framework/includes/css-tokens.php` turns into `--bs-gutter-x` /
+  `--bs-gutter-y` overrides on every `.row` inside this section
+- **Shape dividers**: hardcoded SVG paths (`tilt`/`curve`/`wave`/`triangle`)
+  emitted as `.sc-shape-divider--{top|bottom}` before the content; top is
+  rotated 180°, `flip` mirrors it. Adds `section--has-divider`
+- **Inner content** (rendered rows / columns / shortcodes) wrapped in a
+  `fw-container` (or `fw-container-fluid` when `is_fullwidth`). **Exception:**
+  when `atts['has_inner_containers']` is set (the items-corrector lifted the
+  section's own columns into a default `.fw-container` and kept Container
+  elements as siblings), the content is rendered directly with **no** extra
+  wrapper to avoid nesting
 
-Frontend assets:
+Frontend assets (enqueued by `static.php`, cache-busted with the
+shortcodes-extension version; the formstone stack is used from v1.3.9,
+the `jquery.fs.wallpaper` path is the pre-1.3.9 fallback):
 - `static/css/styles.css` — section base styles
-- `static/css/background.css` — bg-image / bg-video presentation
-- `static/css/jquery.fs.wallpaper.css` — parallax library styles
-- `static/js/scripts.js` — section JS entry
-- `static/js/background.init.js` + `background.js` — bg media setup
-- `static/js/transition.js` + `core.js` — additional UX
-- `static/js/jquery.fs.wallpaper.js` (+ min) — parallax engine
+- `static/css/background.css` — bg-video presentation (formstone)
+- `static/css/jquery.fs.wallpaper.css` — pre-1.3.9 fallback styles
+- `static/js/core.js` + `transition.js` + `background.js` +
+  `background.init.js` — formstone background stack (v1.3.9+)
+- `static/js/scripts.js` + `jquery.fs.wallpaper(.min).js` — deprecated
+  pre-1.3.9 fallback engine
 
 ## Editor integration
 
@@ -167,22 +183,27 @@ array('section'))` so all section-like variants pass.
 
 ## Pitfalls
 
-1. **`background_color` (legacy) vs `bg_color` (preset)** — both still
-   exist for backwards compatibility. The view layers them: legacy
-   `background_color` is applied first, preset `bg_color` (Styling tab)
-   layers on top if set. AI generators should prefer `bg_color` for new
-   content.
-2. **Bleed layout is a multi-picker, not flat** — the sub-fields live
-   under `bleed_layout.yes.{…}` only when `bleed_enabled === 'yes'`. The
-   nested shape is preserved through save / load. Generators must
-   reproduce the nesting.
-3. **`gap` is a scale slug, not a px value** — emits modifier classes
-   like `section--gap-3`. `framework/includes/css-tokens.php` writes the
-   actual CSS custom properties. Don't try to emit raw pixel values
-   here.
-4. **The bleed-image `ratio` field uses Bootstrap `col-md-N` notation** —
-   `5-7` means `col-md-5 + col-md-7`. Total always sums to 12. Generators
-   must keep the sum invariant if they emit custom ratios.
+1. **Background is one `background-pro` value, not separate fields** — the
+   old `background_color` / `background_image` / `video` / `bg_color` atts
+   are gone from `options.php`. They're only read by
+   `section_migrate_legacy_background()` (in `includes/migration.php`) so
+   pre-existing sections still render / pre-fill the new control until
+   re-saved. New content should emit the `background` value directly.
+2. **`min_height` / `divider_*` are multi-pickers, not flat** — the saved
+   shape is `{ preset: … }` (+ `custom.custom_height` for `min_height`) and
+   `{ shape: … }` (+ `{shape}.{color,height,flip}` for dividers). A legacy
+   plain-string `min_height` throws in the modal unless migrated — the JS
+   migrator (`scripts.js` `migrateMinHeight`, mirroring
+   `section_migrate_min_height`) fixes it on editor load; the view tolerates
+   the legacy scalar. Generators must reproduce the nesting.
+3. **`gap` / `gap_x` / `gap_y` are per-device scale slugs, not px values** —
+   `{ base, md, lg }` of slugs (e.g. `'3'`), emitting modifier classes like
+   `section--gap-3` / `section--gap-md-3`. `framework/includes/css-tokens.php`
+   writes the actual CSS custom properties. Don't emit raw pixel values.
+   `gap_x` / `gap_y` only take effect once `gap` is set.
+4. **`variant` is a Section Style slug validated at render** — an unknown
+   slug (not in `unysonplus_section_style_preset_slug_map()`) is dropped, so
+   only registered style slugs render a `section--{variant}` class.
 5. **Section auto-correction** — the items corrector wraps non-section
    root items in synthetic `[section]` shortcodes on save. So if you
    place a `[text-block]` directly at root in the AI output, it'll be
@@ -195,13 +216,13 @@ array('section'))` so all section-like variants pass.
    canvas with the "Section" label.
 2. Drop a Row into the section → drops successfully, the corrector
    auto-creates the row structure on save.
-3. Edit options → set `variant: dark` → reload → section gets the dark
-   variant CSS class.
-4. Set a `background_image` → reload → parallax bg renders on the
-   frontend.
-5. Enable bleed layout → set `bleed_image_side: left`, `bleed_image_ratio:
-   4-8` → reload → split-screen with image on left at col-md-4 + content
-   at col-md-8.
+3. Edit options → set `variant: dark` → reload → section gets the
+   `section--dark` CSS class.
+4. Set a `background` image/video layer → reload → the bg renders on the
+   frontend (image or looping muted video).
+5. Set `min_height: 100vh` + `column_valign: center` → reload → full-screen
+   section with the columns block vertically centred; add a
+   `divider_bottom` shape → an SVG edge renders at the bottom.
 6. Save as template → appears in Templates → Sections list.
 7. Export the template → import on another install → byte-identical
    restoration.
@@ -213,9 +234,12 @@ array('section'))` so all section-like variants pass.
 - `class-fw-shortcode-section.php` — main shortcode class with `_init()`
   hooks
 - `config.php` — page-builder config (Layout Elements tab, "Section"
-  title)
-- `options.php` — 6 tabs (Layout, Bleed Layout, Spacing & Style,
-  Animations, Advanced)
+  title, `popup_size: medium`)
+- `options.php` — 4 tabs (Layout, Styling, Animations, Advanced)
+- `includes/migration.php` — legacy background → `background-pro`
+  (`section_migrate_legacy_background`) + legacy string → multi-picker
+  min-height (`section_migrate_min_height`) migration helpers, shared by
+  the view + the page-builder item
 - `static.php` — frontend CSS/JS enqueue
 - `views/view.php` — frontend HTML
 - `static/css/{styles, background, jquery.fs.wallpaper}.css` — frontend

@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.11.16';
+$manifest['version']     = '1.11.37';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,59 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.11.36 - Section: new "Container Width" option (Layout tab). Constrains a single section's content
+ *          band to a narrower max-width than the global Container Width (General → Layout) — presets
+ *          Narrow (768) / Medium (896) / Wide (1024), or Custom (unit-input). Default "Inherit" leaves
+ *          the section using the global width, so existing sections are unaffected. The section
+ *          background still spans as usual; only the centered content band narrows. Removes the need
+ *          to fake per-section widths with per-element max-widths or child-theme CSS (e.g. a narrow
+ *          CTA/prose band inside a full-width page).
+ * 1.11.34 - New "Scroll Indicator" shortcode (Content Elements). The common hero "scroll to descend"
+ *          cue: a small label + an animated chevron that smooth-scrolls to a target section on click
+ *          (or scrolls down one screen when no target is set). Options: label text, icon (defaults to
+ *          a lucide chevron-down), scroll target (#anchor), layout (label above/below icon, inline, or
+ *          icon-only), animation (bounce/pulse/nudge/none), label + icon color, Icon Size, spacing.
+ *          Ships its own CSS (keyframes, paused under prefers-reduced-motion) + a dependency-free
+ *          delegated smooth-scroll handler.
+ * 1.11.32 - New "Icon Size" option on the Icon, Feature List + Icon Box shortcodes (Styling tab). A
+ *          unit-input (px/rem/em) that sets the glyph/marker/icon size, scaling BOTH font icons AND
+ *          inline-SVG icons. Icon: the SVG-wrapper `.sc-icon-glyph` is normalised to 1em so one
+ *          font-size lever resizes either kind — previously the icon's own help text promised
+ *          "resized via the Styling tab" but no such control existed (fixed inline SVGs stayed 24px).
+ *          Feature List: drives a `--fl-marker-size` var the marker svg/img read for width+height.
+ *          Icon Box: sets font-size on `.icon-box__icon`; the glyph now inherits it and the SVG is
+ *          1em (was a fixed 2rem), so the size flows through. Empty = default. Legacy unaffected.
+ * 1.11.26 - Animations tab: much lighter builder modal (~7MB → ~4.4MB of options HTML).
+ *          (1) Entrance settings de-duplicated: the Trigger/Speed/Advanced panel used to be
+ *          mapped onto all ~56 Animate.css effect keys (rendered 56×); it now renders ONCE as a
+ *          shared `animation_settings` panel attached inside the Entrance card. Trade-off: the
+ *          tweaks are now shared across effects (no per-effect memory). Saved value moves from
+ *          animation[<effect>] to animation_settings; the wrapper reader falls back to the legacy
+ *          per-effect location so existing elements keep animating until re-saved.
+ *          (2) Multi-instance animation slots capped at 2 (was 4): each pre-declared slot renders
+ *          its full picker eagerly even when inactive, so a 43-choice module like Hover cost
+ *          ~0.7MB per slot. Two instances (e.g. Hover Lift + Ripple) covers the realistic case.
+ *
+ * 1.11.22 - Entrance Animation: the "Trigger" control is now MULTI-SELECT — a row of toggleable
+ *          image-picker tiles (Scroll into view / Page load / Click / Hover) instead of a single
+ *          dropdown. One animation can now fire on several events at once, e.g. reveal on scroll
+ *          AND replay on click. Entrance triggers (view / load) hide the element until it plays;
+ *          interaction triggers (click / hover) keep it visible and replay on each event; if both
+ *          view and load are on, load wins (fires immediately). Saved value is now an ARRAY of
+ *          keys; a legacy single-string save is tolerated (falls back to "view", no error). The
+ *          wrapper emits a space-separated data-sc-anim-trigger list and sc-animations.js binds
+ *          every selected trigger (playing the entrance "replayably" when an interaction trigger
+ *          is also present, so click/hover restart it cleanly).
+ *
+ * 1.11.17 - Entrance Animation: new "Trigger" control decouples WHEN the reveal plays from the
+ *          effect itself. The classic "Scroll into view" stays the default; Page load, Click the
+ *          element, and Hover the element now fire the same Animate.css entrance on other events
+ *          (the unified-trigger pattern, mirroring Confetti). For Click / Hover the element stays
+ *          visible and interactive (it is not hidden until play) and re-fires on each event;
+ *          Scroll-into-view / Page load keep the hide-until-play behavior. Wired end-to-end:
+ *          a data-sc-anim-trigger attribute on the wrapper + routing in sc-animations.js
+ *          (IntersectionObserver for view, immediate for load, event listeners for click/hover).
+ *
  * 1.11.16 - Media Video: now plays SELF-HOSTED files, not just oEmbed URLs. A new "Video
  *          Source" picker (Content tab) toggles between Embed (paste a YouTube/Vimeo/oEmbed
  *          page URL — the original behavior) and Self-hosted (upload/link an MP4 + optional

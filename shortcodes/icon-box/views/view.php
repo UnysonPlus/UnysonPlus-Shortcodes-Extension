@@ -189,6 +189,22 @@ $title_style     = $title_styling['styles']   ? implode( '; ', $title_styling['s
 $content_style   = $content_styling['styles'] ? implode( '; ', $content_styling['styles'] ) : '';
 $icon_style      = $icon_styling['styles']    ? implode( '; ', $icon_styling['styles'] )    : '';
 
+// Icon Size — a unit-input compiled to a CSS length applied as font-size on the
+// `.icon-box__icon` container. The icon glyph (`.icon-box__icon-font`) inherits it and
+// the SVG is normalised to 1em (static.css), so one lever resizes font icons + SVGs.
+$icon_size_raw = $atts['icon_size'] ?? '';
+$icon_size = '';
+if ( is_array( $icon_size_raw ) && isset( $icon_size_raw['value'] ) && trim( (string) $icon_size_raw['value'] ) !== '' ) {
+    $icon_size = class_exists( 'FW_Option_Type_Unit_Input' )
+        ? FW_Option_Type_Unit_Input::to_string( $icon_size_raw )
+        : ( trim( (string) $icon_size_raw['value'] ) . ( isset( $icon_size_raw['unit'] ) ? preg_replace( '/[^a-z%]/', '', (string) $icon_size_raw['unit'] ) : 'px' ) );
+} elseif ( is_string( $icon_size_raw ) && trim( $icon_size_raw ) !== '' ) {
+    $icon_size = trim( $icon_size_raw );
+}
+if ( $icon_size !== '' ) {
+    $icon_style = trim( $icon_style . ( $icon_style !== '' ? '; ' : '' ) . 'font-size:' . $icon_size );
+}
+
 $atts['base_class']       = 'icon-box';
 $atts['unique_id_prefix'] = 'ib-';
 $atts['css_class']        = trim( implode( ' ', $wrapper_classes ) . ' ' . ( $atts['css_class'] ?? '' ) );

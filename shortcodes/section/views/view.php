@@ -152,6 +152,28 @@ $container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] )
 	? 'fw-container-fluid'
 	: 'fw-container';
 
+// Container Width — constrain this section's content band to a narrower max-width than the
+// global Container Width. Multi-picker: a preset ('narrow'/'medium'/'wide') or 'custom'
+// (unit-input). 'inherit'/'auto' = no override. Applied inline (centered) on the container.
+$container_style = '';
+$cwv = isset( $atts['container_width'] ) ? $atts['container_width'] : '';
+if ( is_array( $cwv ) ) {
+	$cw_preset = isset( $cwv['preset'] ) ? (string) $cwv['preset'] : 'inherit';
+	$cw_map    = array( 'narrow' => '768px', 'medium' => '896px', 'wide' => '1024px' );
+	$cw_max    = '';
+	if ( $cw_preset === 'custom' ) {
+		$cuv  = ( isset( $cwv['custom']['custom_width'] ) && is_array( $cwv['custom']['custom_width'] ) ) ? $cwv['custom']['custom_width'] : array();
+		$cnum = isset( $cuv['value'] ) ? trim( (string) $cuv['value'] ) : '';
+		$cun  = isset( $cuv['unit'] ) ? preg_replace( '/[^a-z%]/', '', (string) $cuv['unit'] ) : 'px';
+		if ( $cnum !== '' && is_numeric( $cnum ) ) { $cw_max = $cnum . $cun; }
+	} elseif ( isset( $cw_map[ $cw_preset ] ) ) {
+		$cw_max = $cw_map[ $cw_preset ];
+	}
+	if ( $cw_max !== '' ) {
+		$container_style = 'max-width:' . $cw_max . ';margin-left:auto;margin-right:auto;';
+	}
+}
+
 // When this section holds one or more Container elements, the items-corrector has already
 // lifted the section's OWN columns into a default .fw-container item and kept the Container
 // elements as siblings — so we render the corrected content directly and DON'T add our own
@@ -225,7 +247,7 @@ if ( ! empty( $section_extra_classes ) ) {
 <?php if ( $has_inner_containers ) : // content is already a set of .fw-container[-fluid] sibling bands ?>
 	<?php echo do_shortcode( $content ); ?>
 <?php else : ?>
-	<div class="<?php echo esc_attr( $container_class ); ?>">
+	<div class="<?php echo esc_attr( $container_class ); ?>"<?php echo $container_style !== '' ? ' style="' . esc_attr( $container_style ) . '"' : ''; ?>>
 		<?php echo do_shortcode( $content ); ?>
 	</div>
 <?php endif; ?>

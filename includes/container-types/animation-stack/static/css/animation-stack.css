@@ -87,7 +87,13 @@
 .upw-anim-search:focus { border-color: #2f74e6 !important; box-shadow: 0 0 0 2px rgba(47,116,230,.15) !important; }
 
 /* tabs */
-.upw-anim-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.upw-anim-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+
+/* Active group's behavior description (updated by animation-stack.js on tab switch). */
+.upw-anim-cat-desc {
+	margin: 0 0 14px; padding: 0 2px;
+	font-size: 12px; line-height: 1.5; color: #6b7a8d;
+}
 .upw-anim-tab {
 	padding: 5px 12px;
 	border: 1px solid #dbe1ea; border-radius: 999px;
@@ -135,9 +141,3 @@
  * light divider so it reads as part of that animation's settings, not a separate control. */
 .upw-anim-card-extra { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e6e9ee; }
 .upw-anim-card-extra > .fw-backend-option:last-child { margin-bottom: 0; }
-
-/* Lazy card load: a placeholder body while its options are fetched (see animation-stack.js). */
-.upw-anim-card-loading .upw-anim-card-body { min-height: 46px; opacity: .55; }
-.upw-anim-card-loading .upw-anim-card-body::after {
-	content: "Loading…"; display: block; padding: 14px 12px; color: #6b7a8d; font-size: 12px;
-}

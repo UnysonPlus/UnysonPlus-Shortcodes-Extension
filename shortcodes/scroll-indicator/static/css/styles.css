@@ -1,0 +1,48 @@
+/* Scroll Indicator — a hero "scroll to descend" cue: a small label + an animated
+   chevron that smooth-scrolls to the next section. */
+.sc-scroll-cue {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.5rem;
+	text-decoration: none;
+	color: inherit;
+	cursor: pointer;
+	line-height: 1;
+}
+.sc-scroll-cue--stacked         { flex-direction: column; }
+.sc-scroll-cue--stacked-reverse { flex-direction: column-reverse; }
+.sc-scroll-cue--inline          { flex-direction: row; gap: 0.6rem; }
+.sc-scroll-cue--icon-only .sc-scroll-cue__label { display: none; }
+
+.sc-scroll-cue__label {
+	font-size: 0.625rem;
+	text-transform: uppercase;
+	letter-spacing: 0.15em;
+	line-height: 1;
+}
+.sc-scroll-cue__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.25rem; /* default; overridden by the Icon Size option (inline font-size) */
+	line-height: 1;
+}
+.sc-scroll-cue__icon svg { width: 1em; height: 1em; }
+
+/* Animations (on the icon, so the label stays put). */
+.sc-scroll-cue--anim-bounce .sc-scroll-cue__icon { animation: sc-scroll-bounce 1.6s ease-in-out infinite; }
+@keyframes sc-scroll-bounce {
+	0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+	40% { transform: translateY(6px); }
+	60% { transform: translateY(3px); }
+}
+.sc-scroll-cue--anim-pulse .sc-scroll-cue__icon { animation: sc-scroll-pulse 1.8s ease-in-out infinite; }
+@keyframes sc-scroll-pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+.sc-scroll-cue--anim-nudge .sc-scroll-cue__icon { animation: sc-scroll-nudge 1.4s ease-in-out infinite; }
+@keyframes sc-scroll-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+@media (prefers-reduced-motion: reduce) {
+	.sc-scroll-cue__icon { animation: none !important; }
+}

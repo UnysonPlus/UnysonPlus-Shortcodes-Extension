@@ -224,10 +224,44 @@ function sc_get_animation_fields() {
     // The settings panel revealed once any effect (≠ None) is chosen. Built ONCE and mapped
     // onto every effect key below, so switching effects keeps the same panel — and, like
     // Scroll Motion, each effect remembers its own tweaks (they store under the effect key).
+    // Trigger — decouples WHEN the effect plays from the effect itself (the "unified trigger"
+    // control, mirroring Confetti). MULTI-SELECT: toggle any combination of tiles, so one animation
+    // can fire on several events — e.g. reveal on "Scroll into view" AND replay on "Click". The
+    // entrance triggers (view / load) hide the element until first play; the interaction triggers
+    // (click / hover) leave it visible and replay on each event. If view + load are both on, load
+    // wins (it fires immediately). Value is an ARRAY of the selected keys; a legacy scalar 'view'
+    // save is tolerated (the image-picker renders it as nothing-selected and the reader falls back
+    // to 'view'). Tiles live in static/img/triggers/<key>.svg.
+    $trig_ext  = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
+    $trig_base = $trig_ext ? $trig_ext->get_declared_URI( '/static/img/triggers' ) : '';
+    $trig_tile = function ( $key, $label ) use ( $trig_base ) {
+        return [
+            'small' => [ 'src' => $trig_base . '/' . $key . '.svg', 'height' => 30, 'title' => $label ],
+            'label' => $label,
+        ];
+    };
+    $trigger_field = [
+        'label'      => __( 'Trigger', 'fw' ),
+        'desc'       => __( 'When the animation plays — pick one or more. “Scroll into view” and “Page load” are entrances (the element is hidden until it plays); “Click” and “Hover” keep it visible and replay on each event. Combine them, e.g. reveal on scroll and replay on click.', 'fw' ),
+        'type'       => 'image-picker',
+        'multiple'   => true,
+        'show_label' => false,
+        'value'      => [ 'view' ],
+        // Labels are hidden by default and reveal as a tooltip on hover (see animation-stack.css),
+        // so the tiles stay a uniform icon-only row while keeping descriptive names.
+        'choices'    => [
+            'view'  => $trig_tile( 'view',  __( 'Scroll into view', 'fw' ) ),
+            'load'  => $trig_tile( 'load',  __( 'Page load', 'fw' ) ),
+            'click' => $trig_tile( 'click', __( 'Click', 'fw' ) ),
+            'hover' => $trig_tile( 'hover', __( 'Hover', 'fw' ) ),
+        ],
+    ];
+
     $reveal_group = [
         'group_animation_basic' => [
             'type'    => 'group',
             'options' => [
+                'trigger'      => $trigger_field,
                 'speed_preset' => $speed_preset_field,
             ],
         ],
@@ -243,15 +277,11 @@ function sc_get_animation_fields() {
         ],
     ];
 
-    // Reveal choices map the settings panel onto every real effect ("None" reveals nothing =
-    // the off state, no separate switch).
+    // The picker itself reveals NOTHING per-effect. Mapping the identical $reveal_group onto all
+    // ~56 effect keys made the multi-picker render that panel 56 times (~7MB of options HTML, even
+    // with the lazy data-options-template path). Instead the settings render ONCE as a shared
+    // `animation_settings` panel attached inside the card (see below). 'none' = the off state.
     $reveal_choices = [ 'none' => [] ];
-    foreach ( $effect_choices as $optgroup ) {
-        if ( empty( $optgroup['choices'] ) || ! is_array( $optgroup['choices'] ) ) { continue; }
-        foreach ( $optgroup['choices'] as $effect_key => $effect_label ) {
-            $reveal_choices[ $effect_key ] = $reveal_group;
-        }
-    }
 
     // Picker tiles — an animated-SVG image grid (each effect is a moving box previewing the
     // motion, with its name baked in), shown in a popover. Tiles live in the shortcodes ext
@@ -310,6 +340,20 @@ function sc_get_animation_fields() {
             ],
             'choices' => $reveal_choices,
         ],
+        // The Entrance settings (Trigger / Speed / Advanced Tweaks) rendered ONCE — a single shared
+        // panel, NOT duplicated per effect. `anim_attach => 'animation'` makes the animation-stack
+        // container render it INSIDE the Entrance card (below the effect picker), so it shows/hides
+        // with the card. Value is a `multi`, so it saves under its own fixed key `animation_settings`
+        // (no per-effect key). This is the whole point of the dedup: ~125KB instead of ~7MB. The
+        // trade-off is that the tweaks are shared across effects (no per-effect memory). The wrapper
+        // reader falls back to the legacy per-effect location for pre-dedup saves.
+        'animation_settings' => [
+            'type'          => 'multi',
+            'label'         => false,
+            'desc'          => false,
+            'anim_attach'   => 'animation',
+            'inner-options' => $reveal_group,
+        ],
     ];
 
     // Append the GSAP "Scroll Motion" block (separate engine, separate saved
@@ -349,8 +393,12 @@ function sc_get_animation_fields() {
      * instance saves under its own key (the fields must exist in the declared options for their
      * values to persist; the container just shows/hides them as cards). Every slot is a deep copy
      * tagged with its base id + index so the container groups them under one inserter tile.
+     *
+     * Slots are capped at 2 (was 4): each pre-declared slot renders its FULL picker eagerly even
+     * when inactive, so a 43-choice module like Hover cost ~0.7MB PER slot (~2.75MB for 4). Two
+     * instances covers the realistic case (e.g. Hover Lift + Ripple) at half the modal weight.
      */
-    $fields = sc_expand_multi_animation_fields( $fields, 4 );
+    $fields = sc_expand_multi_animation_fields( $fields, 2 );
 
     /**
      * Wrap every module field in the `animation-stack` container — the Animations-tab organizer
@@ -413,50 +461,6 @@ add_action( 'fw_container_types_init', function () {
 } );
 
 /**
- * Lazy-load endpoint for ONE animation card's options. The animation-stack container renders
- * inactive cards (unused modules + the pre-declared Hover/Text slots) as light placeholders; when
- * the user clicks a tile to add that animation, animation-stack.js fetches its options here and
- * injects them. This is what keeps a fresh element's Animations modal small (~<1MB vs ~8.8MB) and
- * off the 512MB OOM. Renders the requested field (+ any anim_attach extras) at DEFAULT values —
- * a just-added animation always starts fresh; existing (active) animations still render eagerly.
- */
-add_action( 'wp_ajax_upw_anim_render_card', 'sc_ajax_render_animation_card' );
-if ( ! function_exists( 'sc_ajax_render_animation_card' ) ) :
-function sc_ajax_render_animation_card() {
-    if ( ! current_user_can( 'edit_posts' ) ) { wp_send_json_error(); }
-    check_ajax_referer( 'upw_anim_card', 'nonce' );
-
-    $slot = isset( $_POST['slot'] ) ? sanitize_text_field( wp_unslash( $_POST['slot'] ) ) : '';
-    if ( $slot === '' || ! function_exists( 'sc_get_animation_fields' ) || ! function_exists( 'fw' ) ) {
-        wp_send_json_error();
-    }
-
-    $stack  = sc_get_animation_fields();
-    $fields = ( isset( $stack['animation_stack']['options'] ) && is_array( $stack['animation_stack']['options'] ) )
-        ? $stack['animation_stack']['options'] : array();
-    if ( ! isset( $fields[ $slot ] ) || ! is_array( $fields[ $slot ] ) ) {
-        wp_send_json_error();
-    }
-
-    $html = fw()->backend->render_options( array( $slot => $fields[ $slot ] ), array() );
-
-    // Attached extras (e.g. the Entrance Easing) that live inside this card.
-    $extra = '';
-    foreach ( $fields as $fid => $f ) {
-        if ( is_array( $f ) && ! empty( $f['anim_attach'] ) && (string) $f['anim_attach'] === $slot ) {
-            $clean = $f;
-            unset( $clean['anim_attach'] );
-            $extra .= fw()->backend->render_options( array( $fid => $clean ), array() );
-        }
-    }
-    if ( $extra !== '' ) { $html .= '<div class="upw-anim-card-extra">' . $extra . '</div>'; }
-
-    wp_send_json_success( array( 'html' => $html ) );
-}
-endif;
-
-
-/**
  * Marks/queries a per-request flag that says "at least one animated shortcode
  * has rendered on this page". Used to gate the wp_footer enqueue.
  */
@@ -500,7 +504,13 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
         return $attr;
     }
 
-    $settings = ( isset( $anim[ $effect ] ) && is_array( $anim[ $effect ] ) ) ? $anim[ $effect ] : [];
+    // Settings now live in the shared `animation_settings` panel (one panel for all effects).
+    // Fall back to the legacy per-effect location ( animation[<effect>] ) for pre-dedup saves so
+    // existing elements keep animating with their saved tweaks until re-saved.
+    $settings = ( isset( $atts['animation_settings'] ) && is_array( $atts['animation_settings'] ) ) ? $atts['animation_settings'] : [];
+    if ( empty( $settings ) && isset( $anim[ $effect ] ) && is_array( $anim[ $effect ] ) ) {
+        $settings = $anim[ $effect ];
+    }
 
     $speed_preset = isset( $settings['speed_preset'] ) ? (string) $settings['speed_preset'] : '';
     if ( $speed_preset && ! preg_match( '/^animate__[a-zA-Z]+$/', $speed_preset ) ) {
@@ -526,12 +536,30 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     $anim_classes = array_map( 'sanitize_html_class', $anim_classes );
     $data_anim    = implode( ' ', $anim_classes );
 
-    // Mark the element as "waiting to animate". CSS hides it until JS adds the classes.
-    $existing_class = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
-    $attr['class']  = esc_attr( $existing_class === '' ? 'sc-anim-pending' : $existing_class . ' sc-anim-pending' );
+    // Trigger(s): a MULTI-SELECT of view | load | click | hover (value is an array). Tolerate the
+    // legacy scalar save (a single string) and an empty/absent value → default to 'view'. For
+    // click/hover the element must stay visible and interactive, so it is NOT hidden until play;
+    // view/load keep the hide-until-play. If ANY of view/load is on, the element hides until play.
+    $raw_trigger = isset( $settings['trigger'] ) ? $settings['trigger'] : array( 'view' );
+    $triggers    = is_array( $raw_trigger ) ? $raw_trigger : ( $raw_trigger === '' ? array() : array( (string) $raw_trigger ) );
+    $triggers    = array_values( array_intersect( array_map( 'strval', $triggers ), array( 'view', 'load', 'click', 'hover' ) ) );
+    if ( empty( $triggers ) ) { $triggers = array( 'view' ); }
+    $hide_until_play = in_array( 'view', $triggers, true ) || in_array( 'load', $triggers, true );
+
+    if ( $hide_until_play ) {
+        // Mark the element as "waiting to animate". CSS hides it until JS adds the classes.
+        $existing_class = isset( $attr['class'] ) ? trim( (string) $attr['class'] ) : '';
+        $attr['class']  = esc_attr( $existing_class === '' ? 'sc-anim-pending' : $existing_class . ' sc-anim-pending' );
+    }
 
     $attr['data-sc-anim'] = esc_attr( $data_anim );
-    if ( $replay ) {
+    // Emit the space-joined trigger list. Omit for the plain default (['view']) to keep markup lean
+    // and backward-compatible (sc-animations.js treats a missing attr as 'view').
+    if ( $triggers !== array( 'view' ) ) {
+        $attr['data-sc-anim-trigger'] = esc_attr( implode( ' ', $triggers ) );
+    }
+    // Replay-on-scroll applies to the view trigger; click/hover naturally re-fire per event.
+    if ( $replay && in_array( 'view', $triggers, true ) ) {
         $attr['data-sc-anim-replay'] = '1';
     }
 

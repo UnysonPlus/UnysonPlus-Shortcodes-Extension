@@ -46,16 +46,10 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 		if ( ! $ext ) { return; }
 
 		$base = $ext->get_declared_URI( '/includes/container-types/animation-stack/static' );
-		$ver  = '1.0.3';
+		$ver  = '1.0.14';
 
 		wp_enqueue_style( 'upw-anim-stack', $base . '/css/animation-stack.css', array(), $ver );
 		wp_enqueue_script( 'upw-anim-stack', $base . '/js/animation-stack.js', array( 'jquery' ), $ver, true );
-		// Lazy-load endpoint for an inactive card's options (see the AJAX handler in
-		// shortcode-animation-helper.php). Cuts a fresh element's Animations modal from ~8.8MB to <1MB.
-		wp_localize_script( 'upw-anim-stack', 'upwAnimStack', array(
-			'ajaxurl' => admin_url( 'admin-ajax.php' ),
-			'nonce'   => wp_create_nonce( 'upw_anim_card' ),
-		) );
 	}
 
 	protected function _render( $containers, $values, $data ) {
@@ -70,10 +64,8 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			$catalog_seen  = array();
 			$any_active    = false;
 
-			// PASS 1 — classify each card as active/inactive by its saved picker value. Rendering the
-			// full per-effect reveals for EVERY card (incl. the 4 pre-declared Hover slots etc.) is
-			// what OOMs the builder, so only ACTIVE cards render their options eagerly; inactive cards
-			// ship as a light placeholder and lazy-load their options over AJAX when "added".
+			// PASS 1 — classify each card as active/inactive by its saved picker value. Active cards
+			// show; inactive ones render the same but carry an `is-hidden` class until "added".
 			$active_map = array();
 			foreach ( $inner as $fid => $field ) {
 				if ( ! is_array( $field ) || ! empty( $field['anim_attach'] ) ) { continue; }
@@ -86,8 +78,7 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			}
 
 			// Fields that ATTACH INTO a card ( 'anim_attach' => '<card field id>' ) render INSIDE that
-			// card's box instead of always-on in passthrough — so they show/hide with the card. Only
-			// render them for ACTIVE targets; an inactive target's extras arrive with its lazy load.
+			// card's box instead of always-on in passthrough — so they show/hide with the card.
 			$attached = array();
 			foreach ( $inner as $fid => $field ) {
 				if ( is_array( $field ) && ! empty( $field['anim_attach'] ) ) {
@@ -101,7 +92,7 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 
 			foreach ( $inner as $fid => $field ) {
 				if ( is_array( $field ) && ! empty( $field['anim_attach'] ) ) {
-					continue; // rendered inside its target card above (active), or lazy-loaded (inactive)
+					continue; // rendered inside its target card above
 				}
 
 				$is_card = is_array( $field )
@@ -145,7 +136,6 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 
 				$cards .= '<div class="upw-anim-card' . ( $active ? '' : ' is-hidden' ) . '"'
 					. ' data-anim-id="' . esc_attr( $base ) . '"'
-					. ' data-anim-slot="' . esc_attr( $fid ) . '"'
 					. ' data-anim-picker="' . esc_attr( $picker_id ) . '"'
 					. ' data-anim-off="' . esc_attr( $off_val ) . '">'
 					. '<button type="button" class="upw-anim-card-remove" aria-label="' . esc_attr__( 'Remove animation', 'fw' ) . '" title="' . esc_attr__( 'Remove animation', 'fw' ) . '">&times;</button>'
@@ -199,9 +189,23 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			if ( ! in_array( $it['cat'], $cats, true ) ) { $cats[] = $it['cat']; }
 		}
 
-		$tabs = '<button type="button" class="upw-anim-tab is-on" data-cat="all">' . esc_html__( 'All', 'fw' ) . '</button>';
+		// Each group answers a different "when/how does it run?" question — spell that out so the
+		// four groups read as a deliberate taxonomy, not an arbitrary split (this is why Entrance
+		// shows event triggers while Interaction/Scroll don't). Shown under the tabs, per active tab.
+		$cat_desc = array(
+			'all'         => __( 'Browse every animation, or filter by how it runs.', 'fw' ),
+			'Entrance'    => __( 'Plays once on an event you pick — scroll into view, page load, click or hover.', 'fw' ),
+			'Scroll'      => __( 'Driven by scroll position — progress is tied to the scrollbar as the reader scrolls.', 'fw' ),
+			'Interaction' => __( 'Responds to the pointer — active while hovering, dragging or pressing, then reverts.', 'fw' ),
+			'Ambient'     => __( 'Always running — a continuous, decorative flourish with no trigger.', 'fw' ),
+		);
+		$desc_attr = function ( $key ) use ( $cat_desc ) {
+			return isset( $cat_desc[ $key ] ) ? ' data-desc="' . esc_attr( $cat_desc[ $key ] ) . '"' : '';
+		};
+
+		$tabs = '<button type="button" class="upw-anim-tab is-on" data-cat="all"' . $desc_attr( 'all' ) . '>' . esc_html__( 'All', 'fw' ) . '</button>';
 		foreach ( $cats as $c ) {
-			$tabs .= '<button type="button" class="upw-anim-tab" data-cat="' . esc_attr( $c ) . '">' . esc_html( $c ) . '</button>';
+			$tabs .= '<button type="button" class="upw-anim-tab" data-cat="' . esc_attr( $c ) . '"' . $desc_attr( $c ) . '>' . esc_html( $c ) . '</button>';
 		}
 
 		$tiles = '';
@@ -222,6 +226,7 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			. '<div class="upw-anim-catalog" hidden>'
 			.     '<input type="search" class="upw-anim-search" placeholder="' . esc_attr__( 'Search effects…', 'fw' ) . '" autocomplete="off">'
 			.     '<div class="upw-anim-tabs">' . $tabs . '</div>'
+			.     '<div class="upw-anim-cat-desc">' . esc_html( $cat_desc['all'] ) . '</div>'
 			.     '<div class="upw-anim-tiles">' . $tiles . '</div>'
 			.     '<div class="upw-anim-tiles-empty is-hidden">' . esc_html__( 'All animations added.', 'fw' ) . '</div>'
 			. '</div>'
@@ -296,17 +301,24 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 		return '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $inner . '</svg>';
 	}
 
-	/** id → category fallback for module fields that haven't declared `anim_meta` yet. */
+	/**
+	 * id → category fallback for module fields that haven't declared `anim_meta` yet.
+	 * Four behavioral groups (see anim_meta across the modules): Entrance (one-shot, trigger-
+	 * driven), Scroll (progress tied to scroll position), Interaction (responds to the pointer),
+	 * Ambient (always-on / decorative flourishes).
+	 */
 	private function fallback_category( $fid ) {
 		$map = array(
 			'animation'    => 'Entrance',
+			'text_effect'  => 'Entrance',
 			'gsap_motion'  => 'Scroll',
 			'scroll_loop'  => 'Scroll',
 			'parallax'     => 'Scroll',
-			'interaction'  => 'Pointer',
-			'physics'      => 'Physics',
-			'marquee'      => 'Motion',
-			'text_effect'  => 'Text',
+			'interaction'  => 'Interaction',
+			'physics'      => 'Interaction',
+			'flip_card'    => 'Interaction',
+			'marquee'      => 'Ambient',
+			'confetti'     => 'Ambient',
 		);
 		return isset( $map[ $fid ] ) ? $map[ $fid ] : __( 'Other', 'fw' );
 	}

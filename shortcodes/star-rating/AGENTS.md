@@ -8,15 +8,18 @@ provides: leaf-shortcode
 # Star Rating
 
 A rating display with partial (half / decimal) fill — stars, hearts, circles or a
-bar — plus an optional label, value and count text. **Content Elements** tab.
+bar — plus an optional label, value and count text. **Components** tab.
 
 ## Options (atts)
 - **Content**: `rating` (slider 0–10 step 0.5; clamped to `max`), `max` (`5`/`10`), `label`,
   `show_value` (switch → "4.5/5"), `count_text`.
-- **Design**: `design` symbol (`star|heart|circle|bar`), `size` (sm/md/lg/xl →
+- **Design**: `design` symbol (`star|heart|circle|bar`), `size` (xs/sm/md/lg/xl →
   `--sr-size`), `align`.
-- **Styling**: `fill_color`/`empty_color`/`text_color` (custom hex → `--sr-fill`
-  / `--sr-empty` / `--sr-text`), `font_size_preset`, `spacing`.
+- **Styling**: `fill_color`/`empty_color`/`text_color` — compact color-preset pickers
+  (`sc_color_field_compact`; `fill_color`/`empty_color` are `kind=bg`, `text_color` is
+  `kind=text`), saved as `{predefined, custom}`. `view.php` applies **only** the `custom`
+  hex → `--sr-fill` / `--sr-empty` / `--sr-text` (the preset choice is not consumed). Plus
+  `font_size_preset` (`sc_font_size_field()`) and `spacing`.
 
 ## Rendering
 `view.php` (`sc_sr_render`) outputs `.fw-sr[role=img,aria-label]`. For symbol

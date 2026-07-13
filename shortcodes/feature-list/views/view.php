@@ -65,6 +65,15 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 		$style_var .= $var( 'marker_color', '--fl-marker' );
 		$style_var .= $var( 'text_color', '--fl-text' );
 		$style_var .= $var( 'sub_color', '--fl-sub' );
+		// Icon Size — a unit-input compiled to a CSS length driving --fl-marker-size (the
+		// marker svg/img read it for width+height; unset falls back to the 1.25em default).
+		$msz = sc_get( 'marker_size', $atts, '' );
+		if ( is_array( $msz ) && isset( $msz['value'] ) && trim( (string) $msz['value'] ) !== '' ) {
+			$mlen = class_exists( 'FW_Option_Type_Unit_Input' )
+				? FW_Option_Type_Unit_Input::to_string( $msz )
+				: ( trim( (string) $msz['value'] ) . ( isset( $msz['unit'] ) ? preg_replace( '/[^a-z%]/', '', (string) $msz['unit'] ) : 'px' ) );
+			if ( $mlen !== '' ) { $style_var .= '--fl-marker-size:' . $mlen . ';'; }
+		}
 
 		$classes = array(
 			'fw-fl',

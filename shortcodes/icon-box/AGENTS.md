@@ -32,8 +32,8 @@ Wrapped in `group_content` (flattens).
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
-| `icon` | `icon-v2` (modal: medium) | — | Library icon. **Ignored if `custom_icon` below is filled** |
-| `custom_icon` | `text` | — | Emoji (e.g. ⭐) or inline SVG markup. Overrides the `icon` picker |
+| `icon` | `icon-v2` (modal: medium) | — | Font icon / Lucide SVG / emoji / pasted-or-uploaded SVG — all from one picker. **Takes precedence over the legacy `custom_icon`** |
+| `custom_icon` | `hidden` (retired) | — | Legacy emoji / inline-SVG field, now hidden. Only rendered as a **fallback** when `icon` is empty, so pre-picker saves still show. Not editable in the UI |
 | `title` | `text` | — | Headline |
 | `title_tag` | `select` (`h3` / `h4` / `h5` / `h6` / `span` / `p`) | `h3` | Semantic tag for the title |
 | `content` | `wp-editor` (225px) | — | Body content — rich text |
@@ -93,8 +93,9 @@ Non-obvious serialized shapes (the table values above are correct; these are how
 encode on the wire):
 
 - **`icon` is an object, never a string** — even when unused it serializes as the
-  `icon-v2` empty shape `{"type":"none"}`. When `custom_icon` is filled (inline SVG with
-  its quotes backslash-escaped, or an emoji) the `icon` object is ignored (Pitfall 1).
+  `icon-v2` empty shape `{"type":"none"}`. A set `icon` renders and the legacy `custom_icon`
+  is ignored; here `icon` is the empty `{"type":"none"}`, so the `custom_icon` fallback
+  (inline SVG with its quotes backslash-escaped, or an emoji) is what renders (Pitfall 1).
 - **`mobile_stack` and `link_target` are real JSON booleans** (`true` / `false`) — *not*
   the `"yes"`/`"no"` strings most other switches use. Emit booleans for these two.
 - `icon_color.predefined` carries a `text-{slug}` preset class (`text-white` /
@@ -105,11 +106,15 @@ encode on the wire):
 
 ## Rendering
 
-`views/view.php` (refer to file) composes a wrapper with classes from
-`style` (`icon-box--top-title` etc.), `icon_badge` (badge shape class),
-alignment utilities, and a `pb-icon-box-link` class when `box_link` is
-set. When `box_link` is set, the wrapper becomes an `<a>` with `href` and
-optional `target` / `rel`.
+`views/view.php` (refer to file) composes a `<div class="icon-box__wrapper
+icon-box--style-{style}">` wrapper, adding `icon-box--mobile-stack`,
+`icon-box--linked` (when `box_link` set), `icon-box--no-content`, and
+`icon-box--no-icon` as applicable. The badge shape class lives on the icon
+`<span>` (`icon-box__icon--has-badge icon-box__icon--badge-{shape}`), and the
+per-element alignment (`text-*`) / color classes go on the title / content /
+icon nodes — not the wrapper. When `box_link` is set the wrapper stays a
+`<div>` and an inner `<a class="icon-box__link">` wraps the box contents
+(href + optional `target="_blank"` / `rel`, plus an `aria-label`).
 
 Layout strategy is mostly CSS (flexbox direction switches), so generators
 don't need to think about DOM structure changes per `style` — they just
@@ -117,10 +122,12 @@ emit the att.
 
 ## Pitfalls
 
-1. **`custom_icon` overrides `icon`** — if both are set, the `icon`
-   picker is silently ignored. Generators producing icon-box payloads
-   should pick ONE source. Use `custom_icon` for emoji + inline SVG;
-   `icon` for font-icon libraries.
+1. **`icon` now wins; `custom_icon` is a hidden legacy fallback** — the
+   unified `icon-v2` picker covers font / Lucide SVG / emoji / uploaded-or-
+   pasted SVG, so the separate `custom_icon` field was retired to a `hidden`
+   option. The view renders the picked `icon` first and only falls back to
+   `custom_icon` when `icon` is empty (preserving pre-picker saves).
+   Generators should emit `icon`; treat `custom_icon` as read-only legacy data.
 2. **`icon_align` only applies to certain `style` values** — `top-title`
    and `between-title-content` honor it; `inline-*` and `stack-*` ignore
    it (flexbox positions the icon by direction). Set both freely; the
@@ -149,14 +156,16 @@ emit the att.
    uses the same color value).
 6. Set `box_link: https://example.com` → entire box becomes clickable;
    verify external link in new tab if `link_target: true`.
-7. Set `custom_icon: 🚀` while `icon` is also set → reload → emoji
-   renders, icon picker is ignored.
+7. On a pre-picker box that still holds a `custom_icon` value, leave `icon`
+   empty → reload → the legacy `custom_icon` renders as a fallback; then set
+   the `icon` picker → the picked icon takes over.
 
 ## Files
 
 - `config.php`, `options.php`, `static.php`, `views/view.php`
 - `static/css/styles.css` (via static.php) — layout + badge shape CSS
+- `static/img/layout/*.svg` — icon-position swatches for the `style` image-picker
 - `static/img/badge/*.svg` — badge shape thumbnails for the image-picker
-- `static/img/page_builder.png` — Layout Elements thumbnail
+- `static/img/page_builder.svg` — Layout Elements thumbnail
 
 No JS, no item class — leaf layout.
