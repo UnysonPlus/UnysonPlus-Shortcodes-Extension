@@ -110,9 +110,24 @@ if ( ! function_exists( 'sc_posts_normalize_atts' ) ) {
         $atts['card_style'] = $style;
 
         /* Grid/Masonry sub-options live under design/<mode>/. */
-        $atts['columns_desktop']    = sc_posts_dp( $atts, "design/$mode/columns_desktop", 'columns_desktop', '3' );
-        $atts['columns_tablet']     = sc_posts_dp( $atts, "design/$mode/columns_tablet",  'columns_tablet',  '2' );
-        $atts['columns_mobile']     = sc_posts_dp( $atts, "design/$mode/columns_mobile",  'columns_mobile',  '1' );
+        /* Merged "Columns" control (mirrors the gallery Grid design): the builder
+           exposes only the DESKTOP count; tablet & phone auto-derive. Grid stores a
+           multi-picker { count:'N', 'N':{ col_ratio:[…] } }; Masonry (and legacy)
+           store a scalar count. col_ratio (grid split-slider) → per-column widths. */
+        $cols_raw  = sc_posts_dp( $atts, "design/$mode/columns", 'columns_desktop', '3' );
+        $col_ratio = array();
+        if ( is_array( $cols_raw ) ) {
+            $count  = isset( $cols_raw['count'] ) ? max( 1, (int) $cols_raw['count'] ) : 3;
+            $reveal = ( isset( $cols_raw[ (string) $count ] ) && is_array( $cols_raw[ (string) $count ] ) ) ? $cols_raw[ (string) $count ] : array();
+            if ( isset( $reveal['col_ratio'] ) && is_array( $reveal['col_ratio'] ) ) { $col_ratio = $reveal['col_ratio']; }
+        } else {
+            $count = ( $cols_raw !== null && $cols_raw !== '' ) ? max( 1, (int) $cols_raw ) : 3;
+        }
+        /* Tablet = min(N,2), or N-1 for 5+; phone = 1. */
+        $atts['columns_desktop'] = (string) $count;
+        $atts['columns_tablet']  = (string) ( $count >= 5 ? $count - 1 : min( $count, 2 ) );
+        $atts['columns_mobile']  = '1';
+        $atts['col_ratio']       = $col_ratio;
         $atts['column_gap']         = sc_posts_dp( $atts, "design/$mode/column_gap",       'column_gap',      '24' );
         $atts['row_gap']            = sc_posts_dp( $atts, "design/$mode/row_gap",          'row_gap',         '32' );
         $atts['equal_height']       = sc_posts_dp( $atts, "design/$mode/equal_height",     'equal_height',    'yes' );
@@ -664,6 +679,21 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
             '--posts-cols-d:%d;--posts-cols-t:%d;--posts-cols-m:%d;',
             $cols_d, $cols_t, $cols_m
         );
+        /* Column Ratio (grid split-slider) — per-column widths for a FEATURED /
+           dominant card. Emit an explicit desktop grid-template-columns
+           (--posts-grid-tpl, fr units) ONLY when the user made the columns
+           meaningfully UNEQUAL; an equal split falls back to the plain
+           repeat(--posts-cols-d) grid. Tablet/phone stay equal (media queries). */
+        $col_ratio = (array) sc_get( 'col_ratio', $atts, array() );
+        if ( count( $col_ratio ) >= 2 ) {
+            $ws = array();
+            foreach ( $col_ratio as $seg ) { $ws[] = ( is_array( $seg ) && isset( $seg['w'] ) ) ? max( 1, (float) $seg['w'] ) : 1; }
+            if ( ( max( $ws ) - min( $ws ) ) > 2 ) { // meaningfully unequal
+                $fr = array();
+                foreach ( $ws as $w ) { $fr[] = rtrim( rtrim( number_format( $w, 2, '.', '' ), '0' ), '.' ) . 'fr'; }
+                $style_var .= '--posts-grid-tpl:' . implode( ' ', $fr ) . ';';
+            }
+        }
         if ( $col_gap_size !== '' ) $style_var .= '--posts-col-gap:' . $col_gap_size . ';';
         if ( $row_gap_size !== '' ) $style_var .= '--posts-row-gap:' . $row_gap_size . ';';
         $attr['style'] = isset( $attr['style'] ) ? $attr['style'] . ';' . $style_var : $style_var;

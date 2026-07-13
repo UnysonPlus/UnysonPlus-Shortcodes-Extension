@@ -18,18 +18,18 @@
 // than a 12-cell strip). k/12 is reduced to lowest terms first. A white
 // background keeps it visible on the dark hover-preview tooltip; the fraction
 // stays as a label below. $mode: 'width' | 'offset' | 'auto' | 'default'.
-$col_bar_uri = function ( $cells_on, $mode, $label ) {
+// $num/$den = the LEFT (chosen) fraction, NOT necessarily lowest terms — the width
+// branch reduces it internally (gcd) so twelfths pass (i,12) and fifths pass (k,5) and
+// both draw a clean blue column + minimal gray remainder bars. $mode: 'width' | 'offset'
+// | 'auto' | 'default' ('auto'/'default' ignore $num/$den).
+$col_bar_uri = function ( $num, $den, $mode, $label ) {
     // Bars are drawn inside a 60-unit "track" (keeps every cell on a whole pixel)
     // with a uniform $pad of white margin on top + both sides, so the tile looks
     // like a centered card. Canvas width = track + 2*pad.
     $track = 60; $pad = 4; $W = $track + 2 * $pad;
     $gap = 2; $barH = 24; $H = $pad + $barH + 14;
     $blue = '#2271b1'; $gray = '#9b9b9b';
-    $reduce = array(
-        1 => array( 1, 12 ), 2 => array( 1, 6 ),  3 => array( 1, 4 ),  4 => array( 1, 3 ),
-        5 => array( 5, 12 ), 6 => array( 1, 2 ),  7 => array( 7, 12 ), 8 => array( 2, 3 ),
-        9 => array( 3, 4 ),  10 => array( 5, 6 ), 11 => array( 11, 12 ), 12 => array( 1, 1 ),
-    );
+    $den  = max( 1, (int) $den );
 
     // White backdrop so the tile is opaque on the dark hover tooltip.
     $rects = '<rect x="0" y="0" width="' . $W . '" height="' . $H . '" fill="#ffffff"/>';
@@ -39,11 +39,14 @@ $col_bar_uri = function ( $cells_on, $mode, $label ) {
         $rects .= '<rect x="' . $pad . '" y="' . $pad . '" width="' . $track . '" height="' . $barH . '" fill="' . $bg . '" shape-rendering="crispEdges"/>';
     } elseif ( $mode === 'offset' ) {
         // gap (gray) then the column (blue)
-        $b = (int) round( $cells_on / 12 * $track );
+        $b = (int) round( $num / $den * $track );
         $rects .= '<rect x="' . $pad . '" y="' . $pad . '" width="' . max( 1, $b - $gap ) . '" height="' . $barH . '" fill="' . $gray . '" shape-rendering="crispEdges"/>';
         $rects .= '<rect x="' . ( $pad + $b ) . '" y="' . $pad . '" width="' . ( $track - $b ) . '" height="' . $barH . '" fill="' . $blue . '" shape-rendering="crispEdges"/>';
-    } else { // width: blue column + gray remainder cells
-        list( $n, $d ) = isset( $reduce[ $cells_on ] ) ? $reduce[ $cells_on ] : array( $cells_on, 12 );
+    } else { // width: blue column + gray remainder cells (drawn in lowest terms)
+        $a = (int) $num; $bgcd = $den;
+        while ( $bgcd ) { $t = $bgcd; $bgcd = $a % $bgcd; $a = $t; }
+        $g = max( 1, $a );
+        $n = (int) ( $num / $g ); $d = (int) ( $den / $g );
         $fr = array( $n / $d );
         for ( $i = 0; $i < $d - $n; $i++ ) { $fr[] = 1 / $d; }
         $N = count( $fr ); $cum = 0; $prev = 0;
@@ -251,32 +254,50 @@ $frac12 = array(
     7 => '7/12', 8 => '2/3', 9 => '3/4', 10 => '5/6', 11 => '11/12', 12 => '1/1',
 );
 
-// Responsive width choices: Default + 1/12…1/1 (lowest-terms) + Auto (image-picker).
-// 45px thumbnails (1.5× the 30px base) so the bars read clearly.
-$width_choices = array( 'default' => $pick( $col_bar_uri( 0, 'default', __( 'Default', 'fw' ) ), __( 'Default', 'fw' ), 45 ) );
-for ( $i = 1; $i <= 12; $i++ ) {
-    $lbl = $frac12[ $i ];
-    $width_choices[ (string) $i ] = $pick( $col_bar_uri( $i, 'width', $lbl ), $lbl, 45 );
-}
-$width_choices['auto'] = $pick( $col_bar_uri( 0, 'auto', __( 'Auto', 'fw' ) ), __( 'Auto', 'fw' ), 45 );
+// Fifths — short labels ("1/5"…"4/5") to sit cleanly among the twelfths in this
+// compact picker (the base width control in the builder shows the "(20%)" form; here
+// the tiles stay short like their twelfth siblings). Keys are the {numerator}5
+// convention that view.php whitelists → fw-col-*-{15,25,35,45} / fw-offset-*-{…}.
+$frac5 = array( '15' => '1/5', '25' => '2/5', '35' => '3/5', '45' => '4/5' );
 
-// Offset choices: None + 1/12…11/12 (lowest-terms) (image-picker).
-$offset_choices = array( 'none' => $pick( $col_bar_uri( 0, 'default', __( 'None', 'fw' ) ), __( 'None', 'fw' ), 45 ) );
-for ( $i = 1; $i <= 11; $i++ ) {
-    $lbl = $frac12[ $i ];
-    $offset_choices[ (string) $i ] = $pick( $col_bar_uri( $i, 'offset', $lbl ), $lbl, 45 );
+// Ordered (by width %) pickable fractions: [ key, numerator, denominator ]. Mirrors
+// the builder's native grid.columns order (config.php) so the tiles read small→large,
+// with the fifths interleaved (1/5 after 1/6, 2/5 after 1/3, 3/5 after 7/12, 4/5 after 3/4).
+$col_order = array(
+    array( '1', 1, 12 ), array( '2', 2, 12 ), array( '15', 1, 5 ), array( '3', 3, 12 ),
+    array( '4', 4, 12 ), array( '25', 2, 5 ), array( '5', 5, 12 ), array( '6', 6, 12 ),
+    array( '7', 7, 12 ), array( '35', 3, 5 ), array( '8', 8, 12 ), array( '9', 9, 12 ),
+    array( '45', 4, 5 ), array( '10', 10, 12 ), array( '11', 11, 12 ), array( '12', 12, 12 ),
+);
+$col_label = function ( $key ) use ( $frac12, $frac5 ) {
+    return isset( $frac5[ $key ] ) ? $frac5[ $key ] : $frac12[ (int) $key ];
+};
+
+// Responsive width choices: Default + 1/12…1/1 + the fifths + Auto (image-picker).
+// 45px thumbnails (1.5× the 30px base) so the bars read clearly.
+$width_choices = array( 'default' => $pick( $col_bar_uri( 0, 1, 'default', __( 'Default', 'fw' ) ), __( 'Default', 'fw' ), 45 ) );
+foreach ( $col_order as $c ) {
+    list( $key, $n, $d ) = $c;
+    $lbl = $col_label( $key );
+    $width_choices[ $key ] = $pick( $col_bar_uri( $n, $d, 'width', $lbl ), $lbl, 45 );
+}
+$width_choices['auto'] = $pick( $col_bar_uri( 0, 1, 'auto', __( 'Auto', 'fw' ) ), __( 'Auto', 'fw' ), 45 );
+
+// Offset choices: None + every fraction EXCEPT 1/1 (a full-row offset leaves no room).
+$offset_choices = array( 'none' => $pick( $col_bar_uri( 0, 1, 'default', __( 'None', 'fw' ) ), __( 'None', 'fw' ), 45 ) );
+foreach ( $col_order as $c ) {
+    list( $key, $n, $d ) = $c;
+    if ( $key === '12' ) { continue; }
+    $lbl = $col_label( $key );
+    $offset_choices[ $key ] = $pick( $col_bar_uri( $n, $d, 'offset', $lbl ), $lbl, 45 );
 }
 
 // Trigger labels (value => label) for the popover-collapsed width/offset pickers —
-// same lowest-terms fractions as the tiles.
+// same fractions as the tiles.
 $width_summary = array( 'default' => __( 'Default', 'fw' ), 'auto' => __( 'Auto', 'fw' ) );
-for ( $i = 1; $i <= 12; $i++ ) {
-    $width_summary[ (string) $i ] = $frac12[ $i ];
-}
+foreach ( $col_order as $c ) { $width_summary[ $c[0] ] = $col_label( $c[0] ); }
 $offset_summary = array( 'none' => __( 'None', 'fw' ) );
-for ( $i = 1; $i <= 11; $i++ ) {
-    $offset_summary[ (string) $i ] = $frac12[ $i ];
-}
+foreach ( $col_order as $c ) { if ( $c[0] !== '12' ) { $offset_summary[ $c[0] ] = $col_label( $c[0] ); } }
 
 // Mobile Order stays a plain select (First/Last are textual).
 $order_choices = array(

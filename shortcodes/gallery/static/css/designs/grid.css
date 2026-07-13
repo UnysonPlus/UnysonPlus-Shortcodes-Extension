@@ -4,7 +4,9 @@
    --gal-ratio). */
 .fw-gallery.design-grid .fw-gallery__grid {
 	display: grid;
-	grid-template-columns: repeat(var(--gal-cols, 3), minmax(0, 1fr));
+	/* --gal-tpl = an explicit per-column ratio (e.g. `1fr 2fr 1fr` for a featured cell),
+	   set by the Column Ratio control; falls back to equal columns when unset. */
+	grid-template-columns: var(--gal-tpl, repeat(var(--gal-cols, 3), minmax(0, 1fr)));
 	gap: var(--gal-gap, 16px);
 }
 

@@ -6,6 +6,12 @@
 .heading h6 {
 	font-weight: bold;
 }
+h1.heading-title{font-weight:var(--h1-font-weight,revert)}
+h2.heading-title{font-weight:var(--h2-font-weight,revert)}
+h3.heading-title{font-weight:var(--h3-font-weight,revert)}
+h4.heading-title{font-weight:var(--h4-font-weight,revert)}
+h5.heading-title{font-weight:var(--h5-font-weight,revert)}
+h6.heading-title{font-weight:var(--h6-font-weight,revert)}
 .heading.heading-center {
 	text-align: center;
 }

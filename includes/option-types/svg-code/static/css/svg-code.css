@@ -1,0 +1,35 @@
+/* `svg-code` option type — backend UI. */
+.fw-svg-code { position: relative; }
+.fw-svg-code-head { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+.fw-svg-code-file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.fw-svg-code-input {
+	width: 100%;
+	font-family: Menlo, Consolas, Monaco, monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	resize: vertical;
+}
+.fw-svg-code.is-drag .fw-svg-code-input {
+	outline: 2px dashed #2f74e6;
+	outline-offset: -2px;
+	background: #f2f7ff;
+}
+/* Live preview */
+.fw-svg-code-preview {
+	display: none;
+	margin-top: 10px;
+	padding: 12px;
+	border: 1px solid #e2e5ea;
+	border-radius: 6px;
+	background:
+		linear-gradient(45deg, #f3f4f6 25%, transparent 25%, transparent 75%, #f3f4f6 75%) 0 0 / 16px 16px,
+		linear-gradient(45deg, #f3f4f6 25%, #fff 25%, #fff 75%, #f3f4f6 75%) 8px 8px / 16px 16px;
+	text-align: center;
+}
+.fw-svg-code-preview.has-svg { display: block; }
+.fw-svg-code-preview svg {
+	width: auto;
+	max-width: 100%;
+	max-height: 120px;
+	height: auto;
+}

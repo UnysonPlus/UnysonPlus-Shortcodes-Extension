@@ -132,12 +132,11 @@ body.rtl .pb-item-type-column > .panel .controls {
 	opacity: 0;
 }
 
-/* Hide Duplicate Button when 1/6 column & small screen */
-@media (max-width: 1824px) {
-	.builder-item.fw-col-sm-2 .pb-item-type-column.has-options .column-item-clone {
-		display: none;
-	}
-}
+/* The Duplicate button was previously hidden on narrow 1/6 (fw-col-sm-2) columns
+   to save room. It now stays visible so 1/5 and 1/6 columns display the COMPLETE
+   control panel — the responsive-collapse rules in the page-builder styles keep
+   every control icon (Settings / Duplicate / Delete / Collapse + ⋮ More) for
+   these two widths, so nothing is dropped. */
 
 /* Inner Items */
 .pb-item-type-column > .builder-items {

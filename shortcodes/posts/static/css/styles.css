@@ -46,7 +46,10 @@
    ========================================================================== */
 .posts__grid {
     display: grid;
-    grid-template-columns: repeat(var(--posts-cols-d), minmax(0, 1fr));
+    /* --posts-grid-tpl (fr units) is set only when the Column Ratio makes the
+       columns UNEQUAL (a featured/dominant card); otherwise fall back to equal
+       columns. Tablet/phone override this to equal columns in the media queries. */
+    grid-template-columns: var(--posts-grid-tpl, repeat(var(--posts-cols-d), minmax(0, 1fr)));
     column-gap: var(--posts-col-gap);
     row-gap: var(--posts-row-gap);
 }

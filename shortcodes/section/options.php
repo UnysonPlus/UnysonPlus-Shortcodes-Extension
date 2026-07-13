@@ -149,15 +149,20 @@ $options = [
 					'variant' => [
 						'type'    => 'select',
 						'label'   => __( 'Section Variant', 'fw' ),
-						'desc'    => __( 'Named visual preset for this section. Pairs with the Background control on the Styling tab — pick a variant for the overall theme, override the colour in Background if you want a one-off.', 'fw' ),
-						'help'    => __( 'Use "Alt" on every other section to create a subtle banded rhythm down the page. "Light"/"Dark" force a fixed scheme regardless of the theme\'s default.', 'fw' ),
+						'desc'    => __( 'A reusable Section Style (Theme Settings → Components → Section Styles). Pairs with the Background control on the Styling tab — pick a style for the overall look, override the colour in Background for a one-off. Add your own styles to extend this list.', 'fw' ),
+						'help'    => __( 'The built-in "Alt" gives a subtle banded rhythm; "Light"/"Dark" force a fixed scheme. Define more (branded bands, etc.) under Components → Section Styles and they appear here automatically.', 'fw' ),
 						'value'   => '',
-						'choices' => [
-							''      => __( 'Default', 'fw' ),
-							'alt'   => __( 'Alt (subtle off-white for alternating rhythm)', 'fw' ),
-							'light' => __( 'Light (force light bg + dark text)', 'fw' ),
-							'dark'  => __( 'Dark (force dark bg + light text)', 'fw' ),
-						],
+						// Choices come from the Section Styles preset library (slug => name),
+						// so user-defined styles appear here. Falls back to the three built-in
+						// slugs if the getter is unavailable (keeps existing saves valid).
+						'choices' => function_exists( 'unysonplus_section_style_choices' )
+							? unysonplus_section_style_choices()
+							: [
+								''      => __( 'Default', 'fw' ),
+								'alt'   => __( 'Alt', 'fw' ),
+								'light' => __( 'Light', 'fw' ),
+								'dark'  => __( 'Dark', 'fw' ),
+							],
 					],
 					'is_fullwidth' => [
 						'label' => __( 'Full Width', 'fw' ),
@@ -311,12 +316,14 @@ $options = [
 					'padding_top' => sc_spacing_field( [
 						'label'  => __( 'Top Spacing', 'fw' ),
 						'prefix' => 'pt',
-						'desc'   => __( 'Vertical breathing room above the section content.', 'fw' ),
+						'responsive' => true,
+						'desc'   => __( 'Vertical breathing room above the section content. Use the Phone / Tablet / Desktop tabs to set a different value per device (a blank device inherits the smaller one).', 'fw' ),
 					] ),
 					'padding_bottom' => sc_spacing_field( [
 						'label'  => __( 'Bottom Spacing', 'fw' ),
 						'prefix' => 'pb',
-						'desc'   => __( 'Vertical breathing room below the section content.', 'fw' ),
+						'responsive' => true,
+						'desc'   => __( 'Vertical breathing room below the section content. Use the Phone / Tablet / Desktop tabs to set a different value per device (a blank device inherits the smaller one).', 'fw' ),
 					] ),
 					// Column-gap overrides for this section's rows. Stored
 					// as scale slugs (e.g. "3"). The view emits matching
@@ -339,24 +346,30 @@ $options = [
 						],
 					],
 					'gap_x' => [
-						'type'    => 'short-select',
+						'type'    => 'responsive',
 						'label'   => __( 'Gap X (override)', 'fw' ),
-						'desc'    => __( 'Overrides Gap on the horizontal axis only. Leave at "Use Section Gap" to inherit.', 'fw' ),
+						'desc'    => __( 'Overrides Gap on the horizontal axis only, per device. Leave at "Use Section Gap" to inherit.', 'fw' ),
 						'help'    => __( 'Use this when you want wider/narrower space between columns side-to-side without changing the vertical gap. Only takes effect once Gap above is set.', 'fw' ),
-						'value'   => '',
-						'choices' => function_exists( 'sc_get_gap_select_choices' )
-							? sc_get_gap_select_choices( __( 'Use Section Gap', 'fw' ) )
-							: array( '' => __( 'Use Section Gap', 'fw' ) ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'short-select',
+							'choices' => function_exists( 'sc_get_gap_select_choices' )
+								? sc_get_gap_select_choices( __( 'Use Section Gap', 'fw' ) )
+								: array( '' => __( 'Use Section Gap', 'fw' ) ),
+						],
 					],
 					'gap_y' => [
-						'type'    => 'short-select',
+						'type'    => 'responsive',
 						'label'   => __( 'Gap Y (override)', 'fw' ),
-						'desc'    => __( 'Overrides Gap on the vertical axis only. Leave at "Use Section Gap" to inherit.', 'fw' ),
+						'desc'    => __( 'Overrides Gap on the vertical axis only, per device. Leave at "Use Section Gap" to inherit.', 'fw' ),
 						'help'    => __( 'Controls the vertical space between columns once they wrap onto new lines (e.g. on tablet/mobile). Only takes effect once Gap above is set.', 'fw' ),
-						'value'   => '',
-						'choices' => function_exists( 'sc_get_gap_select_choices' )
-							? sc_get_gap_select_choices( __( 'Use Section Gap', 'fw' ) )
-							: array( '' => __( 'Use Section Gap', 'fw' ) ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'short-select',
+							'choices' => function_exists( 'sc_get_gap_select_choices' )
+								? sc_get_gap_select_choices( __( 'Use Section Gap', 'fw' ) )
+								: array( '' => __( 'Use Section Gap', 'fw' ) ),
+						],
 					],
 				],
 			],

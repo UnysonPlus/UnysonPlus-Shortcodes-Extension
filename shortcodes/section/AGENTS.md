@@ -93,11 +93,11 @@ Wrapped in `group_colors` + `group_spacings` (both flatten on save).
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|
 | `bg_color` | `sc_color_field_compact` (kind: bg) | — | Preset background color from theme palette OR custom hex via inline picker. Layers over the legacy `background_color` on the Layout tab |
-| `padding_top` | `sc_spacing_field` (prefix: `pt`) | — | Vertical padding above section content |
-| `padding_bottom` | `sc_spacing_field` (prefix: `pb`) | — | Vertical padding below |
-| `gap` | `short-select` | `''` (use site default) | Override site-wide Default Gap for every Bootstrap row inside this section. Sets both horizontal + vertical gutter |
-| `gap_x` | `short-select` | `''` (inherit `gap`) | Horizontal-only gap override |
-| `gap_y` | `short-select` | `''` (inherit `gap`) | Vertical-only gap override |
+| `padding_top` | `sc_spacing_field` (prefix: `pt`, `responsive`) | `{base,md,lg}` | Vertical padding above section content — per-device (Phone/Tablet/Desktop). Legacy scalar folds into `base` |
+| `padding_bottom` | `sc_spacing_field` (prefix: `pb`, `responsive`) | `{base,md,lg}` | Vertical padding below — per-device. Legacy scalar folds into `base` |
+| `gap` | `responsive` | `{base,md,lg}` | Override site-wide Default Gap for every Bootstrap row inside this section. Sets both horizontal + vertical gutter, per-device |
+| `gap_x` | `responsive` | `{base,md,lg}` (inherit `gap`) | Horizontal-only gap override, per-device |
+| `gap_y` | `responsive` | `{base,md,lg}` (inherit `gap`) | Vertical-only gap override, per-device |
 
 ### Tabs: Animations + Advanced
 

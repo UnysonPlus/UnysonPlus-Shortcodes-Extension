@@ -6,6 +6,19 @@
 .heading h6 {
 	font-weight: bold;
 }
+/* "Title Display Size" (the display_size option) applies Bootstrap's .display-1..6,
+   which ALSO hardcode font-weight:300 — silently thinning the heading. A Display Size
+   is a SIZE control, so re-assert the heading's OWN weight at higher specificity than
+   Bootstrap's class (hN.heading-title = 0,1,1 > .display-N = 0,1,0). Uses the per-heading
+   weight token the theme emits (--h1-font-weight … --h6-font-weight); falls back to the
+   heading's natural (UA bold) weight under themes that don't set one. Element/preset
+   weight overrides still win via still-higher specificity. */
+h1.heading-title { font-weight: var(--h1-font-weight, revert); }
+h2.heading-title { font-weight: var(--h2-font-weight, revert); }
+h3.heading-title { font-weight: var(--h3-font-weight, revert); }
+h4.heading-title { font-weight: var(--h4-font-weight, revert); }
+h5.heading-title { font-weight: var(--h5-font-weight, revert); }
+h6.heading-title { font-weight: var(--h6-font-weight, revert); }
 .heading.heading-center {
 	text-align: center;
 }

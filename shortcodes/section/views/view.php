@@ -17,9 +17,19 @@ if ( ! function_exists( 'section_migrate_legacy_background' ) ) {
 $bg_video_data_attr    = array();
 $section_extra_classes = '';
 
-$variant = ( isset( $atts['variant'] ) && in_array( $atts['variant'], array( 'alt', 'light', 'dark' ), true ) )
-	? $atts['variant']
-	: '';
+// Section Variant = a Section Style preset slug. Any registered style is valid (not
+// just the three built-ins), so validate against the live slug map; fall back to the
+// built-in slugs if the preset system isn't loaded. Sanitized to a css-safe slug so a
+// stray value can't inject a class.
+$variant = isset( $atts['variant'] ) ? preg_replace( '/[^a-z0-9_-]/', '', strtolower( (string) $atts['variant'] ) ) : '';
+if ( $variant !== '' ) {
+	$valid_slugs = function_exists( 'unysonplus_section_style_preset_slug_map' )
+		? array_values( unysonplus_section_style_preset_slug_map() )
+		: array( 'alt', 'light', 'dark' );
+	if ( ! in_array( $variant, $valid_slugs, true ) ) {
+		$variant = '';
+	}
+}
 
 if ( $variant !== '' ) {
 	$section_extra_classes .= ' section--' . $variant;
@@ -36,12 +46,17 @@ foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infi
 	if ( $slug === '' ) { continue; }
 	$section_extra_classes .= ' section--gap' . $infix . '-' . strtolower( $slug );
 }
-// Gap X / Y single-value overrides (apply at all widths; only bite once Gap is set).
-foreach ( array( 'gap_x' => 'section--gap-x-', 'gap_y' => 'section--gap-y-' ) as $att_key => $class_prefix ) {
-	if ( empty( $atts[ $att_key ] ) ) { continue; }
-	$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $atts[ $att_key ] );
-	if ( $slug === '' ) { continue; }
-	$section_extra_classes .= ' ' . $class_prefix . strtolower( $slug );
+// Gap X / Y overrides — now per-device ( base, md, lg ), matching Gap. base applies at
+// all widths (section--gap-x-{slug}); md/lg add section--gap-{x|y}-{bp}-{slug} overrides
+// (css-tokens.php). A legacy scalar folds into base. Only bite once Gap is set.
+foreach ( array( 'gap_x' => 'section--gap-x', 'gap_y' => 'section--gap-y' ) as $att_key => $class_base ) {
+	$resp = fw_akg( $att_key, $atts, array() );
+	if ( ! is_array( $resp ) ) { $resp = array( 'base' => (string) $resp ); }
+	foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+		$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) ( isset( $resp[ $layer ] ) ? $resp[ $layer ] : '' ) );
+		if ( $slug === '' ) { continue; }
+		$section_extra_classes .= ' ' . $class_base . $infix . '-' . strtolower( $slug );
+	}
 }
 
 // --- Background (background-pro): new value, else migrated legacy atts. ---

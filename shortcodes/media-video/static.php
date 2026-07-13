@@ -1,8 +1,17 @@
 <?php if ( ! defined( 'FW' ) ) { die( 'Forbidden' ); }
 
-// Media Video has no stylesheet of its own — it only needs the `.ratio*`
-// aspect-ratio container and `.mx-auto` helper, which live in the builder's
-// frontend-grid sheet the plugin ships in place of Bootstrap.
+// The `.ratio*` aspect-ratio container + `.mx-auto` helper live in the builder's
+// frontend-grid sheet (shipped in place of Bootstrap).
 if ( ! is_admin() ) {
 	wp_enqueue_style( 'fw-ext-builder-frontend-grid' );
+
+	$uri = fw_get_framework_directory_uri( '/extensions/shortcodes/shortcodes/media-video/static' );
+	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
+	$ver = ( $ext && $ext->manifest ) ? $ext->manifest->get_version() : false;
+
+	// Self-hosted <video> + oEmbed lazy-load facade styling.
+	wp_enqueue_style( 'fw-shortcode-media-video', $uri . '/css/media-video.css', array(), $ver );
+
+	// Facade click-to-load + reduce-motion pause (dependency-free, footer).
+	wp_enqueue_script( 'fw-shortcode-media-video', $uri . '/js/media-video.js', array(), $ver, true );
 }

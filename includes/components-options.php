@@ -63,11 +63,12 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 		// color pickers; the gap-choices closure feeds the spacing selects.
 		return apply_filters( 'unysonplus_components_settings_options', array(
 			'tab_colors'     => $tab( __( 'Color Presets', 'fw' ), upw_ts_get_options( 'components-color' ) ),
-			'tab_typography' => $tab( __( 'Typography', 'fw' ), upw_ts_get_options( 'components-typography' ) ),
+			'tab_typography' => $tab( __( 'Text Styles', 'fw' ), upw_ts_get_options( 'components-typography' ) ),
 			'tab_spacing'    => $tab( __( 'Spacing', 'fw' ), upw_ts_get_options( 'components-spacing', array( 'gap_choices' => $gap_choices ) ) ),
 			'tab_buttons'    => $tab( __( 'Buttons', 'fw' ), upw_ts_get_options( 'components-buttons', array( 'color_choices' => $color_choices ) ) ),
 			'tab_borders'    => $tab( __( 'Box Presets', 'fw' ), upw_ts_get_options( 'components-box', array( 'color_choices' => $color_choices ) ) ),
 			'tab_tables'     => $tab( __( 'Tables', 'fw' ), upw_ts_get_options( 'components-table', array( 'color_choices' => $color_choices ) ) ),
+			'tab_sections'   => $tab( __( 'Section Styles', 'fw' ), upw_ts_get_options( 'components-section-styles', array( 'color_choices' => $color_choices ) ) ),
 		) );
 	}
 endif;

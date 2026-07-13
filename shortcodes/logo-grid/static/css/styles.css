@@ -7,7 +7,7 @@
 	--lg-gap: 1.5rem;
 	--lg-box-bg: #ffffff;
 }
-.fw-lg__item { display: flex; align-items: center; justify-content: center; padding: .5rem 1rem; }
+.fw-lg__item { display: flex; align-items: center; justify-content: center; gap: .6rem; padding: .35rem; transition: opacity .3s ease; }
 .fw-lg__img {
 	max-height: var(--lg-h);
 	width: auto;
@@ -16,26 +16,48 @@
 	display: block;
 	transition: filter .3s ease, opacity .3s ease, transform .3s ease;
 }
-.fw-lg--grayscale .fw-lg__img { filter: grayscale(1); opacity: .65; }
-.fw-lg--grayscale .fw-lg__item:hover .fw-lg__img { filter: grayscale(0); opacity: 1; }
-a.fw-lg__item:hover .fw-lg__img { transform: translateY(-2px); }
+/* Inline SVG mark — crisp, upload-free, recolourable (Logo Color → currentColor).
+   inline-BLOCK (not flex): an SVG that is a flex item ignores its viewBox aspect
+   ratio for width:auto and can collapse (a square-viewBox mark shrinks to a sliver);
+   as a normal replaced element it sizes correctly from the viewBox. */
+.fw-lg__img--svg { display: inline-flex; align-items: center; line-height: 0; }
+/* max-width:none defeats a global `svg{max-width:100%}` — with it, a block-level svg
+   in a shrink-wrap flex item hits a circular width constraint and collapses to a sliver
+   (only square-viewBox marks show it). height + auto width then size from the viewBox. */
+.fw-lg__img--svg svg { height: var(--lg-h); width: auto; max-width: none; display: block; fill: currentColor; }
+/* Visible name label ("trusted by [mark] Brand") — scales with logo height. */
+.fw-lg__label { font-size: calc(var(--lg-h) * .78); font-weight: 700; line-height: 1; color: currentColor; white-space: nowrap; }
+/* Grayscale/fade the whole item so any name labels fade with their marks. */
+.fw-lg--grayscale .fw-lg__item { opacity: .65; }
+.fw-lg--grayscale .fw-lg__img,
+.fw-lg--grayscale .fw-lg__img--svg { filter: grayscale(1); }
+.fw-lg--grayscale .fw-lg__item:hover { opacity: 1; }
+.fw-lg--grayscale .fw-lg__item:hover .fw-lg__img,
+.fw-lg--grayscale .fw-lg__item:hover .fw-lg__img--svg { filter: grayscale(0); }
+a.fw-lg__item:hover .fw-lg__img,
+a.fw-lg__item:hover .fw-lg__img--svg { transform: translateY(-2px); }
 
 .fw-lg__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
 
-/* Grid / boxed ------------------------------------------------------------- */
+/* Grid / boxed — CONTENT-width columns, centered, one consistent gap between every
+   logo (like the source's `flex justify-center gap-N`). Equal `1fr` cells would center
+   each logo in an equal cell, so logos of different widths (an icon vs a wide wordmark)
+   leave different leftover space → uneven-looking gaps. `auto` columns size to the logo
+   and `justify-content:center` centers the row, so the gap is identical everywhere. */
 .fw-lg__grid {
 	display: grid;
-	grid-template-columns: repeat(var(--lg-cols, 4), minmax(0, 1fr));
+	grid-template-columns: repeat(var(--lg-cols, 4), auto);
+	justify-content: center;
 	gap: var(--lg-gap, 1.5rem);
 	align-items: center;
 }
 @keyframes fw-lg-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }@media (max-width: 768px) {
 
-	.fw-lg__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.fw-lg__grid { grid-template-columns: repeat(3, auto); }
 }
 @media (max-width: 480px) {
 
-	.fw-lg__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.fw-lg__grid { grid-template-columns: repeat(2, auto); }
 }
 @media (prefers-reduced-motion: reduce) {
 

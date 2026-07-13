@@ -35,6 +35,89 @@ $g_opt_columns = function ( $label, $default, $desc ) use ( $g_columns_choices )
 	);
 };
 
+/*
+ * "Columns" control. Tablet / phone column counts are FIXED automatically
+ * (tablet = min(desktop, 2), phone = 1) — see the $g_cols reader in view.php —
+ * so the builder only exposes a single desktop control:
+ *
+ *   • grid design ($with_ratio): a footer-style multi-picker (mirrors the theme
+ *     Header/Footer column field). The "Columns (Desktop)" select is the picker;
+ *     picking N REVEALS a Column-Ratio split-slider LOCKED to exactly N panes
+ *     ("pick 4 → a 4-pane ratio slider"). Stored { count:'N', 'N':{ col_ratio:[…] } }.
+ *   • other designs: a plain "Columns (Desktop)" select (no ratio → no reveal
+ *     needed). Stored as the scalar count.
+ *
+ * Back-compat: the multi-picker's _render coerces a LEGACY SCALAR count ('3')
+ * into { count:'3' }, and $g_cols also reads the old columns_tablet/columns_mobile
+ * siblings when present — so galleries saved before this open with no migration.
+ */
+/* Equal-width split-slider default: $n grid-snapped segments summing to 100 (mirrors the
+ * theme footer's unysonplus_footer_equal_split) so the Column Ratio always STARTS equal. */
+$g_equal_split = function ( $n ) {
+	$n    = max( 1, (int) $n );
+	$each = (int) floor( 100 / $n );
+	$segs = array();
+	for ( $i = 0; $i < $n; $i++ ) { $segs[] = array( 'w' => $each, 'name' => '' ); }
+	$segs[0]['w'] += 100 - ( $each * $n );
+	return $segs;
+};
+
+$g_opt_columns_rwd = function ( $d_default, $desc, $with_ratio = false ) use ( $g_columns_choices, $g_equal_split ) {
+	if ( ! $with_ratio ) {
+		// No ratio → a plain select is enough.
+		return array(
+			'label'   => __( 'Columns', 'fw' ),
+			'type'    => 'select',
+			'value'   => (string) $d_default,
+			'choices' => $g_columns_choices,
+			'desc'    => $desc,
+		);
+	}
+
+	$choices = array();
+	for ( $n = 1; $n <= 6; $n++ ) {
+		$reveal = array();
+		// Column Ratio slider for 2, 3, 4 and 6 columns — those map cleanly to the
+		// 12-grid (1/2, 1/3, 1/4, 1/6). 5 columns are FIXED equal (1/5 each): a /60
+		// grid would let you drag to off-scale fractions (3/20, 7/30…) we don't use,
+		// so 5 gets no ratio. (1 col = full width, also no ratio.)
+		if ( $n >= 2 && 5 !== $n ) {
+			$reveal['col_ratio'] = array(
+				'type'        => 'split-slider',
+				'label'       => __( 'Column Ratio', 'fw' ),
+				'desc'        => __( 'Optional — drag the dividers to give columns UNEQUAL widths and feature a dominant / bigger image (widths snap to a grid and show as fractions, e.g. 1/3, 1/2). Leave it equal for uniform columns. Tablet / phone stay equal.', 'fw' ),
+				'min'         => $n,
+				'max'         => $n,
+				'step'        => 1,
+				'min_width'   => 8,
+				'allow_names' => false,
+				'auto_count'  => $n,
+				'denominator' => 12, // clean twelfths (1/2, 1/3, 1/4, 1/6)
+				'locked'      => true,    // count is fixed by the Columns select
+				'value'       => $g_equal_split( $n ), // ALWAYS start with equal columns
+			);
+		}
+		$choices[ (string) $n ] = $reveal;
+	}
+
+	return array(
+		'type'         => 'multi-picker',
+		'label'        => false,
+		'desc'         => false,
+		'show_borders' => false,
+		'picker'       => array(
+			'count' => array(
+				'type'    => 'select',
+				'label'   => __( 'Columns', 'fw' ),
+				'value'   => (string) $d_default,
+				'choices' => $g_columns_choices,
+				'desc'    => $desc,
+			),
+		),
+		'choices'      => $choices,
+	);
+};
+
 $g_opt_gap = array(
 	'label'   => __( 'Gap', 'fw' ),
 	'type'    => 'select',
@@ -153,16 +236,15 @@ $options = array(
 				'options' => array(
 					'design_settings' => array(
 						'type'         => 'multi-picker',
-						'label'        => __( 'Design', 'fw' ),
-						'desc'         => __( 'Pick the gallery layout/design — its options appear in the panel.', 'fw' ),
-						'popover'      => true,
+						'label'        => false,
+						'desc'         => false,
 						'show_borders' => false,
 						'picker'       => array(
 							'design' => array(
-								'label'   => false,
+								'label'   => __( 'Design', 'fw' ),
 								'type'    => 'image-picker',
 								'choices' => $g_design_choices,
-								'desc'    => __( 'Hover a tile to preview it.', 'fw' ),
+								'desc'    => __( 'Pick the gallery layout/design — its options appear below. Hover a tile to preview it.', 'fw' ),
 								'help'    => __( 'Each design is a self-contained layout with its own arrangement. Only the chosen design\'s options appear below. Cross-design appearance (lightbox, captions, colors, spacing) lives on the Style tab.', 'fw' ),
 							),
 						),
@@ -171,18 +253,15 @@ $options = array(
 
 							/* Grid — uniform responsive tiles. */
 							'grid' => array(
-								'columns'        => $g_opt_columns( __( 'Columns (Desktop)', 'fw' ), 3, __( 'Columns per row on desktop.', 'fw' ) ),
-								'columns_tablet' => $g_opt_columns( __( 'Columns (Tablet)', 'fw' ), 2, __( 'Columns per row on tablets (≤ 992px).', 'fw' ) ),
-								'columns_mobile' => $g_opt_columns( __( 'Columns (Mobile)', 'fw' ), 1, __( 'Columns per row on phones (≤ 576px).', 'fw' ) ),
-								'gap'            => $g_opt_gap,
-								'ratio'          => $g_opt_ratio,
+								'columns' => $g_opt_columns_rwd( 3, __( 'Columns per row on desktop (tablet & phone adjust automatically). Set unequal widths for a featured image with the Column Ratio slider that appears below.', 'fw' ), true ),
+								'gap'     => $g_opt_gap,
+								'ratio'   => $g_opt_ratio,
 							),
 
 							/* Masonry — CSS-column staggered tiling (natural heights). */
 							'masonry' => array(
-								'columns'        => $g_opt_columns( __( 'Columns (Desktop)', 'fw' ), 3, __( 'Masonry column count on desktop.', 'fw' ) ),
-								'columns_tablet' => $g_opt_columns( __( 'Columns (Tablet)', 'fw' ), 2, __( 'Masonry column count on tablets (≤ 992px).', 'fw' ) ),
-								'gap'            => $g_opt_gap,
+								'columns' => $g_opt_columns_rwd( 3, __( 'Masonry column count on desktop (tablet & phone adjust automatically).', 'fw' ), false ),
+								'gap'     => $g_opt_gap,
 							),
 
 							/* Justified — Flickr-style equal-height rows. */
@@ -199,7 +278,7 @@ $options = array(
 
 							/* Metro / Bento — featured grid with spanning cells. */
 							'metro' => array(
-								'columns' => $g_opt_columns( __( 'Columns (Desktop)', 'fw' ), 4, __( 'Base grid columns on desktop. Some cells span 2× for the bento effect.', 'fw' ) ),
+								'columns' => $g_opt_columns_rwd( 4, __( 'Base grid columns on desktop (tablet & phone adjust automatically). Some cells span 2× for the bento effect.', 'fw' ), false ),
 								'gap'     => $g_opt_gap,
 							),
 
@@ -218,9 +297,8 @@ $options = array(
 
 							/* Polaroid — scattered tilted photo cards. */
 							'polaroid' => array(
-								'columns'        => $g_opt_columns( __( 'Columns (Desktop)', 'fw' ), 4, __( 'Columns per row on desktop.', 'fw' ) ),
-								'columns_tablet' => $g_opt_columns( __( 'Columns (Tablet)', 'fw' ), 2, __( 'Columns per row on tablets (≤ 992px).', 'fw' ) ),
-								'gap'            => $g_opt_gap,
+								'columns' => $g_opt_columns_rwd( 4, __( 'Columns per row on desktop (tablet & phone adjust automatically).', 'fw' ), false ),
+								'gap'     => $g_opt_gap,
 								'tilt' => array(
 									'label' => __( 'Random Tilt', 'fw' ),
 									'type'  => 'switch',
@@ -250,11 +328,9 @@ $options = array(
 
 							/* Cards — image + caption panel in a shadowed card. */
 							'cards' => array(
-								'columns'        => $g_opt_columns( __( 'Columns (Desktop)', 'fw' ), 3, __( 'Columns per row on desktop.', 'fw' ) ),
-								'columns_tablet' => $g_opt_columns( __( 'Columns (Tablet)', 'fw' ), 2, __( 'Columns per row on tablets (≤ 992px).', 'fw' ) ),
-								'columns_mobile' => $g_opt_columns( __( 'Columns (Mobile)', 'fw' ), 1, __( 'Columns per row on phones (≤ 576px).', 'fw' ) ),
-								'gap'            => $g_opt_gap,
-								'ratio'          => $g_opt_ratio,
+								'columns' => $g_opt_columns_rwd( 3, __( 'Columns per row on desktop (tablet & phone adjust automatically).', 'fw' ), false ),
+								'gap'     => $g_opt_gap,
+								'ratio'   => $g_opt_ratio,
 							),
 
 							/* Slideshow / Fade — one full-width image, crossfading. */
@@ -357,7 +433,7 @@ $options = array(
 
 							/* Honeycomb — hexagon-tiled mosaic. */
 							'honeycomb' => array(
-								'columns' => $g_opt_columns( __( 'Columns (Desktop)', 'fw' ), 4, __( 'Hexagons per row on desktop.', 'fw' ) ),
+								'columns' => $g_opt_columns_rwd( 4, __( 'Hexagons per row on desktop (tablet & phone adjust automatically).', 'fw' ), false ),
 								'gap'     => $g_opt_gap,
 							),
 
@@ -375,11 +451,9 @@ $options = array(
 
 							/* Flip Cards — hover-flip to reveal the caption. */
 							'flipcards' => array(
-								'columns'        => $g_opt_columns( __( 'Columns (Desktop)', 'fw' ), 3, __( 'Columns per row on desktop.', 'fw' ) ),
-								'columns_tablet' => $g_opt_columns( __( 'Columns (Tablet)', 'fw' ), 2, __( 'Columns per row on tablets (≤ 992px).', 'fw' ) ),
-								'columns_mobile' => $g_opt_columns( __( 'Columns (Mobile)', 'fw' ), 1, __( 'Columns per row on phones (≤ 576px).', 'fw' ) ),
-								'gap'            => $g_opt_gap,
-								'ratio'          => $g_opt_ratio,
+								'columns' => $g_opt_columns_rwd( 3, __( 'Columns per row on desktop (tablet & phone adjust automatically).', 'fw' ), false ),
+								'gap'     => $g_opt_gap,
+								'ratio'   => $g_opt_ratio,
 							),
 
 							/* Stack / Banners — full-width stacked strips. */

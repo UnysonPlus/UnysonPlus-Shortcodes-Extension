@@ -96,6 +96,25 @@ add_filter( 'fw_theme_settings_menu_register', function ( $should_register ) {
 } );
 
 /**
+ * Render the Theme Settings tabs VERTICALLY (side tabs) when the plugin is the one
+ * supplying them — i.e. on a generic theme that doesn't set `settings_form_side_tabs`
+ * itself — so the "bare" page matches unysonplus-theme's left-rail layout instead of
+ * Unyson's default horizontal tabs. On unysonplus-theme this short-circuits: its own
+ * config already sets the flag to true, so `empty()` is false and we don't touch it.
+ * (Re-adds the hook documented in the shortcodes changelog v2.7.74 — the framework
+ * exposes `fw_theme_config`, applied once per request to the resolved theme config.)
+ */
+add_filter( 'fw_theme_config', function ( $config ) {
+	if ( is_array( $config )
+		&& function_exists( 'unysonplus_presets_in_theme_settings_enabled' )
+		&& unysonplus_presets_in_theme_settings_enabled()
+		&& empty( $config['settings_form_side_tabs'] ) ) {
+		$config['settings_form_side_tabs'] = true;
+	}
+	return $config;
+} );
+
+/**
  * Enqueue the option-type statics (addable-box / button-presets / border-presets /
  * table-presets CSS + JS) on the Theme Settings page. The framework's own settings
  * enqueue does not reliably cover options injected via the fw_settings_options

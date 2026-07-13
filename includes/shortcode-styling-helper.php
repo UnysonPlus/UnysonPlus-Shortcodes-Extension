@@ -673,7 +673,7 @@ if ( ! function_exists( 'sc_font_size_field' ) ) :
 	 */
 	function sc_font_size_field( $args = array() ) {
 		$defaults = array(
-			'label' => __( 'Font Size Preset', 'fw' ),
+			'label' => __( 'Text Style', 'fw' ),
 			'value' => '',
 			'desc'  => '',
 		);
@@ -783,18 +783,40 @@ if ( ! function_exists( 'sc_spacing_field' ) ) :
 	 */
 	function sc_spacing_field( $args = array() ) {
 		$defaults = array(
-			'label'  => __( '', 'fw' ),
-			'prefix' => 'm',
-			'value'  => '',
-			'desc'   => '',
+			'label'      => __( '', 'fw' ),
+			'prefix'     => 'm',
+			'value'      => '',
+			'desc'       => '',
+			// When true, the field becomes a per-device (Phone/Tablet/Desktop)
+			// `responsive` control whose value is array( base, md, lg ). The stored
+			// per-layer value is still a spacing utility class (e.g. `pt-3`); the
+			// consumer (sc_apply_styling_classes) injects the Bootstrap breakpoint
+			// infix for the md/lg layers (`pt-3` -> `pt-md-3`). A legacy scalar folds
+			// into `base`, so flipping an existing field to responsive is safe.
+			'responsive' => false,
 		);
 		$args = array_merge( $defaults, $args );
+
+		$choices = sc_get_spacing_select_choices( $args['prefix'] );
+
+		if ( $args['responsive'] ) {
+			$field = array(
+				'label' => $args['label'],
+				'type'  => 'responsive',
+				'value' => array( 'base' => (string) $args['value'], 'md' => '', 'lg' => '' ),
+				'inner' => array( 'type' => 'short-select', 'choices' => $choices ),
+				'attr'  => array( 'class' => 'sc-spacing' ),
+			);
+			if ( $args['label'] !== '' ) { $field['help'] = sc_styling_help_text( 'spacing' ); }
+			if ( $args['desc'] !== '' )  { $field['desc'] = $args['desc']; }
+			return $field;
+		}
 
 		$field = array(
 			'label'   => $args['label'],
 			'type'    => 'short-select',
 			'value'   => $args['value'],
-			'choices' => sc_get_spacing_select_choices( $args['prefix'] ),
+			'choices' => $choices,
 			'attr'    => array( 'class' => 'sc-spacing' ),
 		);
 		// Only attach the "add more" help link to the All-Sides field.
@@ -1103,7 +1125,14 @@ if ( ! function_exists( 'sc_get_font_size_preset_choices' ) ) :
 		$out = array( '' => __( 'Default', 'fw' ) );
 		if ( ! function_exists( 'unysonplus_get_font_size_presets' ) ) { return $out; }
 		foreach ( unysonplus_get_font_size_presets() as $entry ) {
-			if ( empty( $entry['size'] ) ) { continue; }
+			// A Text Style is pickable if it sets ANY typographic property — not just
+			// a size (a style-only preset, e.g. an eyebrow, sets only weight/tracking).
+			$has_style = ! empty( $entry['size'] )
+				|| ! empty( $entry['weight'] )
+				|| ( isset( $entry['line_height'] ) && trim( (string) $entry['line_height'] ) !== '' )
+				|| ( isset( $entry['letter_spacing'] ) && trim( (string) $entry['letter_spacing'] ) !== '' )
+				|| ! empty( $entry['transform'] );
+			if ( ! $has_style ) { continue; }
 			if ( ! empty( $entry['class'] ) ) {
 				$class = sc_sanitize_class( $entry['class'] );
 				if ( $class === '' ) { continue; }
@@ -1167,6 +1196,12 @@ if ( ! function_exists( 'sc_needs_wrapper' ) ) :
 
 		// Advanced tab — CSS ID / Class
 		if ( ! empty( $atts['css_id'] ) || ! empty( $atts['css_class'] ) ) { return true; }
+
+		// Advanced tab — per-element Custom CSS. The wrapper MUST render so it carries
+		// the `.u{hash}` scope class that the element's `selector`-scoped Custom CSS
+		// (aggregated by dynamic-css.php) targets — otherwise the rule has nothing to
+		// hook and the element's own Custom CSS silently never applies.
+		if ( ! empty( $atts['custom_css'] ) ) { return true; }
 
 		// Advanced tab — Custom HTML Attributes (any non-empty row)
 		if ( ! empty( $atts['custom_attrs'] ) && is_array( $atts['custom_attrs'] ) ) {
@@ -1274,6 +1309,27 @@ if ( ! function_exists( 'sc_apply_styling_classes' ) ) :
 				}
 				if ( $norm['style'] !== '' ) {
 					$styles[] = $norm['style'];
+				}
+				continue;
+			}
+
+			// Responsive spacing: a { base, md, lg } value (from sc_spacing_field
+			// with 'responsive' => true — e.g. Section Top/Bottom Spacing) emits one
+			// utility class per device. `base` applies at all widths; md/lg inject the
+			// Bootstrap breakpoint infix after the prefix so they override from that
+			// breakpoint up (`pt-3` -> `pt-md-3`). A scalar keeps the legacy behaviour.
+			if ( is_array( $atts[ $k ] )
+				&& in_array( $k, array( 'margin', 'margin_top', 'margin_bottom', 'margin_start', 'margin_end', 'padding', 'padding_top', 'padding_bottom', 'padding_start', 'padding_end' ), true ) ) {
+				foreach ( array( 'base' => '', 'md' => 'md', 'lg' => 'lg' ) as $layer => $infix ) {
+					$raw = isset( $atts[ $k ][ $layer ] ) ? (string) $atts[ $k ][ $layer ] : '';
+					if ( $raw === '' ) { continue; }
+					$cls = sc_sanitize_class( $raw );
+					if ( $cls === '' ) { continue; }
+					if ( $infix !== '' && strpos( $cls, '-' ) !== false ) {
+						list( $prefix, $rest ) = explode( '-', $cls, 2 );
+						$cls = $prefix . '-' . $infix . '-' . $rest; // pt-3 -> pt-md-3
+					}
+					$classes[] = $cls;
 				}
 				continue;
 			}
@@ -1641,10 +1697,13 @@ if ( ! function_exists( 'sc_emit_button_size_preview_saved_css' ) ) :
 			if ( $rad !== '' ) { $parts[] = "border-radius:{$rad}"; }
 
 			// Default fill so the preview reads as a real button, not a transparent shape.
-			// Tracks the user's Color Presets so a Blue recolor propagates here too.
-			$parts[] = 'color:var(--color-white)';
-			$parts[] = 'background-color:var(--color-blue)';
-			$parts[] = 'border-color:var(--color-blue)';
+			// Ride the brand PRIMARY preset (almost always present) with a hardcoded
+			// fallback, NOT a specific palette slug like `--color-blue` — a curated
+			// palette that drops Blue would otherwise leave the fill undefined and the
+			// preview invisible.
+			$parts[] = 'color:var(--color-white,#fff)';
+			$parts[] = 'background-color:var(--color-primary,#6c757d)';
+			$parts[] = 'border-color:var(--color-primary,#6c757d)';
 
 			if ( ! empty( $parts ) ) {
 				echo ".btn-size-preview-{$id}{" . implode( ';', $parts ) . ";}";
@@ -2173,9 +2232,51 @@ if ( ! function_exists( 'sc_icon_render' ) ) :
 			return '';
 		}
 
-		// 'none' / unknown. Lottie plugs in here in a later phase — every
-		// consumer that already calls sc_icon_render() then renders it too.
+		if ( $type === 'lottie' ) {
+			$src = isset( $value['src'] ) ? trim( (string) $value['src'] ) : '';
+			if ( $src === '' ) { return ''; }
+
+			$trigger = isset( $value['trigger'] ) ? preg_replace( '/[^a-z]/', '', (string) $value['trigger'] ) : 'loop';
+			if ( ! in_array( $trigger, array( 'loop', 'once', 'hover', 'click' ), true ) ) { $trigger = 'loop'; }
+			$speed = isset( $value['speed'] ) ? (float) $value['speed'] : 1;
+			if ( $speed <= 0 ) { $speed = 1; }
+
+			if ( $args['enqueue'] && function_exists( 'sc_icon_enqueue_lottie' ) ) { sc_icon_enqueue_lottie(); }
+
+			$cls      = sc_icon_join_classes( array( 'upw-lottie', $args['class'] ) );
+			$aria     = $args['aria_hidden'] ? ' aria-hidden="true"' : ' role="img"';
+
+			return '<span class="' . esc_attr( $cls ) . '"'
+				. ' data-src="' . esc_url( $src ) . '"'
+				. ' data-trigger="' . esc_attr( $trigger ) . '"'
+				. ' data-speed="' . esc_attr( $speed ) . '"'
+				. $extra . $aria . '></span>';
+		}
+
+		// 'none' / unknown.
 		return '';
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_enqueue_lottie' ) ) :
+	/**
+	 * Enqueue the bundled lottie-web player + the UnysonPlus hydrator, once. Called
+	 * from sc_icon_render() only when a Lottie icon is actually output, so pages
+	 * without animated icons never load the ~168 KB player.
+	 */
+	function sc_icon_enqueue_lottie() {
+		$base = fw_get_framework_directory_uri( '/static/libs/lottie' );
+		$ver  = function_exists( 'fw' ) ? fw()->manifest->get_version() : '1';
+
+		if ( ! wp_style_is( 'upw-lottie', 'enqueued' ) ) {
+			wp_enqueue_style( 'upw-lottie', $base . '/upw-lottie.css', array(), $ver );
+		}
+		if ( ! wp_script_is( 'lottie-web', 'enqueued' ) ) {
+			wp_enqueue_script( 'lottie-web', $base . '/lottie.min.js', array(), $ver, true );
+		}
+		if ( ! wp_script_is( 'upw-lottie', 'enqueued' ) ) {
+			wp_enqueue_script( 'upw-lottie', $base . '/upw-lottie.js', array( 'lottie-web' ), $ver, true );
+		}
 	}
 endif;
 
@@ -2225,7 +2326,19 @@ if ( ! function_exists( 'sc_icon_sanitize_svg' ) ) :
 	function sc_icon_sanitize_svg( $markup ) {
 		$markup = (string) $markup;
 		if ( stripos( $markup, '<svg' ) === false ) { return ''; }
-		return wp_kses( $markup, sc_icon_svg_allowed() );
+		$clean = wp_kses( $markup, sc_icon_svg_allowed() );
+		// wp_kses lowercases attribute NAMES, but several SVG attributes are
+		// case-SENSITIVE and silently break when lowercased — most importantly
+		// `viewBox` (a lowercased `viewbox` is ignored by the browser, collapsing
+		// the SVG's intrinsic aspect ratio so `width:auto` mis-sizes it). Restore
+		// their canonical camelCase on the way out.
+		$camel = array( 'viewbox' => 'viewBox', 'preserveaspectratio' => 'preserveAspectRatio' );
+		$clean = preg_replace_callback(
+			'/\s(viewbox|preserveaspectratio)=/i',
+			function ( $m ) use ( $camel ) { return ' ' . $camel[ strtolower( $m[1] ) ] . '='; },
+			$clean
+		);
+		return $clean;
 	}
 endif;
 

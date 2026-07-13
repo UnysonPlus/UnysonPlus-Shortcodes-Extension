@@ -1,0 +1,57 @@
+/* Media Video — self-hosted <video> + oEmbed lazy-load facade.
+   The .ratio container already absolutely-fills its direct child (Bootstrap ratio),
+   so both the <video> and the facade button fill the aspect box. */
+
+.video-wrapper .video-el { border: 0; background: #000; }
+
+/* Lazy-load facade: a poster (background-image) with a centered play button. */
+.video-wrapper .video-facade {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	cursor: pointer;
+	background-color: #0b0d10;
+	background-position: center;
+	background-size: cover;
+	background-repeat: no-repeat;
+}
+.video-wrapper .video-facade::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, .18);
+	transition: background .2s ease;
+}
+.video-wrapper .video-facade:hover::after,
+.video-wrapper .video-facade:focus-visible::after {
+	background: rgba(0, 0, 0, .05);
+}
+.video-wrapper .video-facade__play {
+	position: relative;
+	z-index: 1;
+	width: 68px;
+	height: 48px;
+	border-radius: 14px;
+	background: rgba(0, 0, 0, .55);
+	transition: background .2s ease, transform .2s ease;
+}
+.video-wrapper .video-facade:hover .video-facade__play,
+.video-wrapper .video-facade:focus-visible .video-facade__play {
+	background: #ff0000;
+	transform: scale(1.05);
+}
+.video-wrapper .video-facade__play::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-40%, -50%);
+	border-style: solid;
+	border-width: 10px 0 10px 17px;
+	border-color: transparent transparent transparent #fff;
+}

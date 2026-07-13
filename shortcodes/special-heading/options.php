@@ -217,7 +217,7 @@ $options = [
                         'type'    => 'select',
                         'label'   => __( 'Title Display Size', 'fw' ),
                         'desc'    => __( 'Visually enlarge the title independently of its heading tag (keeps the tag for SEO). Default uses the tag\'s own size.', 'fw' ),
-                        'help'    => __( 'Bootstrap "Display" sizes are larger and lighter than normal headings — ideal for hero titles. This changes the look only; the SEO tag stays as set in Title Tag.', 'fw' ),
+                        'help'    => __( 'Applies a larger "Display" size while KEEPING the heading\'s own weight (a Display size changes size only, not weight) and its SEO tag (set in Title Tag) — ideal for hero titles. These map to the Display Text Styles under Theme Settings → Components → Text Styles.', 'fw' ),
                         'choices' => [
                             ''          => __( 'Default (from tag)', 'fw' ),
                             'display-1' => __( 'Display 1 (largest)', 'fw' ),
@@ -228,6 +228,15 @@ $options = [
                             'display-6' => __( 'Display 6', 'fw' ),
                         ],
                         'value' => '',
+                    ],
+                    'title_max_width' => [
+                        'type'  => 'unit-input',
+                        'label' => __( 'Title Max Width', 'fw' ),
+                        'desc'  => __( 'Constrain the title line length independently of the block, e.g. 16ch or 640px — useful to force a clean 2-line headline. Centered automatically when the title is Center-aligned. Leave empty for full width.', 'fw' ),
+                        'help'  => __( 'Caps the title only (the overline/subtitle are unaffected — use Heading Max Width to cap the whole block). ch ties it to the text (16ch ≈ 16 characters); % / vw are relative to the column / viewport; px / rem / em are fixed.', 'fw' ),
+                        'units' => [ 'px', '%', 'rem', 'em', 'ch', 'vw' ],
+                        'value' => [ 'value' => '', 'unit' => 'px' ],
+                        'min'   => 0,
                     ],
                     'subtitle_size' => sc_font_size_field( array(
                         'label' => __( 'Subtitle Font Size', 'fw' ),

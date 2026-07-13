@@ -7,8 +7,9 @@
  * plate and an optional slight random tilt that straightens on hover.
  */
 
-$cols   = max( 1, (int) $g_dp( 'columns', 4 ) );
-$cols_t = max( 1, (int) $g_dp( 'columns_tablet', 2 ) );
+$g_c    = $g_cols( 4 );
+$cols   = $g_c['desktop'];
+$cols_t = $g_c['tablet'];
 $gap    = sc_gallery_gap_css( $g_dp( 'gap', '3' ) );
 $tilt   = $g_dp( 'tilt', 'yes' ) === 'yes';
 

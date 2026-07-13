@@ -31,21 +31,27 @@
 	pointer-events: none;
 }
 
-.section--alt {
+/* Section Variants are now a customizable preset library (Theme Settings → Components
+   → Section Styles): css-tokens.php generates a `.section--{slug}` rule per preset, and
+   the three seeded defaults reproduce these exact colors. These hardcoded rules stay as
+   a ZERO-SPECIFICITY fallback (`:where()`), so the generated presets — or a theme/child
+   override — always win, but a section variant still has sensible colors if the tokens
+   CSS hasn't loaded. */
+:where(.section--alt) {
 	background-color: var(--color-section-alt, #f7f7f7);
 }
 
-.section--light {
+:where(.section--light) {
 	background-color: var(--color-section-light, #ffffff);
 	color:            var(--color-section-light-text, #1a1a1a);
 }
 
-.section--dark {
+:where(.section--dark) {
 	background-color: var(--color-section-dark, #1a1a1a);
 	color:            var(--color-section-dark-text, #ffffff);
 }
 
-.section--dark a {
+:where(.section--dark) a {
 	color: var(--color-section-dark-link, #93c5fd);
 }
 

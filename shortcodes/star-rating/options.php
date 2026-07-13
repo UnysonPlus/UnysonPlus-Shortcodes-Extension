@@ -83,7 +83,7 @@ $options = array(
 						'type'    => 'select',
 						'label'   => __( 'Size', 'fw' ),
 						'value'   => 'md',
-						'choices' => array( 'sm' => __( 'Small', 'fw' ), 'md' => __( 'Medium', 'fw' ), 'lg' => __( 'Large', 'fw' ), 'xl' => __( 'Extra large', 'fw' ) ),
+						'choices' => array( 'xs' => __( 'Extra small', 'fw' ), 'sm' => __( 'Small', 'fw' ), 'md' => __( 'Medium', 'fw' ), 'lg' => __( 'Large', 'fw' ), 'xl' => __( 'Extra large', 'fw' ) ),
 					),
 					'align' => sc_alignment_field( array(
 						'label' => __( 'Alignment', 'fw' ),

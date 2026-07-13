@@ -14,6 +14,7 @@
 }
 .fw-sr--text-center { justify-content: center; }
 .fw-sr--text-end { justify-content: flex-end; }
+.fw-sr--size-xs { --sr-size: 0.8rem; }
 .fw-sr--size-sm { --sr-size: 1.05rem; }
 .fw-sr--size-md { --sr-size: 1.4rem; }
 .fw-sr--size-lg { --sr-size: 1.9rem; }

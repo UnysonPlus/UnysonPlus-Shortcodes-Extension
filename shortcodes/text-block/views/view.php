@@ -57,7 +57,13 @@ if ( is_array( $mwv ) ) {
         $unit = isset( $cw['unit'] ) ? (string) $cw['unit'] : 'px';
         if ( $val !== '' && is_numeric( $val ) ) {
             if ( ! in_array( $unit, array( 'px', 'rem', 'em', '%', 'ch', 'vw' ), true ) ) { $unit = 'px'; }
-            $mw_style = 'max-width:' . $val . $unit . ';margin-inline:auto';
+            // Respect the block's alignment: a capped block should sit where the text is
+            // aligned — left (default) keeps it left, center centers it, right pins it right.
+            // (Previously it ALWAYS centered via margin-inline:auto, so a left-aligned block
+            // with a max-width appeared wrongly indented.)
+            $mw_margin = ( $al === 'center' ) ? 'margin-inline:auto'
+                : ( ( $al === 'right' ) ? 'margin-inline-start:auto' : 'margin-inline-end:auto' );
+            $mw_style = 'max-width:' . $val . $unit . ';' . $mw_margin;
         }
     } elseif ( in_array( $preset, array( 'narrow', 'read', 'medium', 'wide' ), true ) ) {
         $layout[] = 'tb-mw-' . $preset;

@@ -45,6 +45,15 @@ class FW_Extension_Shortcodes extends FW_Extension
 			11 // register shortcodes later than other plugins (there were some problems with the `column` shortcode)
 		);
 
+		// Reusable `svg-code` option type: paste inline <svg> OR upload a .svg read as code
+		// (FileReader, client-side) — the SVG never touches the media library, so it needs no
+		// "Safe SVG" plugin. Sanitised server-side. Registered on the option-types init action.
+		add_action( 'fw_option_types_init', function () {
+			require_once dirname( __FILE__ ) . '/includes/option-types/svg-code/class-fw-option-type-svg-code.php';
+			// `easing-picker`: a memory-safe curve picker (light trigger + one shared palette).
+			require_once dirname( __FILE__ ) . '/includes/option-types/easing-picker/class-fw-option-type-easing-picker.php';
+		} );
+
 		/**
 		 * We need aggressive only for wp-editor, at least for now.
 		 * https://github.com/ThemeFuse/Unyson/issues/1807#issuecomment-235243578
@@ -101,6 +110,19 @@ class FW_Extension_Shortcodes extends FW_Extension
 		add_filter(
 			'fw_ext_shortcodes_disable_shortcodes',
 			array( $this, '_filter_disabled_from_settings' )
+		);
+
+		// Core fallback for the Theme Builder's element scoping. The Structure
+		// (Flexbox), Dynamic Content (post_*), and Header/Footer chrome elements live
+		// in THIS core extension but are meant only for Theme Builder part editors —
+		// the TB's own filters hide them from normal page builders. Without the
+		// (optional, download-only) Theme Builder active, those filters never run and
+		// the elements would leak into every Page/Post/CPT palette. This mirrors the
+		// hiding here so they DON'T. When the TB is active, it owns the (post-type-
+		// aware) gating and this stands down.
+		add_filter(
+			'fw_ext_shortcodes_disable_shortcodes',
+			array( $this, '_filter_theme_builder_fallback_scope' )
 		);
 
 		// Surface the plugin's built-in Theme Settings sections (Component Presets,
@@ -323,6 +345,50 @@ class FW_Extension_Shortcodes extends FW_Extension
 		$newly_disabled = array_diff( $known, $enabled );
 
 		return array_values( array_unique( array_merge( (array) $disabled, $newly_disabled ) ) );
+	}
+
+	/**
+	 * Core fallback that hides the Theme Builder's scoped elements from the page-builder
+	 * palette when that optional, download-only extension is NOT active.
+	 *
+	 * The Structure (Flexbox), Dynamic Content (post_*), and Header/Footer chrome
+	 * elements are defined in THIS core extension but are intended only for Theme
+	 * Builder part editors. The Theme Builder's own filters
+	 * (_filter_fw_theme_builder_{structure,dynamic_elements,chrome}_scope in its
+	 * hooks.php) hide them from normal Pages/Posts/CPTs. Those filters ship WITH the
+	 * extension, so when it is deactivated they never run and the elements leak into
+	 * every page builder. This mirrors the same hiding so they don't.
+	 *
+	 * Admin-only (the front end keeps them registered so any content already using one
+	 * still renders), and only when the Theme Builder is inactive — when it is active
+	 * it owns the more precise, post-type-aware gating (and exempts its part editors),
+	 * so we stand down. No post-type exemption is needed here: without the extension
+	 * there are no up_header/up_body/up_footer part editors to exempt.
+	 *
+	 * @internal
+	 * @param array $disabled
+	 * @return array
+	 */
+	public function _filter_theme_builder_fallback_scope( $disabled )
+	{
+		if ( ! is_admin() ) {
+			return $disabled;
+		}
+		if ( function_exists( 'fw_ext' ) && fw_ext( 'theme-builder' ) ) {
+			return $disabled; // Theme Builder active -> it owns the gating.
+		}
+
+		$tags = array(
+			// Structure
+			'flexbox',
+			// Dynamic Content (8)
+			'post_title', 'post_content', 'post_excerpt', 'featured_image',
+			'post_author', 'post_date', 'post_terms', 'post_meta',
+			// Header / Footer chrome (4)
+			'menu_toggle', 'nav_menu', 'site_search', 'site_logo',
+		);
+
+		return array_values( array_unique( array_merge( (array) $disabled, $tags ) ) );
 	}
 
 	/**

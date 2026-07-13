@@ -30,12 +30,23 @@ $title_style_attr  = $title_style   !== '' ? ' style="' . esc_attr( $title_style
 $message_style_attr = $message_style !== '' ? ' style="' . esc_attr( $message_style ) . '"' : '';
 $needs_title_attrs = $title_class !== '' || $title_style !== '';
 
-// Content / Button split (column-split stores the content's column span of 12;
-// the button fills the rest). Drives the flex-grow of each side.
-$split        = isset( $atts['column_split'] ) ? (int) $atts['column_split'] : 9;
-$split        = max( 1, min( 11, $split ) );
-$content_grow = $split;
-$btn_grow     = 12 - $split;
+// Content / Button split. Preferred shape = "n/d" (the content fraction; the divider
+// snaps to twelfths AND fifths). Legacy shape = a bare int span out of 12. This drives
+// the flex-grow ratio of each side, so any denominator (twelfths or fifths) works.
+$split_raw = isset( $atts['column_split'] ) ? $atts['column_split'] : '3/4';
+if ( is_string( $split_raw ) && strpos( $split_raw, '/' ) !== false ) {
+	$pp           = explode( '/', $split_raw );
+	$cn           = (int) $pp[0];
+	$cd           = isset( $pp[1] ) ? (int) $pp[1] : 12;
+	$cd           = $cd > 1 ? $cd : 12;
+	$cn           = max( 1, min( $cd - 1, $cn ) );
+	$content_grow = $cn;
+	$btn_grow     = $cd - $cn;
+} else {
+	$v            = max( 1, min( 11, (int) $split_raw ) );
+	$content_grow = $v;
+	$btn_grow     = 12 - $v;
+}
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="fw-action-content" style="flex-grow:<?php echo esc_attr( $content_grow ); ?>">

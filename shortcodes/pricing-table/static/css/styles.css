@@ -88,10 +88,44 @@
 }
 .fw-pt__btn:hover { filter: brightness(1.08); transform: translateY(-1px); color: #fff; }
 
-/* Featured + raise --------------------------------------------------------- */
+/* Outline button style (regular plans) — a featured plan's "Accent button" emphasis
+   re-fills it via a higher-specificity rule below. Neutral border + inherited text. */
+.fw-pt--btn-outline .fw-pt__btn {
+	background: transparent;
+	color: var(--pt-title, currentColor);
+	border-color: color-mix(in srgb, var(--pt-title, currentColor) 32%, transparent);
+}
+.fw-pt--btn-outline .fw-pt__btn:hover {
+	background: color-mix(in srgb, var(--pt-title, currentColor) 8%, transparent);
+	color: var(--pt-title, currentColor);
+	filter: none;
+}
+
+/* Featured emphasis — composable treatments (the Featured Plan Emphasis multi-select).
+   The doubled `.fw-pt.fw-pt--feat-*` prefix (0,4,0) outranks per-design .is-featured rules
+   (0,3,0) so glow/fill/highlight win. raise + enlarge compose via CSS vars on one transform. */
 .fw-pt__plan.is-featured { z-index: 2; }
-.fw-pt--raise .fw-pt__plan.is-featured { transform: scale(1.04); }
-.fw-pt--raise .fw-pt__plan.is-featured:hover { transform: scale(1.05); }
+.fw-pt.fw-pt--feat-raise .fw-pt__plan.is-featured,
+.fw-pt.fw-pt--feat-enlarge .fw-pt__plan.is-featured { transform: translateY(var(--pt-feat-y, 0)) scale(var(--pt-feat-scale, 1)); }
+.fw-pt.fw-pt--feat-raise   .fw-pt__plan.is-featured { --pt-feat-y: -1rem; }
+.fw-pt.fw-pt--feat-enlarge .fw-pt__plan.is-featured { --pt-feat-scale: 1.04; }
+.fw-pt.fw-pt--feat-highlight .fw-pt__plan.is-featured { border: 1px solid var(--pt-accent); }
+.fw-pt.fw-pt--feat-glow .fw-pt__plan.is-featured { box-shadow: 0 20px 45px -12px color-mix(in srgb, var(--pt-accent) 55%, transparent); }
+.fw-pt.fw-pt--feat-fill .fw-pt__plan.is-featured { background: color-mix(in srgb, var(--pt-accent) 10%, var(--pt-card-bg, #fff)); }
+.fw-pt.fw-pt--feat-emphasize .fw-pt__plan.is-featured .fw-pt__name { color: var(--pt-accent); }
+.fw-pt.fw-pt--feat-accent_button .fw-pt__plan.is-featured .fw-pt__btn {
+	background: var(--pt-accent); color: #fff; border-color: var(--pt-accent);
+	box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--pt-accent) 55%, transparent);
+}
+
+/* Top-center badge / banner (the 'badge' emphasis). */
+.fw-pt__badge {
+	position: absolute; left: 50%; top: 0; transform: translate(-50%, -50%);
+	background: var(--pt-accent); color: #fff;
+	font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+	padding: .35em .9em; border-radius: 999px; white-space: nowrap;
+	box-shadow: 0 6px 16px rgba(0, 0, 0, .18); z-index: 3;
+}
 
 /* Empty state -------------------------------------------------------------- */
 .fw-pt__empty { padding: 1.5rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
@@ -99,7 +133,9 @@
 /* Responsive --------------------------------------------------------------- */
 @media (max-width: 992px) {
 	.fw-pt__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-	.fw-pt--raise .fw-pt__plan.is-featured { transform: none; }
+	/* No raise / enlarge once the grid wraps — reset the transform vars. */
+	.fw-pt.fw-pt--feat-raise .fw-pt__plan.is-featured,
+	.fw-pt.fw-pt--feat-enlarge .fw-pt__plan.is-featured { --pt-feat-y: 0; --pt-feat-scale: 1; }
 }@media (max-width: 576px) {
 
 	.fw-pt__grid { grid-template-columns: 1fr; }

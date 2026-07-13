@@ -13,7 +13,10 @@
 // breakpoints on top of it, reusing the existing fw-col-{bp}-{N} utilities.
 $width_class = fw_ext_builder_get_item_width( 'page-builder', $atts['width'] . '/frontend_class' );
 
-$rw_valid = array( '1','2','3','4','5','6','7','8','9','10','11','12','auto' );
+// Twelfths ('1'..'12') + fifths ('15'/'25'/'35'/'45' = 1/5..4/5, mapping to the
+// fw-col-*-{15,25,35,45} classes) + 'auto'. The fifth keys reuse the {numerator}5
+// convention already established by the built-in 1/5 (fw-col-15).
+$rw_valid = array( '1','2','3','4','5','6','7','8','9','10','11','12','15','25','35','45','auto' );
 $col_token = function ( $bp, $v ) {
     $seg = ( $bp === '' ) ? 'fw-col' : 'fw-col-' . $bp;
     return ( $v === 'auto' ) ? $seg : $seg . '-' . $v;
@@ -127,7 +130,8 @@ if ( ! empty( $order_classes ) ) {
 | value is whitelisted before it reaches a class name.
 */
 $outer_extra  = array();
-$offset_valid = array( '1','2','3','4','5','6','7','8','9','10','11' );
+// Twelfths ('1'..'11') + fifths ('15'/'25'/'35'/'45' = 1/5..4/5 → fw-offset-*-{15,25,35,45}).
+$offset_valid = array( '1','2','3','4','5','6','7','8','9','10','11','15','25','35','45' );
 
 // Offsets — now one responsive control `col_offset` (base / md / lg). Falls back to the
 // legacy per-device atts (offset_phone / offset_tablet / offset_desktop). base =
@@ -397,13 +401,20 @@ $needs_inner = $inner_class !== '' || $styling_style !== '';
 // element directly holds the content — the inner wrapper if one exists,
 // otherwise the outer column.
 if ( ! empty( $content_align_tokens ) ) {
+    // Content Vertical Alignment (column main axis) needs the content container to
+    // FILL the column height, or there is nothing to align within. h-100 lets it fill
+    // the column's row-stretched height. Applied on whichever element holds the content
+    // (inner wrapper OR the outer column) so vertical alignment works WITHOUT requiring
+    // Full Height to be enabled separately — this is why "Middle" previously only took
+    // effect once Full Height was on (that path added the inner wrapper + h-100). Only
+    // in column mode; a row aligns on the cross axis and doesn't need the full height.
+    // Fire for ANY device the user set Content Vertical Alignment on (base / md / lg) —
+    // a Desktop-only "Middle" (justify-content-lg-center) needs the fill just as much as
+    // a base one, and without it the wrapper stays at content height and never centres.
+    $cv_dist  = array( 'start', 'center', 'end', 'between', 'around', 'evenly' );
+    $cv_any   = $cv_ok || in_array( $cv_md, $cv_dist, true ) || in_array( $cv_lg, $cv_dist, true );
+    if ( $cv_any && ! $is_row ) { $content_align_tokens[] = 'h-100'; }
     if ( $needs_inner ) {
-        // Distribute / position the REAL elements inside the wrapper. h-100 lets the
-        // wrapper fill the column height so vertical alignment (incl. Space Between)
-        // has room to work — without it the wrapper is only as tall as its content.
-        // Only needed in column mode, where Content Vertical Alignment drives the
-        // main axis; a row doesn't need the column's full height to align.
-        if ( $cv_ok && ! $is_row ) { $content_align_tokens[] = 'h-100'; }
         $inner_class = trim( $inner_class . ' ' . implode( ' ', $content_align_tokens ) );
         if ( $content_align_style !== '' ) {
             $styling_style = ( $styling_style !== '' ? rtrim( $styling_style, '; ' ) . '; ' : '' ) . $content_align_style;

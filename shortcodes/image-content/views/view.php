@@ -42,17 +42,37 @@ if ( preg_match( '/^g[xy]?-/', $gap_raw ) ) {          // legacy full class
 
 // Image / content split. New shape = a slider int (image column span 1–11, on a
 // 1–12 scale). Legacy shape = the old image-picker string "4-8".
-$ratio_raw = isset( $atts['column_ratio'] ) ? $atts['column_ratio'] : 4;
-if ( is_string( $ratio_raw ) && strpos( $ratio_raw, '-' ) !== false ) {
+// Preferred shape = "n/d" (the image fraction; divider snaps to twelfths AND fifths).
+// Legacy shapes: a bare int span (out of 12) or the very old image-picker "4-8" string.
+// $image_col / $content_col are fw-col class SUFFIXES — a twelfth ("1".."11") or a fifth
+// ("15"/"25"/"35"/"45" = 1/5..4/5, matching fw-col-*-{15,25,35,45}).
+$ratio_raw   = isset( $atts['column_ratio'] ) ? $atts['column_ratio'] : '1/3';
+$image_col   = '4';
+$content_col = '8';
+if ( is_string( $ratio_raw ) && strpos( $ratio_raw, '/' ) !== false ) {
+	$pp = explode( '/', $ratio_raw );
+	$rn = (int) $pp[0];
+	$rd = isset( $pp[1] ) ? (int) $pp[1] : 12;
+	if ( $rd === 5 ) {
+		$rn          = max( 1, min( 4, $rn ) );
+		$image_col   = $rn . '5';
+		$content_col = ( 5 - $rn ) . '5';
+	} else {
+		$rd          = $rd > 0 ? $rd : 12;
+		$span        = max( 1, min( 11, (int) round( $rn * 12 / $rd ) ) );
+		$image_col   = (string) $span;
+		$content_col = (string) ( 12 - $span );
+	}
+} elseif ( is_string( $ratio_raw ) && strpos( $ratio_raw, '-' ) !== false ) {
 	$parts       = explode( '-', $ratio_raw );
-	$image_col   = (int) $parts[0];
-	$content_col = isset( $parts[1] ) ? (int) $parts[1] : ( 12 - $image_col );
+	$span        = max( 1, min( 11, (int) $parts[0] ) );
+	$image_col   = (string) $span;
+	$content_col = (string) ( 12 - $span );
 } else {
-	$image_col   = (int) $ratio_raw;
-	$content_col = 12 - $image_col;
+	$span        = max( 1, min( 11, (int) $ratio_raw ) );
+	$image_col   = (string) $span;
+	$content_col = (string) ( 12 - $span );
 }
-$image_col   = max( 1, min( 11, $image_col ) );
-$content_col = max( 1, min( 11, $content_col ) );
 
 // Image element ----------------------------------------------------------------
 $img_classes = [ 'img-fluid' ];

@@ -48,6 +48,7 @@ field). Both flatten on save.
 |-----|------|---------|-------------|
 | `style` | `button-style-picker` | first preset from `sc_get_button_style_choices()` (typically `primary`) | Button style preset — drives all color/border/gradient. `allow_none: false` (a styleless button is rarely intended; use the `link` preset for text-only) |
 | `size` | `button-style-picker` | (first from `sc_get_button_size_choices()`) | Button size preset — sourced from Theme Settings → Buttons → Sizes |
+| `shape` | `image-picker` | `''` (Default — from Size) | Corner rounding OVERRIDE — `pill` / `rounded` / `square` emit `.btn-shape-{v}` which beats the Size preset's radius (specificity + !important, see `static/css/styles.css`). Default keeps the Size radius. Decouples "pill" from "large" |
 | `width.mode` | `multi-picker` (`''` / `w-100` / `custom`) | `''` (auto) | Width strategy: auto-fit, full-width, or custom |
 | `width.custom.custom_width` | `unit-input` (px / % / rem / em / vw) | — | Only present when `width.mode === 'custom'`. Saved as `{ value, unit }` |
 | `alignment` | `select` (`''` / `left` / `center` / `right`) | `''` (inherit) | Wraps in a `text-align: {value}` div when set. No effect when `width.mode === 'w-100'` |

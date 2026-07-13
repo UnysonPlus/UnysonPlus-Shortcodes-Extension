@@ -201,6 +201,17 @@ if ( $subtitle_class !== '' ) {
 }
 $subtitle_classes = array_merge( $subtitle_classes, $subtitle_extras );
 
+// Title readability measure (max-width) — caps the title element only (independent of the
+// whole-block Heading Max Width). Centered within its column when the title is center-aligned.
+$title_max_width = $css_len( $atts['title_max_width'] ?? '' );
+if ( $title_max_width !== '' ) {
+    $tmw = 'max-width:' . $title_max_width;
+    if ( $title_align === 'center' ) {
+        $tmw .= '; margin-inline:auto';
+    }
+    $title_style = $title_style !== '' ? $title_style . '; ' . $tmw : $tmw;
+}
+
 // Subtitle readability measure (max-width). Centered within its column when the
 // subtitle itself is center-aligned so the constrained line sits under the title.
 $subtitle_max_width = $css_len( $atts['subtitle_max_width'] ?? '' );

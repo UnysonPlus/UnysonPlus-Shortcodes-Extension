@@ -1,0 +1,60 @@
+/* easing-picker — light trigger + one shared popover palette. */
+
+.upw-easing { max-width: 520px; }
+.upw-easing-value { display: none; }
+
+.upw-easing-trigger {
+	display: flex; align-items: center; gap: 8px; width: 100%;
+	padding: 5px 8px; background: #fff; border: 1px solid #cfd6de; border-radius: 6px;
+	cursor: pointer; font-size: 13px; color: #2b333c; text-align: left; line-height: 1.4;
+	transition: border-color .12s ease, box-shadow .12s ease;
+}
+.upw-easing-trigger:hover { border-color: #2f74e6; }
+.upw-easing-trigger:focus { outline: none; border-color: #2f74e6; box-shadow: 0 0 0 3px rgba(47,116,230,.15); }
+.upw-easing-thumb { width: 30px; height: 22px; flex: 0 0 auto; object-fit: contain; }
+.upw-easing-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.upw-easing-caret { flex: 0 0 auto; color: #8b95a1; }
+
+/* Shared palette — one per page, a regular dropdown positioned fixed by JS. Its WIDTH is set at
+ * open time to match the trigger/container; the search bar is fixed and only the image area scrolls. */
+.upw-easing-palette {
+	position: fixed; z-index: 1000000; display: none;
+	min-width: 280px; max-width: 96vw; background: #fff;
+	border: 1px solid #cfd6de; border-radius: 8px;
+	box-shadow: 0 10px 30px rgba(20,32,48,.20);
+	flex-direction: column; overflow: hidden;
+}
+.upw-easing-palette[aria-hidden="false"] { display: flex; }
+
+.upw-easing-search-wrap { flex: 0 0 auto; padding: 8px 8px 6px; border-bottom: 1px solid #eef1f5; }
+.upw-easing-search {
+	width: 100%; padding: 7px 10px; border: 1px solid #d5dbe2; border-radius: 6px;
+	font-size: 13px; box-sizing: border-box;
+}
+.upw-easing-search:focus { outline: none; border-color: #2f74e6; box-shadow: 0 0 0 3px rgba(47,116,230,.15); }
+
+/* The IMAGE AREA — categories stacked vertically; height-capped so you just scroll for more. */
+.upw-easing-scroll { overflow-y: auto; max-height: 300px; padding: 8px 12px 12px; }
+.upw-easing-group-card { margin-top: 12px; }
+.upw-easing-scroll > .upw-easing-group-card:first-child { margin-top: 2px; }
+.upw-easing-group {
+	font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+	color: #9aa4b0; margin: 0 2px 6px;
+}
+.upw-easing-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.upw-easing-tile {
+	display: flex; flex-direction: column; align-items: center; gap: 3px;
+	padding: 8px 4px 6px; background: #f7f9fc; border: 1.5px solid transparent; border-radius: 8px;
+	cursor: pointer; transition: border-color .1s ease, background .1s ease;
+}
+.upw-easing-tile:hover { background: #eef4ff; border-color: #cfe0fb; }
+.upw-easing-tile.is-active { border-color: #2f74e6; background: #eef4ff; }
+.upw-easing-tile-img { width: 100%; height: 42px; object-fit: contain; display: block; }
+.upw-easing-tile-label {
+	font-size: 10.5px; font-weight: 600; color: #5a6675; text-align: center; line-height: 1.2;
+	overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
+}
+
+@media ( prefers-color-scheme: dark ) {
+	/* wp-admin is light; left intentionally minimal. */
+}

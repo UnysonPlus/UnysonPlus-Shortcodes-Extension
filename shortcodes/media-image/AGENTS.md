@@ -68,6 +68,28 @@ Pinned shapes:
   (`"selector {\r\n\tmax-width: 800px;\r\n}"`), `spacing.advanced` is a `{lg:{margin,padding},md:{…}}`
   responsive-class map when set, `responsive_hide` = `{"hide-sm":true}`.
 
+### Rendering vs the Media Library (hand-authoring templates)
+
+When generating template JSON by hand (not converting a real export), two things bit us and are
+worth pinning:
+
+- **`url` alone renders; `attachment_id` is what puts it in the Media Library.** `view.php` uses
+  `image.url` whenever `attachment_id` is empty (it only bails when *both* are empty), so an
+  `image` of `{"attachment_id":"","url":"http://…/foo.svg"}` **does render** a plain
+  `<img src="…">`. But with an empty `attachment_id` the file is **not a Media Library item** — it
+  won't appear in the media grid, and you lose the responsive `srcset` / exact-crop path (those
+  need a real attachment). So for a demo/template that should own its images: **first register the
+  file as an attachment** (`wp_insert_attachment` + `_wp_attached_file` — this bypasses the SVG mime
+  block for programmatic inserts) and set `image` to that `{attachment_id, url}`. Then the picker
+  shows it and it lives in the library. (With `attachment_id` set, the view renders via
+  `wp_get_attachment_image`, which for an SVG emits the `<img>` with the attachment's stored
+  `width`/`height` HTML attrs — harmless; override with CSS if you need it to fill a box.)
+- **Blank `width`/`height` = full/natural size, no inline sizing.** Leaving `width`/`height` as
+  `{"value":"","unit":"px"}` emits no inline `style`/`width` attr, so the `<img>` is free to be sized
+  by CSS (e.g. an `object-fit:cover` panel fill). Set px values only when you want an explicit,
+  cropped/fixed size (both-px triggers `fw_resize` cropping). This is the right choice when a
+  container (a Scrollytelling media panel, a cover hero) controls the size.
+
 ## Rendering
 
 `views/view.php` outputs `<img>` (or `<a><img></a>` when `link` is set)

@@ -46,6 +46,47 @@ $g_dp = function ( $sub, $default ) use ( $atts, $design ) {
 	return sc_get( 'design_settings/' . $design . '/' . $sub, $atts, $default );
 };
 
+/*
+ * Resolve the Columns control into flat per-device counts + the optional grid
+ * Column-Ratio. The builder only exposes the DESKTOP count; tablet & phone are
+ * FIXED automatically (tablet = min(desktop, 2), phone = 1). Tolerates every
+ * historical shape so no gallery needs migrating:
+ *   1. new grid   → columns = { count:'N', 'N':{ col_ratio } }
+ *   2. new others → columns = 'N' (scalar)
+ *   3. legacy     → columns = 'N' + sibling columns_tablet / columns_mobile / col_ratio (honoured if present)
+ *   4. absent     → the passed default.
+ * Returns array( desktop, tablet, mobile, col_ratio ).
+ */
+$g_cols = function ( $d = 3 ) use ( $g_dp ) {
+	$raw = $g_dp( 'columns', null );
+
+	if ( is_array( $raw ) ) { // new grid multi-picker shape
+		$count  = isset( $raw['count'] ) ? max( 1, (int) $raw['count'] ) : (int) $d;
+		$reveal = ( isset( $raw[ (string) $count ] ) && is_array( $raw[ (string) $count ] ) ) ? $raw[ (string) $count ] : array();
+		$ratio  = ( isset( $reveal['col_ratio'] ) && is_array( $reveal['col_ratio'] ) ) ? $reveal['col_ratio'] : array();
+	} else { // scalar count (new non-grid, legacy, or absent)
+		$count = ( $raw !== null && $raw !== '' ) ? max( 1, (int) $raw ) : (int) $d;
+		$ratio = (array) $g_dp( 'col_ratio', array() ); // legacy sibling
+	}
+
+	// Auto responsive rule: phone = 1 column; tablet = desktop − 1 for large grids
+	// (5–6 columns) so they only step down by one, else capped at 2. A legacy per-device
+	// save (columns_tablet / columns_mobile) still wins when present.
+	//   desktop → tablet:  1→1  2→2  3→2  4→2  5→4  6→5   (phone always 1)
+	$auto_tablet = ( $count >= 5 ) ? ( $count - 1 ) : min( $count, 2 );
+	$leg_t  = $g_dp( 'columns_tablet', null );
+	$leg_m  = $g_dp( 'columns_mobile', null );
+	$tablet = ( $leg_t !== null && $leg_t !== '' ) ? max( 1, (int) $leg_t ) : $auto_tablet;
+	$mobile = ( $leg_m !== null && $leg_m !== '' ) ? max( 1, (int) $leg_m ) : 1;
+
+	return array(
+		'desktop'   => $count,
+		'tablet'    => $tablet,
+		'mobile'    => $mobile,
+		'col_ratio' => $ratio,
+	);
+};
+
 /* Cross-design appearance (top-level on the Style tab). */
 $container_type = sc_get( 'container_type', $atts, '' );
 $click_action   = sc_get( 'click_action', $atts, 'lightbox' );

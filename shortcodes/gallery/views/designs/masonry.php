@@ -7,8 +7,9 @@
  * natural proportions; columns balance via CSS `column-count`.
  */
 
-$cols   = max( 1, (int) $g_dp( 'columns', 3 ) );
-$cols_t = max( 1, (int) $g_dp( 'columns_tablet', 2 ) );
+$g_c    = $g_cols( 3 );
+$cols   = $g_c['desktop'];
+$cols_t = $g_c['tablet'];
 $gap    = sc_gallery_gap_css( $g_dp( 'gap', '3' ) );
 
 $masonry_style = sprintf( '--gal-cols:%d;--gal-cols-t:%d;--gal-gap:%s;', $cols, $cols_t, $gap );

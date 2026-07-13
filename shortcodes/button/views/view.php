@@ -141,6 +141,12 @@ if ($style) {
 if ($size) {
     $classes[] = $size;
 }
+// Shape overrides ONLY the border-radius that the Size preset applies (Default =
+// keep the Size's radius). btn-shape-{pill|rounded|square} — see button.css.
+$shape = !empty($atts['shape']) ? (string) $atts['shape'] : '';
+if (in_array($shape, array('pill', 'rounded', 'square'), true)) {
+    $classes[] = 'btn-shape-' . $shape;
+}
 if ($block) {
     $classes[] = $block;
 }

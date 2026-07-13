@@ -7,9 +7,10 @@
  * panel below. Like Grid, but every tile reads as a self-contained card.
  */
 
-$cols   = max( 1, (int) $g_dp( 'columns', 3 ) );
-$cols_t = max( 1, (int) $g_dp( 'columns_tablet', 2 ) );
-$cols_m = max( 1, (int) $g_dp( 'columns_mobile', 1 ) );
+$g_c    = $g_cols( 3 );
+$cols   = $g_c['desktop'];
+$cols_t = $g_c['tablet'];
+$cols_m = $g_c['mobile'];
 $gap    = sc_gallery_gap_css( $g_dp( 'gap', '3' ) );
 $ratio  = $g_dp( 'ratio', '4-3' );
 $ratio_css = sc_gallery_ratio_css( $ratio );

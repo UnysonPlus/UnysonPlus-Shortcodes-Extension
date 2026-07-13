@@ -55,7 +55,18 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 
 		$columns = (int) sc_get( 'columns', $atts, 3 );
 		$columns = max( 1, min( 5, $columns ) );
-		$raise   = sc_get( 'featured_raise', $atts, 'yes' ) === 'yes';
+		/* Featured emphasis — a multi-select of composable treatments. Legacy fallback:
+		   the old `featured_raise` switch (which merely SCALED the plan) maps to 'enlarge'. */
+		$fstyle = sc_get( 'featured_style', $atts, null );
+		if ( ! is_array( $fstyle ) ) {
+			$fstyle = ( sc_get( 'featured_raise', $atts, 'yes' ) === 'yes' ) ? array( 'enlarge' ) : array();
+		}
+		$fstyle  = array_values( array_intersect(
+			array( 'raise', 'enlarge', 'highlight', 'glow', 'fill', 'badge', 'accent_button', 'emphasize' ),
+			array_map( 'strval', $fstyle )
+		) );
+		$has_badge = in_array( 'badge', $fstyle, true );
+		$btn_style = sc_get( 'button_style', $atts, 'solid' ) === 'outline' ? 'outline' : 'solid';
 		$align   = sc_get( 'align', $atts, 'center' );
 		$align_cls = function_exists( 'sc_alignment_class' ) ? sc_alignment_class( $align ) : '';
 
@@ -84,7 +95,8 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 			'fw-pt--design-' . sanitize_html_class( $design ),
 			'fw-pt--cols-' . $columns,
 		);
-		if ( $raise )     { $classes[] = 'fw-pt--raise'; }
+		foreach ( $fstyle as $fs ) { $classes[] = 'fw-pt--feat-' . $fs; }
+		$classes[] = 'fw-pt--btn-' . $btn_style;
 		if ( $align_cls ) { $classes[] = 'fw-pt--' . $align_cls; }
 
 		$atts['base_class']       = 'pricing-table';
@@ -114,7 +126,13 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 			$btn_tgt  = ( isset( $p['button_target'] ) && $p['button_target'] === '_blank' ) ? '_blank' : '_self';
 
 			echo '<div class="fw-pt__plan' . ( $featured ? ' is-featured' : '' ) . '">';
-			if ( $ribbon !== '' ) {
+			// Top-center badge (the 'badge' emphasis) on the featured plan — uses the
+			// plan's Ribbon text, or "Most Popular" if none. Falls back to the classic
+			// corner ribbon otherwise.
+			if ( $featured && $has_badge ) {
+				$badge_txt = $ribbon !== '' ? $ribbon : __( 'Most Popular', 'fw' );
+				echo '<span class="fw-pt__badge">' . esc_html( $badge_txt ) . '</span>';
+			} elseif ( $ribbon !== '' ) {
 				echo '<span class="fw-pt__ribbon">' . esc_html( $ribbon ) . '</span>';
 			}
 

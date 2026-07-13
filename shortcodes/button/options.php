@@ -99,6 +99,29 @@ $options = [
                         'preview_base' => 'btn btn-primary',
                         'help'         => sc_styling_help_text( 'button_size' ),
                     ],
+                    // Shape overrides ONLY the border-radius the Size preset would apply
+                    // (Default = keep the Size's radius). Decouples "pill" from "large".
+                    // Image-picker: each tile shows the corner silhouette (Style + Size
+                    // above are visual too), so the shape is picked by eye.
+                    'shape' => call_user_func( function () {
+                        $img = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/button/static/img/shapes' );
+                        $tile = function ( $file, $title ) use ( $img ) {
+                            return array( 'small' => array( 'src' => $img . '/' . $file, 'height' => 34, 'title' => $title ) );
+                        };
+                        return array(
+                            'label'   => __( 'Button Shape', 'fw' ),
+                            'desc'    => __( 'Corner rounding. Default keeps the radius from the selected Size; Pill / Rounded / Square override it.', 'fw' ),
+                            'help'    => __( 'Shape overrides the border-radius that the Button Size preset would otherwise apply — handy for a pill CTA at any size.', 'fw' ),
+                            'type'    => 'image-picker',
+                            'value'   => 'default',
+                            'choices' => array(
+                                'default' => $tile( 'default.svg', __( 'Default (from Size)', 'fw' ) ),
+                                'pill'    => $tile( 'pill.svg',    __( 'Pill', 'fw' ) ),
+                                'rounded' => $tile( 'rounded.svg', __( 'Rounded', 'fw' ) ),
+                                'square'  => $tile( 'square.svg',  __( 'Square', 'fw' ) ),
+                            ),
+                        );
+                    } ),
                     // Multi-picker: the Custom Width field only appears when "Custom"
                     // is selected. Saved shape: width => [ 'mode' => '', 'custom' => [ 'custom_width' => {value,unit} ] ].
                     'width' => [

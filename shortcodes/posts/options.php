@@ -88,6 +88,67 @@ $sc_opt_cols_m = [
     'type'    => 'select', 'value' => '1',
     'choices' => [ '1' => '1', '2' => '2' ],
 ];
+
+/* Merged "Columns" control (mirrors the gallery Grid design). Only the DESKTOP
+ * count is exposed; tablet & phone auto-derive in the view (tablet = min(N,2),
+ * or N-1 for 5+; phone = 1). Two shapes:
+ *   • $with_ratio (grid): a multi-picker whose "Columns" select REVEALS a Column
+ *     Ratio split-slider LOCKED to exactly N panes — drag the dividers for
+ *     unequal widths / a featured (dominant) card. Stored { count:'N',
+ *     'N':{ col_ratio:[{w,name},…] } }.
+ *   • plain (masonry etc.): a "Columns" select (column-count can't do unequal
+ *     widths, so no ratio). Stored as the scalar count.
+ * No migration: the view's reader also honours the legacy columns_desktop scalar. */
+$sc_col_choices = [ '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6' ];
+/* Equal-width split-slider default: N grid-snapped segments summing to 100, so
+ * the Column Ratio ALWAYS starts equal (mirrors the theme footer / gallery). */
+$sc_equal_split = function ( $n ) {
+    $n    = max( 1, (int) $n );
+    $each = (int) floor( 100 / $n );
+    $segs = [];
+    for ( $i = 0; $i < $n; $i++ ) { $segs[] = [ 'w' => $each, 'name' => '' ]; }
+    $segs[0]['w'] += 100 - ( $each * $n );
+    return $segs;
+};
+$sc_opt_columns_rwd = function ( $d_default, $desc, $with_ratio = false ) use ( $sc_col_choices, $sc_equal_split ) {
+    if ( ! $with_ratio ) {
+        return [ 'label' => __( 'Columns', 'fw' ), 'type' => 'select', 'value' => (string) $d_default, 'choices' => $sc_col_choices, 'desc' => $desc ];
+    }
+    $choices = [];
+    for ( $n = 1; $n <= 6; $n++ ) {
+        $reveal = [];
+        // Ratio for 2, 3, 4 and 6 columns (clean twelfths). 5 columns are FIXED
+        // equal (1/5 each) — a /60 grid lets you drag to off-scale fractions
+        // (3/20, 7/30…) we don't use, so no ratio for 5. (1 col = full width.)
+        if ( $n >= 2 && 5 !== $n ) {
+            $reveal['col_ratio'] = [
+                'type'        => 'split-slider',
+                'label'       => __( 'Column Ratio', 'fw' ),
+                'desc'        => __( 'Optional — drag the dividers to give columns UNEQUAL widths and feature a dominant / bigger card (widths snap to a grid and show as fractions, e.g. 1/3, 1/2). Leave it equal for uniform columns. Tablet / phone stay equal.', 'fw' ),
+                'min'         => $n,
+                'max'         => $n,
+                'step'        => 1,
+                'min_width'   => 8,
+                'allow_names' => false,
+                'auto_count'  => $n,
+                'denominator' => 12, // clean twelfths (1/2, 1/3, 1/4, 1/6)
+                'locked'      => true, // count is fixed by the Columns select
+                'value'       => $sc_equal_split( $n ),
+            ];
+        }
+        $choices[ (string) $n ] = $reveal;
+    }
+    return [
+        'type'         => 'multi-picker',
+        'label'        => false,
+        'desc'         => false,
+        'show_borders' => false,
+        'picker'       => [
+            'count' => [ 'type' => 'select', 'label' => __( 'Columns', 'fw' ), 'value' => (string) $d_default, 'choices' => $sc_col_choices, 'desc' => $desc ],
+        ],
+        'choices'      => $choices,
+    ];
+};
 /* Gaps use the theme Gap Scale presets (Theme Settings → spacing/gap presets),
    consistent with the Section/Row/Column containers. Empty = the base default.
    Legacy numeric (px) saves still resolve in view.php for back-compat. */
@@ -323,23 +384,8 @@ $options = [
             'group_design' => [
                 'type'    => 'group',
                 'options' => [
-                    'card' => [
-                        'type'         => 'multi-picker',
-                        'label'        => __( 'Card Style', 'fw' ),
-                        'desc'         => __( 'How each post card looks. Works with any Layout below. Side / Hero styles reveal extra image controls.', 'fw' ),
-                        'popover'      => true,
-                        'show_borders' => false,
-                        'picker'       => [
-                            'style' => [
-                                'label'   => false,
-                                'type'    => 'image-picker',
-                                'choices' => $sc_card_choices,
-                                'desc'    => __( 'Hover a tile to preview it.', 'fw' ),
-                            ],
-                        ],
-                        'value'        => [ 'style' => 'standard' ],
-                        'choices'      => $sc_card_picker_choices,
-                    ],
+                    /* Layout is the structural parent (it decides the arrangement and
+                       reveals the column controls), so it comes FIRST — then Card Style. */
                     'design' => [
                         'type'         => 'multi-picker',
                         'label'        => __( 'Layout', 'fw' ),
@@ -357,20 +403,16 @@ $options = [
                         'value'        => [ 'mode' => 'grid' ],
                         'choices'      => [
                             'grid' => [
-                                'columns_desktop'    => $sc_opt_cols_d,
-                                'columns_tablet'     => $sc_opt_cols_t,
-                                'columns_mobile'     => $sc_opt_cols_m,
+                                'columns'            => $sc_opt_columns_rwd( 3, __( 'Columns per row on desktop (tablet & phone adjust automatically). Set unequal widths for a featured card with the Column Ratio slider that appears below.', 'fw' ), true ),
                                 'column_gap'         => $sc_opt_col_gap,
                                 'row_gap'            => $sc_opt_row_gap,
                                 'equal_height'       => $sc_opt_equal_height,
                                 'featured_treatment' => $sc_opt_featured,
                             ],
                             'masonry' => [
-                                'columns_desktop' => $sc_opt_cols_d,
-                                'columns_tablet'  => $sc_opt_cols_t,
-                                'columns_mobile'  => $sc_opt_cols_m,
-                                'column_gap'      => $sc_opt_col_gap,
-                                'row_gap'         => $sc_opt_row_gap,
+                                'columns'    => $sc_opt_columns_rwd( 3, __( 'Masonry column count on desktop (tablet & phone adjust automatically).', 'fw' ), false ),
+                                'column_gap' => $sc_opt_col_gap,
+                                'row_gap'    => $sc_opt_row_gap,
                             ],
                             'list' => [
                                 'row_gap' => $sc_opt_row_gap,
@@ -383,6 +425,23 @@ $options = [
                                 'slider_loop'            => $sc_opt_slider_loop,
                             ],
                         ],
+                    ],
+                    'card' => [
+                        'type'         => 'multi-picker',
+                        'label'        => __( 'Card Style', 'fw' ),
+                        'desc'         => __( 'How each post card looks. Works with any Layout above. Side / Hero styles reveal extra image controls.', 'fw' ),
+                        'popover'      => true,
+                        'show_borders' => false,
+                        'picker'       => [
+                            'style' => [
+                                'label'   => false,
+                                'type'    => 'image-picker',
+                                'choices' => $sc_card_choices,
+                                'desc'    => __( 'Hover a tile to preview it.', 'fw' ),
+                            ],
+                        ],
+                        'value'        => [ 'style' => 'standard' ],
+                        'choices'      => $sc_card_picker_choices,
                     ],
                 ],
             ],

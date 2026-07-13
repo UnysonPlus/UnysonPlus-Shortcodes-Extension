@@ -15,18 +15,42 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_lg_item' ) ) {
-	function sc_lg_item( $logo, $linkable = true ) {
-		$img = ( is_array( $logo ) && isset( $logo['image'] ) && is_array( $logo['image'] ) && ! empty( $logo['image']['url'] ) ) ? $logo['image']['url'] : '';
-		if ( $img === '' ) { return ''; }
+	function sc_lg_item( $logo, $linkable = true, $show_labels = false ) {
+		if ( ! is_array( $logo ) ) { return ''; }
 		$name = isset( $logo['name'] ) ? trim( (string) $logo['name'] ) : '';
 		$url  = isset( $logo['link_url'] ) ? trim( (string) $logo['link_url'] ) : '';
 		$tgt  = ( isset( $logo['link_target'] ) && $logo['link_target'] === '_self' ) ? '_self' : '_blank';
-		$imgt = '<img class="fw-lg__img" src="' . esc_url( $img ) . '" alt="' . esc_attr( $name ) . '" loading="lazy" decoding="async" />';
+
+		// Mark — inline SVG markup takes priority (crisp, upload-free, recolourable,
+		// and its <text> uses page fonts); else an uploaded image.
+		$mark = '';
+		$svg  = isset( $logo['svg'] ) ? trim( (string) $logo['svg'] ) : '';
+		if ( $svg !== '' && function_exists( 'sc_icon_sanitize_svg' ) ) {
+			$clean = sc_icon_sanitize_svg( $svg );
+			if ( $clean !== '' ) {
+				$mark = '<span class="fw-lg__img--svg"' . ( $name !== '' ? ' role="img" aria-label="' . esc_attr( $name ) . '"' : '' ) . '>' . $clean . '</span>';
+			}
+		}
+		if ( $mark === '' ) {
+			$img = ( isset( $logo['image'] ) && is_array( $logo['image'] ) && ! empty( $logo['image']['url'] ) ) ? $logo['image']['url'] : '';
+			if ( $img !== '' ) {
+				$mark = '<img class="fw-lg__img" src="' . esc_url( $img ) . '" alt="' . esc_attr( $name ) . '" loading="lazy" decoding="async" />';
+			}
+		}
+
+		// Optional visible name label — the "trusted by [mark] Brand" pattern. A logo
+		// can opt out (no_label) when its mark is a wordmark that already reads the name.
+		$no_label = ( isset( $logo['no_label'] ) && $logo['no_label'] === 'yes' );
+		$label = ( $show_labels && $name !== '' && ! $no_label ) ? '<span class="fw-lg__label">' . esc_html( $name ) . '</span>' : '';
+
+		if ( $mark === '' && $label === '' ) { return ''; }
+		$inner = $mark . $label;
+
 		if ( $linkable && $url !== '' ) {
 			return '<a class="fw-lg__item" href="' . esc_url( $url ) . '"' . ( $tgt === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : '' )
-				. ( $name !== '' ? ' aria-label="' . esc_attr( $name ) . '"' : '' ) . '>' . $imgt . '</a>';
+				. ( $name !== '' ? ' aria-label="' . esc_attr( $name ) . '"' : '' ) . '>' . $inner . '</a>';
 		}
-		return '<span class="fw-lg__item">' . $imgt . '</span>';
+		return '<span class="fw-lg__item">' . $inner . '</span>';
 	}
 }
 
@@ -39,7 +63,11 @@ if ( ! function_exists( 'sc_lg_render' ) ) {
 		$logos = sc_get( 'logos', $atts, array() );
 		if ( ! is_array( $logos ) ) { $logos = array(); }
 		$logos = array_values( array_filter( $logos, function ( $l ) {
-			return is_array( $l ) && isset( $l['image'] ) && is_array( $l['image'] ) && ! empty( $l['image']['url'] );
+			if ( ! is_array( $l ) ) { return false; }
+			$has_img  = isset( $l['image'] ) && is_array( $l['image'] ) && ! empty( $l['image']['url'] );
+			$has_svg  = ! empty( $l['svg'] );
+			$has_name = isset( $l['name'] ) && trim( (string) $l['name'] ) !== '';
+			return $has_img || $has_svg || $has_name;
 		} ) );
 
 		if ( empty( $logos ) ) {
@@ -54,6 +82,7 @@ if ( ! function_exists( 'sc_lg_render' ) ) {
 		$height  = (int) sc_get( 'logo_height', $atts, 48 );
 		$height  = max( 16, min( 200, $height ) );
 		$gray    = sc_get( 'grayscale', $atts, 'yes' ) === 'yes';
+		$show_labels = sc_get( 'show_labels', $atts, 'no' ) === 'yes';
 		$gap_slug = preg_replace( '/[^a-z0-9_-]/', '', strtolower( (string) sc_get( 'gap', $atts, '4' ) ) );
 		$gap_css  = $gap_slug === '' ? '0px' : 'var(--gap-' . $gap_slug . ', 1.5rem)';
 
@@ -103,19 +132,19 @@ if ( ! function_exists( 'sc_lg_render' ) ) {
 			);
 			echo '<div class="splide fw-lg__carousel" role="group" aria-label="' . esc_attr__( 'Logos', 'fw' ) . '" data-splide="' . esc_attr( wp_json_encode( $cfg ) ) . '">';
 			echo '<div class="splide__track"><ul class="splide__list">';
-			foreach ( $logos as $l ) { echo '<li class="splide__slide">' . sc_lg_item( $l ) . '</li>'; }
+			foreach ( $logos as $l ) { echo '<li class="splide__slide">' . sc_lg_item( $l, true, $show_labels ) . '</li>'; }
 			echo '</ul></div></div>';
 		} elseif ( $design === 'marquee' ) {
 			$per = array( 'slow' => 4.2, 'normal' => 2.8, 'fast' => 1.7 );
 			$dur = max( 8, count( $logos ) * ( isset( $per[ $speed ] ) ? $per[ $speed ] : 2.8 ) );
 			echo '<div class="fw-lg__marquee fw-lg__marquee--' . ( $direction === 'right' ? 'right' : 'left' ) . '" style="--lg-dur:' . esc_attr( rtrim( rtrim( number_format( $dur, 2, '.', '' ), '0' ), '.' ) ) . 's;">';
 			echo '<div class="fw-lg__track">';
-			foreach ( $logos as $l ) { echo sc_lg_item( $l ); }
-			foreach ( $logos as $l ) { echo sc_lg_item( $l, false ); }
+			foreach ( $logos as $l ) { echo sc_lg_item( $l, true, $show_labels ); }
+			foreach ( $logos as $l ) { echo sc_lg_item( $l, false, $show_labels ); }
 			echo '</div></div>';
 		} else { // grid / boxed
 			echo '<div class="fw-lg__grid">';
-			foreach ( $logos as $l ) { echo sc_lg_item( $l ); }
+			foreach ( $logos as $l ) { echo sc_lg_item( $l, true, $show_labels ); }
 			echo '</div>';
 		}
 

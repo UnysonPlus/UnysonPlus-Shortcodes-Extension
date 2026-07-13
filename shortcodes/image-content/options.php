@@ -87,10 +87,10 @@ $options = [
 						'label'         => __( 'Image / Content Split', 'fw' ),
 						'desc'          => __( 'Drag the divider to set how the row is shared between the image and the content.', 'fw' ),
 						'help'          => __( 'The image takes the left share, the content the right (shown as a fraction in lowest form, e.g. 1/3). The divider stops at 11/12 so the content always keeps at least one column. Applies to the Image Left / Image Right layouts — the Layout swatch chooses which side the image actually sits on.', 'fw' ),
-						'value'         => 4,
+						'value'         => '1/3',
 						'denominator'   => 12,
-						'min'           => 1,
-						'max'           => 11,
+						'fractions'     => [ '1/12', '1/6', '1/5', '1/4', '1/3', '2/5', '5/12', '1/2', '7/12', '3/5', '2/3', '3/4', '4/5' ],
+						// Snap-stops (twelfths + fifths) come from `fractions`; a legacy int span still reads.
 						'show_fraction' => true,
 						'panes'         => [
 							[ 'label' => __( 'Image', 'fw' ),   'icon' => 'dashicons-format-image' ],

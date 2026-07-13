@@ -495,7 +495,7 @@ if( ! function_exists('sc_option_bg_atts')):
 									', 'lastimosa'),
 				),
 				'size' => array(
-					'type' 	=> 'fw-multi-inline',
+					'type' 	=> 'multi-inline',
 					'label' => __('', 'lastimosa'),
 					'desc'  => __( 'Image size', 'lastimosa' ),
 					'value' => array(
@@ -1935,7 +1935,7 @@ if(!function_exists('sc_option_box')) :
 	 */
 	function sc_option_box($label, $desc=NULL, $top=NULL, $right=NULL, $bottom=NULL, $left=NULL) {
 		return array(
-			'type' 	=> 'fw-multi-inline',
+			'type' 	=> 'multi-inline',
 			'label' => __($label, 'lastimosa'),
 			'desc' 	=> __($desc, 'lastimosa'),
 			'value' => array(

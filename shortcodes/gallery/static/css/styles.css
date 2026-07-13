@@ -26,7 +26,10 @@
 .fw-gallery__media img,
 .fw-gallery__img {
 	width: 100%;
-	height: 100%;
+	/* !important survives a theme's ubiquitous `#content img { height: auto }` reset
+	   (ID specificity 1,0,1 would otherwise beat this and collapse object-fit:cover, so
+	   landscape images shrink instead of filling the cropped cell). */
+	height: 100% !important;
 	object-fit: cover;
 	display: block;
 	transition: transform .45s cubic-bezier(.2, .7, .2, 1);
@@ -34,15 +37,15 @@
 
 /* Natural-height media (masonry, "Original" ratio) — no crop. */
 .fw-gallery__media--natural { aspect-ratio: auto; }
-.fw-gallery__media--natural img { height: auto; }
+.fw-gallery__media--natural img { height: auto !important; }
 
 /* Fill media (justified / metro / carousel) — fills the cell the layout sizes. */
 .fw-gallery__media--fill { aspect-ratio: auto; height: 100%; }
-.fw-gallery__media--fill img { height: 100%; }
+.fw-gallery__media--fill img { height: 100% !important; }
 
 /* Auto-width media (marquee) — fixed-height row, natural width. */
 .fw-gallery__media--auto { aspect-ratio: auto; height: 100%; width: auto; }
-.fw-gallery__media--auto img { height: 100%; width: auto; }
+.fw-gallery__media--auto img { height: 100% !important; width: auto; }
 
 /* Make a clickable media show it is interactive. */
 a.fw-gallery__media { cursor: zoom-in; }

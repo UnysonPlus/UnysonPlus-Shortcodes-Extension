@@ -21,10 +21,25 @@ $options = array(
 							'image' => array(
 								'type'  => 'upload',
 								'label' => __( 'Logo Image', 'fw' ),
+								'desc'  => __( 'A raster/vector logo file. For a monochrome mark, prefer the SVG Markup field below — it renders inline (crisp, recolourable, no SVG-upload plugin needed).', 'fw' ),
+							),
+							'svg' => array(
+								'type'  => 'textarea',
+								'label' => __( 'SVG Markup (inline)', 'fw' ),
+								'desc'  => __( 'Paste raw &lt;svg&gt;…&lt;/svg&gt; markup to render the logo INLINE instead of uploading an image (sanitised on output). Use fill="currentColor" so the Logo Color on the Styling tab applies. Takes priority over Logo Image.', 'fw' ),
 							),
 							'name' => array(
 								'type'  => 'text',
-								'label' => __( 'Name (alt text)', 'fw' ),
+								'label' => __( 'Name (alt / label)', 'fw' ),
+								'desc'  => __( 'Alt text — and the visible label when "Show Names" is on (Design tab).', 'fw' ),
+							),
+							'no_label' => array(
+								'type'  => 'switch',
+								'label' => __( 'Hide Name Label', 'fw' ),
+								'desc'  => __( 'When Show Names is on, suppress THIS logo text label — e.g. a wordmark logo whose mark already reads as the name.', 'fw' ),
+								'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+								'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+								'value' => 'no',
 							),
 							'link_url' => array(
 								'type'  => 'text',
@@ -102,6 +117,14 @@ $options = array(
 						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
 						'value' => 'yes',
 					),
+					'show_labels' => array(
+						'type'  => 'switch',
+						'label' => __( 'Show Names', 'fw' ),
+						'desc'  => __( 'Render each logo Name as a visible text label beside the mark (a "trusted by [logo] Brand" strip).', 'fw' ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+						'value' => 'no',
+					),
 				),
 			),
 			'group_motion' => array(
@@ -139,6 +162,7 @@ $options = array(
 			'group_colors' => array(
 				'type'    => 'group',
 				'options' => array(
+					'text_color' => sc_color_field_compact( array( 'label' => __( 'Logo / Label Color', 'fw' ), 'kind' => 'text', 'desc' => __( 'Colors the name labels and any inline SVG marks that use fill="currentColor".', 'fw' ) ) ),
 					'box_bg'     => sc_color_field_compact( array( 'label' => __( 'Box Background (Boxed)', 'fw' ), 'kind' => 'bg' ) ),
 					'font_size_preset' => sc_font_size_field(),
 				),

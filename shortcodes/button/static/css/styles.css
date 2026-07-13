@@ -14,7 +14,12 @@
 	font-size: 1rem;
 	font-weight: 400;
 	line-height: 1.5;
-	color: #212529;
+	/* Inherit the surrounding (body) text colour rather than forcing a dark colour,
+	   so a BARE .btn adopts the context it sits in (e.g. light text on a dark hero).
+	   `inherit` (not just omitting `color`) is deliberate: a .btn is usually an <a>,
+	   which would otherwise fall back to the theme's LINK colour. Presets/variants
+	   set their own colour. */
+	color: inherit;
 	text-align: center;
 	text-decoration: none;
 	white-space: nowrap;
@@ -22,15 +27,19 @@
 	cursor: pointer;
 	user-select: none;
 	-webkit-user-select: none;
-	/* A neutral fill + border so a BARE .btn (no color preset / no .btn-primary)
-	   clearly reads as a solid button, not a link. Color variants (.btn-primary, …)
-	   override the background + border with their own. */
-	background-color: #f1f3f5;
+	/* A neutral BORDER only (no fill) so a BARE .btn (no color preset / no
+	   .btn-primary) reads as a clean OUTLINE button, not a link — and, crucially,
+	   so a button PRESET whose Background is cleared/transparent shows through
+	   instead of being masked by a default fill. Color variants (.btn-primary, …)
+	   and presets set their own background when they want one. */
 	border: 1px solid #ced4da;
 	border-radius: 0.375rem;
 	transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
-.btn:hover { color: #212529; background-color: #e2e6ea; border-color: #adb5bd; }
+/* Hover: darken the border for feedback but DON'T set a background — a preset that
+   leaves its hover Background empty then keeps its own colour on hover instead of
+   being forced to a generic grey. */
+.btn:hover { color: inherit; border-color: #adb5bd; }
 .btn:focus-visible { outline: 0; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25); }
 .btn:disabled,
 .btn.disabled { pointer-events: none; opacity: 0.65; }
@@ -125,3 +134,10 @@
 	font-size: inherit;
 	line-height: 1;
 }
+
+
+/* Button Shape — overrides ONLY the border-radius from the Size preset (Default =
+   keep the Size's radius). Higher specificity + !important beats .btn-{size}. */
+.btn.btn-shape-pill    { border-radius: 9999px !important; }
+.btn.btn-shape-rounded { border-radius: 0.75rem !important; }
+.btn.btn-shape-square  { border-radius: 0 !important; }

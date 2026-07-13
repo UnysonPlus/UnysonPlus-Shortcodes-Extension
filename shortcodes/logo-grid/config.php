@@ -10,14 +10,21 @@ $cfg['page_builder'] = array(
 	'tab'         => __( 'Media Elements', 'fw' ),
 	'popup_size'  => 'large',
 
+	// Canvas preview: each logo (uploaded image, inline SVG mark, or name-only) shows on
+	// ONE line with a consistent gap. Inline SVG marks are forced to fill:currentColor +
+	// a set height (via an injected style attr) so a white frontend mark is still visible
+	// on the light builder canvas, and sizes correctly regardless of its own attributes.
 	'title_template' => '
 		{{ if ( o && o["logos"] && o["logos"].length ) { }}
-			<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:.5rem;">
-				{{ for ( var i = 0; i < Math.min(o["logos"].length,8); i++ ) {
+			<div style="display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:.5rem;color:#334155;">
+				{{ for ( var i = 0; i < Math.min( o["logos"].length, 10 ); i++ ) {
 					var l = o["logos"][i];
 					var u = ( l.image && l.image.url ) ? l.image.url : "";
+					var nm = l.name || "";
+					var sv = l.svg ? String( l.svg ).replace( /<svg/i, \'<svg style="height:22px;width:auto;max-width:none;fill:currentColor;vertical-align:middle"\' ) : "";
+					if ( !u && !sv && !nm ) { continue; }
 				}}
-					{{ if ( u ) { }}<img src="{{- u }}" style="height:30px;max-width:80px;object-fit:contain;" />{{ } }}
+					<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">{{ if ( u ) { }}<img src="{{- u }}" style="height:22px;max-width:90px;object-fit:contain;vertical-align:middle;" />{{ } else if ( sv ) { }}{{= sv }}{{ } }}{{ if ( nm ) { }}<b style="font-size:13px;font-weight:700;">{{- nm }}</b>{{ } }}</span>
 				{{ } }}
 			</div>
 		{{ } else { }}
