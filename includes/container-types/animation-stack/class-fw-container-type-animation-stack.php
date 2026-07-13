@@ -46,10 +46,16 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 		if ( ! $ext ) { return; }
 
 		$base = $ext->get_declared_URI( '/includes/container-types/animation-stack/static' );
-		$ver  = '1.0.0';
+		$ver  = '1.0.3';
 
 		wp_enqueue_style( 'upw-anim-stack', $base . '/css/animation-stack.css', array(), $ver );
 		wp_enqueue_script( 'upw-anim-stack', $base . '/js/animation-stack.js', array( 'jquery' ), $ver, true );
+		// Lazy-load endpoint for an inactive card's options (see the AJAX handler in
+		// shortcode-animation-helper.php). Cuts a fresh element's Animations modal from ~8.8MB to <1MB.
+		wp_localize_script( 'upw-anim-stack', 'upwAnimStack', array(
+			'ajaxurl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'upw_anim_card' ),
+		) );
 	}
 
 	protected function _render( $containers, $values, $data ) {
@@ -64,7 +70,40 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			$catalog_seen  = array();
 			$any_active    = false;
 
+			// PASS 1 — classify each card as active/inactive by its saved picker value. Rendering the
+			// full per-effect reveals for EVERY card (incl. the 4 pre-declared Hover slots etc.) is
+			// what OOMs the builder, so only ACTIVE cards render their options eagerly; inactive cards
+			// ship as a light placeholder and lazy-load their options over AJAX when "added".
+			$active_map = array();
 			foreach ( $inner as $fid => $field ) {
+				if ( ! is_array( $field ) || ! empty( $field['anim_attach'] ) ) { continue; }
+				$is_card = isset( $field['type'] ) && $field['type'] === 'multi-picker' && ! empty( $field['picker'] ) && is_array( $field['picker'] );
+				if ( ! $is_card ) { continue; }
+				$picker_id = array_key_first( $field['picker'] );
+				$off_val   = ( isset( $field['value'][ $picker_id ] ) ) ? $field['value'][ $picker_id ] : 'none';
+				$saved     = ( isset( $values[ $fid ][ $picker_id ] ) ) ? $values[ $fid ][ $picker_id ] : $off_val;
+				$active_map[ $fid ] = ( $saved !== $off_val && $saved !== '' );
+			}
+
+			// Fields that ATTACH INTO a card ( 'anim_attach' => '<card field id>' ) render INSIDE that
+			// card's box instead of always-on in passthrough — so they show/hide with the card. Only
+			// render them for ACTIVE targets; an inactive target's extras arrive with its lazy load.
+			$attached = array();
+			foreach ( $inner as $fid => $field ) {
+				if ( is_array( $field ) && ! empty( $field['anim_attach'] ) ) {
+					$target = (string) $field['anim_attach'];
+					$clean  = $field;
+					unset( $clean['anim_attach'] );
+					$attached[ $target ] = ( isset( $attached[ $target ] ) ? $attached[ $target ] : '' )
+						. fw()->backend->render_options( array( $fid => $clean ), $values, $data );
+				}
+			}
+
+			foreach ( $inner as $fid => $field ) {
+				if ( is_array( $field ) && ! empty( $field['anim_attach'] ) ) {
+					continue; // rendered inside its target card above (active), or lazy-loaded (inactive)
+				}
+
 				$is_card = is_array( $field )
 					&& isset( $field['type'] ) && $field['type'] === 'multi-picker'
 					&& ! empty( $field['picker'] ) && is_array( $field['picker'] );
@@ -81,11 +120,7 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 					? $field['value'][ $picker_id ]
 					: 'none';
 
-				$saved = ( isset( $values[ $fid ] ) && is_array( $values[ $fid ] ) && isset( $values[ $fid ][ $picker_id ] ) )
-					? $values[ $fid ][ $picker_id ]
-					: $off_val;
-
-				$active = ( $saved !== $off_val && $saved !== '' );
+				$active = ! empty( $active_map[ $fid ] );
 				if ( $active ) { $any_active = true; }
 
 				$meta  = ( isset( $field['anim_meta'] ) && is_array( $field['anim_meta'] ) ) ? $field['anim_meta'] : array();
@@ -100,7 +135,13 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 				$is_multi = ! empty( $meta['multi'] );
 				$base     = isset( $meta['multi_base'] ) ? (string) $meta['multi_base'] : $fid;
 
-				$rendered = fw()->backend->render_options( array( $fid => $field ), $values, $data );
+				// Always render the card's options in FULL. The builder's OptionsModal collects values
+				// from the fields present when it opens, so a lazily-injected field would never be saved
+				// (that reset newly-added animations to "none" on save). The saved-value bloat that used
+				// to OOM the builder is fixed at the source instead — in multi-picker::_get_value_from_input,
+				// which now stores only the selected choice's sub-values.
+				$body = fw()->backend->render_options( array( $fid => $field ), $values, $data )
+					. ( isset( $attached[ $fid ] ) ? '<div class="upw-anim-card-extra">' . $attached[ $fid ] . '</div>' : '' );
 
 				$cards .= '<div class="upw-anim-card' . ( $active ? '' : ' is-hidden' ) . '"'
 					. ' data-anim-id="' . esc_attr( $base ) . '"'
@@ -108,7 +149,7 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 					. ' data-anim-picker="' . esc_attr( $picker_id ) . '"'
 					. ' data-anim-off="' . esc_attr( $off_val ) . '">'
 					. '<button type="button" class="upw-anim-card-remove" aria-label="' . esc_attr__( 'Remove animation', 'fw' ) . '" title="' . esc_attr__( 'Remove animation', 'fw' ) . '">&times;</button>'
-					. $rendered
+					. $body
 					. '</div>';
 
 				// One catalog tile per base module (slots 2..N don't add their own tile).

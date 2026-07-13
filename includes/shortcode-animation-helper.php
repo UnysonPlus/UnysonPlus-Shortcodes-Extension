@@ -19,6 +19,9 @@
  */
 if ( ! defined( 'FW' ) ) die( 'Forbidden' );
 
+// Reusable easing picker (anime.js-style set) — sc_easing_field() / sc_easing_css().
+require_once __DIR__ . '/shortcode-easing-helper.php';
+
 
 /**
  * Returns the inner fields for the Animations tab.
@@ -190,21 +193,16 @@ function sc_get_animation_fields() {
             'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
             'right-choice' => [ 'value' => 'yes', 'label' => __( 'On',  'fw' ) ],
         ],
+        // Easing — the `easing-picker` type renders only a LIGHT trigger here (thumbnail + name),
+        // so it is safe inside this panel even though it is duplicated onto all ~56 effect reveals;
+        // the 41-tile grid is a single SHARED palette built client-side (see the option type). Lives
+        // right where the old easing select did — in the popover's Advanced Tweaks. Resolved to a
+        // CSS animation-timing-function at render via sc_easing_css().
         'easing' => [
-            'label'   => __( 'Easing Function', 'fw' ),
-            'desc'    => __( 'Override the animation timing function. Leave on Default to use the effect\'s built-in curve.', 'fw' ),
-            'type'    => 'select',
-            'value'   => '',
-            'choices' => [
-                ''                                      => __( 'Default', 'fw' ),
-                'ease'                                  => __( 'Ease', 'fw' ),
-                'ease-in'                               => __( 'Ease In', 'fw' ),
-                'ease-out'                              => __( 'Ease Out', 'fw' ),
-                'ease-in-out'                           => __( 'Ease In Out', 'fw' ),
-                'linear'                                => __( 'Linear', 'fw' ),
-                'cubic-bezier(0.25, 0.1, 0.25, 1)'      => __( 'Smooth (cubic-bezier)', 'fw' ),
-                'cubic-bezier(0.68, -0.55, 0.27, 1.55)' => __( 'Overshoot (cubic-bezier)', 'fw' ),
-            ],
+            'type'  => 'easing-picker',
+            'label' => __( 'Easing', 'fw' ),
+            'desc'  => __( 'Timing curve for this entrance — ~40 anime.js-style easings (Spring / Elastic / Bounce / Back / Steps …). Default keeps the effect\'s built-in curve. Spring / Elastic / Bounce need a 2023+ browser.', 'fw' ),
+            'value' => 'default',
         ],
     ];
 
@@ -263,17 +261,24 @@ function sc_get_animation_fields() {
     $tile_base = $sc_ext ? $sc_ext->get_declared_URI( '/static/img/entrance-effects' ) : '';
     $tile      = function ( $file, $label ) use ( $tile_base ) {
         return [
-            'small' => [ 'src' => $tile_base . '/' . $file . '.svg', 'height' => 107 ],
+            'small' => [ 'src' => $tile_base . '/' . $file . '.svg', 'height' => 86 ],
             'large' => [ 'src' => $tile_base . '/' . $file . '.svg', 'height' => 190 ],
             'label' => $label,
         ];
     };
-    $effect_tiles = [ 'none' => $tile( 'none', __( 'None', 'fw' ) ) ];
-    foreach ( $effect_choices as $optgroup ) {
+    // Grouped tiles — each category becomes an image-picker GROUP (rendered as an <optgroup>, which
+    // the picker turns into a category header). No "None" tile: to remove an entrance the user just
+    // deletes the card (×). The off state (value 'none') simply selects nothing; the trigger shows
+    // the "None" placeholder. The search box + headers come from the image-picker's `search` option.
+    $effect_tiles = [];
+    foreach ( $effect_choices as $gi => $optgroup ) {
         if ( empty( $optgroup['choices'] ) || ! is_array( $optgroup['choices'] ) ) { continue; }
+        $glabel      = isset( $optgroup['attr']['label'] ) ? $optgroup['attr']['label'] : '';
+        $group_tiles = [];
         foreach ( $optgroup['choices'] as $effect_key => $effect_label ) {
-            $effect_tiles[ $effect_key ] = $tile( str_replace( 'animate__', '', $effect_key ), $effect_label );
+            $group_tiles[ $effect_key ] = $tile( str_replace( 'animate__', '', $effect_key ), $effect_label );
         }
+        $effect_tiles[ 'grp_' . $gi ] = [ 'label' => $glabel, 'choices' => $group_tiles ];
     }
 
     $fields = [
@@ -287,6 +292,9 @@ function sc_get_animation_fields() {
             'help'         => __( 'Entrance Animation (Animate.css): plays a one-shot reveal as the element scrolls into view — fades, slides, zooms, flips and back / bounce / rotate entrances, plus attention-seekers like Pulse, Bounce, Shake and Wobble. After you pick an effect you can set its speed, delay, repeat count, loop and easing. Honours “reduce motion” (shows the element with no animation) and loads Animate.css only on pages that actually use an entrance. Part of core — available with or without the Animation Engine.', 'fw' ),
             'show_borders' => false,
             'value'        => [ 'effect' => 'none' ],
+            // Popover trigger text when nothing is picked (there is no "None" tile — value 'none'
+            // selects nothing; delete the card to remove the entrance).
+            'placeholder'  => __( 'None', 'fw' ),
             // Metadata for the Animations-tab organizer (animation-stack container): which
             // inserter category + icon this card shows under.
             'anim_meta'    => [ 'category' => __( 'Entrance', 'fw' ), 'icon' => '&#10024;' ], // ✨
@@ -295,6 +303,8 @@ function sc_get_animation_fields() {
                     'type'    => 'image-picker',
                     'label'   => false,
                     'value'   => 'none',
+                    'search'  => __( 'Search entrance effects…', 'fw' ),
+                    'layout'  => 'tabs',
                     'choices' => $effect_tiles,
                 ],
             ],
@@ -402,6 +412,49 @@ add_action( 'fw_container_types_init', function () {
     }
 } );
 
+/**
+ * Lazy-load endpoint for ONE animation card's options. The animation-stack container renders
+ * inactive cards (unused modules + the pre-declared Hover/Text slots) as light placeholders; when
+ * the user clicks a tile to add that animation, animation-stack.js fetches its options here and
+ * injects them. This is what keeps a fresh element's Animations modal small (~<1MB vs ~8.8MB) and
+ * off the 512MB OOM. Renders the requested field (+ any anim_attach extras) at DEFAULT values —
+ * a just-added animation always starts fresh; existing (active) animations still render eagerly.
+ */
+add_action( 'wp_ajax_upw_anim_render_card', 'sc_ajax_render_animation_card' );
+if ( ! function_exists( 'sc_ajax_render_animation_card' ) ) :
+function sc_ajax_render_animation_card() {
+    if ( ! current_user_can( 'edit_posts' ) ) { wp_send_json_error(); }
+    check_ajax_referer( 'upw_anim_card', 'nonce' );
+
+    $slot = isset( $_POST['slot'] ) ? sanitize_text_field( wp_unslash( $_POST['slot'] ) ) : '';
+    if ( $slot === '' || ! function_exists( 'sc_get_animation_fields' ) || ! function_exists( 'fw' ) ) {
+        wp_send_json_error();
+    }
+
+    $stack  = sc_get_animation_fields();
+    $fields = ( isset( $stack['animation_stack']['options'] ) && is_array( $stack['animation_stack']['options'] ) )
+        ? $stack['animation_stack']['options'] : array();
+    if ( ! isset( $fields[ $slot ] ) || ! is_array( $fields[ $slot ] ) ) {
+        wp_send_json_error();
+    }
+
+    $html = fw()->backend->render_options( array( $slot => $fields[ $slot ] ), array() );
+
+    // Attached extras (e.g. the Entrance Easing) that live inside this card.
+    $extra = '';
+    foreach ( $fields as $fid => $f ) {
+        if ( is_array( $f ) && ! empty( $f['anim_attach'] ) && (string) $f['anim_attach'] === $slot ) {
+            $clean = $f;
+            unset( $clean['anim_attach'] );
+            $extra .= fw()->backend->render_options( array( $fid => $clean ), array() );
+        }
+    }
+    if ( $extra !== '' ) { $html .= '<div class="upw-anim-card-extra">' . $extra . '</div>'; }
+
+    wp_send_json_success( array( 'html' => $html ) );
+}
+endif;
+
 
 /**
  * Marks/queries a per-request flag that says "at least one animated shortcode
@@ -459,7 +512,10 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     $repeat_count = (int)   ( $settings['repeat_count']    ?? 1 );
     $loop_forever = ! empty( $settings['loop_forever'] )     && $settings['loop_forever']     === 'yes';
     $replay       = ! empty( $settings['replay_on_scroll'] ) && $settings['replay_on_scroll'] === 'yes';
-    $easing       = (string) ( $settings['easing'] ?? '' );
+    // Easing lives back in the per-effect panel (an easing-picker); fall back to the brief
+    // sibling-field location used in 1.10.95–1.10.97 saves. 'default'/'' = no override.
+    $easing       = (string) ( $settings['easing'] ?? ( $atts['animation_easing'] ?? '' ) );
+    if ( $easing === 'default' ) { $easing = ''; }
 
     // Build the class list that JS will apply on intersection.
     $anim_classes = [ 'animate__animated' ];
@@ -484,8 +540,16 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     if ( $delay > 0 )                                          $css_vars[] = '--animate-delay: '    . rtrim( rtrim( number_format( $delay, 2, '.', '' ),    '0' ), '.' ) . 's';
     if ( $duration > 0 )                                       $css_vars[] = '--animate-duration: ' . rtrim( rtrim( number_format( $duration, 2, '.', '' ), '0' ), '.' ) . 's';
     if ( ! $loop_forever && $repeat_count > 1 )                $css_vars[] = '--animate-repeat: '   . $repeat_count;
-    if ( $easing && preg_match( '/^[a-zA-Z0-9\.,\-\(\)\s]+$/', $easing ) ) {
-        $css_vars[] = '--animate-easing: ' . $easing;
+
+    // Easing — resolve the picker KEY to a CSS timing-function and apply it DIRECTLY (Animate.css
+    // has no --animate-easing var, so setting one was a no-op; an inline animation-timing-function
+    // actually takes effect — for the segments a keyframe doesn't override). Legacy raw-CSS values
+    // pass through sc_easing_css() unchanged. `linear()`/`%` are allowed for the sampled curves.
+    $easing_css = function_exists( 'sc_easing_css' ) ? sc_easing_css( $easing ) : '';
+    if ( $easing_css !== '' && preg_match( '/^[a-zA-Z0-9\.,\-\(\)\s%]+$/', $easing_css ) ) {
+        $css_vars[] = 'animation-timing-function: ' . $easing_css;
+        $css_vars[] = '-webkit-animation-timing-function: ' . $easing_css;
+        $css_vars[] = '--animate-easing: ' . $easing_css; // harmless; kept for any theme that reads it
     }
 
     if ( ! empty( $css_vars ) ) {

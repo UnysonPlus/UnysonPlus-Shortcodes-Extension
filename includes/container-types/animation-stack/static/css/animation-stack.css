@@ -30,17 +30,29 @@
 .upw-anim-card:last-child { border-bottom: 0; }
 
 /* Give the popover trigger room on the right so the remove × never overlaps its chevron,
-   while the option itself still spans full width (aligned with the other tabs' rows). */
-.upw-anim-card .fw-mp-pop > .fw-mp-pop-trigger { padding-right: 36px; }
+   while the option itself still spans full width (aligned with the other tabs' rows). The
+   reserve accounts for the × button's 8px right inset + its 26px width + a small gap. */
+.upw-anim-card .fw-mp-pop > .fw-mp-pop-trigger { padding-right: 42px; }
 
 .upw-anim-card-remove {
-	position: absolute; top: 11px; right: 0; z-index: 3;
+	position: absolute; top: 11px; right: 8px; z-index: 3;
 	width: 26px; height: 26px; padding: 0;
 	border: 1px solid transparent; border-radius: 50%;
 	background: transparent; color: #9aa5b4;
-	font-size: 20px; line-height: 22px; text-align: center;
+	font-size: 0; /* hide the literal &times; text node — the × is drawn geometrically below */
+	line-height: 0;
 	cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease;
 }
+/* Draw the × as two rotated bars, each absolutely centred on the button (top/left 50% +
+   translate(-50%,-50%)). This is pure geometry, so it's dead-centre regardless of the glyph's
+   font metrics or any inherited line-height in the builder — the reason a text × drifted high. */
+.upw-anim-card-remove::before,
+.upw-anim-card-remove::after {
+	content: ""; position: absolute; top: 50%; left: 50%;
+	width: 12px; height: 1.6px; border-radius: 1px; background: currentColor;
+}
+.upw-anim-card-remove::before { transform: translate(-50%, -50%) rotate(45deg); }
+.upw-anim-card-remove::after  { transform: translate(-50%, -50%) rotate(-45deg); }
 .upw-anim-card-remove:hover { background: #fdecec; color: #d63638; border-color: #f4c7c7; }
 .upw-anim-card-remove:focus { outline: none; box-shadow: 0 0 0 2px rgba(47,116,230,.35); }
 
@@ -118,3 +130,14 @@
 
 /* The card's own multi-picker keeps its native layout; just trim its top gap inside a card. */
 .upw-anim-card .fw-backend-option-type-multi-picker { margin-top: 0; }
+
+/* A field attached INTO a card (e.g. the Entrance Easing) — sits under the card's picker with a
+ * light divider so it reads as part of that animation's settings, not a separate control. */
+.upw-anim-card-extra { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e6e9ee; }
+.upw-anim-card-extra > .fw-backend-option:last-child { margin-bottom: 0; }
+
+/* Lazy card load: a placeholder body while its options are fetched (see animation-stack.js). */
+.upw-anim-card-loading .upw-anim-card-body { min-height: 46px; opacity: .55; }
+.upw-anim-card-loading .upw-anim-card-body::after {
+	content: "Loading…"; display: block; padding: 14px 12px; color: #6b7a8d; font-size: 12px;
+}

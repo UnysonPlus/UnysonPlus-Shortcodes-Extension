@@ -88,8 +88,44 @@
 			$tile.addClass('is-added');
 		}
 
-		$card.removeClass('is-hidden');
 		$tile.closest('.upw-anim-catalog').prop('hidden', true);
+
+		// Inactive cards ship as empty placeholders (the heavy per-effect options aren't rendered up
+		// front — that's what OOMed the builder). Fetch this card's options once, inject + init them,
+		// then reveal & open. Already-rendered cards fall straight through.
+		if ($card.attr('data-anim-lazy') === '1') {
+			lazyLoadCard($card, function () { revealCard($card, $stack); });
+		} else {
+			revealCard($card, $stack);
+		}
+	});
+
+	// Fetch one card's options HTML over AJAX, inject into its body, and initialise the FW option
+	// types inside (so the multi-picker / image-picker become interactive). Guards against a double
+	// fetch. On failure the card still reveals (empty) rather than trapping the user.
+	function lazyLoadCard($card, done) {
+		$card.removeAttr('data-anim-lazy').addClass('upw-anim-card-loading');
+		var cfg = window.upwAnimStack || {};
+		$.ajax({
+			url: cfg.ajaxurl || window.ajaxurl,
+			method: 'POST',
+			data: { action: 'upw_anim_render_card', slot: $card.attr('data-anim-slot'), nonce: cfg.nonce || '' }
+		}).done(function (res) {
+			if (res && res.success && res.data && res.data.html) {
+				$card.find('.upw-anim-card-body').html(res.data.html);
+				if (window.fwEvents && typeof fwEvents.trigger === 'function') {
+					fwEvents.trigger('fw:options:init', { $elements: $card });
+				}
+			}
+		}).always(function () {
+			$card.removeClass('upw-anim-card-loading');
+			done();
+		});
+	}
+
+	// Reveal a card and open its popover picker so the user picks an effect immediately.
+	function revealCard($card, $stack) {
+		$card.removeClass('is-hidden');
 		updateEmpty($stack);
 
 		// Best-effort: keep the image-picker tile highlight in sync with the <select> value.
@@ -101,14 +137,13 @@
 			}
 		}
 
-		// Open the card's popover so the user immediately chooses the effect.
 		var $pop = $card.find('.fw-mp-pop').first();
 		if ($pop.length) { $pop.addClass('is-open'); }
 
 		if ($card[0] && $card[0].scrollIntoView) {
 			$card[0].scrollIntoView({ block: 'nearest' });
 		}
-	});
+	}
 
 	// Remove — reset the picker to "off" and tuck the card away.
 	$(document).on('click', '.upw-anim-card-remove', function (e) {

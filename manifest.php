@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.10.51';
+$manifest['version']     = '1.11.16';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,144 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.11.16 - Media Video: now plays SELF-HOSTED files, not just oEmbed URLs. A new "Video
+ *          Source" picker (Content tab) toggles between Embed (paste a YouTube/Vimeo/oEmbed
+ *          page URL — the original behavior) and Self-hosted (upload/link an MP4 + optional
+ *          WebM). Self-hosted mode renders a real HTML5 <video> with poster, autoplay, muted,
+ *          loop, controls, plays-inline, preload, and object-fit (contain/cover) controls —
+ *          the only way to get a muted, looping, autoplaying background/hero clip (this is what
+ *          demo sites previously had to fake with a raw <video> in a text_block). Embed mode
+ *          gains two page-speed/privacy options: "Privacy Mode (no-cookie)" routes YouTube
+ *          through youtube-nocookie.com, and "Lazy-load (click to play)" shows a lightweight
+ *          poster + play button and only loads the heavy provider iframe on click (a big Core
+ *          Web Vitals win; the YouTube thumbnail is used as the poster when none is set). A
+ *          new front-end script handles the facade click-to-load and pauses autoplay videos
+ *          for visitors who prefer reduced motion. Legacy instances (a bare URL, no source
+ *          picker) keep working — they resolve as an Embed automatically.
+ * 1.11.11 - Special Heading: new "Title Max Width" option (Styling tab). Previously only the whole
+ *          block (Heading Max Width) and the subtitle (Subtitle Max Width) could be capped; the
+ *          title had no independent measure. The new unit-input caps the title element only
+ *          (overline/subtitle unaffected) — e.g. 16ch to force a clean 2-line headline — and
+ *          centers when the title is center-aligned, mirroring the subtitle's behavior.
+ * 1.10.99 - Entrance Animation: full anime.js-style Easing picker (new `easing-picker` option type).
+ *          The Advanced Tweaks "Easing Function" select (7 CSS values) becomes a curve picker of
+ *          ~40 easings — Spring (default/snappy/bouncy/strong), Bezier / Power / Sine / Expo / Circ
+ *          / Back / Elastic / Bounce (in/out/inOut/outIn each), Irregular (light/heavy) and Steps
+ *          (start/end) — right where the old select lived. Each easing is SAMPLED once into a CSS
+ *          `linear()` string (or `steps()`), and the same samples draw the curve thumbnail so tile
+ *          and behaviour always match; sc_easing_css()/sc_easing_gsap() resolve a key for CSS or
+ *          GSAP consumers so other modules can reuse it. Value = a scalar easing KEY (drop-in for
+ *          the old select — no migration; legacy raw-CSS values pass through). MEMORY: the Entrance
+ *          panel is duplicated onto all ~56 Animate.css effect reveals, so a 41-tile image picker
+ *          there rendered ~56×41 tiles per element and exhausted the PHP memory limit in the editor.
+ *          The `easing-picker` renders only a LIGHT trigger (thumbnail + name) per instance; the
+ *          41-tile grid is a SINGLE shared palette built client-side and opened by any trigger — so
+ *          it stays cheap inside the 56× reveal and is reusable everywhere. Also fixes a latent
+ *          no-op: easing was written as an unused `--animate-easing` var; it now applies as an
+ *          inline `animation-timing-function` (fully on the simple entrances, layered on the
+ *          multi-keyframe attention-seekers). Curve thumbnails are our own style (blue curve, no
+ *          background). `linear()` needs a 2023+ browser; older ones fall back to Default.
+ *
+ * 1.10.86 - Pricing Table: composable Featured Plan Emphasis. The old single "Raise the Featured
+ *          Plan" switch (which merely SCALED the plan) becomes a "Featured Plan Emphasis"
+ *          multi-select where any combination of treatments applies to the featured plan: raise /
+ *          lift (translateY — the correct raise, not a scale), enlarge (scale), highlight border,
+ *          glow shadow, accent background, top-center badge / banner, accent button, and emphasize
+ *          plan name. Treatments compose (raise + enlarge share one transform via CSS vars; glow /
+ *          fill / highlight use a doubled .fw-pt.fw-pt--feat-* prefix so they outrank per-design
+ *          .is-featured rules). A featured plan with the "badge" treatment renders a centered pill
+ *          (its Ribbon text, or "Most Popular"). Back-compat: a legacy featured_raise='yes' maps to
+ *          'enlarge' so existing tables keep their look; new tables default to the source-style set
+ *          raise + highlight + glow + badge + accent button. Also adds a Button Style select
+ *          (Solid / Outline) for the plan buttons — a featured plan's "Accent button" emphasis
+ *          re-fills the outline via a higher-specificity rule, so outline-regular + solid-featured
+ *          (the common SaaS pricing look) needs no per-site CSS.
+ * 1.10.83 - Gallery: single "Columns" control + auto responsive + featured ratio. The Grid design's
+ *          three separate Columns (Desktop / Tablet / Mobile) selects collapse to ONE "Columns"
+ *          control. For the grid it is a footer-style multi-picker (like the theme Header/Footer
+ *          column field): picking N REVEALS a Column-Ratio split-slider LOCKED to N panes (pick 4
+ *          → a 4-pane slider) for a dominant / featured tile; value is { count, '<count>':{ col_ratio } }.
+ *          Tablet & phone counts are now derived automatically (phone = 1; tablet = desktop − 1 for
+ *          5–6 columns, else capped at 2) instead of being hand-set. Design views resolve it via a
+ *          new $g_cols reader that tolerates the LEGACY shape (columns:'3' + sibling
+ *          columns_tablet/columns_mobile/col_ratio) so galleries saved before this open with no
+ *          migration. Built as a reusable $g_opt_columns_rwd() helper (with_ratio flag) and applied
+ *          across every column-based design — grid (with the ratio slider), masonry, cards,
+ *          flipcards, polaroid, metro, honeycomb — so the whole gallery shares one Columns control.
+ * 1.10.82 - Gallery: Column Ratio control (featured / dominant tile). The Grid design gains a
+ *          "Column Ratio (Desktop)" split-slider — drag the dividers to give columns UNEQUAL
+ *          widths (e.g. 1 : 2 : 1) so one tile reads as the bigger, dominant image. The design
+ *          template emits an explicit `--gal-tpl` (fr-unit grid-template-columns) only when the
+ *          split is meaningfully unequal (an even split falls back to the plain --gal-cols grid),
+ *          and the widest tile keeps its aspect-ratio to set the row height while the narrower
+ *          tiles get fw-gallery__media--fill so they stretch to that height (no dead space).
+ *          Segment count = the desktop column count; tablet / phone stay evenly split.
+ * 1.10.77 - Inline-SVG fixes + per-logo label opt-out. Two correctness fixes for pasted
+ *          inline SVGs: (1) sc_icon_sanitize_svg() now restores the case-SENSITIVE
+ *          `viewBox` / `preserveAspectRatio` attributes that wp_kses lowercases — a
+ *          lowercased `viewbox` is ignored by browsers, collapsing the SVG's aspect
+ *          ratio; (2) logo-grid gives inline SVG marks `max-width:none` so a global
+ *          `svg{max-width:100%}` can't create a circular width constraint inside the
+ *          flex item (which shrank square-viewBox marks to a sliver). Also: a per-logo
+ *          "Hide Name Label" switch so a wordmark logo doesn't duplicate its Name.
+ * 1.10.76 - Logo Grid: inline-SVG logos + name labels. Each logo can now be pasted
+ *          &lt;svg&gt; markup (rendered INLINE and sanitised — crisp, recolourable, and
+ *          usable without an SVG-upload plugin) as an alternative to an uploaded image;
+ *          a new "Show Names" switch renders each logo's Name as a visible text label
+ *          beside the mark (the "trusted by [logo] Brand" pattern), and a "Logo / Label
+ *          Color" picker drives the labels + any currentColor SVG marks. Grayscale/opacity
+ *          now fades the whole item so labels dim with their marks. A name-only logo (no
+ *          image/SVG) renders as a bold wordmark. Reuses sc_icon_sanitize_svg().
+ * 1.10.74 - Text Styles (formerly "Font Size Presets"). Theme Settings → Components →
+ *          Text Styles now defines named typographic styles, not just sizes: each style
+ *          carries a size PLUS optional weight, line-height, letter-spacing and
+ *          text-transform. Every property is OPT-IN — a style emits only the fields you
+ *          fill in (scoped to its own .font-{slug} or literal class), so a blank field
+ *          INHERITS from the element's tag token (a blank weight keeps the heading's
+ *          weight, it does not thin it). Size is optional too, so a style can set only
+ *          weight + tracking + transform (e.g. an eyebrow / overline). The Styling-tab
+ *          picker is relabelled "Text Style". Stored under the legacy font_sizes key
+ *          (a size-only Text Style), so no migration. Emission is in the core css-tokens
+ *          bridge; pairs with the 1.10.73 weight-preserving fix (a blank-weight Display
+ *          size inherits the tag weight, a Text Style that sets a weight wins by
+ *          specificity).
+ * 1.10.73 - Title Display Size no longer thins the heading weight. Picking a Display
+ *          Size on a Special Heading applies Bootstrap's .display-1..6, which ALSO
+ *          hardcode font-weight:300 — so a "size" choice silently rendered the heading
+ *          thin (a bold h1 became light once sized up). A Display Size is a SIZE control:
+ *          the special-heading CSS now re-asserts the heading's OWN weight at higher
+ *          specificity than Bootstrap's class (hN.heading-title), reading the per-heading
+ *          weight token the theme emits (--h1-font-weight … --h6-font-weight) and falling
+ *          back to the heading's natural (UA bold) weight under themes that set none.
+ * 1.10.66 - Button Shape control. The Button element gained a Shape option — a visual
+ *          IMAGE PICKER (Default / Pill / Rounded / Square, each tile showing the corner
+ *          silhouette) that overrides ONLY the border-radius the Button Size preset would
+ *          apply — so a pill CTA is one click at any size, without duplicating a size preset
+ *          or re-shaping "Large" globally. Emits a `.btn-shape-{pill|rounded|square}` class;
+ *          the rule (button styles.css) wins over the size radius via higher specificity +
+ *          !important. Default keeps the size preset's radius, so nothing existing changes.
+ *
+ * 1.10.64 - Responsive Section spacing. The Section's Top Spacing, Bottom Spacing,
+ *          Gap X and Gap Y options are now per-device (Phone / Tablet / Desktop tabs),
+ *          matching the existing responsive Gap — so a section can breathe on desktop
+ *          while staying tighter on phones. Top/Bottom Spacing gained a `responsive`
+ *          flag on `sc_spacing_field()`; `sc_apply_styling_classes()` now emits one
+ *          utility per device (base at all widths; md/lg inject the Bootstrap infix,
+ *          e.g. `pt-3` -> `pt-lg-3`); the section view emits per-device
+ *          `section--gap-{x,y}-{md,lg}-{slug}` classes, and css-tokens generates the
+ *          matching single-axis gutter overrides (schema 17). Migration-safe: a legacy
+ *          scalar folds into `base` (the `responsive` option type normalises it), so
+ *          existing sections and saved values keep rendering unchanged.
+ *
+ * 1.10.60 - Fifth column widths everywhere. The Column element's Width Override and
+ *          Offset pickers now include 1/5..4/5 (20/40/60/80%) interleaved with the
+ *          twelfths, and the canvas live-preview handles fifth per-device overrides.
+ *          The Column-Split slider (Image / Content Split, Content / Button Split) now
+ *          snaps to twelfths AND fifths: its stored value became a self-identifying
+ *          "n/d" fraction (e.g. "2/5"), so a legacy integer span still reads correctly
+ *          with no migration. image-content maps the fraction to fw-col-*-{n5} classes;
+ *          call-to-action uses it as a flex-grow ratio.
+ *
  * 1.10.39 - Retired the per-element "Custom Icon (Emoji / SVG)" text field on
  *          icon-box, image-box and notification — the unified icon picker now
  *          handles emoji, Lucide and pasted/uploaded SVG for every element, so the
