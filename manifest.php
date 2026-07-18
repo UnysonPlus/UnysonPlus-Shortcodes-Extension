@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.11.37';
+$manifest['version']     = '1.11.64';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,83 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.11.58 - Accordion gains design-style presets. The Styling tab now opens with a Design group:
+ *          an "Accordion Style" image-picker (Bordered / Separated / Filled / Flush / Ghost),
+ *          plus Corner Radius, Elevation (shadow), an Open-Item Accent color, and a Title Hover
+ *          toggle. Previously the accordion had only functional + raw-color options and one fixed
+ *          "bootstrappy" look (square grey stacked boxes). The presets route through CSS custom
+ *          properties on the wrapper (accordion-style-* / -radius-* / -elev-* classes + an
+ *          --acc-accent var), so a style is a small set of token overrides rather than a fork,
+ *          and the existing per-element color pickers (emitted as high-specificity !important
+ *          preset utilities) still win over the defaults. The open-item accent is a full-width
+ *          underline plus a soft tint (never a side stripe). Default look is now Bordered + Medium radius (rounded, softer
+ *          borders); existing saved accordions pick that up automatically. Backend/front-end both
+ *          honour prefers-reduced-motion.
+ * 1.11.47 - Container element gains the Animations + Advanced tabs. Completes the Container's
+ *          element surface so it matches the Section's 4-tab shape (Layout / Styling / Animations
+ *          / Advanced): entrance Animations plus the shared Advanced tab (CSS ID / class / custom
+ *          CSS / position / overflow / responsive-hide / display conditions / custom attrs). Both
+ *          apply through the existing sc_build_wrapper_attr filters, which the Container view
+ *          already calls, so no view/CSS changes were needed — the atts simply now exist. This
+ *          makes the Container a first-class element (distinct from the Section in WHAT it styles,
+ *          but no longer stripped of the generic capabilities every other element has).
+ * 1.11.46 - Container element gains a curated subset of the Section's styling. The Container
+ *          shortcode — previously just a Boxed / Full-width switch — now carries a Layout tab
+ *          (Min Height, Columns Horizontal / Vertical Alignment, Column Order) and a Styling tab
+ *          (Background via background-pro, Top / Bottom Spacing, and Gap / Gap X / Gap Y), so a
+ *          nested container can be styled like a lightweight section without being a clone of one
+ *          (Section Variant, Shape Dividers and per-section Container Width are intentionally left
+ *          out to keep the two distinct). The alignment fields come from a new shared helper,
+ *          sc_section_align_fields( $noun ), which emits the Section's exact image-picker glyphs +
+ *          the class-only .section--cols-* / .section--rev* / .section--gap-* modifier classes, so
+ *          the Container reuses them for free; only the "Default / Stretched" vertical alignment
+ *          needs a container-scoped CSS rule (the Section's keys on a `> .fw-container` child the
+ *          Container lacks). The Container view now also runs sc_build_wrapper_attr(), so it picks
+ *          up the Spacing utility classes and the Live Editor selection stamp automatically. Its
+ *          modal grows small → medium to fit the new panel. All new options default to "off"
+ *          (no background, auto height, default alignment), so existing containers render identically.
+ * 1.11.42 - Box Style control rolled out to the card shortcodes + Testimonials joins the stagger. A
+ *          shared "Box Style" field (sc_card_box_style_field(), read via sc_card_box_style_class())
+ *          now applies a Box Preset (.boxp-{slug}) to: Icon Box, Image Box, Team Member, Flip Box,
+ *          Blockquote and Call To Action (on the card wrapper); and per item on Posts (.posts__card,
+ *          via the existing article-class splice), Pricing Table (.fw-pt__plan), Feature List
+ *          (.fw-fl__item) and Testimonials (.fw-tst-item, grid/card designs). Testimonials also gains
+ *          a shared .fw-tst-item item class on its grid designs (bento / bubble / masonry / stacked /
+ *          zigzag) and is registered for the per-child entrance stagger (grid designs only; its
+ *          Splide slider designs are excluded). Testimonials Box Style currently covers the grid/card
+ *          designs; the slider designs (default / pullquote / spotlight / split / marquee / thumbnav)
+ *          are a follow-up.
+ * 1.11.41 - Per-child entrance stagger rolled out to more collections. Adding an Entrance animation
+ *          to Posts, Logo Grid, Feature List, Pricing Table, Timeline or Steps now cascades the reveal
+ *          across their items (like the Gallery) — each is registered in sc_anim_collection_items()
+ *          with its item selector (.posts__card / .fw-lg__item / .fw-fl__item / .fw-pt__plan /
+ *          .fw-tl__item / .fw-steps__item). The registry was SPLIT to avoid coupling: the broad
+ *          sc_anim_collection_items() drives the stagger (+ Card Stack skip-guard), while a narrow
+ *          sc_hover_collection_items() (wired views only — currently just the Gallery) governs the
+ *          per-card Hover skip, so registering a stagger collection no longer risks breaking its hover.
+ *          Testimonials is deferred: its per-design item markup (ts-*__item / __card) has no single
+ *          selector and needs a shared item class first.
+ * 1.11.40 - Per-card Hover Interaction on collections (Gallery). Adding a Hover Interaction on the
+ *          Gallery's Animations tab now lands the effect on EACH card instead of the whole grid
+ *          (previously the entire gallery tilted/animated as one block). The engine Hover module skips
+ *          stamping the wrapper for a registered collection and instead exposes the class/attrs via
+ *          upw_hover_collection_item_attr(); the Gallery view stamps them on every card <figure>
+ *          (sc_gallery_render_tile item_hover). Same shared sc_anim_collection_items() registry that
+ *          drives the entrance stagger + Card Stack, so Posts / Testimonials light up the same way.
+ * 1.11.39 - Unified card system: Box Style + per-child entrance stagger (Gallery first). The Gallery
+ *          Style tab gains a "Box Style" control (sc_card_box_style_field(), a Box Preset
+ *          border-style-picker -> a .boxp-{slug} class on each card <figure>, engine-independent, so
+ *          the preset's border / shadow / fill + its structured hover effects apply per card). NEW
+ *          per-child entrance STAGGER: when an Entrance animation is set on a registered collection
+ *          element, the reveal now cascades across its ITEMS instead of animating the whole grid as one
+ *          block. A shared registry sc_anim_collection_items() maps base_class -> item selector
+ *          (fw-gallery -> .fw-gallery__item; Posts / Testimonials follow); a wrapper filter stamps
+ *          data-sc-anim-children + data-sc-anim-stagger (ms, filter sc_anim_stagger_ms), and
+ *          sc-animations.js moves the animation onto each item with an incremental --animate-delay
+ *          (items pre-hidden before the already-hidden wrapper is revealed = no flash; capped so a big
+ *          grid isn't glacial; honours reduce-motion). The same registry also drives the Card Stack
+ *          effect's per-collection item selection. (Removed the short-lived per-card engine-Hover
+ *          select from the Gallery — redundant with the Animations tab, which now applies per item.)
  * 1.11.36 - Section: new "Container Width" option (Layout tab). Constrains a single section's content
  *          band to a narrower max-width than the global Container Width (General → Layout) — presets
  *          Narrow (768) / Medium (896) / Wide (1024), or Custom (unit-input). Default "Inherit" leaves
