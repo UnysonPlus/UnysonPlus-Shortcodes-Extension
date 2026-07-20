@@ -204,12 +204,6 @@ $options = array(
 			'group' => array(
 				'type'    => 'group',
 				'options' => array(
-					'title' => array(
-						'label' => __( 'Title', 'fw' ),
-						'desc'  => __( 'Optional heading displayed above the gallery.', 'fw' ),
-						'help'  => __( 'Plain heading text shown before the images. Leave blank for no heading.', 'fw' ),
-						'type'  => 'text',
-					),
 					'images' => array(
 						'label'       => __( 'Images', 'fw' ),
 						'desc'        => __( 'Add or arrange the gallery images.', 'fw' ),
@@ -567,10 +561,6 @@ $options = array(
 					'font_size_preset' => sc_font_size_field( array(
 						'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),
 					) ),
-					'title_color' => sc_color_field_compact( array(
-						'label' => __( 'Title Color', 'fw' ),
-						'desc'  => __( 'Overrides the general Text Color for the gallery heading.', 'fw' ),
-					) ),
 					'caption_color' => sc_color_field_compact( array(
 						'label' => __( 'Caption Color', 'fw' ),
 						'desc'  => __( 'Color of the per-image caption text.', 'fw' ),
@@ -607,3 +597,15 @@ $options = array(
 		),
 	),
 );
+
+/* -------------------------------------------------------------------------
+ * Unified card control — Box Style: a reusable Box Preset (.boxp-{slug}) on
+ * each card <figure> (border, corners, shadow, fill + its structured hover
+ * effects). Engine-independent. Per-card animated hover / entrance lives on the
+ * Animations tab via the Animation Engine modules (applied per item), not here.
+ * ---------------------------------------------------------------------- */
+if ( function_exists( 'sc_card_box_style_field' ) ) {
+	$options['tab_style']['options']['group_behavior']['options']['box_style'] = sc_card_box_style_field( array(
+		'desc' => __( 'Apply a reusable Box Preset (border, corners, shadow, fill + hover effects) to each gallery card. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ),
+	) );
+}

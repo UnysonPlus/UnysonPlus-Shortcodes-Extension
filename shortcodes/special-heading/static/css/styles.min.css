@@ -140,3 +140,4 @@ h6.heading-title{font-weight:var(--h6-font-weight,revert)}
 .heading--space-tight .heading-title { margin-bottom: 0.25rem; }
 .heading--space-relaxed .heading-overline,
 .heading--space-relaxed .heading-title { margin-bottom: 1rem; }
+.heading-title__icon{margin-right:.4em}.heading-title .heading-title__icon,.heading-title__icon.heading-title__icon{display:inline-block;line-height:1;vertical-align:-.05em}img.heading-title__icon{width:auto;height:.9em;vertical-align:-.08em}

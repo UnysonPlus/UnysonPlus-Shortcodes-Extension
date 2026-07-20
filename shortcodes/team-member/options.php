@@ -44,6 +44,7 @@ $options = [
             'group_colors' => [
                 'type'    => 'group',
                 'options' => [
+                    'box_style'        => sc_card_box_style_field(),
                     'text_color'       => sc_color_field_compact( array( 'label' => __( 'Text Color', 'fw' ),       'kind' => 'text' ) ),
                     'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
                     'font_size_preset' => sc_font_size_field( array(

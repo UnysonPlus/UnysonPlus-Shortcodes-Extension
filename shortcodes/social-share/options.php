@@ -18,11 +18,6 @@ $options = array(
 			'group' => array(
 				'type'    => 'group',
 				'options' => array(
-					'title' => array(
-						'type'  => 'text',
-						'label' => __( 'Heading', 'fw' ),
-						'desc'  => __( 'Optional small heading, e.g. "Share this".', 'fw' ),
-					),
 					'networks' => array(
 						'type'       => 'multi-select',
 						'label'      => __( 'Networks', 'fw' ),

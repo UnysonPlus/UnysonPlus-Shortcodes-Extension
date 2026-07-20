@@ -8,7 +8,7 @@
 if ( ! function_exists( 'counter_font_field' ) ) {
 	function counter_font_field( $label, $size, $line_height, $desc = '' ) {
 		return [
-			'type'       => 'typography-v2',
+			'type'       => 'typography',
 			'label'      => $label,
 			'desc'       => $desc,
 			'components' => [ 'subset' => false, 'color' => false ],

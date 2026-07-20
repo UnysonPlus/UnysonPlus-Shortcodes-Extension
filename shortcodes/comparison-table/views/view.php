@@ -49,7 +49,7 @@ if ( ! function_exists( 'sc_ct_render' ) ) {
 			return '';
 		}
 
-		$first_label = sc_get( 'first_col_label', $atts, __( 'Features', 'fw' ) );
+		$first_label = ''; // Feature Column Header removed — corner cell stays blank
 		$style       = sc_get( 'style', $atts, 'bordered' );
 		$hl          = sc_get( 'highlight_featured', $atts, 'yes' ) === 'yes';
 		$sticky      = sc_get( 'sticky_header', $atts, 'no' ) === 'yes';

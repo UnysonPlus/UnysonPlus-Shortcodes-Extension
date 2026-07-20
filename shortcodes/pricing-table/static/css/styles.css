@@ -9,7 +9,6 @@
 	--pt-text: #5a6772;
 	--pt-gap: 1.5rem;
 }
-.fw-pt__title { text-align: center; margin: 0 0 1.5rem; }
 .fw-pt__grid {
 	display: grid;
 	grid-template-columns: repeat(var(--pt-cols, 3), minmax(0, 1fr));

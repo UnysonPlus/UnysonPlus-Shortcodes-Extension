@@ -28,6 +28,16 @@ $title_alignment         = isset( $atts['title_alignment'] ) && in_array( $atts[
     ? $atts['title_alignment']
     : 'left';
 
+// Design presets (Styling tab → Design group). Strict whitelists so a stale
+// saved value can only ever fall back to the default look.
+$accordion_style = ( isset( $atts['accordion_style'] ) && in_array( $atts['accordion_style'], array( 'bordered', 'separated', 'flush', 'filled', 'ghost' ), true ) )
+    ? $atts['accordion_style'] : 'bordered';
+$corner_radius   = ( isset( $atts['corner_radius'] ) && in_array( $atts['corner_radius'], array( 'none', 'sm', 'md', 'lg' ), true ) )
+    ? $atts['corner_radius'] : 'md';
+$elevation       = ( isset( $atts['elevation'] ) && in_array( $atts['elevation'], array( 'none', 'subtle', 'raised' ), true ) )
+    ? $atts['elevation'] : 'none';
+$title_hover     = ( ! isset( $atts['title_hover'] ) || $atts['title_hover'] === 'yes' );
+
 $numbering_style    = fw_akg( 'numbering/style',           $atts, 'none' );
 $numbering_template = fw_akg( 'numbering/custom/template', $atts, 'Q{n}' );
 $numbering_start    = (int) fw_akg( 'numbering_start',     $atts, 1 );
@@ -193,6 +203,16 @@ $extract_hex = function ( array $styles ) {
 $icon_closed_hex = $extract_hex( $icon_closed_styling['styles'] );
 $icon_open_hex   = $extract_hex( $icon_open_styling['styles'] );
 
+// Open-Item Accent — resolve the compact color pick to a single color value and
+// route it through the `--acc-accent` CSS var (kind='bg' → `bg-{slug}` class or a
+// custom hex). The styles use it for the open item's full-width underline + soft
+// tint (never a side stripe). Empty = no accent (the `accordion-accent` class is
+// only added when a color is actually picked).
+$accent_styling = sc_extract_styling_atts( $atts, array( 'active_accent' ) );
+$accent_slug    = $strip_kind_prefix( $accent_styling['classes'], 'bg' );
+$accent_hex     = $extract_hex( $accent_styling['styles'] );
+$has_accent     = false;
+
 $wrapper_style_parts = array();
 if ( $icon_closed_hex !== '' ) {
     $wrapper_style_parts[] = '--ws-icon-closed-color:' . $icon_closed_hex;
@@ -203,6 +223,13 @@ if ( $icon_open_hex !== '' ) {
     $wrapper_style_parts[] = '--ws-icon-open-color:' . $icon_open_hex;
 } elseif ( $icon_open_slug !== '' ) {
     $wrapper_style_parts[] = '--ws-icon-open-color:var(--color-' . sanitize_html_class( $icon_open_slug ) . ')';
+}
+if ( $accent_hex !== '' ) {
+    $wrapper_style_parts[] = '--acc-accent:' . $accent_hex;
+    $has_accent = true;
+} elseif ( $accent_slug !== '' ) {
+    $wrapper_style_parts[] = '--acc-accent:var(--color-' . sanitize_html_class( $accent_slug ) . ')';
+    $has_accent = true;
 }
 if ( ! empty( $wrapper_style_parts ) ) {
     $atts['css_style'] = trim( ( isset( $atts['css_style'] ) ? $atts['css_style'] . ';' : '' ) . implode( ';', $wrapper_style_parts ) );
@@ -263,7 +290,25 @@ $wrapper_classes = [
     'accordion-icon-' . esc_attr( $icon_style ),
     'accordion-icon-' . esc_attr( $icon_position ),
     'accordion-title-align-' . esc_attr( $title_alignment ),
+    'accordion-style-' . esc_attr( $accordion_style ),
+    'accordion-radius-' . esc_attr( $corner_radius ),
+    'accordion-elev-' . esc_attr( $elevation ),
 ];
+
+if ( $title_hover ) {
+    $wrapper_classes[] = 'accordion-hover';
+}
+if ( $has_accent ) {
+    $wrapper_classes[] = 'accordion-accent';
+}
+
+// Card-like styles (Separated / Filled / Ghost) need a gap between items. Give
+// them a sensible default gap ONLY when the editor hasn't set an explicit Item
+// Spacing (mb-* class) — that way the Item Spacing option stays authoritative.
+if ( in_array( $accordion_style, array( 'separated', 'filled', 'ghost' ), true )
+    && ( ! isset( $atts['item_spacing'] ) || (string) $atts['item_spacing'] === '' ) ) {
+    $wrapper_classes[] = 'accordion-gapped';
+}
 
 if ( $numbering_style !== 'none' ) {
     $wrapper_classes[] = 'accordion-has-numbering';

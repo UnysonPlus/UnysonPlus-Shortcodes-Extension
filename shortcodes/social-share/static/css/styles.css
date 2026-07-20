@@ -7,7 +7,6 @@
 .fw-ss--size-md { --ss-size: 42px; }
 .fw-ss--size-lg { --ss-size: 52px; }
 
-.fw-ss__heading { display: block; font-weight: 600; margin-bottom: .6rem; }
 .fw-ss__list { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; }
 .fw-ss--text-center .fw-ss__list { justify-content: center; }
 .fw-ss--text-end .fw-ss__list    { justify-content: flex-end; }

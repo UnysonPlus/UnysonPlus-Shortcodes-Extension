@@ -97,12 +97,6 @@ $options = [
             'group' => [
                 'type'    => 'group',
                 'options' => [
-                    'title' => [
-                        'label' => __('Title', 'fw'),
-                        'desc'  => __('Section heading displayed above the testimonials list.', 'fw'),
-                        'help'  => __('Plain heading text shown before the testimonial items.', 'fw'),
-                        'type'  => 'text',
-                    ],
                     'testimonials' => [
                         'label'         => __('Testimonials', 'fw'),
                         'popup-title'   => __('Add/Edit Testimonial', 'fw'),
@@ -409,6 +403,7 @@ $options = [
             'group_appearance' => [
                 'type'    => 'group',
                 'options' => [
+                    'box_style' => sc_card_box_style_field( array( 'desc' => __( 'Apply a Box Preset to each testimonial card (grid / card designs). Manage presets in Theme Settings → Components → Box Presets.', 'fw' ) ) ),
                     'container_type' => [
                         'label' => __('Container', 'fw'),
                         'type'  => 'select',
@@ -469,10 +464,6 @@ $options = [
                     'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
                     'font_size_preset' => sc_font_size_field( array(
                         'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),
-                    ) ),
-                    'title_color' => sc_color_field_compact( array(
-                        'label' => __( 'Section Title Color', 'fw' ),
-                        'desc'  => __( 'Overrides the general Text Color for the section heading above the testimonials.', 'fw' ),
                     ) ),
                     'quote_color' => sc_color_field_compact( array(
                         'label' => __( 'Quote Color', 'fw' ),

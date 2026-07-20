@@ -12,7 +12,7 @@ if ( ! function_exists( 'countdown_font_field' ) ) {
 	// defaults at the call sites; they are no longer baked into the saved value.
 	function countdown_font_field( $label, $weight, $size, $line_height, $desc = '' ) {
 		return [
-			'type'       => 'typography-v2',
+			'type'       => 'typography',
 			'label'      => $label,
 			'desc'       => $desc,
 			'components' => [ 'subset' => false, 'color' => false ],

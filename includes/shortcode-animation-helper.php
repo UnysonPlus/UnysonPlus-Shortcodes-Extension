@@ -594,6 +594,78 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     return $attr;
 }, 20, 2 );
 
+/**
+ * Per-collection item selector registry — "what are this element's cards?", keyed by
+ * the element's `base_class` (each collection sets one before calling
+ * sc_build_wrapper_attr). Drives the per-child ENTRANCE STAGGER below (and the Card
+ * Stack skip-guard: these grid collections aren't valid Card-Stack targets). Any
+ * multi-item element with a single stable item selector belongs here.
+ *
+ * NB this is the BROAD registry. Per-card HOVER uses the narrower sc_hover_collection_items()
+ * (only elements whose VIEW is wired to stamp hover per item) — adding an element here does
+ * NOT change its hover behavior.
+ *
+ * @return array<string,string> base_class => descendant CSS selector for its items.
+ */
+if ( ! function_exists( 'sc_anim_collection_items' ) ) :
+    function sc_anim_collection_items() {
+        return apply_filters( 'sc_anim_collection_items', array(
+            'fw-gallery'    => '.fw-gallery__item',
+            'posts'         => '.posts__card',
+            'logo-grid'     => '.fw-lg__item',
+            'feature-list'  => '.fw-fl__item',
+            'pricing-table' => '.fw-pt__plan',
+            'timeline'      => '.fw-tl__item',
+            'steps'         => '.fw-steps__item',
+            'testimonials'  => '.fw-tst-item', // grid/card designs only (a shared item class)
+        ) );
+    }
+endif;
+
+/**
+ * The narrow registry of collections whose VIEW stamps the per-card HOVER attrs on each item
+ * (via upw_hover_collection_item_attr, applied in the view). The engine Hover module skips the
+ * wrapper ONLY for these, so hover isn't lost on collections that aren't wired yet. Gallery is
+ * wired; add an element here only once its view stamps the item hover.
+ *
+ * @return array<string,string> base_class => item selector.
+ */
+if ( ! function_exists( 'sc_hover_collection_items' ) ) :
+    function sc_hover_collection_items() {
+        return apply_filters( 'sc_hover_collection_items', array(
+            'fw-gallery' => '.fw-gallery__item',
+        ) );
+    }
+endif;
+
+/**
+ * Per-child entrance stagger (client-side). When an Entrance animation is active on a
+ * registered COLLECTION element, mark the wrapper so the runtime distributes the
+ * reveal to each item with a stagger — the cards cascade in, instead of the whole
+ * grid animating as one block. The wrapper keeps its `data-sc-anim` (the effect def)
+ * + `sc-anim-pending` (hide-until-play, so there's no flash); sc-animations.js reads
+ * `data-sc-anim-children` and moves the animation onto the items. Runs at priority 21,
+ * right after the entrance filter (20), so `data-sc-anim` is already set.
+ */
+add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
+    if ( empty( $attr['data-sc-anim'] ) ) {
+        return $attr; // no active entrance on this element
+    }
+    $base = isset( $atts['base_class'] ) ? (string) $atts['base_class'] : '';
+    if ( $base === '' ) {
+        return $attr;
+    }
+    $map = function_exists( 'sc_anim_collection_items' ) ? sc_anim_collection_items() : array();
+    if ( ! isset( $map[ $base ] ) || $map[ $base ] === '' ) {
+        return $attr; // not a registered collection
+    }
+    $attr['data-sc-anim-children'] = esc_attr( $map[ $base ] );
+    // Delay between each item, in ms. Filterable so a theme/element can tune the feel.
+    $stagger = (int) apply_filters( 'sc_anim_stagger_ms', 90, $base, $atts );
+    $attr['data-sc-anim-stagger'] = esc_attr( (string) max( 0, $stagger ) );
+    return $attr;
+}, 21, 2 );
+
 
 /**
  * On-demand enqueue at the start of wp_footer. Instead of the whole 72 KB

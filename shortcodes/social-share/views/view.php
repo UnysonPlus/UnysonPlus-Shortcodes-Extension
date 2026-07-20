@@ -61,7 +61,6 @@ if ( ! function_exists( 'sc_ss_render' ) ) {
 		$show_lbl = sc_get( 'show_label', $atts, 'no' ) === 'yes' || $design === 'text';
 		$align   = sc_get( 'align', $atts, 'left' );
 		$align_cls = function_exists( 'sc_alignment_class' ) ? sc_alignment_class( $align ) : '';
-		$title   = trim( (string) sc_get( 'title', $atts, '' ) );
 
 		/* Color overrides. */
 		$hex = function ( $key ) use ( $atts ) {
@@ -96,9 +95,6 @@ if ( ! function_exists( 'sc_ss_render' ) ) {
 
 		ob_start();
 		echo '<div ' . fw_attr_to_html( $attr ) . '>';
-		if ( $title !== '' ) {
-			echo '<span class="fw-ss__heading">' . esc_html( $title ) . '</span>';
-		}
 		echo '<div class="fw-ss__list">';
 
 		foreach ( $selected as $key ) {

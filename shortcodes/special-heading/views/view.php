@@ -247,7 +247,21 @@ if ( ! empty( $atts['overline'] ) ) {
 if ( ! empty( $atts['title'] ) ) {
     // Whitelist the tag so a missing/stale value can never emit a broken <  > tag.
     $hd_tag = ( isset( $atts['heading'] ) && in_array( $atts['heading'], array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div' ), true ) ) ? $atts['heading'] : 'h2';
-    echo '<' . $hd_tag . ' class="' . esc_attr( implode( ' ', $title_classes ) ) . '"' . $title_style_attr . '>' . wp_kses_post( trim( (string) $atts['title'] ) ) . '</' . $hd_tag . '>';
+
+    // Title Icon (Content tab). Rendered INSIDE the heading, before the text, so the
+    // title stays clean and semantic. sc_icon_render() handles every icon-v2 shape
+    // (font / emoji / svg / uploaded image).
+    $title_icon = '';
+    if ( isset( $atts['icon'] ) && function_exists( 'sc_icon_render' ) ) {
+        $icon_set = function_exists( 'fw_ext_mega_menu_icon_is_set' )
+            ? fw_ext_mega_menu_icon_is_set( $atts['icon'] )
+            : ! empty( $atts['icon'] );
+        if ( $icon_set ) {
+            $title_icon = sc_icon_render( $atts['icon'], array( 'class' => 'heading-title__icon' ) ) . ' ';
+        }
+    }
+
+    echo '<' . $hd_tag . ' class="' . esc_attr( implode( ' ', $title_classes ) ) . '"' . $title_style_attr . '>' . $title_icon . wp_kses_post( trim( (string) $atts['title'] ) ) . '</' . $hd_tag . '>';
 }
 
 if ( ! empty( $atts['subtitle'] ) ) {

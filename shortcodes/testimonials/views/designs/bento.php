@@ -17,9 +17,6 @@ if ( empty( $testimonials ) ) {
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="<?php echo esc_attr( $container_cls ); ?>">
-		<?php if ( $title ): ?>
-			<h3 class="testimonials-title <?php echo esc_attr( trim( $text_align . ' ' . $title_class_extra ) ); ?>"<?php echo $title_style_extra !== '' ? ' style="' . esc_attr( $title_style_extra ) . '"' : ''; ?>><?php echo esc_html( $title ); ?></h3>
-		<?php endif; ?>
 
 		<div class="ts-bento">
 			<?php foreach ( $testimonials as $i => $t ):
@@ -27,7 +24,7 @@ if ( empty( $testimonials ) ) {
 				$rating   = ( $show_rating && function_exists( 'sc_render_rating' ) ) ? sc_render_rating( $f['rating'] ) : '';
 				$featured = ( $i === 0 ) ? ' ts-bento__item--featured' : '';
 				?>
-				<figure class="ts-bento__item<?php echo $featured; ?>">
+				<figure class="fw-tst-item <?php echo esc_attr( $box_style ); ?> ts-bento__item<?php echo $featured; ?>">
 					<?php if ( $rating ) echo '<div class="ts-bento__rating">' . $rating . '</div>'; ?>
 					<blockquote class="testimonial-quote <?php echo esc_attr( $quote_class_extra ); ?>"><?php echo sc_testimonial_quote_html( $f['content'] ); ?></blockquote>
 					<figcaption class="ts-bento__author">

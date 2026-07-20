@@ -448,6 +448,7 @@ $options = [
             'group_appearance' => [
                 'type'    => 'group',
                 'options' => [
+                    'box_style' => sc_card_box_style_field( array( 'desc' => __( 'Apply a Box Preset to each post card. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ) ) ),
                     'image_size' => [
                         'label'   => __( 'Image Size', 'fw' ),
                         'type'    => 'select',

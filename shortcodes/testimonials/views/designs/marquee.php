@@ -54,15 +54,12 @@ foreach ( $testimonials as $t ) {
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="<?php echo esc_attr( $container_cls ); ?>">
-		<?php if ( $title ): ?>
-			<h3 class="testimonials-title <?php echo esc_attr( trim( $text_align . ' ' . $title_class_extra ) ); ?>"<?php echo $title_style_extra !== '' ? ' style="' . esc_attr( $title_style_extra ) . '"' : ''; ?>><?php echo esc_html( $title ); ?></h3>
-		<?php endif; ?>
 	</div>
 	<?php
 	$ts_marquee_dur = ( $marquee_speed === 'slow' ) ? '60s' : ( ( $marquee_speed === 'fast' ) ? '25s' : '40s' );
 	$ts_marquee_dir = ( $marquee_direction === 'right' ) ? ' ts-marquee--ltr' : ' ts-marquee--rtl';
 	?>
-	<div class="ts-marquee<?php echo $ts_marquee_dir; ?>" aria-label="<?php echo esc_attr( $title !== '' ? $title : __( 'Testimonials', 'fw' ) ); ?>">
+	<div class="ts-marquee<?php echo $ts_marquee_dir; ?>" aria-label="<?php echo esc_attr( __( 'Testimonials', 'fw' ) ); ?>">
 		<div class="ts-marquee__track" style="--ts-marquee-duration: <?php echo esc_attr( $ts_marquee_dur ); ?>;">
 			<?php echo $items_html; /* original set */ ?>
 			<?php echo $items_html; /* duplicate for seamless loop (aria-hidden) */ ?>

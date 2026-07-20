@@ -34,13 +34,10 @@ $splide_modifier = ( $indicator_style === 'lines' ) ? ' testimonials-splide--lin
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="<?php echo esc_attr( $container_cls ); ?>">
-		<?php if ( $title ): ?>
-			<h3 class="testimonials-title <?php echo esc_attr( trim( $text_align . ' ' . $title_class_extra ) ); ?>"<?php echo $title_style_extra !== '' ? ' style="' . esc_attr( $title_style_extra ) . '"' : ''; ?>><?php echo esc_html( $title ); ?></h3>
-		<?php endif; ?>
 
 		<div class="splide testimonials-splide ts-split<?php echo esc_attr( $splide_modifier ); ?>"
 		     role="group"
-		     aria-label="<?php echo esc_attr( $title !== '' ? $title : __( 'Testimonials', 'fw' ) ); ?>"
+		     aria-label="<?php echo esc_attr( __( 'Testimonials', 'fw' ) ); ?>"
 		     data-splide="<?php echo esc_attr( wp_json_encode( $splide_config ) ); ?>">
 			<div class="splide__track">
 				<ul class="splide__list">

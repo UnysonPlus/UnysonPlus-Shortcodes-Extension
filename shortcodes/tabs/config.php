@@ -8,6 +8,7 @@ $cfg['page_builder'] = array(
 	'title'       => __( 'Tabs', 'fw' ),
 	'description' => __( 'Tabbed content with switchable panels — classic tabs, pills, underline or a segmented toggle (e.g. a Monthly / Yearly pricing switcher). Also: tabs, toggles & switchers.', 'fw' ),
 	'tab'         => __( 'Interactive Elements', 'fw' ),
+	'popup_size'  => 'medium',
 	'title_template' => '
 		{{ if ( o["tabs"] && o["tabs"].length > 0 ) { }}
 			{{ for ( var i = 0; i < o["tabs"].length; i++ ) { }}

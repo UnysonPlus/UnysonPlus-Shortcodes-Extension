@@ -225,6 +225,19 @@ if ( $divider_top_html !== '' || $divider_bottom_html !== '' ) {
 	$section_extra_classes .= ' section--has-divider';
 }
 
+// Background Pattern — a reusable CSS/HTML pattern drawn as a decorative layer behind the
+// content (over the Background). Stored as a preset id; rendered as an aria-hidden .pattern-layer.
+$pattern_html = '';
+$bp = isset( $atts['background_pattern'] ) ? $atts['background_pattern'] : '';
+$pat_id = is_array( $bp ) ? ( isset( $bp['pattern'] ) ? (string) $bp['pattern'] : '' ) : (string) $bp;
+if ( $pat_id === 'none' ) { $pat_id = ''; }
+if ( $pat_id !== '' && function_exists( 'unysonplus_pattern_render_layer' ) ) {
+	$pattern_html = unysonplus_pattern_render_layer( $pat_id );
+	if ( $pattern_html !== '' ) {
+		$section_extra_classes .= ' upw-has-pattern';
+	}
+}
+
 $attr = sc_build_wrapper_attr( $atts );
 
 if ( ! empty( $section_style ) ) {
@@ -240,6 +253,7 @@ if ( ! empty( $section_extra_classes ) ) {
 }
 ?>
 <section <?php echo fw_attr_to_html( $attr ); ?>>
+<?php echo $pattern_html; // phpcs:ignore WordPress.Security.EscapeOutput — admin-authored, scoped + script-stripped ?>
 <?php
 	echo $divider_top_html;    // phpcs:ignore WordPress.Security.EscapeOutput — built + value-sanitized above
 	echo $divider_bottom_html; // phpcs:ignore WordPress.Security.EscapeOutput

@@ -20,7 +20,10 @@ if ( ! function_exists( 'fw_counter_typography_css' ) ) {
 			$css .= 'font-weight:' . $t['weight'] . ';';
 		}
 		if ( isset( $t['size'] ) && $t['size'] !== '' ) {
-			$css .= 'font-size:' . (int) $t['size'] . 'px;';
+			// Size is a unit-input ({value,unit}); resolve it (tolerating a legacy bare
+			// number → px). Only emit when there's a real length (skip an empty value).
+			$size_css = fw_typography_size_css( $t['size'] );
+			if ( $size_css !== '' ) { $css .= 'font-size:' . $size_css . ';'; }
 		}
 		if ( isset( $t['line-height'] ) && $t['line-height'] !== '' && (int) $t['line-height'] > 0 ) {
 			$css .= 'line-height:' . (int) $t['line-height'] . 'px;';
@@ -32,6 +35,43 @@ if ( ! function_exists( 'fw_counter_typography_css' ) ) {
 			$css .= 'font-style:' . $t['style'] . ';';
 		}
 		return $css;
+	}
+}
+
+if ( ! function_exists( 'fw_counter_default_font' ) ) {
+	/**
+	 * Repair an "unconfigured" per-part typography value.
+	 *
+	 * When a counter is imported / generated with only a STUB font (e.g. `number_font`
+	 * saved as just `{ family: '' }`), the page-builder's typography encoder fills the
+	 * missing keys from the option TYPE's generic default — a tiny 12px / weight-400 —
+	 * NOT from the counter's own intended size (the option's field default of 42/24 is
+	 * never consulted at encode time). That exact signature (family '', weight 400,
+	 * size 12px, line-height 15) is not something anyone picks for an animated stat
+	 * number, so treat it as "unset" and substitute the counter's real default size,
+	 * weight and line-height. A value the user actually customised (any other size, or a
+	 * bold weight) is left untouched.
+	 */
+	function fw_counter_default_font( $font, $size, $line_height ) {
+		$font = is_array( $font ) ? $font : array();
+		$sz   = isset( $font['size'] ) ? $font['size'] : '';
+		if ( is_array( $sz ) ) {
+			$sz_val  = isset( $sz['value'] ) ? (string) $sz['value'] : '';
+			$sz_unit = isset( $sz['unit'] ) ? $sz['unit'] : 'px';
+		} else {
+			$sz_val  = (string) $sz;
+			$sz_unit = 'px';
+		}
+		$weight = isset( $font['weight'] ) ? (string) $font['weight'] : '';
+		// "Unset" = no size, or the option type's untouched 12px default, paired with the
+		// default (or missing) 400 weight. Anything else is a real user choice — keep it.
+		$size_is_default = ( $sz_val === '' || ( $sz_val === '12' && $sz_unit === 'px' ) );
+		if ( $size_is_default && ( $weight === '' || $weight === '400' ) ) {
+			$font['size']        = array( 'value' => (string) $size, 'unit' => 'px' );
+			$font['line-height'] = $line_height;
+			$font['weight']      = '700';
+		}
+		return $font;
 	}
 }
 
@@ -110,9 +150,9 @@ if ( $target === '' || ! is_numeric( $target ) ) {
 $formatted = number_format( (float) $target, $decimals, '.', $separator );
 
 // Per-part typography + colour.
-$number_font  = isset( $atts['number_font'] ) && is_array( $atts['number_font'] ) ? $atts['number_font'] : array();
-$prefix_font  = isset( $atts['prefix_font'] ) && is_array( $atts['prefix_font'] ) ? $atts['prefix_font'] : array();
-$suffix_font  = isset( $atts['suffix_font'] ) && is_array( $atts['suffix_font'] ) ? $atts['suffix_font'] : array();
+$number_font  = fw_counter_default_font( isset( $atts['number_font'] ) && is_array( $atts['number_font'] ) ? $atts['number_font'] : array(), 42, 46 );
+$prefix_font  = fw_counter_default_font( isset( $atts['prefix_font'] ) && is_array( $atts['prefix_font'] ) ? $atts['prefix_font'] : array(), 24, 28 );
+$suffix_font  = fw_counter_default_font( isset( $atts['suffix_font'] ) && is_array( $atts['suffix_font'] ) ? $atts['suffix_font'] : array(), 24, 28 );
 $number_color = isset( $atts['number_color'] ) ? $atts['number_color'] : '';
 $prefix_color = isset( $atts['prefix_color'] ) ? $atts['prefix_color'] : '';
 $suffix_color = isset( $atts['suffix_color'] ) ? $atts['suffix_color'] : '';

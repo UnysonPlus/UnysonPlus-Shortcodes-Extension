@@ -45,10 +45,10 @@ $options = array(
 						'picker'       => array(
 							'mode' => array(
 								'label'   => __( 'Mode', 'fw' ),
-								'type'    => 'select',
+								'type'    => 'image-picker',
 								'choices' => array(
-									'single' => __( 'Single Avatar', 'fw' ),
-									'group'  => __( 'Avatar Group (stacked)', 'fw' ),
+									'single' => array( 'small' => array( 'src' => $av_uri . '/static/img/mode/single.svg', 'height' => 56, 'title' => __( 'Single Avatar', 'fw' ) ) ),
+									'group'  => array( 'small' => array( 'src' => $av_uri . '/static/img/mode/group.svg', 'height' => 56, 'title' => __( 'Avatar Group (stacked)', 'fw' ) ) ),
 								),
 								'desc'    => __( 'One avatar, or an overlapping row of avatars with an optional "+N" counter.', 'fw' ),
 							),

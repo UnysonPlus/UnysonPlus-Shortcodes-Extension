@@ -40,7 +40,6 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 		$design   = sc_get( 'design', $atts, 'alternating' );
 		if ( ! isset( $registry[ $design ] ) ) { $design = 'alternating'; }
 
-		$title = trim( (string) sc_get( 'title', $atts, '' ) );
 		$items = sc_get( 'items', $atts, array() );
 		if ( ! is_array( $items ) || empty( $items ) ) {
 			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
@@ -82,9 +81,6 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 
 		ob_start();
 		echo '<div ' . fw_attr_to_html( $attr ) . '>';
-		if ( $title !== '' ) {
-			echo '<h3 class="fw-tl__heading">' . esc_html( $title ) . '</h3>';
-		}
 		echo '<div class="fw-tl__track">';
 
 		$i = 0;

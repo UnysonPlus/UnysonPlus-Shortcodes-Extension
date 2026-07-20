@@ -12,10 +12,6 @@
     position: relative;
     margin: 2.5rem 0;
 }
-.testimonials .testimonials-title {
-    font-weight: 600;
-    margin-bottom: 1.75rem;
-}
 
 /* --- Ported utility classes (scoped) ------------------------------------- */
 .testimonials .d-flex            { display: flex; }

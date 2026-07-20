@@ -22,7 +22,10 @@ if ( ! function_exists( 'fw_countdown_typography_css' ) ) {
 			$css .= 'font-weight:' . $t['weight'] . ';';
 		}
 		if ( isset( $t['size'] ) && $t['size'] !== '' ) {
-			$css .= 'font-size:' . (int) $t['size'] . 'px;';
+			// Size is a unit-input ({value,unit}); resolve it (tolerating a legacy bare
+			// number → px). Only emit when there's a real length (skip an empty value).
+			$size_css = fw_typography_size_css( $t['size'] );
+			if ( $size_css !== '' ) { $css .= 'font-size:' . $size_css . ';'; }
 		}
 		if ( isset( $t['line-height'] ) && $t['line-height'] !== '' && (int) $t['line-height'] > 0 ) {
 			$css .= 'line-height:' . (int) $t['line-height'] . 'px;';

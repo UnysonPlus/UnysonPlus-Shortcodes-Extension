@@ -833,6 +833,153 @@ if ( ! function_exists( 'sc_spacing_field' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'sc_section_align_fields' ) ) :
+	/**
+	 * The shared "columns alignment" option fields — Columns Horizontal Alignment
+	 * (`column_halign`), Columns Vertical Alignment (`column_valign`) and Column
+	 * Order / reverse (`reverse_columns`) — with their baked-in image-picker glyphs.
+	 *
+	 * Extracted from the Section shortcode so ANY grid-holding container (Section,
+	 * Container, …) can offer the exact same controls without duplicating the ~90
+	 * lines of SVG glyph code. The emitted values route through the shared
+	 * `.section--cols-*` / `.section--rev*` modifier classes (class-only descendant
+	 * selectors in section/static/css/styles.css), so an element only needs to stamp
+	 * those classes onto a wrapper whose descendant `.fw-row`(s) should react.
+	 *
+	 * @param string $noun The element noun woven into the descriptions ("section",
+	 *                      "container", …) so the help text reads naturally per host.
+	 *
+	 * @return array { column_halign, column_valign, reverse_columns } option defs.
+	 */
+	function sc_section_align_fields( $noun = 'section' ) {
+		// --- Glyph builders (identical to the Section thumbnails). ---
+		$rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
+			return '<rect x="' . round( $x, 1 ) . '" y="' . round( $y, 1 ) . '" width="' . round( $w, 1 )
+				. '" height="' . round( $h, 1 ) . '" rx="' . $rx . '" fill="' . $fill . '"'
+				. ( $stroke !== '' ? ' stroke="' . $stroke . '"' : '' ) . '/>';
+		};
+		$el = function ( $x, $y, $w, $h ) use ( $rrect ) {
+			$ly = $y + $h / 2;
+			return $rrect( $x, $y, $w, $h, 2, '#ffffff', '#dcdcde' )
+				. '<line x1="' . round( $x + 6, 1 ) . '" y1="' . round( $ly, 1 ) . '" x2="' . round( $x + $w - 6, 1 )
+				. '" y2="' . round( $ly, 1 ) . '" stroke="#8c8c8c" stroke-width="1.5" stroke-linecap="round"/>';
+		};
+		$glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) {
+			$h = $icon_h + 16;
+			$inner .= '<text x="' . ( $w / 2 ) . '" y="' . ( $icon_h + 11 ) . '" text-anchor="middle" '
+				. 'font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#50575e">' . $label . '</text>';
+			$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $w . ' ' . $h . '" width="' . $w . '" height="' . $h . '">' . $inner . '</svg>';
+			return 'data:image/svg+xml,' . rawurlencode( $svg );
+		};
+		$valign_uri = function ( $mode, $label ) use ( $rrect, $el, $glyph_svg ) {
+			$w = 120; $icon_h = 50;
+			$svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );
+			$gx = 7; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;
+			$ex = $gx + 5; $ew = $gw - 10; $eh = 9;
+			if ( $mode === 'stretch' ) {
+				$svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+				$svg .= $el( $ex, $bt + 4, $ew, $eh );
+			} else {
+				$gh = $eh + 8;
+				if ( $mode === 'bottom' )     { $gy = $bb - $gh; }
+				elseif ( $mode === 'center' ) { $gy = ( $bt + $bb ) / 2 - $gh / 2; }
+				else                          { $gy = $bt; }
+				$svg .= $rrect( $gx, $gy, $gw, $gh, 3, '#bdbdbd', '#dcdcde' );
+				$svg .= $el( $ex, $gy + ( $gh - $eh ) / 2, $ew, $eh );
+			}
+			return $glyph_svg( $svg, $label, $w, $icon_h );
+		};
+		$halign_uri = function ( $mode, $label ) use ( $rrect, $el, $glyph_svg ) {
+			$w = 120; $icon_h = 50;
+			$svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );
+			$bt = 7; $bb = $icon_h - 7;
+			$inner_x = 7; $inner_w = $w - 2 * $inner_x;
+			if ( in_array( $mode, array( 'between', 'around', 'evenly' ), true ) ) {
+				$n = 3; $cw = $inner_w * 0.18; $free = $inner_w - $n * $cw;
+				if ( 'between' === $mode )     { $gap = $free / ( $n - 1 ); $x0 = $inner_x; }
+				elseif ( 'around' === $mode )  { $gap = $free / $n;         $x0 = $inner_x + $gap / 2; }
+				else /* evenly */              { $gap = $free / ( $n + 1 ); $x0 = $inner_x + $gap; }
+				for ( $i = 0; $i < $n; $i++ ) {
+					$cx = $x0 + $i * ( $cw + $gap );
+					$svg .= $rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+					$ew = $cw - 6; $eh = 9;
+					if ( $ew > 3 ) { $svg .= $el( $cx + 3, $bt + 4, $ew, $eh ); }
+				}
+			} else {
+				$cw = $inner_w * 0.5;
+				$cx = $inner_x;
+				if ( $mode === 'center' )     { $cx = $inner_x + ( $inner_w - $cw ) / 2; }
+				elseif ( $mode === 'right' )  { $cx = $inner_x + $inner_w - $cw; }
+				$svg .= $rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+				$ew = $cw - 10; $eh = 9;
+				$svg .= $el( $cx + 5, $bt + 4, $ew, $eh );
+			}
+			return $glyph_svg( $svg, $label, $w, $icon_h );
+		};
+		$pick = function ( $uri, $label ) {
+			return array(
+				'small' => array( 'src' => $uri, 'height' => 64 ),
+				'large' => array( 'src' => $uri, 'height' => 150 ),
+				'label' => $label,
+			);
+		};
+
+		return array(
+			'column_halign' => array(
+				'type'    => 'responsive',
+				'label'   => __( 'Columns Horizontal Alignment', 'fw' ),
+				'desc'    => sprintf(
+					/* translators: %s: element noun, e.g. "section" / "container" */
+					__( 'Align this %s\'s columns horizontally within the row. Use the Phone / Tablet / Desktop tabs to align differently per device (a blank device inherits the smaller one).', 'fw' ),
+					$noun
+				),
+				'help'    => __( 'Only has a visible effect when the columns don\'t already fill the row width. "Center" / "Right" position them as a group; "Space Between / Around / Evenly" distribute the gaps between multiple columns.', 'fw' ),
+				'value'   => array( 'base' => 'default', 'md' => '', 'lg' => '' ),
+				'inner'   => array(
+					'type'    => 'image-picker',
+					'choices' => array(
+						'default' => $pick( $halign_uri( 'default', __( 'Left / Default', 'fw' ) ), __( 'Left / Default', 'fw' ) ),
+						'center'  => $pick( $halign_uri( 'center',  __( 'Center', 'fw' ) ),       __( 'Center', 'fw' ) ),
+						'right'   => $pick( $halign_uri( 'right',   __( 'Right', 'fw' ) ),        __( 'Right', 'fw' ) ),
+						'between' => $pick( $halign_uri( 'between', __( 'Space Between', 'fw' ) ),  __( 'Space Between', 'fw' ) ),
+						'around'  => $pick( $halign_uri( 'around',  __( 'Space Around', 'fw' ) ),   __( 'Space Around', 'fw' ) ),
+						'evenly'  => $pick( $halign_uri( 'evenly',  __( 'Space Evenly', 'fw' ) ),   __( 'Space Evenly', 'fw' ) ),
+					),
+				),
+			),
+			'column_valign' => array(
+				'type'    => 'image-picker',
+				'label'   => __( 'Columns Vertical Alignment', 'fw' ),
+				'desc'    => sprintf(
+					/* translators: %1$s and %2$s: element noun, e.g. "section" / "container" */
+					__( 'Where the columns sit vertically when the %1$s is taller than its content (most visible with a Min Height set). "Default / Stretched" makes the columns fill the %2$s height; Top / Center / Bottom position the content-height columns as a block.', 'fw' ),
+					$noun,
+					$noun
+				),
+				'value'   => 'stretch',
+				'choices' => array(
+					'stretch' => $pick( $valign_uri( 'stretch', __( 'Default / Stretched', 'fw' ) ), __( 'Default / Stretched', 'fw' ) ),
+					'top'     => $pick( $valign_uri( 'top',    __( 'Top', 'fw' ) ),    __( 'Top', 'fw' ) ),
+					'center'  => $pick( $valign_uri( 'center', __( 'Center', 'fw' ) ), __( 'Center', 'fw' ) ),
+					'bottom'  => $pick( $valign_uri( 'bottom', __( 'Bottom', 'fw' ) ), __( 'Bottom', 'fw' ) ),
+				),
+			),
+			'reverse_columns' => array(
+				'type'    => 'responsive',
+				'label'   => __( 'Column Order', 'fw' ),
+				'desc'    => __( 'Show the columns in reverse order (last column first) without changing the markup. Use the Phone / Tablet / Desktop tabs to reverse only on some devices.', 'fw' ),
+				'help'    => __( 'On phones — where the columns stack — it flips the stacked order (e.g. put an image above the text on mobile). On tablet/desktop it swaps the row. A blank device inherits the smaller one; it only reorders the visual output, not the markup.', 'fw' ),
+				'value'   => array( 'base' => 'no', 'md' => '', 'lg' => '' ),
+				'inner'   => array(
+					'type'         => 'switch',
+					'left-choice'  => array( 'value' => 'no',  'label' => __( 'Default', 'fw' ) ),
+					'right-choice' => array( 'value' => 'yes', 'label' => __( 'Reverse', 'fw' ) ),
+				),
+			),
+		);
+	}
+endif;
+
 /* -----------------------------------------------------------------------------
  * Choice builders (used by the field builders and reusable elsewhere)
  * -------------------------------------------------------------------------- */
@@ -1092,6 +1239,51 @@ if ( ! function_exists( 'sc_get_border_preset_choices' ) ) :
 			$out[ 'boxp-' . $slug ] = $name;
 		}
 		return $out;
+	}
+endif;
+
+if ( ! function_exists( 'sc_card_box_style_field' ) ) :
+	/**
+	 * The shared "Box Style" card control — a `border-style-picker` of the saved Box
+	 * Presets (Theme Settings → Components → Box Presets), each previewed inline. The
+	 * saved value is a `boxp-{slug}` class the card element stamps on its card wrapper
+	 * (so the preset's border / radius / shadow / fill AND its new structured hover
+	 * effects apply). Axis 1 of the unified card system — engine-independent.
+	 *
+	 * @param array $args label / desc / value overrides.
+	 * @return array option field.
+	 */
+	function sc_card_box_style_field( $args = array() ) {
+		$a = array_merge( array(
+			'label' => __( 'Box Style', 'fw' ),
+			'desc'  => __( 'Apply a reusable Box Preset (border, corners, shadow, fill + hover effects) to each card. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ),
+			'value' => '',
+		), $args );
+		return array(
+			'type'         => 'border-style-picker',
+			'label'        => $a['label'],
+			'desc'         => $a['desc'],
+			'value'        => $a['value'],
+			'choices'      => function_exists( 'sc_get_border_preset_choices' ) ? sc_get_border_preset_choices() : array( '' => __( 'None', 'fw' ) ),
+			'preview_text' => __( 'Box', 'fw' ),
+			'placeholder'  => __( '— Select a box style —', 'fw' ),
+		);
+	}
+endif;
+
+if ( ! function_exists( 'sc_card_box_style_class' ) ) :
+	/**
+	 * Read + validate a card element's saved Box Style value into a safe `boxp-{slug}`
+	 * class (or '' when unset / malformed). The shared reader for every element that
+	 * consumes sc_card_box_style_field(), so the validation lives in one place.
+	 *
+	 * @param array  $atts  the shortcode atts.
+	 * @param string $key   the option id (default 'box_style').
+	 * @return string  a `boxp-{slug}` class, or '' .
+	 */
+	function sc_card_box_style_class( $atts, $key = 'box_style' ) {
+		$v = function_exists( 'sc_get' ) ? sc_get( $key, $atts, '' ) : ( isset( $atts[ $key ] ) ? $atts[ $key ] : '' );
+		return ( is_string( $v ) && preg_match( '/^boxp-[a-z0-9_-]+$/i', $v ) ) ? $v : '';
 	}
 endif;
 

@@ -55,21 +55,24 @@ $options = [
                 'options' => [
                     'overline' => [
                         'type'  => 'text',
-                        'dynamic_content' => false,
                         'label' => __('Overline', 'fw'),
                         'desc'  => __('Small label shown above the title. Also known as eyebrow headline. Leave empty to hide.', 'fw'),
                         'help'  => __('Examples: "FAQs", "Our process", "Step 1". Give it a rule or uppercase kicker look with Overline Style on the Layout tab.', 'fw'),
                     ],
                     'title' => [
                         'type'  => 'text',
-                        'dynamic_content' => false,
                         'label' => __('Title', 'fw'),
                         'desc'  => __('Write the heading title content', 'fw'),
                         'help'  => __('You can wrap part of the text in inline HTML — e.g. an &lt;em&gt; or a coloured &lt;span&gt; — to emphasise a word.', 'fw'),
                     ],
+                    'icon' => [
+                        'type'  => 'icon-v2',
+                        'label' => __('Title Icon', 'fw'),
+                        'desc'  => __('Icon shown before the title. Pick an icon font, emoji, SVG, or upload an image. Leave empty for no icon.', 'fw'),
+                        'help'  => __('Kept as a separate icon field (not markup in the Title) so the heading text stays clean and semantic.', 'fw'),
+                    ],
                     'subtitle' => [
                         'type'  => 'text',
-                        'dynamic_content' => false,
                         'label' => __('Subtitle', 'fw'),
                         'desc'  => __('Write the heading subtitle content', 'fw'),
                         'help'  => __('A short supporting line under the title — keep it to a sentence or two. For longer copy use a Text Block instead.', 'fw'),

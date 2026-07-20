@@ -399,7 +399,21 @@
 			atts.min_height = migrateMinHeight(atts.min_height);
 		}
 
+		// background_pattern: legacy scalar id ('' | 'neon') → popover multi-picker
+		// { pattern: <id|'none'> }. Objects pass through. Without this, a section saved
+		// with the old select value throws an illegal-string-offset in the multi-picker's
+		// PHP _render (blank "error:" modal).
+		if (_.has(atts, 'background_pattern') && !_.isObject(atts.background_pattern)) {
+			atts = _.clone(atts);
+			atts.background_pattern = migrateBackgroundPattern(atts.background_pattern);
+		}
+
 		return atts;
+	}
+
+	function migrateBackgroundPattern (v) {
+		v = (v === null || typeof v === 'undefined') ? '' : String(v);
+		return {pattern: (v === '' ? 'none' : v)};
 	}
 
 	function migrateMinHeight (v) {

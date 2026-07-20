@@ -95,6 +95,7 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 
 		ob_start();
 		echo '<ul ' . fw_attr_to_html( $attr ) . '>';
+		$__boxp = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : ''; // Box Style per feature card
 		$i = 0;
 		foreach ( $items as $it ) {
 			$i++;
@@ -119,7 +120,7 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 			$body  = '<span class="fw-fl__text">' . esc_html( $text ) . '</span>';
 			if ( $sub !== '' ) { $body .= '<span class="fw-fl__sub">' . esc_html( $sub ) . '</span>'; }
 
-			echo '<li class="fw-fl__item' . ( $state === 'off' ? ' is-off' : '' ) . '">';
+			echo '<li class="fw-fl__item' . ( $__boxp !== '' ? ' ' . $__boxp : '' ) . ( $state === 'off' ? ' is-off' : '' ) . '">';
 			echo $marker; // phpcs:ignore
 			if ( $lu !== '' ) {
 				echo '<a class="fw-fl__body" href="' . esc_url( $lu ) . '"' . ( $lt === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : '' ) . '>' . $body . '</a>';

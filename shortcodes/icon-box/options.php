@@ -207,6 +207,7 @@ $options = [
             'group_colors' => [
                 'type'    => 'group',
                 'options' => [
+                    'box_style'        => sc_card_box_style_field(),
                     'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
                     'font_size_preset' => sc_font_size_field( array(
                         'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),

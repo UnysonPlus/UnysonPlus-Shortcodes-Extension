@@ -750,6 +750,7 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
                             <?php
                             $registry = sc_posts_card_registry();
                             $style_meta = isset( $registry[ $card_style ] ) ? $registry[ $card_style ] : [];
+                            $__boxp = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : ''; // Box Style per post card
                             $index = 0;
                             foreach ( $posts_list as $p ) :
                                 $effective_style = $card_style;
@@ -773,6 +774,7 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
                                     $extra_card_class = ' posts__card--span-2 posts__card--featured';
                                 }
 
+                                if ( $__boxp !== '' ) { $extra_card_class .= ' ' . $__boxp; }
                                 $card_html = sc_posts_render_card( $atts, $p->ID, $effective_style, $index );
                                 if ( $extra_card_class !== '' ) {
                                     // splice class into the outermost article

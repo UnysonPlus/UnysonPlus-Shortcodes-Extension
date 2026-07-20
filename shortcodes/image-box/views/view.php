@@ -397,6 +397,9 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
         $atts['extra_attrs'] = $extra_attrs;
 
         $attr = sc_build_wrapper_attr( $atts );
+        // Box Style preset (.boxp-{slug}) on the card wrapper.
+        $__boxp = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : '';
+        if ( $__boxp !== '' ) { $attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' ' . $__boxp ); }
 
         // Accent color → CSS var. Honor a custom-hex pick directly (the most
         // direct intent); preset picks fall back to the stylesheet default.

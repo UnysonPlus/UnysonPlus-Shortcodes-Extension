@@ -176,14 +176,29 @@
 				//   md (tablet):    w_tablet, else the base picker width (leave empty
 				//                   so the fw-col-sm-* backend class drives the canvas)
 				//   lg (desktop):   w_desktop → w_tablet → base picker width
+				// Base width from the width picker. When it's 'auto' the column carries no fw-col-*
+				// width class on the frontend — just `.fw-col { flex:1 0 0% }`, which shares the row at
+				// EVERY breakpoint. The admin canvas has no frontend-grid.css, so reproduce that here
+				// with an inline flex; otherwise a base-auto column with no per-device override falls
+				// back to the default block 100% and STACKS in the builder while it's inline on the
+				// frontend. (Fixed-fraction columns are unchanged: phone base is full-width fw-col-12,
+				// tablet/desktop leave w='' so the fw-col-sm-* class drives the canvas.)
+				// Base width is a model-level attr (modelAttribute:'width', kept live by the width
+				// changer), NOT atts.width. Fall back to atts.width only if the model attr is unset.
+				// The "Auto Column" is the builder width key 'col' (frontend class = bare `.fw-col`);
+				// 'auto' is only the per-device override vocabulary. Match both defensively.
+				var baseWidth  = (this.model.get('width') != null && this.model.get('width') !== '') ? this.model.get('width') : (atts.width || '');
+				var baseIsAuto = (String(baseWidth) === 'col' || String(baseWidth) === 'auto');
 				var w = '';
 				if (device === 'sm') {
-					w = (w_phone && w_phone !== 'default') ? String(w_phone) : '12';
+					w = (w_phone && w_phone !== 'default') ? String(w_phone) : (baseIsAuto ? 'auto' : '12');
 				} else if (device === 'md') {
 					if (w_tablet && w_tablet !== 'default') { w = String(w_tablet); }
+					else if (baseIsAuto) { w = 'auto'; }
 				} else {
 					if (w_desktop && w_desktop !== 'default') { w = String(w_desktop); }
 					else if (w_tablet && w_tablet !== 'default') { w = String(w_tablet); }
+					else if (baseIsAuto) { w = 'auto'; }
 				}
 				var widthCss = { 'flex': '', 'max-width': '', 'width': '' };
 				if (w === 'auto') {

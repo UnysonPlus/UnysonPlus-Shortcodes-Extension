@@ -44,12 +44,9 @@ $nav_config = array(
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="<?php echo esc_attr( $container_cls ); ?>">
-		<?php if ( $title ): ?>
-			<h3 class="testimonials-title <?php echo esc_attr( trim( $text_align . ' ' . $title_class_extra ) ); ?>"<?php echo $title_style_extra !== '' ? ' style="' . esc_attr( $title_style_extra ) . '"' : ''; ?>><?php echo esc_html( $title ); ?></h3>
-		<?php endif; ?>
 
 		<div class="ts-thumbnav"
-		     aria-label="<?php echo esc_attr( $title !== '' ? $title : __( 'Testimonials', 'fw' ) ); ?>"
+		     aria-label="<?php echo esc_attr( __( 'Testimonials', 'fw' ) ); ?>"
 		     data-thumbnav-main="<?php echo esc_attr( wp_json_encode( $main_config ) ); ?>"
 		     data-thumbnav-nav="<?php echo esc_attr( wp_json_encode( $nav_config ) ); ?>">
 

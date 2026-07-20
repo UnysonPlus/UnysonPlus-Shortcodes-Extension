@@ -265,7 +265,24 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 			'item_class'     => '',
 			'item_style'     => '',
 			'media_class'    => '',
+			'box_style'      => '', // a `boxp-{slug}` Box Preset class for the card <figure>
+			'item_hover'     => array(), // engine Hover attr array to stamp on each card <figure>
 		), $args );
+
+		// Box Style → the card <figure> (validated to a boxp-{slug} class).
+		$box_style   = ( is_string( $a['box_style'] ) && preg_match( '/^boxp-[a-z0-9_-]+$/i', $a['box_style'] ) ) ? $a['box_style'] : '';
+
+		// Per-card Hover Interaction → the card <figure>. The engine already escaped every value
+		// (class / data-hover* / style) in upw_hover_apply_instances, so split them out here: class
+		// merges into the figure class, style merges into the figure style, the rest are attributes.
+		$ih        = ( isset( $a['item_hover'] ) && is_array( $a['item_hover'] ) ) ? $a['item_hover'] : array();
+		$ih_class  = isset( $ih['class'] ) ? (string) $ih['class'] : '';
+		$ih_style  = isset( $ih['style'] ) ? (string) $ih['style'] : '';
+		$ih_attrs  = '';
+		foreach ( $ih as $ih_k => $ih_v ) {
+			if ( $ih_k === 'class' || $ih_k === 'style' || ! is_scalar( $ih_v ) ) { continue; }
+			$ih_attrs .= ' ' . $ih_k . '="' . $ih_v . '"'; // value pre-escaped by the engine
+		}
 
 		$caption    = sc_gallery_caption_text( $item, $a['caption_source'] );
 		$has_overlay = ( $a['captions'] === 'hover' && $caption !== '' );
@@ -314,9 +331,12 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 				break;
 		}
 
-		$figure_class = trim( 'fw-gallery__item ' . $a['item_class'] );
+		$figure_class = preg_replace( '/\s+/', ' ', trim( 'fw-gallery__item ' . ( $box_style !== '' ? $box_style . ' ' : '' ) . $a['item_class'] . ( $ih_class !== '' ? ' ' . $ih_class : '' ) ) );
+		$fig_style    = trim( (string) $a['item_style'] );
+		if ( $ih_style !== '' ) { $fig_style = ( $fig_style === '' ? '' : rtrim( $fig_style, '; ' ) . '; ' ) . $ih_style; }
 		$out  = '<figure class="' . esc_attr( $figure_class ) . '"'
-			. ( $a['item_style'] !== '' ? ' style="' . esc_attr( $a['item_style'] ) . '"' : '' ) . '>';
+			. ( $fig_style !== '' ? ' style="' . esc_attr( $fig_style ) . '"' : '' )
+			. $ih_attrs . '>';
 		$out .= $open . $inner . $close;
 		if ( $has_below ) {
 			$out .= '<figcaption class="fw-gallery__caption'

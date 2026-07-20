@@ -99,6 +99,7 @@ $options = array(
 			'group_colors' => array(
 				'type'    => 'group',
 				'options' => array(
+					'box_style'    => sc_card_box_style_field(),
 					'quote_color'  => sc_color_field_compact( array( 'label' => __( 'Quote Color', 'fw' ) ) ),
 					'accent_color' => sc_color_field_compact( array( 'label' => __( 'Accent (border / mark)', 'fw' ), 'kind' => 'bg' ) ),
 					'author_color' => sc_color_field_compact( array( 'label' => __( 'Author Color', 'fw' ) ) ),

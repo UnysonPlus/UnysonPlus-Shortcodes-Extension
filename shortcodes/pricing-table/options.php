@@ -16,11 +16,6 @@ $options = array(
 			'group' => array(
 				'type'    => 'group',
 				'options' => array(
-					'title' => array(
-						'type'  => 'text',
-						'label' => __( 'Heading', 'fw' ),
-						'desc'  => __( 'Optional heading above the plans.', 'fw' ),
-					),
 					'plans' => array(
 						'type'          => 'addable-popup',
 						'label'         => __( 'Plans', 'fw' ),
@@ -197,6 +192,7 @@ $options = array(
 			'group_colors' => array(
 				'type'    => 'group',
 				'options' => array(
+					'box_style'       => sc_card_box_style_field( array( 'desc' => __( 'Apply a Box Preset to each plan card. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ) ) ),
 					'accent_color'    => sc_color_field_compact( array( 'label' => __( 'Accent Color', 'fw' ), 'kind' => 'bg', 'desc' => __( 'Featured highlight, price and button background.', 'fw' ) ) ),
 					'bg_color'        => sc_color_field_compact( array( 'label' => __( 'Section Background', 'fw' ), 'kind' => 'bg' ) ),
 					'card_bg'         => sc_color_field_compact( array( 'label' => __( 'Card Background', 'fw' ), 'kind' => 'bg' ) ),

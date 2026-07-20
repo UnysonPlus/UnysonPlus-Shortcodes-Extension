@@ -1,1 +1,467 @@
-.accordion{clear:both}.accordion .accordion-item{display:block;border:1px solid #dddddd;border-top:none}.accordion .accordion-item:first-child{border-top:1px solid #dddddd}.accordion .accordion-title{position:relative;display:flex;align-items:center;font-weight:bold;color:#333333;background:#f2f2f2;padding:0.9rem 1rem 0.75rem;margin:0;cursor:pointer;user-select:none}.accordion .accordion-title:focus{outline:2px solid #4a90d9;outline-offset:-2px}.accordion .accordion-title.ui-state-active{background:#ffffff;border-bottom:1px solid #eeeeee}.accordion .accordion-title-text{flex:1;min-width:0}.accordion .accordion-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex-shrink:0;position:relative;color:var(--ws-icon-closed-color,currentColor)}.accordion .accordion-title.ui-state-active .accordion-icon{color:var(--ws-icon-open-color,var(--ws-icon-closed-color,currentColor))}.accordion-icon-none .accordion-icon{display:none}.accordion-icon-left .accordion-icon{order:-1;margin-right:12px}.accordion-icon-right .accordion-icon{order:1;margin-left:12px}.accordion-icon-plus-minus .accordion-icon::before,.accordion-icon-plus-minus .accordion-icon::after{content:'';position:absolute;background:currentColor;transition:transform 0.2s ease}.accordion-icon-plus-minus .accordion-icon::before{width:12px;height:2px;top:50%;left:50%;transform:translate(-50%,-50%)}.accordion-icon-plus-minus .accordion-icon::after{width:2px;height:12px;top:50%;left:50%;transform:translate(-50%,-50%)}.accordion-icon-plus-minus .ui-state-active .accordion-icon::after{transform:translate(-50%,-50%) rotate(90deg);opacity:0}.accordion-icon-plus-x .accordion-icon::before,.accordion-icon-plus-x .accordion-icon::after{content:'';position:absolute;background:currentColor;top:50%;left:50%;transition:transform 0.2s ease}.accordion-icon-plus-x .accordion-icon::before{width:12px;height:2px;transform:translate(-50%,-50%)}.accordion-icon-plus-x .accordion-icon::after{width:2px;height:12px;transform:translate(-50%,-50%)}.accordion-icon-plus-x .ui-state-active .accordion-icon::before{transform:translate(-50%,-50%) rotate(45deg)}.accordion-icon-plus-x .ui-state-active .accordion-icon::after{transform:translate(-50%,-50%) rotate(45deg)}.accordion-icon-chevron .accordion-icon::before{content:'';width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);transition:transform 0.2s ease;position:absolute;top:3px;left:4px}.accordion-icon-chevron .ui-state-active .accordion-icon::before{transform:rotate(45deg);top:2px}.accordion-icon-arrow .accordion-icon::before{content:'';width:0;height:0;border-left:6px solid currentColor;border-top:5px solid transparent;border-bottom:5px solid transparent;transition:transform 0.2s ease;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}.accordion-icon-arrow .ui-state-active .accordion-icon::before{transform:translate(-50%,-50%) rotate(90deg)}.accordion-icon-custom .accordion-icon{width:auto;height:auto;min-width:16px;min-height:16px;font-size:1em;line-height:1;overflow:hidden}.accordion-icon-custom .accordion-icon-state-closed,.accordion-icon-custom .accordion-icon-state-open{display:inline-flex;align-items:center;justify-content:center;transition:opacity 0.2s ease}.accordion-icon-custom .accordion-icon-state-open{display:none}.accordion-icon-custom .ui-state-active .accordion-icon-state-closed{display:none}.accordion-icon-custom .ui-state-active .accordion-icon-state-open{display:inline-flex}.accordion-icon-custom img{max-width:100%;max-height:24px;height:auto;width:auto;display:block}.accordion .accordion-number{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-width:1.5em;margin-right:12px;font-weight:600;font-size:0.875em;color:inherit;opacity:0.7}.accordion .accordion-content{padding:0.9rem 1rem}.accordion .accordion-content >:first-child{margin-top:0}.accordion .accordion-content >:last-child{margin-bottom:0}.accordion.accordion-title-align-center .accordion-title{justify-content:center}.accordion.accordion-title-align-right .accordion-title{justify-content:flex-end}.accordion .accordion-controls{display:flex;gap:0.5rem;margin-bottom:0.5rem;justify-content:flex-end}.accordion .accordion-controls__btn{font:inherit;font-size:0.75rem;line-height:1;padding:0.4rem 0.75rem;background:transparent;color:inherit;border:1px solid currentColor;border-radius:4px;cursor:pointer;opacity:0.7;transition:opacity 0.15s ease}.accordion .accordion-controls__btn:hover,.accordion .accordion-controls__btn:focus{opacity:1;outline:none}
+/*
+ * Accordion — design tokens + style presets.
+ *
+ * The visual language is driven by wrapper classes set from the Styling → Design
+ * options: `accordion-style-{bordered|separated|flush|filled|ghost}`,
+ * `accordion-radius-{none|sm|md|lg}`, `accordion-elev-{none|subtle|raised}`,
+ * plus `accordion-hover` and `accordion-accent`. Everything routes through the
+ * custom properties below so a preset is a small set of token overrides, not a
+ * fork of the whole component. Per-element color pickers emit `:root .bg-*` /
+ * `.text-*` utilities with `!important`, so they always win over these defaults.
+ */
+
+.accordion {
+	clear: both;
+	--acc-radius: 10px;
+	--acc-border-color: #e5e7eb;
+	--acc-title-bg: #f9fafb;
+	--acc-title-bg-hover: #f3f4f6;
+	--acc-title-color: #1f2937;
+	--acc-content-bg: transparent;
+	--acc-pad-x: 1.15rem;
+	--acc-pad-y: 0.95rem;
+	--acc-gap: 0.6rem;
+	--acc-shadow: none;
+}
+
+/* Per-item wrapper. Groups one title + panel pair so the JS can navigate from
+   title to its panel and editors can apply per-item spacing / styles. */
+.accordion .accordion-item {
+	display: block;
+	background: var(--acc-content-bg);
+}
+
+.accordion .accordion-title {
+	position: relative;
+	display: flex;
+	align-items: center;
+	font-weight: 600;
+	color: var(--acc-title-color);
+	background: var(--acc-title-bg);
+	padding: var(--acc-pad-y) var(--acc-pad-x);
+	margin: 0;
+	cursor: pointer;
+	user-select: none;
+	transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.accordion .accordion-title:focus {
+	outline: 2px solid #4a90d9;
+	outline-offset: -2px;
+}
+
+.accordion .accordion-title-text {
+	flex: 1;
+	min-width: 0;
+}
+
+.accordion .accordion-content {
+	padding: var(--acc-pad-y) var(--acc-pad-x);
+	background: var(--acc-content-bg);
+}
+
+
+/* ── Corner radius ─────────────────────────────────────────── */
+
+.accordion-radius-none { --acc-radius: 0; }
+.accordion-radius-sm   { --acc-radius: 6px; }
+.accordion-radius-md   { --acc-radius: 10px; }
+.accordion-radius-lg   { --acc-radius: 16px; }
+
+
+/* ── Elevation (shadow) ────────────────────────────────────── */
+
+.accordion-elev-subtle { --acc-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.05); }
+.accordion-elev-raised { --acc-shadow: 0 6px 16px rgba(16, 24, 40, 0.10), 0 2px 5px rgba(16, 24, 40, 0.06); }
+
+
+/* ── Style: Bordered ──────────────────────────────────────────
+   One rounded box; items share hairline dividers so the stack reads as a
+   single group. Outer corners are rounded and clipped on the first/last item. */
+
+.accordion-style-bordered {
+	border-radius: var(--acc-radius);
+	box-shadow: var(--acc-shadow);
+}
+.accordion-style-bordered .accordion-item {
+	border: 1px solid var(--acc-border-color);
+	border-top: none;
+}
+.accordion-style-bordered .accordion-item:first-child {
+	border-top: 1px solid var(--acc-border-color);
+	border-top-left-radius: var(--acc-radius);
+	border-top-right-radius: var(--acc-radius);
+	overflow: hidden;
+}
+.accordion-style-bordered .accordion-item:last-child {
+	border-bottom-left-radius: var(--acc-radius);
+	border-bottom-right-radius: var(--acc-radius);
+	overflow: hidden;
+}
+
+
+/* ── Style: Separated ─────────────────────────────────────────
+   Each item is a standalone rounded card with a gap between them. */
+
+.accordion-style-separated .accordion-item {
+	border: 1px solid var(--acc-border-color);
+	border-radius: var(--acc-radius);
+	overflow: hidden;
+	box-shadow: var(--acc-shadow);
+	--acc-content-bg: #ffffff;
+	background: #ffffff;
+}
+
+
+/* ── Style: Filled ────────────────────────────────────────────
+   Rounded cards whose title bar carries a soft tint; body stays white. */
+
+.accordion-style-filled {
+	--acc-title-bg: #eef2f7;
+	--acc-title-bg-hover: #e6ecf4;
+}
+.accordion-style-filled .accordion-item {
+	border: 1px solid var(--acc-border-color);
+	border-radius: var(--acc-radius);
+	overflow: hidden;
+	box-shadow: var(--acc-shadow);
+	--acc-content-bg: #ffffff;
+	background: #ffffff;
+}
+
+
+/* ── Style: Flush ─────────────────────────────────────────────
+   No box — just a hairline divider between rows, content flush to the edge.
+   The editorial-FAQ look. */
+
+.accordion-style-flush {
+	--acc-title-bg: transparent;
+	--acc-title-bg-hover: rgba(15, 23, 42, 0.03);
+	--acc-pad-x: 0.15rem;
+}
+.accordion-style-flush .accordion-item {
+	border-bottom: 1px solid var(--acc-border-color);
+}
+.accordion-style-flush .accordion-item:last-child {
+	border-bottom: none;
+}
+
+
+/* ── Style: Ghost ─────────────────────────────────────────────
+   Borderless and airy; the open row is marked by a full-width accent underline
+   (never a side stripe) rather than a box. */
+
+.accordion-style-ghost {
+	--acc-title-bg: transparent;
+	--acc-title-bg-hover: rgba(15, 23, 42, 0.03);
+	--acc-pad-x: 0.15rem;
+}
+
+
+/* ── Default gap for card / row styles ─────────────────────────
+   Added by view.php (`accordion-gapped`) only when the editor hasn't set an
+   explicit Item Spacing, so the Item Spacing option stays authoritative. */
+
+.accordion-gapped .accordion-item + .accordion-item {
+	margin-top: var(--acc-gap);
+}
+
+
+/* ── Title hover feedback ─────────────────────────────────────── */
+
+.accordion-hover .accordion-title:hover {
+	background: var(--acc-title-bg-hover);
+}
+
+
+/* ── Open (active) item ────────────────────────────────────────
+   Boxed styles get a hairline between the open title and its panel; ghost and
+   any accent-enabled accordion get a full-width underline (inset box-shadow),
+   and an accent tint softly washes the open title. */
+
+.accordion-style-bordered .accordion-title.ui-state-active,
+.accordion-style-separated .accordion-title.ui-state-active,
+.accordion-style-filled .accordion-title.ui-state-active {
+	border-bottom: 1px solid var(--acc-border-color);
+}
+
+.accordion-style-ghost .accordion-title.ui-state-active,
+.accordion-accent .accordion-title.ui-state-active {
+	box-shadow: inset 0 -2px 0 0 var(--acc-accent, #94a3b8);
+}
+
+.accordion-accent .accordion-title.ui-state-active {
+	background: color-mix(in srgb, var(--acc-accent) 10%, var(--acc-title-bg, #ffffff));
+}
+
+
+/* ── Icon base ────────────────────────────────────────────── */
+
+.accordion .accordion-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	position: relative;
+	/* Icon Color (Closed State) — per-instance CSS variable set by view.php.
+	   The pseudo-elements that draw the plus / chevron / arrow icons use
+	   `background: currentColor` and `border-*-color: currentColor`, so
+	   setting `color` here propagates to all of them. Custom-icon state
+	   spans inherit from this element too. Falls back to currentColor
+	   (inherited from the title) when no preset is picked. */
+	color: var(--ws-icon-closed-color, currentColor);
+}
+
+/* Icon Color (Open State) — applied when the title carries `.ui-state-active`.
+   Falls back to the closed-state color when no Open Color is picked. */
+.accordion .accordion-title.ui-state-active .accordion-icon {
+	color: var(--ws-icon-open-color, var(--ws-icon-closed-color, currentColor));
+}
+
+.accordion-icon-none .accordion-icon {
+	display: none;
+}
+
+
+/* ── Icon position ────────────────────────────────────────── */
+
+.accordion-icon-left .accordion-icon {
+	order: -1;
+	margin-right: 12px;
+}
+
+.accordion-icon-right .accordion-icon {
+	order: 1;
+	margin-left: 12px;
+}
+
+
+/* ── Plus / Minus icon ────────────────────────────────────── */
+
+.accordion-icon-plus-minus .accordion-icon::before,
+.accordion-icon-plus-minus .accordion-icon::after {
+	content: '';
+	position: absolute;
+	background: currentColor;
+	transition: transform 0.2s ease;
+}
+
+.accordion-icon-plus-minus .accordion-icon::before {
+	width: 12px;
+	height: 2px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-plus-minus .accordion-icon::after {
+	width: 2px;
+	height: 12px;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-plus-minus .ui-state-active .accordion-icon::after {
+	transform: translate(-50%, -50%) rotate(90deg);
+	opacity: 0;
+}
+
+
+/* ── Plus / X icon ────────────────────────────────────────── */
+
+.accordion-icon-plus-x .accordion-icon::before,
+.accordion-icon-plus-x .accordion-icon::after {
+	content: '';
+	position: absolute;
+	background: currentColor;
+	top: 50%;
+	left: 50%;
+	transition: transform 0.2s ease;
+}
+
+.accordion-icon-plus-x .accordion-icon::before {
+	width: 12px;
+	height: 2px;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-plus-x .accordion-icon::after {
+	width: 2px;
+	height: 12px;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-plus-x .ui-state-active .accordion-icon::before {
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.accordion-icon-plus-x .ui-state-active .accordion-icon::after {
+	transform: translate(-50%, -50%) rotate(45deg);
+}
+
+
+/* ── Chevron icon ─────────────────────────────────────────── */
+
+.accordion-icon-chevron .accordion-icon::before {
+	content: '';
+	width: 8px;
+	height: 8px;
+	border-right: 2px solid currentColor;
+	border-bottom: 2px solid currentColor;
+	transform: rotate(-45deg);
+	transition: transform 0.2s ease;
+	position: absolute;
+	top: 3px;
+	left: 4px;
+}
+
+.accordion-icon-chevron .ui-state-active .accordion-icon::before {
+	transform: rotate(45deg);
+	top: 2px;
+}
+
+
+/* ── Arrow icon ───────────────────────────────────────────── */
+
+.accordion-icon-arrow .accordion-icon::before {
+	content: '';
+	width: 0;
+	height: 0;
+	border-left: 6px solid currentColor;
+	border-top: 5px solid transparent;
+	border-bottom: 5px solid transparent;
+	transition: transform 0.2s ease;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.accordion-icon-arrow .ui-state-active .accordion-icon::before {
+	transform: translate(-50%, -50%) rotate(90deg);
+}
+
+
+/* ── Custom icon (image OR text/emoji) ────────────────────── */
+
+/* Relax the fixed 16×16 container — images and emoji often need more room. */
+.accordion-icon-custom .accordion-icon {
+	width: auto;
+	height: auto;
+	min-width: 16px;
+	min-height: 16px;
+	font-size: 1em;
+	line-height: 1;
+	overflow: hidden;
+}
+
+.accordion-icon-custom .accordion-icon-state-closed,
+.accordion-icon-custom .accordion-icon-state-open {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: opacity 0.2s ease;
+}
+
+/* Default state: closed visible, open hidden. Flipped on .ui-state-active. */
+.accordion-icon-custom .accordion-icon-state-open { display: none; }
+
+.accordion-icon-custom .ui-state-active .accordion-icon-state-closed { display: none; }
+.accordion-icon-custom .ui-state-active .accordion-icon-state-open   { display: inline-flex; }
+
+/* Cap uploaded images so a 512×512 PNG doesn't tower over the title. */
+.accordion-icon-custom img {
+	max-width: 100%;
+	max-height: 24px;
+	height: auto;
+	width: auto;
+	display: block;
+}
+
+
+/* ── Item numbering ───────────────────────────────────────── */
+
+.accordion .accordion-number {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	min-width: 1.5em;
+	margin-right: 12px;
+	font-weight: 600;
+	font-size: 0.875em;
+	color: inherit;
+	opacity: 0.7;
+}
+
+
+/* ── Content rhythm ───────────────────────────────────────────
+   The panel padding owns the vertical rhythm — drop the first/last child's
+   stock margins so the space matches the title's padding. */
+
+.accordion .accordion-content > :first-child {
+	margin-top: 0;
+}
+
+.accordion .accordion-content > :last-child {
+	margin-bottom: 0;
+}
+
+
+/* ── Title alignment ──────────────────────────────────────────
+   Left is the flex default; only need rules for center and right. */
+
+.accordion.accordion-title-align-center .accordion-title {
+	justify-content: center;
+}
+.accordion.accordion-title-align-right .accordion-title {
+	justify-content: flex-end;
+}
+
+
+/* ── Expand-All / Collapse-All controls ───────────────────── */
+
+.accordion .accordion-controls {
+	display: flex;
+	gap: 0.5rem;
+	margin-bottom: 0.5rem;
+	justify-content: flex-end;
+}
+
+.accordion .accordion-controls__btn {
+	font: inherit;
+	font-size: 0.75rem;
+	line-height: 1;
+	padding: 0.4rem 0.75rem;
+	background: transparent;
+	color: inherit;
+	border: 1px solid currentColor;
+	border-radius: 4px;
+	cursor: pointer;
+	opacity: 0.7;
+	transition: opacity 0.15s ease;
+}
+.accordion .accordion-controls__btn:hover,
+.accordion .accordion-controls__btn:focus {
+	opacity: 1;
+	outline: none;
+}
+
+
+/* ── Reduced motion ────────────────────────────────────────────
+   Honour the OS preference: kill the icon / title transitions (the panel
+   slide itself is driven by JS and already respected elsewhere). */
+
+@media (prefers-reduced-motion: reduce) {
+	.accordion .accordion-title,
+	.accordion .accordion-icon::before,
+	.accordion .accordion-icon::after,
+	.accordion .accordion-icon-state-closed,
+	.accordion .accordion-icon-state-open,
+	.accordion .accordion-controls__btn {
+		transition: none !important;
+	}
+}

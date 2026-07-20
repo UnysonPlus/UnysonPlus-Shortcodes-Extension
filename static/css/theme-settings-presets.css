@@ -90,3 +90,32 @@
 		grid-template-columns: minmax(0, 428px) !important;
 	}
 }
+
+/* --- Background Patterns: live iframe thumbnail rendered in each addable-box row title
+   (via the components-patterns.php `template`). The iframe fully isolates the pasted
+   pattern's CSS / @keyframes / SVG from wp-admin. --- */
+.upw-pat-thumb {
+	display: block;
+	width: 100%;      /* fill the grid column (~408px) */
+	height: 132px;
+	margin: 2px 0 6px;
+	border-radius: 6px;
+	overflow: hidden;
+	/* Plain white so transparent-overlay patterns (dots / grid / stripes with dark marks) read
+	   cleanly; a pattern with its own background (e.g. Encrypted Neon) simply covers it. The
+	   preview iframe is transparent, so this white shows through where the pattern is. */
+	background: #ffffff;
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12);
+}
+.upw-pat-thumb iframe {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	pointer-events: none; /* preview only — don't let the pattern steal clicks in the editor */
+}
+.upw-pat-title {
+	display: block;
+	font-weight: 600;
+	line-height: 1.4;
+}

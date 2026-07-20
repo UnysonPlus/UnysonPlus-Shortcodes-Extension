@@ -2,6 +2,65 @@
     die( 'Forbidden' );
 }
 
+if ( ! function_exists( 'sc_accordion_style_thumb' ) ) {
+    /**
+     * A schematic SVG thumbnail (data URI) for one accordion Style preset — a
+     * tiny line diagram of how the style looks, for the image-picker tiles.
+     * Kept flat/neutral (slate lines, one indigo accent) so it reads in both
+     * light and dark admin skins.
+     */
+    function sc_accordion_style_thumb( $type ) {
+        $chev = '<path d="M112 20l4 4 4-4" fill="none" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+        $svgs = array(
+            // Grouped bordered box with hairline dividers + a tinted first bar.
+            'bordered'  => '<rect x="19" y="13" width="112" height="58" rx="9" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>'
+                . '<path d="M20 32h110" stroke="#e2e8f0" stroke-width="2"/><path d="M20 52h110" stroke="#e2e8f0" stroke-width="2"/>'
+                . '<rect x="30" y="19" width="48" height="6" rx="3" fill="#94a3b8"/>' . $chev,
+            // Three standalone cards with gaps.
+            'separated' => '<rect x="19" y="9" width="112" height="20" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>'
+                . '<rect x="19" y="33" width="112" height="20" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>'
+                . '<rect x="19" y="57" width="112" height="20" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>'
+                . '<rect x="30" y="16" width="48" height="6" rx="3" fill="#94a3b8"/>'
+                . '<path d="M112 17l4 4 4-4" fill="none" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+            // No box — hairline dividers only (editorial FAQ).
+            'flush'     => '<rect x="24" y="16" width="54" height="6" rx="3" fill="#94a3b8"/>'
+                . '<path d="M20 32h110" stroke="#e2e8f0" stroke-width="2"/>'
+                . '<rect x="24" y="40" width="54" height="6" rx="3" fill="#94a3b8"/>'
+                . '<path d="M20 56h110" stroke="#e2e8f0" stroke-width="2"/>'
+                . '<rect x="24" y="63" width="40" height="6" rx="3" fill="#cbd5e1"/>'
+                . '<path d="M112 16l4 4 4-4" fill="none" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+            // Soft tinted title bars with gaps.
+            'filled'    => '<rect x="19" y="9" width="112" height="20" rx="6" fill="#eef2ff"/>'
+                . '<rect x="19" y="33" width="112" height="20" rx="6" fill="#eef2ff"/>'
+                . '<rect x="19" y="57" width="112" height="20" rx="6" fill="#eef2ff"/>'
+                . '<rect x="30" y="16" width="48" height="6" rx="3" fill="#818cf8"/>'
+                . '<path d="M112 17l4 4 4-4" fill="none" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+            // Borderless; a full-width accent underline marks the open row.
+            'ghost'     => '<rect x="24" y="15" width="54" height="6" rx="3" fill="#64748b"/>'
+                . '<path d="M20 31h110" stroke="#6366f1" stroke-width="2.6"/>'
+                . '<rect x="24" y="41" width="54" height="6" rx="3" fill="#94a3b8"/>'
+                . '<path d="M20 57h110" stroke="#e2e8f0" stroke-width="2"/>'
+                . '<rect x="24" y="64" width="40" height="6" rx="3" fill="#cbd5e1"/>'
+                . '<path d="M112 15l4 4 4-4" fill="none" stroke="#6366f1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+        );
+        $inner = isset( $svgs[ $type ] ) ? $svgs[ $type ] : '';
+        $svg   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 84">' . $inner . '</svg>';
+        return 'data:image/svg+xml,' . rawurlencode( $svg );
+    }
+}
+
+if ( ! function_exists( 'sc_accordion_style_choice' ) ) {
+    /** One image-picker choice (small + large thumbnail + label) for a Style preset. */
+    function sc_accordion_style_choice( $type, $label ) {
+        $uri = sc_accordion_style_thumb( $type );
+        return array(
+            'small' => array( 'src' => $uri, 'height' => 60 ),
+            'large' => array( 'src' => $uri, 'height' => 120 ),
+            'label' => $label,
+        );
+    }
+}
+
 $options = [
     'tab_content' => [
         'title'   => __('Content', 'fw'),
@@ -276,6 +335,62 @@ $options = [
         // expose Title/Content text + bg pickers below (a single wrapper
         // colour would conflict with the per-element picks).
         'options' => [
+            'group_design' => [
+                'type'    => 'group',
+                'options' => [
+                    'accordion_style' => [
+                        'type'       => 'image-picker',
+                        'label'      => __( 'Accordion Style', 'fw' ),
+                        'desc'       => __( 'The overall visual language of the accordion. Colors, radius, and elevation below layer on top of the chosen style.', 'fw' ),
+                        'help'       => __( 'Bordered = one rounded box; Separated = individual cards; Flush = hairline dividers only (editorial FAQ); Filled = soft tinted title bars; Ghost = borderless with an accent underline on the open item.', 'fw' ),
+                        'value'      => 'bordered',
+                        'show_label' => true,
+                        'choices'    => array(
+                            'bordered'  => sc_accordion_style_choice( 'bordered',  __( 'Bordered', 'fw' ) ),
+                            'separated' => sc_accordion_style_choice( 'separated', __( 'Separated', 'fw' ) ),
+                            'flush'     => sc_accordion_style_choice( 'flush',     __( 'Flush', 'fw' ) ),
+                            'filled'    => sc_accordion_style_choice( 'filled',    __( 'Filled', 'fw' ) ),
+                            'ghost'     => sc_accordion_style_choice( 'ghost',     __( 'Ghost', 'fw' ) ),
+                        ),
+                    ],
+                    'corner_radius' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Corner Radius', 'fw' ),
+                        'desc'    => __( 'Roundness of the accordion corners. Larger values read softer / more modern; None is a hard square edge.', 'fw' ),
+                        'value'   => 'md',
+                        'choices' => [
+                            'none' => __( 'None (square)', 'fw' ),
+                            'sm'   => __( 'Small', 'fw' ),
+                            'md'   => __( 'Medium', 'fw' ),
+                            'lg'   => __( 'Large', 'fw' ),
+                        ],
+                    ],
+                    'elevation' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Elevation (Shadow)', 'fw' ),
+                        'desc'    => __( 'Drop-shadow depth. Most visible on the Separated and Filled styles, where each item reads as a lifted card.', 'fw' ),
+                        'value'   => 'none',
+                        'choices' => [
+                            'none'   => __( 'None (flat)', 'fw' ),
+                            'subtle' => __( 'Subtle', 'fw' ),
+                            'raised' => __( 'Raised', 'fw' ),
+                        ],
+                    ],
+                    'active_accent' => sc_color_field_compact( array(
+                        'label' => __( 'Open-Item Accent', 'fw' ),
+                        'kind'  => 'bg',
+                        'desc'  => __( 'Accent color for the currently-open item — drawn as a full-width underline plus a soft tint on the open title. Leave unset for no accent.', 'fw' ),
+                    ) ),
+                    'title_hover' => [
+                        'type'         => 'switch',
+                        'label'        => __( 'Title Hover Feedback', 'fw' ),
+                        'desc'         => __( 'Subtly shade a title bar on mouse-over so it reads as clickable.', 'fw' ),
+                        'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                        'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
+                        'value'        => 'yes',
+                    ],
+                ],
+            ],
             'group_colors' => [
                 'type'    => 'group',
                 'options' => [

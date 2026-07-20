@@ -23,7 +23,6 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 /* Content */
-$title  = sc_get( 'title', $atts, sc_get( 'group/title', $atts, '' ) );
 $images = sc_get( 'images', $atts, sc_get( 'group/images', $atts, array() ) );
 if ( ! is_array( $images ) ) {
 	$images = array();
@@ -95,12 +94,18 @@ $caption_source = sc_get( 'caption_source', $atts, 'caption' );
 $rounded        = sc_get( 'rounded', $atts, 'rounded' );
 $hover_zoom      = sc_get( 'hover_zoom', $atts, 'yes' ) === 'yes';
 
+/* Unified card control (Style tab): a Box Preset class on each card <figure>. */
+$box_style      = sc_get( 'box_style', $atts, '' );
+$box_style      = ( is_string( $box_style ) && preg_match( '/^boxp-[a-z0-9_-]+$/i', $box_style ) ) ? $box_style : '';
+
+/* Per-card hover: when a Hover Interaction (Animations tab) is added to this Gallery, the engine
+ * returns the class/attrs to stamp on EACH card — so it lands per card, not on the whole grid
+ * (which would tilt/animate as one block). Empty array when no hover / engine inactive. */
+$hover_item     = function_exists( 'upw_hover_collection_item_attr' ) ? upw_hover_collection_item_attr( $atts ) : array();
+
 /* Per-element color picks (kept off the wrapper). */
-$title_styling   = sc_extract_styling_atts( $atts, array( 'title_color' ) );
 $caption_styling = sc_extract_styling_atts( $atts, array( 'caption_color' ) );
 
-$title_class_extra   = implode( ' ', $title_styling['classes'] );
-$title_style_extra   = $title_styling['styles']   ? implode( '; ', $title_styling['styles'] )   : '';
 $caption_class_extra = implode( ' ', $caption_styling['classes'] );
 $caption_style_extra = $caption_styling['styles'] ? implode( '; ', $caption_styling['styles'] ) : '';
 
@@ -120,6 +125,8 @@ $tile_args = array(
 	'hover_zoom'     => $hover_zoom,
 	'caption_class'  => $caption_class_extra,
 	'caption_style'  => $caption_style_extra,
+	'box_style'      => $box_style,
+	'item_hover'     => $hover_item,
 );
 
 /* Wrapper base (+ design-<key> hook for per-design CSS scoping). */

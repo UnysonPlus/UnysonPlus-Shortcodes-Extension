@@ -53,12 +53,9 @@ $tile_args_carousel = array_merge( $tile_args, array( 'media_class' => 'fw-galle
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<?php if ( $container_cls ) : ?><div class="<?php echo esc_attr( $container_cls ); ?>"><?php endif; ?>
-		<?php if ( $title !== '' ) : ?>
-			<h3 class="fw-gallery__title <?php echo esc_attr( $title_class_extra ); ?>"<?php echo $title_style_extra !== '' ? ' style="' . esc_attr( $title_style_extra ) . '"' : ''; ?>><?php echo esc_html( $title ); ?></h3>
-		<?php endif; ?>
 
 		<div class="<?php echo esc_attr( $slider_class ); ?>"<?php echo $wrap_style !== '' ? ' style="' . esc_attr( $wrap_style ) . '"' : ''; ?>
-			role="group" aria-label="<?php echo esc_attr( $title !== '' ? $title : __( 'Image gallery', 'fw' ) ); ?>"
+			role="group" aria-label="<?php echo esc_attr( __( 'Image gallery', 'fw' ) ); ?>"
 			data-fw-splide data-splide="<?php echo esc_attr( wp_json_encode( $splide_config ) ); ?>">
 			<div class="splide__track">
 				<ul class="splide__list">

@@ -128,6 +128,13 @@ emit the att.
    option. The view renders the picked `icon` first and only falls back to
    `custom_icon` when `icon` is empty (preserving pre-picker saves).
    Generators should emit `icon`; treat `custom_icon` as read-only legacy data.
+   **Builder-preview sizing:** the canvas preview (`config.php` `title_template`)
+   renders `custom_icon` raw in an inline-flex span with no sizing, so a
+   `viewBox`-only SVG (no `width`/`height` attr) collapses to 0×0 = no icon in
+   the builder (the front end is unaffected — its CSS sizes it). The template now
+   injects a fallback `width/height` for unsized `custom_icon` SVGs (1.11.45), but
+   prefer emitting `icon`, or ensure any pasted `custom_icon` SVG carries explicit
+   `width`/`height`.
 2. **`icon_align` only applies to certain `style` values** — `top-title`
    and `between-title-content` honor it; `inline-*` and `stack-*` ignore
    it (flexbox positions the icon by direction). Set both freely; the

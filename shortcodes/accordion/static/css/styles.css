@@ -1,35 +1,48 @@
+/*
+ * Accordion — design tokens + style presets.
+ *
+ * The visual language is driven by wrapper classes set from the Styling → Design
+ * options: `accordion-style-{bordered|separated|flush|filled|ghost}`,
+ * `accordion-radius-{none|sm|md|lg}`, `accordion-elev-{none|subtle|raised}`,
+ * plus `accordion-hover` and `accordion-accent`. Everything routes through the
+ * custom properties below so a preset is a small set of token overrides, not a
+ * fork of the whole component. Per-element color pickers emit `:root .bg-*` /
+ * `.text-*` utilities with `!important`, so they always win over these defaults.
+ */
+
 .accordion {
 	clear: both;
+	--acc-radius: 10px;
+	--acc-border-color: #e5e7eb;
+	--acc-title-bg: #f9fafb;
+	--acc-title-bg-hover: #f3f4f6;
+	--acc-title-color: #1f2937;
+	--acc-content-bg: transparent;
+	--acc-pad-x: 1.15rem;
+	--acc-pad-y: 0.95rem;
+	--acc-gap: 0.6rem;
+	--acc-shadow: none;
 }
 
-/* Per-item wrapper. Transparent by default — it just groups one title +
-   panel pair so the JS can navigate from title to its panel via
-   `.closest('.accordion-item').find('.accordion-content')` and so editors
-   can apply per-item spacing (`mb-*` via the Item Spacing option) and
-   future per-item styles (background, border, hover, etc.). */
+/* Per-item wrapper. Groups one title + panel pair so the JS can navigate from
+   title to its panel and editors can apply per-item spacing / styles. */
 .accordion .accordion-item {
 	display: block;
-	border: 1px solid #dddddd;
-	border-top: none;
-}
-
-/* First item keeps its top border so the stack reads as one bordered group;
-   the rest share the border of the item above (no doubling). */
-.accordion .accordion-item:first-child {
-	border-top: 1px solid #dddddd;
+	background: var(--acc-content-bg);
 }
 
 .accordion .accordion-title {
 	position: relative;
 	display: flex;
 	align-items: center;
-	font-weight: bold;
-	color: #333333;
-	background: #f2f2f2;
-	padding: 0.9rem 1rem 0.75rem;
+	font-weight: 600;
+	color: var(--acc-title-color);
+	background: var(--acc-title-bg);
+	padding: var(--acc-pad-y) var(--acc-pad-x);
 	margin: 0;
 	cursor: pointer;
 	user-select: none;
+	transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .accordion .accordion-title:focus {
@@ -37,17 +50,148 @@
 	outline-offset: -2px;
 }
 
-/* Open: the title joins its panel as a white card and a hairline divider links
-   it to the content below — fixes the old "floating title with an empty gap"
-   look (the open title used to drop its background and detach from the panel). */
-.accordion .accordion-title.ui-state-active {
-	background: #ffffff;
-	border-bottom: 1px solid #eeeeee;
-}
-
 .accordion .accordion-title-text {
 	flex: 1;
 	min-width: 0;
+}
+
+.accordion .accordion-content {
+	padding: var(--acc-pad-y) var(--acc-pad-x);
+	background: var(--acc-content-bg);
+}
+
+
+/* ── Corner radius ─────────────────────────────────────────── */
+
+.accordion-radius-none { --acc-radius: 0; }
+.accordion-radius-sm   { --acc-radius: 6px; }
+.accordion-radius-md   { --acc-radius: 10px; }
+.accordion-radius-lg   { --acc-radius: 16px; }
+
+
+/* ── Elevation (shadow) ────────────────────────────────────── */
+
+.accordion-elev-subtle { --acc-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.05); }
+.accordion-elev-raised { --acc-shadow: 0 6px 16px rgba(16, 24, 40, 0.10), 0 2px 5px rgba(16, 24, 40, 0.06); }
+
+
+/* ── Style: Bordered ──────────────────────────────────────────
+   One rounded box; items share hairline dividers so the stack reads as a
+   single group. Outer corners are rounded and clipped on the first/last item. */
+
+.accordion-style-bordered {
+	border-radius: var(--acc-radius);
+	box-shadow: var(--acc-shadow);
+}
+.accordion-style-bordered .accordion-item {
+	border: 1px solid var(--acc-border-color);
+	border-top: none;
+}
+.accordion-style-bordered .accordion-item:first-child {
+	border-top: 1px solid var(--acc-border-color);
+	border-top-left-radius: var(--acc-radius);
+	border-top-right-radius: var(--acc-radius);
+	overflow: hidden;
+}
+.accordion-style-bordered .accordion-item:last-child {
+	border-bottom-left-radius: var(--acc-radius);
+	border-bottom-right-radius: var(--acc-radius);
+	overflow: hidden;
+}
+
+
+/* ── Style: Separated ─────────────────────────────────────────
+   Each item is a standalone rounded card with a gap between them. */
+
+.accordion-style-separated .accordion-item {
+	border: 1px solid var(--acc-border-color);
+	border-radius: var(--acc-radius);
+	overflow: hidden;
+	box-shadow: var(--acc-shadow);
+	--acc-content-bg: #ffffff;
+	background: #ffffff;
+}
+
+
+/* ── Style: Filled ────────────────────────────────────────────
+   Rounded cards whose title bar carries a soft tint; body stays white. */
+
+.accordion-style-filled {
+	--acc-title-bg: #eef2f7;
+	--acc-title-bg-hover: #e6ecf4;
+}
+.accordion-style-filled .accordion-item {
+	border: 1px solid var(--acc-border-color);
+	border-radius: var(--acc-radius);
+	overflow: hidden;
+	box-shadow: var(--acc-shadow);
+	--acc-content-bg: #ffffff;
+	background: #ffffff;
+}
+
+
+/* ── Style: Flush ─────────────────────────────────────────────
+   No box — just a hairline divider between rows, content flush to the edge.
+   The editorial-FAQ look. */
+
+.accordion-style-flush {
+	--acc-title-bg: transparent;
+	--acc-title-bg-hover: rgba(15, 23, 42, 0.03);
+	--acc-pad-x: 0.15rem;
+}
+.accordion-style-flush .accordion-item {
+	border-bottom: 1px solid var(--acc-border-color);
+}
+.accordion-style-flush .accordion-item:last-child {
+	border-bottom: none;
+}
+
+
+/* ── Style: Ghost ─────────────────────────────────────────────
+   Borderless and airy; the open row is marked by a full-width accent underline
+   (never a side stripe) rather than a box. */
+
+.accordion-style-ghost {
+	--acc-title-bg: transparent;
+	--acc-title-bg-hover: rgba(15, 23, 42, 0.03);
+	--acc-pad-x: 0.15rem;
+}
+
+
+/* ── Default gap for card / row styles ─────────────────────────
+   Added by view.php (`accordion-gapped`) only when the editor hasn't set an
+   explicit Item Spacing, so the Item Spacing option stays authoritative. */
+
+.accordion-gapped .accordion-item + .accordion-item {
+	margin-top: var(--acc-gap);
+}
+
+
+/* ── Title hover feedback ─────────────────────────────────────── */
+
+.accordion-hover .accordion-title:hover {
+	background: var(--acc-title-bg-hover);
+}
+
+
+/* ── Open (active) item ────────────────────────────────────────
+   Boxed styles get a hairline between the open title and its panel; ghost and
+   any accent-enabled accordion get a full-width underline (inset box-shadow),
+   and an accent tint softly washes the open title. */
+
+.accordion-style-bordered .accordion-title.ui-state-active,
+.accordion-style-separated .accordion-title.ui-state-active,
+.accordion-style-filled .accordion-title.ui-state-active {
+	border-bottom: 1px solid var(--acc-border-color);
+}
+
+.accordion-style-ghost .accordion-title.ui-state-active,
+.accordion-accent .accordion-title.ui-state-active {
+	box-shadow: inset 0 -2px 0 0 var(--acc-accent, #94a3b8);
+}
+
+.accordion-accent .accordion-title.ui-state-active {
+	background: color-mix(in srgb, var(--acc-accent) 10%, var(--acc-title-bg, #ffffff));
 }
 
 
@@ -254,17 +398,10 @@
 }
 
 
-/* ── Content ──────────────────────────────────────────────── */
+/* ── Content rhythm ───────────────────────────────────────────
+   The panel padding owns the vertical rhythm — drop the first/last child's
+   stock margins so the space matches the title's padding. */
 
-.accordion .accordion-content {
-	padding: 0.9rem 1rem;
-}
-
-/* The panel padding owns the vertical rhythm — drop the first/last child's
-   stock margins (e.g. a paragraph's top/bottom margin) so the space above and
-   below the content matches the title's padding instead of being thrown off by
-   inherited text margins. Was `p:last-child` only, which left the first
-   paragraph's top margin stacking under the divider (unbalanced gap). */
 .accordion .accordion-content > :first-child {
 	margin-top: 0;
 }
@@ -274,9 +411,9 @@
 }
 
 
-/* ── F · Title alignment ───────────────────────────────────── */
+/* ── Title alignment ──────────────────────────────────────────
+   Left is the flex default; only need rules for center and right. */
 
-/* Left is the flex default; only need rules for center and right. */
 .accordion.accordion-title-align-center .accordion-title {
 	justify-content: center;
 }
@@ -285,7 +422,7 @@
 }
 
 
-/* ── D · Expand-All / Collapse-All controls ───────────────── */
+/* ── Expand-All / Collapse-All controls ───────────────────── */
 
 .accordion .accordion-controls {
 	display: flex;
@@ -314,3 +451,17 @@
 }
 
 
+/* ── Reduced motion ────────────────────────────────────────────
+   Honour the OS preference: kill the icon / title transitions (the panel
+   slide itself is driven by JS and already respected elsewhere). */
+
+@media (prefers-reduced-motion: reduce) {
+	.accordion .accordion-title,
+	.accordion .accordion-icon::before,
+	.accordion .accordion-icon::after,
+	.accordion .accordion-icon-state-closed,
+	.accordion .accordion-icon-state-open,
+	.accordion .accordion-controls__btn {
+		transition: none !important;
+	}
+}

@@ -70,6 +70,9 @@ if ( ! function_exists( 'sc_bq_render' ) ) {
 		$atts['unique_id_prefix'] = 'bq-';
 		$atts['css_class']        = trim( implode( ' ', $classes ) . ' ' . ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) );
 		$attr = sc_build_wrapper_attr( $atts );
+		// Box Style preset (.boxp-{slug}) on the card wrapper.
+		$__boxp = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : '';
+		if ( $__boxp !== '' ) { $attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' ' . $__boxp ); }
 		if ( $style_var !== '' ) {
 			$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style_var;
 		}

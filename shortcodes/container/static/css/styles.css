@@ -1,0 +1,22 @@
+/* Container styling that can't be expressed via the shared section--* modifier classes.
+
+   Almost everything the Container inherits from the Section reuses those classes for
+   free (they are class-only descendant selectors: `.section--cols-* .fw-row`,
+   `.section--rev* .fw-row`, `.section--gap-* .row`, and `.section--valign-stretch`
+   itself sets display:flex on whatever carries it). The one exception is the row-growth
+   half of "Default / Stretched" vertical alignment: the Section's rule keys on a
+   `.section--valign-stretch > .fw-container > .row` chain, but a Container element IS the
+   `.fw-container` band (its direct children are `.fw-row`), so that chain never reaches
+   it. Grow the Container's own direct-child row(s) here instead. */
+.fw-container.section--valign-stretch,
+.fw-container-fluid.section--valign-stretch {
+	display: flex;
+	flex-direction: column;
+}
+
+.fw-container.section--valign-stretch > .row,
+.fw-container.section--valign-stretch > .fw-row,
+.fw-container-fluid.section--valign-stretch > .row,
+.fw-container-fluid.section--valign-stretch > .fw-row {
+	flex: 1 1 auto;
+}

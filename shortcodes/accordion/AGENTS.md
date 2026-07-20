@@ -70,7 +70,24 @@ Wrapped in `group_layout` (same group key as Layout — both flatten to the same
 
 ### Tab: Styling
 
-Wrapped in `group_colors` + `group_spacings` (both flatten).
+Wrapped in `group_design` + `group_colors` + `group_spacings` (all flatten).
+
+**`group_design`** — the visual-language presets. All route through CSS custom
+properties on the wrapper (`accordion-style-*` / `accordion-radius-*` /
+`accordion-elev-*` classes + an `--acc-accent` var set inline), so a style is a
+small set of token overrides in `static/css/styles.css`, not a fork. Per-element
+color pickers (below) emit `:root .bg-*` / `.text-*` with `!important`, so they
+always win over these defaults.
+
+| Att | Type | Default | Description |
+|-----|------|---------|-------------|
+| `accordion_style` | `image-picker` (`bordered` / `separated` / `flush` / `filled` / `ghost`) | `bordered` | Overall visual style. Bordered = one rounded box; Separated = standalone cards; Flush = hairline dividers only; Filled = tinted title bars; Ghost = borderless + accent underline |
+| `corner_radius` | `select` (`none` / `sm` / `md` / `lg`) | `md` | Sets `--acc-radius` |
+| `elevation` | `select` (`none` / `subtle` / `raised`) | `none` | Sets `--acc-shadow`; most visible on Separated / Filled |
+| `active_accent` | `sc_color_field_compact` (bg) | — | Open-item accent → `--acc-accent`; drawn as a full-width underline + soft tint (NOT a side stripe). Adds `accordion-accent` when set |
+| `title_hover` | `switch` (`yes` / `no`) | `yes` | Adds `accordion-hover` → subtle title-bar shade on hover |
+
+**`group_colors`**
 
 | Att | Type | Default | Description |
 |-----|------|---------|-------------|

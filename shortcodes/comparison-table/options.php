@@ -12,12 +12,6 @@ $options = array(
 			'group' => array(
 				'type'    => 'group',
 				'options' => array(
-					'first_col_label' => array(
-						'type'  => 'text',
-						'label' => __( 'Feature Column Header', 'fw' ),
-						'value' => __( 'Features', 'fw' ),
-						'desc'  => __( 'The top-left header above the feature names.', 'fw' ),
-					),
 					'columns' => array(
 						'type'          => 'addable-popup',
 						'label'         => __( 'Columns (Plans)', 'fw' ),

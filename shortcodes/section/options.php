@@ -308,6 +308,24 @@ $options = [
 						'desc'  => __( 'Color, gradient, image and video background layers (they stack: image over gradient over color). Replaces the old separate Background Color / Image / Video fields — existing sections are migrated automatically.', 'fw' ),
 						'help'  => __( 'Image attachment "Fixed" gives a parallax effect. Video renders a muted, looping background via the section\'s video player; set a poster/fallback image for while it loads or where autoplay is blocked.', 'fw' ),
 					],
+					// Reusable CSS/HTML background pattern drawn as a decorative layer BEHIND the
+					// content (over the Background above). Stores the preset id (stable across renames).
+					'background_pattern' => [
+						'type'    => 'multi-picker',
+						'label'   => __( 'Background Pattern', 'fw' ),
+						'desc'    => __( 'A reusable CSS/HTML pattern drawn as a decorative layer behind the section content (on top of the Background above). Add / edit patterns in Theme Settings → Components → Background Patterns.', 'fw' ),
+						'popover' => true,
+						'value'   => [ 'pattern' => 'none' ],
+						'picker'  => [
+							'pattern' => [
+								'type'    => 'image-picker',
+								'label'   => false,
+								'choices' => function_exists( 'unysonplus_pattern_imagepicker_choices' ) ? unysonplus_pattern_imagepicker_choices() : [ 'none' => [ 'label' => __( 'None', 'fw' ) ] ],
+							],
+						],
+						'choices'      => [],
+						'show_borders' => false,
+					],
 				],
 			],
 			'group_dividers' => [

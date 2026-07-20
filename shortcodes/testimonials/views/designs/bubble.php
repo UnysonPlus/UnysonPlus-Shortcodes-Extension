@@ -20,16 +20,13 @@ $cols = max( 1, min( 4, (int) $bubble_columns ) );
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="<?php echo esc_attr( $container_cls ); ?>">
-		<?php if ( $title ): ?>
-			<h3 class="testimonials-title <?php echo esc_attr( trim( $text_align . ' ' . $title_class_extra ) ); ?>"<?php echo $title_style_extra !== '' ? ' style="' . esc_attr( $title_style_extra ) . '"' : ''; ?>><?php echo esc_html( $title ); ?></h3>
-		<?php endif; ?>
 
 		<div class="ts-bubble-grid ts-bubble-grid--cols-<?php echo (int) $cols; ?>">
 			<?php foreach ( $testimonials as $t ):
 				$f      = sc_testimonial_fields( $t );
 				$rating = ( $show_rating && function_exists( 'sc_render_rating' ) ) ? sc_render_rating( $f['rating'] ) : '';
 				?>
-				<div class="ts-bubble">
+				<div class="fw-tst-item <?php echo esc_attr( $box_style ); ?> ts-bubble">
 					<blockquote class="ts-bubble__quote testimonial-quote <?php echo esc_attr( $quote_class_extra ); ?>">
 						<?php echo sc_testimonial_quote_html( $f['content'] ); ?>
 					</blockquote>

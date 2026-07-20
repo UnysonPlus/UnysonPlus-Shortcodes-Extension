@@ -126,6 +126,7 @@ $options = array(
 			'group_colors' => array(
 				'type'    => 'group',
 				'options' => array(
+					'box_style'    => sc_card_box_style_field( array( 'desc' => __( 'Apply a Box Preset to each feature item. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ) ) ),
 					'marker_color' => sc_color_field_compact( array( 'label' => __( 'Marker Color', 'fw' ), 'kind' => 'bg' ) ),
 					'marker_size'  => array(
 						'type'  => 'unit-input',

@@ -122,6 +122,13 @@
 				 */
 				triggerEvent(this.model, 'options-modal:settings', eventData);
 
+				// Migrate legacy value-shapes before the modal renders the raw saved atts
+				// (get_value_from_attributes PHP is NOT called on normal builder load). The
+				// Background Pattern picker changed from a scalar select to a popover
+				// multi-picker { pattern }; a legacy scalar would throw an illegal-string-offset
+				// in the multi-picker PHP _render (blank "error:" modal), so normalise it here.
+				this.model.set('atts', migrateContainerAtts(this.model.get('atts')));
+
 				this.modal = new fw.OptionsModal({
 					title: 'Container',
 					options: this.initOptions.modalOptions,
@@ -268,6 +275,21 @@
 
 		builder.registerItemClass(PageBuilderContainerItem);
 	});
+
+	// Normalise legacy container atts to current value-shapes (mirrors the section item's
+	// migrateSectionAtts). Currently: background_pattern scalar id → multi-picker { pattern }.
+	function migrateContainerAtts (atts) {
+		if (!_.isObject(atts)) {
+			return atts;
+		}
+		if (_.has(atts, 'background_pattern') && !_.isObject(atts.background_pattern)) {
+			atts = _.clone(atts);
+			var v = atts.background_pattern;
+			v = (v === null || typeof v === 'undefined') ? '' : String(v);
+			atts.background_pattern = {pattern: (v === '' ? 'none' : v)};
+		}
+		return atts;
+	}
 
 	function itemData () {
 		return page_builder_item_type_container_data;

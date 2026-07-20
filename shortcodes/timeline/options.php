@@ -12,11 +12,6 @@ $options = array(
 			'group' => array(
 				'type'    => 'group',
 				'options' => array(
-					'title' => array(
-						'type'  => 'text',
-						'label' => __( 'Heading', 'fw' ),
-						'desc'  => __( 'Optional heading above the timeline.', 'fw' ),
-					),
 					'items' => array(
 						'type'          => 'addable-popup',
 						'label'         => __( 'Milestones', 'fw' ),

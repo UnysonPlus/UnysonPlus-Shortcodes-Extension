@@ -20,16 +20,13 @@ $zigzag_start = ( $zigzag_start === 'right' ) ? 'right' : 'left';
 ?>
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<div class="<?php echo esc_attr( $container_cls ); ?>">
-		<?php if ( $title ): ?>
-			<h3 class="testimonials-title <?php echo esc_attr( trim( $text_align . ' ' . $title_class_extra ) ); ?>"<?php echo $title_style_extra !== '' ? ' style="' . esc_attr( $title_style_extra ) . '"' : ''; ?>><?php echo esc_html( $title ); ?></h3>
-		<?php endif; ?>
 
 		<div class="ts-zigzag ts-zigzag--start-<?php echo esc_attr( $zigzag_start ); ?>">
 			<?php foreach ( $testimonials as $t ):
 				$f      = sc_testimonial_fields( $t );
 				$rating = ( $show_rating && function_exists( 'sc_render_rating' ) ) ? sc_render_rating( $f['rating'] ) : '';
 				?>
-				<div class="ts-zigzag__row">
+				<div class="fw-tst-item <?php echo esc_attr( $box_style ); ?> ts-zigzag__row">
 					<?php if ( $f['avatar'] ): ?>
 						<div class="ts-zigzag__media">
 							<img src="<?php echo esc_url( $f['avatar'] ); ?>" alt="<?php echo esc_attr( $f['author_name'] ); ?>" loading="lazy" />

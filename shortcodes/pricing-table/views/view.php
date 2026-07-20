@@ -44,7 +44,6 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 		$design   = sc_get( 'design', $atts, 'classic' );
 		if ( ! isset( $registry[ $design ] ) ) { $design = 'classic'; }
 
-		$title = trim( (string) sc_get( 'title', $atts, '' ) );
 		$plans = sc_get( 'plans', $atts, array() );
 		if ( ! is_array( $plans ) || empty( $plans ) ) {
 			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
@@ -107,10 +106,8 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 
 		ob_start();
 		echo '<div ' . fw_attr_to_html( $attr ) . '>';
-		if ( $title !== '' ) {
-			echo '<h3 class="fw-pt__title">' . esc_html( $title ) . '</h3>';
-		}
 		echo '<div class="fw-pt__grid">';
+		$__boxp = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : ''; // Box Style per plan card
 
 		foreach ( $plans as $p ) {
 			$featured = isset( $p['featured'] ) && $p['featured'] === 'yes';
@@ -125,7 +122,7 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 			$btn_url  = isset( $p['button_url'] ) ? trim( (string) $p['button_url'] ) : '';
 			$btn_tgt  = ( isset( $p['button_target'] ) && $p['button_target'] === '_blank' ) ? '_blank' : '_self';
 
-			echo '<div class="fw-pt__plan' . ( $featured ? ' is-featured' : '' ) . '">';
+			echo '<div class="fw-pt__plan' . ( $__boxp !== '' ? ' ' . $__boxp : '' ) . ( $featured ? ' is-featured' : '' ) . '">';
 			// Top-center badge (the 'badge' emphasis) on the featured plan — uses the
 			// plan's Ribbon text, or "Most Popular" if none. Falls back to the classic
 			// corner ribbon otherwise.

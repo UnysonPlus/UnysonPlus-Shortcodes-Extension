@@ -29,9 +29,12 @@
 		host.classList.add('sc-bg-host');
 		if (host.firstChild !== el) { host.insertBefore(el, host.firstChild); }
 
-		// Lift the Section's real content above the backdrop.
+		// Lift the Section's real content above the backdrop — but NOT a decorative
+		// `.pattern-layer` (a Section Background Pattern), which is itself a backdrop and must
+		// stay behind the fill (it keeps its own z-index:0). Lifting it would paint the pattern
+		// over the fill (it sits after the fill in the DOM), hiding video / 3D-gallery backdrops.
 		Array.prototype.forEach.call(host.children, function (ch) {
-			if (ch === el) { return; }
+			if (ch === el || (ch.classList && ch.classList.contains('pattern-layer'))) { return; }
 			if (getComputedStyle(ch).position === 'static') { ch.style.position = 'relative'; }
 			if (!ch.style.zIndex) { ch.style.zIndex = '1'; }
 		});

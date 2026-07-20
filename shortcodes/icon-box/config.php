@@ -26,6 +26,17 @@ $cfg['page_builder'] = array(
                 svgMarkup = (\'\' + ic["markup"]).replace(/width="[^"]*"/i, \'width="22"\').replace(/height="[^"]*"/i, \'height="22"\');
             }
 
+            // custom_icon (legacy inline SVG): a viewBox-only <svg> has no intrinsic size and
+            // collapses to 0x0 inside the inline-flex preview span (the frontend CSS that sizes
+            // it is not loaded in wp-admin). Inject a width/height when the <svg> has no explicit
+            // width so these legacy icons still preview. A space before "width" avoids matching
+            // stroke-width; SVGs that already carry a width pass through unchanged.
+            var customIconMarkup = "";
+            if ( hasCustomIcon ) {
+                var rawCI = (\'\' + o["custom_icon"]);
+                customIconMarkup = /<svg[^>]* width=/i.test( rawCI ) ? rawCI : rawCI.replace(/<svg\\b/i, \'<svg width="20" height="20"\');
+            }
+
             var hasTitle      = o["title"] && (\'\' + o["title"]).trim().length > 0;
 
             var contentText   = "";
@@ -45,7 +56,7 @@ $cfg['page_builder'] = array(
             <div style="margin-top:.5rem; display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
 
                 {{ if ( hasCustomIcon ) { }}
-                    <span style="display:inline-flex; align-items:center; font-size:20px; line-height:1; max-width:32px; max-height:32px; overflow:hidden;">{{= o["custom_icon"] }}</span>
+                    <span style="display:inline-flex; align-items:center; font-size:20px; line-height:1; max-width:32px; max-height:32px; overflow:hidden;">{{= customIconMarkup }}</span>
                 {{ } else if ( hasIconSvg ) { }}
                     <span style="display:inline-flex; align-items:center; line-height:1;">{{= svgMarkup }}</span>
                 {{ } else if ( hasIconEmoji ) { }}

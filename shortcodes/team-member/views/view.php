@@ -36,6 +36,9 @@ $atts['base_class']       = 'fw-team';
 $atts['unique_id_prefix'] = 'team-';
 $atts['css_class']        = trim( implode( ' ', $classes ) . ' ' . ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) );
 $attr = function_exists( 'sc_build_wrapper_attr' ) ? sc_build_wrapper_attr( $atts ) : array( 'class' => $atts['css_class'] );
+// Box Style preset (.boxp-{slug}) on the card wrapper.
+$__boxp = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : '';
+if ( $__boxp !== '' ) { $attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' ' . $__boxp ); }
 if ( $inline_style !== '' ) {
 	$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $inline_style;
 }

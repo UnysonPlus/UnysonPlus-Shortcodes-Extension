@@ -13,19 +13,16 @@
 
 /* Per-element color picks (kept off the wrapper). sc_extract_styling_atts
    gives both preset classes AND compact-picker custom-hex inline styles. */
-$title_styling       = sc_extract_styling_atts( $atts, array( 'title_color' ) );
 $quote_styling       = sc_extract_styling_atts( $atts, array( 'quote_color' ) );
 $author_name_styling = sc_extract_styling_atts( $atts, array( 'author_name_color' ) );
 $author_job_styling  = sc_extract_styling_atts( $atts, array( 'author_job_color' ) );
 $site_link_styling   = sc_extract_styling_atts( $atts, array( 'site_link_color' ) );
 
-$title_class_extra       = implode( ' ', $title_styling['classes'] );
 $quote_class_extra       = implode( ' ', $quote_styling['classes'] );
 $author_name_class_extra = implode( ' ', $author_name_styling['classes'] );
 $author_job_class_extra  = implode( ' ', $author_job_styling['classes'] );
 $site_link_class_extra   = implode( ' ', $site_link_styling['classes'] );
 
-$title_style_extra       = $title_styling['styles']       ? implode( '; ', $title_styling['styles'] )       : '';
 $quote_style_extra       = $quote_styling['styles']       ? implode( '; ', $quote_styling['styles'] )       : '';
 $author_name_style_extra = $author_name_styling['styles'] ? implode( '; ', $author_name_styling['styles'] ) : '';
 $author_job_style_extra  = $author_job_styling['styles']  ? implode( '; ', $author_job_styling['styles'] )  : '';
@@ -70,7 +67,6 @@ $attr = sc_build_wrapper_attr( $atts );
 $attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' design-' . $design );
 
 /* Content */
-$title        = sc_get( 'title', $atts, sc_get( 'group/title', $atts, '' ) );
 $testimonials = sc_get( 'testimonials', $atts, sc_get( 'group/testimonials', $atts, [] ) );
 if ( ! is_array( $testimonials ) ) $testimonials = [];
 
@@ -91,6 +87,7 @@ $show_rating     = sc_get( 'show_rating', $atts, 'yes' ) === 'yes';
 
 /* Style — Classic design only (moved into design_settings/default/*). */
 $card_style       = $ts_dp( 'card_style', 'card_style', '' );
+$box_style        = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : ''; // Box Style per testimonial card (grid/card designs)
 $show_avatar      = true; /* default unless explicitly hidden */
 $avatar_position  = $ts_dp( 'avatar_position', 'avatar_position', 'top' ); // top|left|right|none
 if ( $avatar_position === 'none' ) $show_avatar = false;
