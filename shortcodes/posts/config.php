@@ -12,7 +12,7 @@ $cfg['page_builder'] = array(
 
     'title_template' => '
         {{ if ( o ) {
-            var styleLabel = o["card_style"] || "standard";
+            var styleLabel = (o["card"] && o["card"]["style"]) || "standard";
             var ptLabel    = o["post_type"]  || "post";
             var count      = o["posts_per_page"] || 6;
         }}

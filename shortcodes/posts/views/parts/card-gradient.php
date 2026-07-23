@@ -34,7 +34,7 @@ if ( ! has_post_thumbnail( $post_id ) ) {
     $article_class .= ' posts__card--no-image';
 }
 ?>
-<article class="<?php echo esc_attr( $article_class ); ?>" role="listitem">
+<article class="<?php echo esc_attr( $article_class ); ?>">
     <?php if ( $image_visible ) : ?>
         <?php echo sc_posts_render_image( $sc_atts, $post_id, $cat_overlay_html ); ?>
     <?php endif; ?>

@@ -661,6 +661,15 @@ $options = array(
                         ],
                     ],
 
+                    'max_width' => [
+                        'type'  => 'unit-input',
+                        'label' => __( 'Max Width', 'fw' ),
+                        'units' => array( 'px', 'rem', 'ch', '%' ),
+                        'value' => array( 'value' => '', 'unit' => 'px' ),
+                        'desc'  => __( 'Cap how wide an AUTO-width column can grow. Only applies to Auto columns; ignored for fixed-fraction widths. Leave the value blank for no cap. Tip: "ch" is great for keeping prose readable.', 'fw' ),
+                        'help'  => __( 'Auto columns stretch to fill the row; this stops them past a set width. To CENTER a capped column, use the Section\'s "Columns Horizontal Alignment → Center" (the cap creates the free space it centers into). Note: if you cap only one of several auto columns, an uncapped sibling absorbs the freed space, so centering has no effect there — cap all of them, or use a single auto column.', 'fw' ),
+                    ],
+
                     'col_offset' => [
                         'type'  => 'responsive',
                         'label' => __( 'Offset', 'fw' ),

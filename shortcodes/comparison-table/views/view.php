@@ -137,6 +137,39 @@ if ( ! function_exists( 'sc_ct_render' ) ) {
 
 		echo '</table></div>';
 		echo '</div>';
+
+		// Optional Product + Offer JSON-LD, one per column (machine-readable comparison).
+		if ( sc_get( 'product_schema', $atts, 'no' ) === 'yes' && ! empty( $columns ) ) {
+			$cmap = array( 'R$' => 'BRL', 'A$' => 'AUD', 'C$' => 'CAD', '$' => 'USD', '€' => 'EUR', '£' => 'GBP', '¥' => 'JPY', '₹' => 'INR' );
+			$off_vals = array( '', 'no', '-', 'x', 'false', '0' );
+			foreach ( $columns as $ci => $c ) {
+				$pname = trim( wp_strip_all_tags( (string) ( isset( $c['name'] ) ? $c['name'] : '' ) ) );
+				if ( $pname === '' ) { continue; }
+				$prod  = array( '@context' => 'https://schema.org', '@type' => 'Product', 'name' => $pname );
+				$feats = array();
+				foreach ( $rows as $r ) {
+					if ( ! empty( $r['is_heading'] ) && $r['is_heading'] === 'yes' ) { continue; }
+					$rl = trim( wp_strip_all_tags( (string) ( isset( $r['label'] ) ? $r['label'] : '' ) ) );
+					if ( $rl === '' ) { continue; }
+					$cells = isset( $r['values'] ) ? preg_split( '/\r\n|\r|\n/', (string) $r['values'] ) : array();
+					$val   = isset( $cells[ $ci ] ) ? strtolower( trim( (string) $cells[ $ci ] ) ) : '';
+					if ( in_array( $val, $off_vals, true ) || $val === '×' ) { continue; }
+					$feats[] = $rl;
+				}
+				if ( ! empty( $feats ) ) { $prod['description'] = implode( ', ', $feats ); }
+				$price_raw = isset( $c['price'] ) ? (string) $c['price'] : '';
+				if ( preg_match( '/\d[\d.,]*/', $price_raw, $m ) ) {
+					$amount = str_replace( ',', '', $m[0] );
+					$iso    = 'USD';
+					foreach ( $cmap as $sym => $code ) { if ( strpos( $price_raw, $sym ) !== false ) { $iso = $code; break; } }
+					$offer  = array( '@type' => 'Offer', 'price' => $amount, 'priceCurrency' => $iso, 'availability' => 'https://schema.org/InStock' );
+					if ( ! empty( $c['button_url'] ) ) { $offer['url'] = (string) $c['button_url']; }
+					$prod['offers'] = $offer;
+				}
+				echo '<script type="application/ld+json">' . wp_json_encode( $prod, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+			}
+		}
+
 		return ob_get_clean();
 	}
 }

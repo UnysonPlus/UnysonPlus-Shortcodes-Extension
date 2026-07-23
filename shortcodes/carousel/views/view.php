@@ -109,6 +109,12 @@ $align_class = function ( $a ) {
 					$img      = ( isset( $s['image']['url'] ) && $s['image']['url'] !== '' ) ? $s['image']['url'] : '';
 					$mode     = ( isset( $s['image_mode'] ) && $s['image_mode'] === 'inline' ) ? 'inline' : 'background';
 					$heading  = isset( $s['heading'] ) ? trim( (string) $s['heading'] ) : '';
+					// Prefer the attachment's own alt text; fall back to the heading only
+					// for inline images. Background images sit behind the (visible) heading,
+					// so they use the attachment alt or "" to avoid duplicating it for AT.
+					$att_id   = isset( $s['image']['attachment_id'] ) ? (int) $s['image']['attachment_id'] : 0;
+					$att_alt  = $att_id ? trim( (string) get_post_meta( $att_id, '_wp_attachment_image_alt', true ) ) : '';
+					$img_alt  = $att_alt !== '' ? $att_alt : $heading;
 					$text     = isset( $s['text'] ) ? trim( (string) $s['text'] ) : '';
 					$btn_lbl  = isset( $s['button_label'] ) ? trim( (string) $s['button_label'] ) : '';
 					$btn_link = isset( $s['button_link'] ) ? trim( (string) $s['button_link'] ) : '#';
@@ -120,14 +126,14 @@ $align_class = function ( $a ) {
 					?>
 					<li class="<?php echo esc_attr( $slide_cls ); ?>">
 						<?php if ( $is_bg ) : ?>
-							<img class="fw-carousel__bg" src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( $heading ); ?>" loading="lazy">
+							<img class="fw-carousel__bg" src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( $att_alt ); ?>" loading="lazy">
 							<?php if ( $overlay ) : ?>
 								<span class="fw-carousel__overlay" style="background:rgba(0,0,0,<?php echo esc_attr( $overlay_opacity / 100 ); ?>)"></span>
 							<?php endif; ?>
 						<?php endif; ?>
 
 						<?php if ( $mode === 'inline' && $img !== '' ) : ?>
-							<div class="fw-carousel__media"><img class="fw-carousel__img" src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( $heading ); ?>" loading="lazy"></div>
+							<div class="fw-carousel__media"><img class="fw-carousel__img" src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( $img_alt ); ?>" loading="lazy"></div>
 						<?php endif; ?>
 
 						<?php if ( $has_content ) : ?>

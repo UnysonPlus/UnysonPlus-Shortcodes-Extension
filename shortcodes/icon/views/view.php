@@ -63,6 +63,12 @@ $icon_html = sc_icon_render( $icon, array(
 <span <?php echo fw_attr_to_html( $attr ); ?>>
     <?php echo $icon_html; // already escaped by sc_icon_render() ?>
 
+    <?php // A meaningful icon with no visible Title gets a screen-reader-only name so it
+          // is exposed to assistive tech / AI agents (the glyph itself stays aria-hidden). ?>
+    <?php if ( empty( $atts['title'] ) && ! empty( $atts['aria_label'] ) ) : ?>
+        <span class="screen-reader-text"><?php echo esc_html( $atts['aria_label'] ); ?></span>
+    <?php endif; ?>
+
     <?php if ( ! empty( $atts['title'] ) ) : ?>
         <span class="<?php echo esc_attr( implode( ' ', $title_classes ) ); ?>"<?php echo $title_style_attr; ?>><?php echo esc_html( $atts['title'] ); ?></span>
     <?php endif; ?>

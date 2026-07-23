@@ -128,8 +128,10 @@ if ( ! function_exists( 'sc_posts_normalize_atts' ) ) {
         $atts['columns_tablet']  = (string) ( $count >= 5 ? $count - 1 : min( $count, 2 ) );
         $atts['columns_mobile']  = '1';
         $atts['col_ratio']       = $col_ratio;
-        $atts['column_gap']         = sc_posts_dp( $atts, "design/$mode/column_gap",       'column_gap',      '24' );
-        $atts['row_gap']            = sc_posts_dp( $atts, "design/$mode/row_gap",          'row_gap',         '32' );
+        // Default '' (not 24/32) → an absent gap falls back to the stylesheet's base
+        // gap, matching the option defaults; sc_posts_gap_size('') returns '' → no var.
+        $atts['column_gap']         = sc_posts_dp( $atts, "design/$mode/column_gap",       'column_gap',      '' );
+        $atts['row_gap']            = sc_posts_dp( $atts, "design/$mode/row_gap",          'row_gap',         '' );
         $atts['equal_height']       = sc_posts_dp( $atts, "design/$mode/equal_height",     'equal_height',    'yes' );
         $atts['featured_treatment'] = sc_posts_dp( $atts, "design/$mode/featured_treatment", 'featured_treatment', 'none' );
 
@@ -144,6 +146,10 @@ if ( ! function_exists( 'sc_posts_normalize_atts' ) ) {
         $atts['image_width_ratio']      = sc_posts_dp( $atts, "card/$style/image_width_ratio",      'image_width_ratio',      '40-60' );
         $atts['image_vertical_align']   = sc_posts_dp( $atts, "card/$style/image_vertical_align",   'image_vertical_align',   'stretch' );
         $atts['content_vertical_align'] = sc_posts_dp( $atts, "card/$style/content_vertical_align", 'content_vertical_align', 'top' );
+        /* Image Position (Left / Right) for horizontal styles — Side resolves it to
+           side-left/side-right (render loop); Postcard / News List / Listicle / Filmstrip
+           flip via a class in their parts. */
+        $atts['image_position']         = sc_posts_dp( $atts, "card/$style/image_position",         'image_position',         'left' );
 
         /* Pagination (was `pagination_type` → now `pagination/type`). */
         $ptype = sc_get( 'pagination/type', $atts, sc_get( 'pagination_type', $atts, 'none' ) );
@@ -203,6 +209,9 @@ if ( ! function_exists( 'sc_posts_build_query_args' ) ) {
         /* Order */
         $orderby = sc_get( 'orderby', $atts, 'date' );
         $order   = sc_get( 'order', $atts, 'DESC' );
+        // Allow-list orderby (WP_Query sanitizes internally too, but be explicit).
+        $allowed_orderby = [ 'date', 'title', 'menu_order', 'rand', 'comment_count', 'modified', 'name', 'ID', 'author', 'meta_value_num' ];
+        if ( ! in_array( $orderby, $allowed_orderby, true ) ) { $orderby = 'date'; }
         $args['orderby'] = $orderby;
         $args['order']   = in_array( $order, [ 'ASC', 'DESC' ], true ) ? $order : 'DESC';
         if ( $orderby === 'meta_value_num' ) {
@@ -367,8 +376,33 @@ if ( ! function_exists( 'sc_posts_render_meta' ) ) {
 | Helper: render category chips
 |--------------------------------------------------------------------------
 */
+if ( ! function_exists( 'sc_posts_slug_enabled' ) ) {
+    /**
+     * Is a card block explicitly enabled in the Elements → block list?
+     * Checks the raw `element_order` (independent of the self-heal in
+     * sc_posts_get_ordered_slugs) so a single block can be toggled off. Returns
+     * true when the list is empty (defaults = all on) or the slug is absent
+     * (forward-compatible with blocks added after a saved order).
+     */
+    function sc_posts_slug_enabled( $atts, $slug ) {
+        $items = sc_get( 'element_order', $atts, [] );
+        if ( ! is_array( $items ) || empty( $items ) ) return true;
+        foreach ( $items as $it ) {
+            if ( empty( $it['slug'] ) || $it['slug'] !== $slug ) continue;
+            $enabled = isset( $it['enabled'] ) ? $it['enabled'] : 'yes';
+            $off = ( $enabled === 'no' || $enabled === false || $enabled === '0' || $enabled === 0 );
+            return ! $off;
+        }
+        return true;
+    }
+}
+
 if ( ! function_exists( 'sc_posts_render_cats' ) ) {
     function sc_posts_render_cats( $atts, $post_id ) {
+        // Honour the "Categories / taxonomy chips" toggle in the block list for
+        // EVERY placement — including the image-overlay positions, whose card
+        // parts render the chips directly (bypassing the body-slug gate).
+        if ( ! sc_posts_slug_enabled( $atts, 'cats' ) ) return '';
         $tax = sc_get( 'cat_taxonomy', $atts, 'category' );
         $max = max( 0, (int) sc_get( 'cat_max', $atts, 2 ) );
         if ( $tax === '' || $max === 0 ) return '';
@@ -415,9 +449,21 @@ if ( ! function_exists( 'sc_posts_render_image' ) ) {
             }
         }
         if ( $img === '' ) return '';
+        // Image Style preset (Theme Settings → Components → Image Styles): the
+        // `.posts__image` anchor doubles as the `.imgs-wrap` so the preset's crop /
+        // mask / filter / scrim apply to the thumbnail (the base rule targets the
+        // inner <img>; scrim/duotone layers overlay the anchor, pointer-events:none).
+        $imgs        = function_exists( 'sc_image_style_class' ) ? sc_image_style_class( $atts ) : '';
+        $imgs_cls    = ( $imgs !== '' ) ? ' imgs-wrap ' . $imgs : '';
+        // The title (below) is the primary, keyboard-focusable link to the same
+        // permalink. Take the image link OUT of the tab order (tabindex=-1) so
+        // keyboard users don't tab through two links to one destination; it stays
+        // mouse-clickable, and any overlay category chips inside keep their own
+        // focus. (aria-label kept for the mouse/AT click target.)
         return sprintf(
-            '<a class="posts__image posts__image--%s" href="%s" aria-label="%s">%s%s</a>',
+            '<a class="posts__image posts__image--%s%s" href="%s" tabindex="-1" aria-label="%s">%s%s</a>',
             esc_attr( $ratio ),
+            esc_attr( $imgs_cls ),
             esc_url( get_permalink( $post_id ) ),
             esc_attr( get_the_title( $post_id ) ),
             $img,
@@ -483,13 +529,17 @@ if ( ! function_exists( 'sc_posts_render_readmore' ) ) {
             if ( $extra ) $extra_classes = ' ' . implode( ' ', array_map( 'sanitize_html_class', $extra ) );
         }
 
+        // Append the post title as visually-hidden text so the link's accessible
+        // name AND its crawlable text read "Read more about <title>" (fixes the SEO
+        // "descriptive link text" audit) while sighted users still see just "Read
+        // more". No aria-label — the text content now provides the name.
         return sprintf(
-            '<a class="posts__readmore posts__readmore--%s%s" href="%s" aria-label="%s">%s</a>',
+            '<a class="posts__readmore posts__readmore--%s%s" href="%s">%s<span class="posts__readmore-sr"> %s</span></a>',
             esc_attr( $style ),
             $extra_classes,
             esc_url( get_permalink( $post_id ) ),
-            esc_attr( $aria ),
-            esc_html( $text )
+            esc_html( $text ),
+            esc_html( sprintf( __( 'about %s', 'fw' ), $label ) )
         );
     }
 }
@@ -552,8 +602,22 @@ if ( ! function_exists( 'sc_posts_get_ordered_slugs' ) ) {
         $out = [];
         foreach ( $items as $it ) {
             if ( empty( $it['slug'] ) ) continue;
-            if ( ! empty( $it['enabled'] ) && $it['enabled'] !== 'no' && ! in_array( $it['slug'], $exclude, true ) ) {
+            if ( in_array( $it['slug'], $out, true ) ) continue; // de-dup: a repeated slug must not render twice
+            // Enabled unless explicitly off. Accept the legacy string 'no' AND a
+            // hard boolean false (a bare `switch` used to store false instead of
+            // 'yes'); everything else — 'yes', true, 1 — counts as visible.
+            $enabled = isset( $it['enabled'] ) ? $it['enabled'] : 'yes'; // absent key = on (avoids a PHP notice)
+            $off = ( $enabled === 'no' || $enabled === false || $enabled === '0' || $enabled === 0 );
+            if ( ! $off && ! in_array( $it['slug'], $exclude, true ) ) {
                 $out[] = $it['slug'];
+            }
+        }
+        // Self-heal: a card with EVERY block disabled renders nothing — never an
+        // intentional setup, and the symptom of the old bare-switch saving boolean
+        // false for all rows. Fall back to the default block set so cards aren't blank.
+        if ( empty( $out ) ) {
+            foreach ( [ 'image', 'cats', 'title', 'meta', 'excerpt', 'readmore' ] as $slug ) {
+                if ( ! in_array( $slug, $exclude, true ) ) { $out[] = $slug; }
             }
         }
         return $out;
@@ -583,6 +647,69 @@ if ( ! function_exists( 'sc_posts_render_card' ) ) {
         $sc_index = (int) $index;
         include $part_file;
         return ob_get_clean();
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Helper: render the card list (inner HTML of .posts__grid) for a set of posts
+| Shared by the full render AND the AJAX load-more / filter endpoints so all
+| three produce identical markup.
+|--------------------------------------------------------------------------
+*/
+if ( ! function_exists( 'sc_posts_render_cards' ) ) {
+    function sc_posts_render_cards( $atts, $posts_list, $start_index = 0 ) {
+        if ( empty( $posts_list ) ) return '';
+        $card_style  = sc_get( 'card_style', $atts, 'standard' );
+        $featured_tx = sc_get( 'featured_treatment', $atts, 'none' );
+        $registry    = sc_posts_card_registry();
+        $style_meta  = isset( $registry[ $card_style ] ) ? $registry[ $card_style ] : [];
+        $__boxp      = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : ''; // Box Style per post card
+        $out   = '';
+        // $start_index keeps first-post treatments (hero-split / featured / zig-zag)
+        // tied to the TRUE first post, so an AJAX page-2 append never re-applies them.
+        $index = (int) $start_index;
+        foreach ( $posts_list as $p ) {
+            $effective_style = $card_style;
+
+            // first_style → the first post uses a different style (hero-split).
+            if ( ! empty( $style_meta['first_style'] ) && $index === 0 ) {
+                $effective_style = $style_meta['first_style'];
+            }
+            // alternate → flip side-left / side-right per row (zig-zag).
+            if ( ! empty( $style_meta['alternate'] ) ) {
+                $effective_style = ( $index % 2 === 0 ) ? 'side-left' : 'side-right';
+            }
+            // "side" is the unified tile → resolve to the legacy side-left/side-right the
+            // card-side part dispatches on, via the Image Position option.
+            if ( $effective_style === 'side' ) {
+                $effective_style = ( sc_get( 'image_position', $atts, 'left' ) === 'right' ) ? 'side-right' : 'side-left';
+            }
+            // Featured first-post treatments
+            $extra_card_class = '';
+            if ( $featured_tx === 'first-post-2x' && $index === 0 ) {
+                $extra_card_class = ' posts__card--span-2';
+            }
+            if ( $featured_tx === 'first-post-hero' && $index === 0 ) {
+                $effective_style  = 'overlay';
+                $extra_card_class = ' posts__card--span-2 posts__card--featured';
+            }
+
+            if ( $__boxp !== '' ) { $extra_card_class .= ' ' . $__boxp; }
+            $card_html = sc_posts_render_card( $atts, $p->ID, $effective_style, $index );
+            if ( $extra_card_class !== '' ) {
+                // splice class into the outermost article
+                $card_html = preg_replace(
+                    '/<article class="([^"]+)"/',
+                    '<article class="$1' . esc_attr( $extra_card_class ) . '"',
+                    $card_html,
+                    1
+                );
+            }
+            $out .= $card_html;
+            $index++;
+        }
+        return $out;
     }
 }
 
@@ -640,6 +767,10 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
         if ( $equal_height )                         $wrapper_classes[] = 'posts--equal-height';
         if ( $featured_tx !== 'none' )               $wrapper_classes[] = 'posts--featured-' . sanitize_html_class( $featured_tx );
         if ( $live_filters )                         $wrapper_classes[] = 'posts--has-filters posts--filters-' . sanitize_html_class( $filters_pos );
+        // Chips only get their pill padding/radius when a chip background is actually set.
+        if ( function_exists( 'sc_color_to_css' ) && sc_color_to_css( sc_get( 'chip_bg', $atts, '' ) ) !== '' ) {
+            $wrapper_classes[] = 'posts--chips-bg';
+        }
 
         $atts['css_class'] = trim( implode( ' ', $wrapper_classes ) . ' ' . ( $atts['css_class'] ?? '' ) );
 
@@ -667,6 +798,27 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
             $extra_attrs['data-slider-interval'] = (int) $slider_int;
             $extra_attrs['data-slider-loop']     = $slider_loop ? '1' : '0';
         }
+
+        /* AJAX Load More / Infinite Scroll / Live Filters need the server to rebuild
+           this instance's query later. The JS posts back only the wrapper's DOM id,
+           so give AJAX-enabled instances a STABLE id and stash the resolved atts in a
+           transient keyed by it (client never sends atts → nothing to tamper with).
+           Non-AJAX instances stay id-less to keep the markup clean. */
+        $ajax_enabled = in_array( $pag_type, [ 'ajax_loadmore', 'infinite' ], true ) || $live_filters;
+        if ( $ajax_enabled ) {
+            $instance_id = ! empty( $atts['css_id'] )
+                ? sanitize_html_class( strtolower( str_replace( ' ', '-', trim( (string) $atts['css_id'] ) ) ) )
+                : 'ps-' . substr( md5( wp_json_encode( $atts ) ), 0, 12 );
+            $extra_attrs['id'] = $instance_id;
+            set_transient( 'sc_posts_ax_' . $instance_id, [
+                'atts'        => $atts,
+                'use_current' => $use_current,
+                'main_qv'     => ( $use_current && isset( $GLOBALS['wp_query'] ) ) ? $GLOBALS['wp_query']->query_vars : null,
+                'ppp'         => $ppp_attr,
+                'current_id'  => is_singular() ? (int) get_the_ID() : 0, // for Exclude Current (is_singular() is false in AJAX)
+            ], WEEK_IN_SECONDS );
+        }
+
         $atts['extra_attrs'] = $extra_attrs;
 
         $attr = sc_build_wrapper_attr( $atts );
@@ -685,7 +837,10 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
            meaningfully UNEQUAL; an equal split falls back to the plain
            repeat(--posts-cols-d) grid. Tablet/phone stay equal (media queries). */
         $col_ratio = (array) sc_get( 'col_ratio', $atts, array() );
-        if ( count( $col_ratio ) >= 2 ) {
+        // Emit an explicit template ONLY when the ratio's segment count matches the
+        // desktop column count AND we're under 5 columns (5 = fixed-equal by design).
+        // Guards against stale builder data (a ratio saved for a different count).
+        if ( count( $col_ratio ) >= 2 && count( $col_ratio ) === $cols_d && $cols_d < 5 ) {
             $ws = array();
             foreach ( $col_ratio as $seg ) { $ws[] = ( is_array( $seg ) && isset( $seg['w'] ) ) ? max( 1, (float) $seg['w'] ) : 1; }
             if ( ( max( $ws ) - min( $ws ) ) > 2 ) { // meaningfully unequal
@@ -696,6 +851,23 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
         }
         if ( $col_gap_size !== '' ) $style_var .= '--posts-col-gap:' . $col_gap_size . ';';
         if ( $row_gap_size !== '' ) $style_var .= '--posts-row-gap:' . $row_gap_size . ';';
+        /* Per-part colors (compact presets) → --posts-* custom props consumed by styles.css.
+           A preset resolves to var(--color-{slug}) (live-linked to the palette); a custom
+           value is sanitised to color-safe characters. Unset = no var = theme defaults. */
+        if ( function_exists( 'sc_color_to_css' ) ) {
+            foreach ( array(
+                'title_color'   => '--posts-title',
+                'excerpt_color' => '--posts-excerpt',
+                'meta_color'    => '--posts-meta',
+                'chip_bg'       => '--posts-chip-bg',
+                'chip_color'    => '--posts-chip',
+                'accent_color'  => '--posts-accent',
+            ) as $ck => $cv ) {
+                $cval = sc_color_to_css( sc_get( $ck, $atts, '' ) );
+                $cval = preg_replace( '/[^#0-9a-zA-Z(),.%\s-]/', '', (string) $cval );
+                if ( $cval !== '' ) { $style_var .= $cv . ':' . $cval . ';'; }
+            }
+        }
         $attr['style'] = isset( $attr['style'] ) ? $attr['style'] . ';' . $style_var : $style_var;
 
         /* Query — either the current page's main query ("Posts for current page",
@@ -746,49 +918,8 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
                         <div class="posts__empty"><?php echo esc_html( $no_results ); ?></div>
                     <?php else : ?>
 
-                        <div class="posts__grid" role="list">
-                            <?php
-                            $registry = sc_posts_card_registry();
-                            $style_meta = isset( $registry[ $card_style ] ) ? $registry[ $card_style ] : [];
-                            $__boxp = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : ''; // Box Style per post card
-                            $index = 0;
-                            foreach ( $posts_list as $p ) :
-                                $effective_style = $card_style;
-
-                                // Composition driven by registry meta:
-                                // first_style → the first post uses a different style (hero-split).
-                                if ( ! empty( $style_meta['first_style'] ) && $index === 0 ) {
-                                    $effective_style = $style_meta['first_style'];
-                                }
-                                // alternate → flip side-left / side-right per row (zig-zag).
-                                if ( ! empty( $style_meta['alternate'] ) ) {
-                                    $effective_style = ( $index % 2 === 0 ) ? 'side-left' : 'side-right';
-                                }
-                                // Featured first-post treatments
-                                $extra_card_class = '';
-                                if ( $featured_tx === 'first-post-2x' && $index === 0 ) {
-                                    $extra_card_class = ' posts__card--span-2';
-                                }
-                                if ( $featured_tx === 'first-post-hero' && $index === 0 ) {
-                                    $effective_style = 'overlay';
-                                    $extra_card_class = ' posts__card--span-2 posts__card--featured';
-                                }
-
-                                if ( $__boxp !== '' ) { $extra_card_class .= ' ' . $__boxp; }
-                                $card_html = sc_posts_render_card( $atts, $p->ID, $effective_style, $index );
-                                if ( $extra_card_class !== '' ) {
-                                    // splice class into the outermost article
-                                    $card_html = preg_replace(
-                                        '/<article class="([^"]+)"/',
-                                        '<article class="$1' . esc_attr( $extra_card_class ) . '"',
-                                        $card_html,
-                                        1
-                                    );
-                                }
-                                echo $card_html;
-                                $index++;
-                            endforeach;
-                            ?>
+                        <div class="posts__grid">
+                            <?php echo sc_posts_render_cards( $atts, $posts_list, 0 ); ?>
                         </div>
 
                         <?php if ( $pag_type === 'numeric' && in_array( $pag_pos, [ 'below-grid', 'both' ], true ) ) : ?>
@@ -855,12 +986,12 @@ if ( ! function_exists( 'sc_posts_render_filter_bar' ) ) {
         if ( empty( $terms ) || is_wp_error( $terms ) ) return '';
         ob_start();
         ?>
-        <div class="posts__filters" role="tablist">
-            <button class="posts__filter is-active" type="button" data-term="">
+        <div class="posts__filters" role="group" aria-label="<?php esc_attr_e( 'Filter posts by category', 'fw' ); ?>">
+            <button class="posts__filter is-active" type="button" data-term="" aria-pressed="true">
                 <?php esc_html_e( 'All', 'fw' ); ?>
             </button>
             <?php foreach ( $terms as $t ) : ?>
-                <button class="posts__filter" type="button" data-term="<?php echo esc_attr( $t->slug ); ?>">
+                <button class="posts__filter" type="button" data-term="<?php echo esc_attr( $t->slug ); ?>" aria-pressed="false">
                     <?php echo esc_html( $t->name ); ?>
                 </button>
             <?php endforeach; ?>
@@ -875,21 +1006,40 @@ if ( ! function_exists( 'sc_posts_render_filter_bar' ) ) {
 | Cache wrapper — short-circuits to a transient when enabled
 |--------------------------------------------------------------------------
 */
-$do_cache  = sc_get( 'cache_output', $atts, 'no' ) === 'yes';
-$cache_key = '';
-if ( $do_cache ) {
-    $cache_key = 'sc_posts_' . md5( wp_json_encode( $atts ) . '|' . max( 1, (int) get_query_var( 'paged' ) ) );
-    $cached    = get_transient( $cache_key );
-    if ( $cached !== false ) {
-        echo $cached;
-        return;
+/* This tail runs only when the file is included as the shortcode view (with $atts
+   set). The AJAX handler require_once's this file purely for its sc_posts_* helpers,
+   with no $atts — the guard stops the render/echo from firing in that context. */
+if ( isset( $atts ) ) {
+    $do_cache  = sc_get( 'cache_output', $atts, 'no' ) === 'yes';
+    $cache_key = '';
+    if ( $do_cache ) {
+        /* Key must vary by the per-request context the output depends on, not atts
+           alone: exclude_current adds the current post to the query, and
+           use_current_query binds output to the queried object — two pages with
+           identical atts must NOT share a cache entry (that served one page's list,
+           with the wrong exclusion, on another). It must ALSO vary by the CODE
+           version: without it, a plugin update keeps replaying pre-update markup
+           from the transient until it expires (this served stale role="listitem"
+           cards after the ARIA fix shipped). The extension version bumps on every
+           meaningful change, so keying on it invalidates instantly on update. */
+        $ver = '0';
+        if ( function_exists( 'fw_ext' ) && fw_ext( 'shortcodes' ) ) {
+            $ver = (string) fw_ext( 'shortcodes' )->manifest->get_version();
+        }
+        $ctx = (int) get_the_ID() . ':' . (int) get_queried_object_id();
+        $cache_key = 'sc_posts_' . md5( $ver . '|' . wp_json_encode( $atts ) . '|' . max( 1, (int) get_query_var( 'paged' ) ) . '|' . $ctx );
+        $cached    = get_transient( $cache_key );
+        if ( $cached !== false ) {
+            echo $cached;
+            return;
+        }
     }
+
+    $html = sc_posts_render( $atts );
+
+    if ( $do_cache ) {
+        set_transient( $cache_key, $html, max( 1, (int) sc_get( 'cache_hours', $atts, 12 ) ) * HOUR_IN_SECONDS );
+    }
+
+    echo $html;
 }
-
-$html = sc_posts_render( $atts );
-
-if ( $do_cache ) {
-    set_transient( $cache_key, $html, max( 1, (int) sc_get( 'cache_hours', $atts, 12 ) ) * HOUR_IN_SECONDS );
-}
-
-echo $html;

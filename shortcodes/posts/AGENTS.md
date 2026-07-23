@@ -21,6 +21,31 @@ enqueue keyed on `static/css/card/<style>.css`); the base `styles.css`
 carries only the shared/structural CSS. Supports AJAX pagination / infinite scroll / live filters,
 plus transient-cached HTML output.
 
+## AJAX endpoints (Load More / Infinite Scroll / Live Filters)
+
+`class-fw-shortcode-posts.php` (`FW_Shortcode_Posts`) registers the front-end
+admin-ajax endpoints. Its `_init()` runs on **every** request (the shortcodes
+loader instantiates each `FW_Shortcode_*` on init), so the endpoints exist even
+though `static.php` / `view.php` only load when a Posts block is on a page — the
+newsletter shortcode uses the same pattern.
+
+- Actions: `fw_sc_posts_loadmore` (Load More + Infinite Scroll) and
+  `fw_sc_posts_filter` (Live Filters); both `priv` + `nopriv`.
+- **Instance recovery:** on render, `sc_posts_render()` gives an AJAX-enabled
+  instance a **stable wrapper `id`** (`ps-<hash>`, or the user's CSS ID) and
+  stores its resolved atts in a transient `sc_posts_ax_<id>`. The JS posts back
+  only that id (+ `page` / `term`) — the client never sends atts, so there's
+  nothing to tamper with. `scripts.js` reads `$wrap.attr('id')`.
+- **Rendering:** both endpoints reuse `sc_posts_render_cards( $atts, $posts, $start_index )`
+  (the shared card-loop helper, also used by the full render) so all three paths
+  emit identical markup. `$start_index` keeps first-post treatments (hero-split /
+  featured / zig-zag) on the true first post across paginated appends.
+- **Include-safety:** `view.php`'s executable tail is guarded by `isset( $atts )`
+  so the AJAX class can `require_once` it purely for its `sc_posts_*` helpers.
+- **JS is loaded on demand:** `static.php` only *registers* `scripts.js`; the
+  per-instance enqueue hook enqueues + localizes it **only** for instances using
+  a JS behaviour (slider / AJAX pagination / filters). A static grid ships no JS.
+
 ## Card-design registry (extensible) — read before editing rendering
 
 Card styles are a **registry** at `views/parts/registry.php` — the single
@@ -225,7 +250,9 @@ generation, focus the LLM on the high-impact fields: `post_type`,
 `views/view.php` is the orchestrator; per-card markup is delegated to one
 of the **20 template parts** under `views/parts/` (registry-driven —
 `sc_posts_render_card()` reads the registry's `part` and includes
-`card-<part>.php`). The core structural parts are:
+`card-<part>.php`). The **23 registry designs** map onto these 20 part files
+(some designs share a part — e.g. `side-left`/`side-right` both use
+`card-side.php`; `alternating` reuses it too). The core structural parts are:
 
 - `card-standard.php` — image on top, content below
 - `card-side.php` — image beside content (handles both `side-left` /

@@ -119,3 +119,44 @@ $grid_columns  = str_replace( 'row-cols-', 'fw-row-cols-', (string) $grid_column
 
 /* Dispatch to the chosen design template (inherits all of the above). */
 include $design_file;
+
+/* Optional Review + AggregateRating JSON-LD — machine-readable customer testimonials.
+   itemReviewed is a minimal Organization (the site) so the reviews are not orphaned. */
+if ( sc_get( 'reviews_schema', $atts, 'no' ) === 'yes' && ! empty( $testimonials ) ) {
+	$reviewed = [ '@type' => 'Organization', 'name' => wp_strip_all_tags( get_bloginfo( 'name' ) ) ];
+	$reviews  = [];
+	$rsum     = 0.0;
+	$rcount   = 0;
+	foreach ( $testimonials as $t ) {
+		$body = isset( $t['content'] ) ? trim( wp_strip_all_tags( (string) $t['content'] ) ) : '';
+		$name = isset( $t['author_name'] ) ? trim( wp_strip_all_tags( (string) $t['author_name'] ) ) : '';
+		if ( $body === '' && $name === '' ) { continue; }
+		$rev = [ '@type' => 'Review', 'itemReviewed' => $reviewed ];
+		if ( $name !== '' ) { $rev['author'] = [ '@type' => 'Person', 'name' => $name ]; }
+		if ( $body !== '' ) { $rev['reviewBody'] = preg_replace( '/\s+/u', ' ', $body ); }
+		$rv = isset( $t['rating'] ) ? (float) $t['rating'] : 0;
+		if ( $rv > 0 ) {
+			$rev['reviewRating'] = [ '@type' => 'Rating', 'ratingValue' => $rv, 'bestRating' => 5, 'worstRating' => 1 ];
+			$rsum += $rv; $rcount++;
+		}
+		$reviews[] = $rev;
+	}
+	if ( ! empty( $reviews ) ) {
+		$graph = [];
+		if ( $rcount > 0 ) {
+			$graph[] = [
+				'@context'    => 'https://schema.org',
+				'@type'       => 'AggregateRating',
+				'itemReviewed' => $reviewed,
+				'ratingValue' => round( $rsum / $rcount, 1 ),
+				'reviewCount' => $rcount,
+				'bestRating'  => 5,
+				'worstRating' => 1,
+			];
+		}
+		foreach ( $reviews as $r ) { $r['@context'] = 'https://schema.org'; $graph[] = $r; }
+		foreach ( $graph as $node ) {
+			echo '<script type="application/ld+json">' . wp_json_encode( $node, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+		}
+	}
+}

@@ -114,13 +114,18 @@ if ( ! function_exists( 'sc_hs_render' ) ) {
 				$pin_inner = '<span class="fw-hs__ic">' . ( $ic !== '' ? $ic : '+' ) . '</span>';
 			}
 
-			$aria = $ht !== '' ? $ht : sprintf( __( 'Hotspot %d', 'fw' ), $i );
+			$aria    = $ht !== '' ? $ht : sprintf( __( 'Hotspot %d', 'fw' ), $i );
+			$has_pop = ( $ht !== '' || $hx !== '' || $ll !== '' );
+			// The popover can hold a link, so it is a disclosure (not a role="tooltip",
+			// which may only contain non-interactive text). The pin button controls it.
+			$pop_id  = $has_pop ? ( isset( $attr['id'] ) ? $attr['id'] : 'fw-hs' ) . '-pop-' . (int) $i : '';
 
 			echo '<div class="fw-hs__point" style="left:' . esc_attr( $x ) . '%;top:' . esc_attr( $y ) . '%;">';
-			echo '<button type="button" class="fw-hs__pin" aria-label="' . esc_attr( $aria ) . '">' . $pin_inner . '<span class="fw-hs__ring" aria-hidden="true"></span></button>'; // phpcs:ignore
+			echo '<button type="button" class="fw-hs__pin" aria-label="' . esc_attr( $aria ) . '"'
+				. ( $has_pop ? ' aria-expanded="false" aria-controls="' . $pop_id . '"' : '' ) . '>' . $pin_inner . '<span class="fw-hs__ring" aria-hidden="true"></span></button>'; // phpcs:ignore
 
-			if ( $ht !== '' || $hx !== '' || $ll !== '' ) {
-				echo '<div class="fw-hs__pop" role="tooltip">';
+			if ( $has_pop ) {
+				echo '<div class="fw-hs__pop" id="' . $pop_id . '" role="group" aria-label="' . esc_attr( $aria ) . '">';
 				if ( $ht !== '' ) { echo '<span class="fw-hs__pop-title">' . esc_html( $ht ) . '</span>'; }
 				if ( $hx !== '' ) { echo '<span class="fw-hs__pop-text">' . wp_kses_post( $hx ) . '</span>'; }
 				if ( $ll !== '' ) {

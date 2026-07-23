@@ -531,18 +531,6 @@ $options = array(
 						),
 						'desc' => __( 'Which Media Library field to use for the caption (and the lightbox caption).', 'fw' ),
 					),
-					'rounded' => array(
-						'label' => __( 'Corner Radius', 'fw' ),
-						'type'  => 'select',
-						'value' => 'rounded',
-						'choices' => array(
-							'rounded-0'    => __( 'Square', 'fw' ),
-							'rounded'      => __( 'Rounded', 'fw' ),
-							'rounded-lg'   => __( 'Large', 'fw' ),
-							'rounded-circle' => __( 'Circle', 'fw' ),
-						),
-						'desc' => __( 'Rounding applied to each image.', 'fw' ),
-					),
 					'hover_zoom' => array(
 						'label' => __( 'Zoom on Hover', 'fw' ),
 						'type'  => 'switch',
@@ -607,5 +595,10 @@ $options = array(
 if ( function_exists( 'sc_card_box_style_field' ) ) {
 	$options['tab_style']['options']['group_behavior']['options']['box_style'] = sc_card_box_style_field( array(
 		'desc' => __( 'Apply a reusable Box Preset (border, corners, shadow, fill + hover effects) to each gallery card. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ),
+	) );
+}
+if ( function_exists( 'sc_image_style_field' ) ) {
+	$options['tab_style']['options']['group_behavior']['options']['image_style'] = sc_image_style_field( array(
+		'desc' => __( 'Apply a reusable Image Style (crop, corners, mask, filter, scrim) to each gallery image. Manage presets in Theme Settings → Components → Image Styles.', 'fw' ),
 	) );
 }

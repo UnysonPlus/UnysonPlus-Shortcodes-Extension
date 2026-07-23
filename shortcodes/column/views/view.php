@@ -100,6 +100,32 @@ if ( ! empty( $width_class ) ) {
     }
 }
 
+// Max Width — cap an AUTO column's growth (base width 'col' = the bare `.fw-col`
+// that flexes to fill). Emitted as an inline max-width on the outer grid-column div
+// (the flex item), only for auto columns; fixed fractions never get it. A bare number
+// is treated as px; a unit-bearing value is passed through after a strict whitelist.
+$col_base_width = isset( $atts['width'] ) ? (string) $atts['width'] : '';
+$mw_raw         = isset( $atts['max_width'] ) ? $atts['max_width'] : null;
+$col_max_width  = '';
+$mw_units_ok    = array( 'px', 'rem', 'em', 'ch', 'vw', 'vh', '%' );
+if ( is_array( $mw_raw ) ) {
+    // unit-input value shape: array( 'value' => '600', 'unit' => 'px' ).
+    $mw_val  = isset( $mw_raw['value'] ) ? trim( (string) $mw_raw['value'] ) : '';
+    $mw_unit = isset( $mw_raw['unit'] )  ? (string) $mw_raw['unit'] : 'px';
+    if ( $mw_val !== '' && preg_match( '/^\d+(\.\d+)?$/', $mw_val ) && in_array( $mw_unit, $mw_units_ok, true ) ) {
+        $col_max_width = $mw_val . $mw_unit;
+    }
+} elseif ( is_string( $mw_raw ) && $mw_raw !== '' ) {
+    // Legacy scalar tolerance (pre-unit-input): a bare number = px, or a unit-bearing string.
+    $mw_s = trim( $mw_raw );
+    if ( preg_match( '/^\d+(\.\d+)?$/', $mw_s ) ) { $mw_s .= 'px'; }
+    if ( preg_match( '/^\d+(\.\d+)?(px|rem|em|ch|vw|vh|%)$/', $mw_s ) ) { $col_max_width = $mw_s; }
+}
+if ( $col_base_width === 'col' && $col_max_width !== '' ) {
+    $existing_style = ( isset( $attr['style'] ) && $attr['style'] !== '' ) ? rtrim( (string) $attr['style'], '; ' ) . '; ' : '';
+    $attr['style']  = $existing_style . 'max-width:' . $col_max_width;
+}
+
 // Order. The row is a flex container, so CSS `order` on the column (the flex item)
 // reorders it. Now a per-device value: array( base, md, lg ), each emitting a
 // `fw-order{-bp}-{v}` utility (frontend-grid.css). A LEGACY scalar meant "order <v>

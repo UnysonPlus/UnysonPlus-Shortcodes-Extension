@@ -201,6 +201,9 @@ $options = array(
 			'group_colors' => array(
 				'type'    => 'group',
 				'options' => array(
+					'image_style'  => function_exists( 'sc_image_style_field' )
+						? sc_image_style_field()
+						: array( 'type' => 'select', 'label' => __( 'Image Style', 'fw' ), 'value' => '', 'choices' => array( '' => __( 'None', 'fw' ) ) ),
 					'accent_color' => sc_color_field_compact( array( 'label' => __( 'Accent (links / meta)', 'fw' ), 'kind' => 'bg' ) ),
 					'card_bg'      => sc_color_field_compact( array( 'label' => __( 'Card Background', 'fw' ), 'kind' => 'bg' ) ),
 					'title_color'  => sc_color_field_compact( array( 'label' => __( 'Title Color', 'fw' ) ) ),

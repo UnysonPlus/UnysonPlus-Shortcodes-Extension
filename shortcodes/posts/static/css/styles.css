@@ -231,16 +231,8 @@
 
 .posts__filters { display: flex; flex-wrap: wrap; gap: 0.4em; margin: 0 0 1em; }
 .posts__filter  { cursor: pointer; padding: 0.35em 0.8em; }
-.posts__slider-arrow {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    z-index: 2; width: 2rem; height: 2rem;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(255, 255, 255, .9); border: 0; cursor: pointer;
-}
-.posts__slider-arrow--prev { left: 0.5rem; }
-.posts__slider-arrow--next { right: 0.5rem; }
-
-.posts__slider-dots                          { display: flex; gap: 0.4em; justify-content: center; margin-top: 0.75em; }
+/* Slider arrow/dot base styling lives in mode/slider.css (loaded only for the
+   slider mode), not here in the always-loaded base. */
 
 /* ==========================================================================
    Empty state
@@ -252,8 +244,7 @@
    ========================================================================== */
 @media (max-width: 991px) {
     .posts__grid              { grid-template-columns: repeat(var(--posts-cols-t), minmax(0, 1fr)); }
-    .posts--mode-masonry .posts__grid { column-count: var(--posts-cols-t); }
-    .posts--mode-slider  .posts__card { flex-basis: calc((100% - (var(--posts-cols-t) - 1) * var(--posts-col-gap)) / var(--posts-cols-t)); }
+    /* mode-masonry / mode-slider tablet overrides live in their mode CSS files. */
 
     .posts__layout-wrap--left-sidebar,
     .posts__layout-wrap--right-sidebar { flex-direction: column; }
@@ -267,8 +258,7 @@
    ========================================================================== */
 @media (max-width: 782px) {
     .posts__grid              { grid-template-columns: repeat(var(--posts-cols-m), minmax(0, 1fr)); }
-    .posts--mode-masonry .posts__grid { column-count: var(--posts-cols-m); }
-    .posts--mode-slider  .posts__card { flex-basis: calc((100% - (var(--posts-cols-m) - 1) * var(--posts-col-gap)) / var(--posts-cols-m)); }
+    /* mode-masonry / mode-slider mobile overrides live in their mode CSS files. */
 
     /* Mobile layout overrides flatten side cards to image-top by default. */
     .posts[data-mobile-layout="standard"] .posts__card--side {
@@ -291,4 +281,68 @@
 
     /* Card span-2 collapses to single span on mobile */
     .posts__card--span-2 { grid-column: span 1; }
+}
+
+/* Visually-hidden title appended to read-more links (accessible name + crawlable
+   text = "Read more about <title>"; sighted users still see just "Read more"). */
+.posts__readmore-sr {
+	position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+	overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Meta text (date / byline / comments) — muted by design, with an AA floor. Sites drive
+   the shade via their "Muted" color preset (--color-muted); when no preset is defined the
+   fallback still passes 4.5:1 on light cards (#5f6773 on white = 5.7:1). A dark box preset
+   that restyles the card is expected to set its own meta color alongside its text color. */
+/* Scoped as `.posts .posts__meta` (0,2,0): the element also carries the theme's
+   `.entry-meta` class, whose own color rule loads AFTER this file and would win a
+   same-specificity source-order race — the extra ancestor keeps --posts-meta in charge. */
+.posts .posts__meta { color: var(--posts-meta, var(--color-muted, #5f6773)); }
+
+/* Card links — scoped + themable, never raw global tokens. The title takes the card's
+   heading color (brand-neutral, always AA on the card bg) with an underline hover; the
+   text read-more uses the body-link tokens with an explicit hover so the global a:hover
+   can never turn it white/invisible. */
+.posts__title a { color: inherit; text-decoration: none; }
+.posts__title a:hover, .posts__title a:focus-visible { color: inherit; text-decoration: underline; }
+.posts .posts__readmore--text-link { color: var(--posts-accent, var(--body-link-color, var(--color-primary, #0d6efd))); }
+.posts .posts__readmore--text-link:hover, .posts .posts__readmore--text-link:focus-visible {
+    color: var(--posts-accent, var(--body-link-hover, var(--color-primary, #0d6efd))); text-decoration: underline;
+}
+
+/* ==========================================================================
+   Per-part color overrides — the Styling tab's compact color presets resolve to
+   these --posts-* custom props (set inline on the wrapper by the view). Every
+   fallback equals today's default, so nothing changes until a colour is chosen.
+   Card SURFACE colors (fill / border / shadow) are the Box Preset's job.
+   ========================================================================== */
+.posts .posts__title   { color: var(--posts-title, inherit); }
+.posts .posts__excerpt { color: var(--posts-excerpt, inherit); }
+.posts .posts__cat-chip {
+    color: var(--posts-chip, var(--body-link-color, var(--color-primary, #0d6efd)));
+    background: var(--posts-chip-bg, transparent);
+}
+/* Pill treatment only when a chip background is actually set (view adds the class). */
+.posts--chips-bg .posts__cat-chip { padding: 0.15em 0.6em; border-radius: 0.35em; text-decoration: none; }
+/* Chip hover — the 0,2,0 base rule above outranks the theme's `a:hover` (0,1,1), so
+   restore hover feedback explicitly: the chip colour when set (underline = feedback),
+   the theme's hover chain when not. */
+.posts .posts__cat-chip:hover, .posts .posts__cat-chip:focus-visible {
+    color: var(--posts-chip, var(--body-link-hover, var(--color-primary, #0d6efd)));
+    text-decoration: underline;
+}
+/* Meta links (author) follow the meta colour — mirrors the parent theme's own
+   `.post-entry .entry-meta a { color: inherit }`, which is scoped to its archive
+   markup and never reaches the shortcode. */
+.posts .posts__meta a { color: inherit; }
+.posts .posts__meta a:hover, .posts .posts__meta a:focus-visible { color: var(--posts-accent, var(--color-primary, #0d6efd)); }
+.posts__filter.is-active { color: var(--posts-accent, inherit); }
+/* Pagination: the theme renders current/hover as a white-on-primary PILL, so the
+   accent tints the pill's BACKGROUND + border (fallbacks = the theme's exact values;
+   the white text stays the theme's). Never restyle the text colour here — an
+   `inherit` fallback would put body-colour text on the primary pill (AA failure). */
+.posts .posts__pagination .page-numbers.current,
+.posts .posts__pagination .page-numbers:hover {
+    background-color: var(--posts-accent, var(--color-primary));
+    border-color: var(--posts-accent, var(--color-primary));
 }

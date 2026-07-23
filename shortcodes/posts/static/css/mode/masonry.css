@@ -12,3 +12,11 @@
     break-inside: avoid;
 }
 .posts--mode-masonry .posts__card--span-2 { column-span: all; }
+
+/* Responsive column count (tablet / mobile) — moved out of the always-loaded base. */
+@media (max-width: 991px) {
+    .posts--mode-masonry .posts__grid { column-count: var(--posts-cols-t); }
+}
+@media (max-width: 782px) {
+    .posts--mode-masonry .posts__grid { column-count: var(--posts-cols-m); }
+}

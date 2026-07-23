@@ -354,7 +354,7 @@ $accordion_id = $attr['id'];
 ?>
 
 <?php if ( ! empty( $tabs ) ) : ?>
-        <div <?php echo fw_attr_to_html( $attr ); ?> role="tablist" aria-multiselectable="<?php echo $multiple_open ? 'true' : 'false'; ?>">
+        <div <?php echo fw_attr_to_html( $attr ); ?>>
                 <?php if ( $show_expand_collapse ) : ?>
                         <div class="accordion-controls" aria-hidden="true">
                                 <button type="button" class="accordion-controls__btn accordion-controls__btn--expand" data-accordion-action="expand-all"><?php echo esc_html__( 'Expand All', 'fw' ); ?></button>
@@ -447,12 +447,11 @@ $accordion_id = $attr['id'];
                             $title_bg_class,
                         ) );
                         ?>
-                        <<?php echo esc_attr( $title_tag ); ?> class="<?php echo esc_attr( implode( ' ', $title_bar_classes ) ); ?>"<?php echo $tab_title_inline_style !== '' ? ' style="' . esc_attr( $tab_title_inline_style ) . '"' : ''; ?>
-                            id="<?php echo esc_attr( $header_id ); ?>"
-                            role="tab"
-                            aria-controls="<?php echo esc_attr( $panel_id ); ?>"
-                            aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>"
-                            tabindex="0">
+                        <<?php echo esc_attr( $title_tag ); ?> class="<?php echo esc_attr( implode( ' ', $title_bar_classes ) ); ?>"<?php echo $tab_title_inline_style !== '' ? ' style="' . esc_attr( $tab_title_inline_style ) . '"' : ''; ?>>
+                            <button type="button" class="accordion-trigger"
+                                id="<?php echo esc_attr( $header_id ); ?>"
+                                aria-controls="<?php echo esc_attr( $panel_id ); ?>"
+                                aria-expanded="<?php echo $is_open ? 'true' : 'false'; ?>">
                                 <span class="accordion-icon" aria-hidden="true">
                                         <?php if ( $icon_style === 'custom' ) : ?>
                                                 <span class="<?php echo esc_attr( $icon_closed_class ); ?>">
@@ -475,10 +474,11 @@ $accordion_id = $attr['id'];
                                         <span class="accordion-number" aria-hidden="true"><?php echo esc_html( $number_label ); ?></span>
                                 <?php endif; ?>
                                 <span class="<?php echo esc_attr( $tab_title_text_class ); ?>"><?php echo esc_html( $tab['tab_title'] ); ?></span>
+                            </button>
                         </<?php echo esc_attr( $title_tag ); ?>>
                         <div class="<?php echo esc_attr( $tab_content_class ); ?>"
                              id="<?php echo esc_attr( $panel_id ); ?>"
-                             role="tabpanel"
+                             role="region"
                              aria-labelledby="<?php echo esc_attr( $header_id ); ?>"
                              aria-hidden="<?php echo $is_open ? 'false' : 'true'; ?>"
                              style="display:<?php echo $is_open ? 'block' : 'none'; ?>;<?php echo $tab_content_inline_style !== '' ? ' ' . esc_attr( $tab_content_inline_style ) . ';' : ''; ?>">

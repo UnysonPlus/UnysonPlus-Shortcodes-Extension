@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.11.66';
+$manifest['version']     = '1.11.98';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,111 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.11.96 - Posts: per-part color options (Styling tab) — Title, Excerpt, Meta,
+ *          Category Chip Background + Text, and an Accent that themes the interactive
+ *          bits in one stroke (text-link Read More, current pagination page, active
+ *          filter chip). All compact color presets resolving to --posts-* custom props;
+ *          every fallback equals the previous default, so nothing changes until a colour
+ *          is chosen. A chip background also gives the chips a pill padding/radius (class
+ *          emitted only when set). Card SURFACE colors stay the Box Preset's job.
+ *
+ * 1.11.92 - Image Box: the per-instance Image Mask option is removed — image masking is
+ *          now the shared Image Style preset's job (Styling → Image Style), which carries
+ *          the same shape library. Image Box was the only shortcode with a bespoke mask,
+ *          so this consolidates masking to one system. Non-breaking: existing image boxes
+ *          with a saved mask still render via the view + `.imgbox--mask-*` CSS (kept as a
+ *          back-compat shim); only the builder option is gone.
+ *
+ * 1.11.83 - Image Styles component gains two things. (1) A per-preset "Custom CSS
+ *          (advanced)" field — raw CSS scoped to the style via a {{SELECTOR}} token
+ *          (→ .imgs-{slug}), sanitised like the Box Preset custom CSS — so a reusable
+ *          custom treatment (e.g. a hover, an exotic filter) rides along with the preset.
+ *          (2) A first-class Shape / Mask control: the old 4-mask select is replaced by
+ *          the FULL shape library (rounded / circle / squircle / arch / leaf, geometric
+ *          hexagon / diamond / triangle / pentagon / star / chevron / octagon / shield,
+ *          organic heart / blob / flower / brush / …) plus Custom (inline SVG / URL /
+ *          clip-path) — sourced from a new SHARED mask library (includes/image-mask-
+ *          library.php) that is the single source of truth for image masking (the Image
+ *          Box shortcode's shape set, now reusable). Shape masks force a square crop. The
+ *          separate Corners field was folded into the mask control (a simple custom radius
+ *          remains for mask = None). Also: the gallery Corner Radius option was retired —
+ *          image shaping now lives in Image Style (existing galleries keep their saved
+ *          radius; an Image Style, when set, owns the shape).
+ *
+ * 1.11.81 - Posts: "Side — image left" and "Side — image right" are now a single "Side"
+ *          card style with an Image Position (Left / Right) option — two redundant tiles
+ *          collapsed into one. Non-breaking: the old side-left / side-right values still
+ *          render (kept as hidden registry entries the renderer dispatches, and the
+ *          Alternating design's per-row style), and the new "Side" resolves to them via
+ *          the option. The same Image Position option was added to the other horizontal
+ *          card styles — Postcard, Compact News List and Numbered Listicle — so their
+ *          image can sit on either side (Postcard moves its dashed divider accordingly;
+ *          Listicle keeps its rank number leading). Registry gains optional `has_position`
+ *          and `hidden` flags.
+ *
+ * 1.11.78 - The Image Style option is now a live-preview popover picker
+ *          (`image-style-picker` option type) instead of a plain dropdown — mirroring
+ *          the Box Style / Button preset pickers. Each row (and the trigger) renders a
+ *          sample "photo" wrapped in `.imgs-wrap .imgs-{slug}`, so the already-enqueued
+ *          Image-Style CSS crops / masks / filters / scrims a CSP-safe gradient stand-in
+ *          live — always accurate even for custom user presets, with zero baked
+ *          thumbnails. A single swap in the shared sc_image_style_field() upgraded all
+ *          consumers (media-image, posts, image-box, image-content, featured-image,
+ *          gallery, post-carousel) at once; the saved `imgs-{slug}` value is unchanged.
+ *
+ * 1.11.77 - Posts: the Card Style picker is now GROUPED into "Layouts" (structural — where
+ *          the image/content sit) and "Decorated" (a skin reproducible via Box / Image
+ *          Style presets: gradient, polaroid, tile, accent, cover, badge, diagonal, glass).
+ *          The image-picker renders each group as a category header. Presentational only —
+ *          every style stays selectable and the saved `card/style` value is unchanged (no
+ *          migration). Registry entries now carry an optional `'category' => 'decorated'`.
+ *          Also rolled the Image Styles preset out to more consumers (image-box,
+ *          image-content, featured-image, gallery — all designs via the shared tile
+ *          renderer — and post-carousel).
+ *
+ * 1.11.74 - NEW: Image Styles component preset (Theme Settings → Components → Image
+ *          Styles). A reusable library of image treatments — crop/aspect, corner
+ *          radius / circle, clip-path + SVG masks (diagonal / hexagon / arch / blob),
+ *          CSS filters (grayscale / sepia / contrast / saturate / blur + a blend-mode
+ *          duotone tint), and a legibility scrim — each producing a `.imgs-{slug}`
+ *          class pickable on any element with an image (Styling → Image Style). Built
+ *          on the token-bundle model: a preset emits ONLY CSS custom properties and one
+ *          shared `.imgs-wrap` base rule consumes them, so it's robust (one base rule),
+ *          composable (any combination), and customizable (override a single var in an
+ *          element's Custom CSS). Consumed via the shared sc_image_style_field() /
+ *          sc_image_style_class() helpers; wired into media-image and posts as the first
+ *          two consumers (Tier-1 elements roll out next). Animated hover stays with the
+ *          Animation Engine. SVG masks are self-contained data-URIs (CSP-safe).
+ *
+ * 1.11.73 - Posts: the AJAX Load More, Infinite Scroll, and Live Filter features now
+ *          actually work. They previously posted to admin-ajax actions
+ *          (fw_sc_posts_loadmore / fw_sc_posts_filter) that had NO server-side handler,
+ *          so WordPress returned 0 and the buttons/chips did nothing. Added
+ *          class-fw-shortcode-posts.php (FW_Shortcode_Posts) registering both endpoints
+ *          (priv + nopriv, nonce-verified). An AJAX-enabled instance now gets a stable
+ *          wrapper id and stores its resolved atts in a transient; the JS posts back only
+ *          that id (+ page / term), so the client never sends query atts (nothing to
+ *          tamper with). Both endpoints reuse a new shared sc_posts_render_cards() helper
+ *          so all render paths emit identical markup. As part of the same audit: the
+ *          front-end script + nonce now load ONLY for instances that use a JS behaviour
+ *          (slider / AJAX pagination / filters) — static grids ship no JS; the transient
+ *          cache key now includes the per-request context (fixing wrong cached output with
+ *          Exclude Current / Use Current Query); seven card styles that ignored an
+ *          image-overlay category position now collapse it to above-title; the column-ratio
+ *          template is emitted only when the segment count matches the column count and
+ *          under 5 columns; and the builder canvas preview label reads the current card
+ *          option again.
+ *
+ * 1.11.68 - Column gains a Max Width option (Layout tab, Sizing group). A unit-input
+ *          (px / rem / ch / %) that caps how wide an AUTO-width column can grow. Auto-only:
+ *          it applies only to auto columns (a cap would break a fixed-fraction grid), and the
+ *          field is HIDDEN in the modal for non-auto columns — since the base width is set on
+ *          the canvas width-changer (not a modal field to reveal off), the modal is tagged and
+ *          a CSS :has() rule hides the field regardless of the lazy Layout tab's paint timing.
+ *          Emitted as an inline max-width on the outer .fw-col (the flex item), mirrored in the
+ *          builder canvas, and value-sanitized (numeric value + whitelisted unit). Centering a
+ *          capped column is handled by the Section's existing Columns Horizontal Alignment,
+ *          since the cap creates the free space it centers into.
  * 1.11.58 - Accordion gains design-style presets. The Styling tab now opens with a Design group:
  *          an "Accordion Style" image-picker (Bordered / Separated / Filled / Flush / Ghost),
  *          plus Corner Radius, Elevation (shadow), an Open-Item Accent color, and a Title Hover

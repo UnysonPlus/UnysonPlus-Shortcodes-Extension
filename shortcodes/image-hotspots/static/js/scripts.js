@@ -14,6 +14,22 @@
 		if (r.top < 8) { point.classList.add('fw-hs--flip'); }
 	}
 
+	// Keep the pin's aria-expanded in sync with the point's open state.
+	function setOpen(point, open) {
+		point.classList.toggle('is-open', open);
+		var pin = point.querySelector('.fw-hs__pin');
+		if (pin && pin.hasAttribute('aria-expanded')) {
+			pin.setAttribute('aria-expanded', open ? 'true' : 'false');
+		}
+	}
+
+	function closeAll(scope) {
+		Array.prototype.forEach.call(
+			(scope || document).querySelectorAll('.fw-hs__point.is-open'),
+			function (o) { setOpen(o, false); }
+		);
+	}
+
 	document.addEventListener('mouseover', function (e) {
 		var p = e.target.closest ? e.target.closest('.fw-hs--hover .fw-hs__point') : null;
 		if (p) { flip(p); }
@@ -25,19 +41,19 @@
 			var point = pin.closest('.fw-hs__point');
 			var root = pin.closest('.fw-hs');
 			var open = point.classList.contains('is-open');
-			Array.prototype.forEach.call(root.querySelectorAll('.fw-hs__point.is-open'), function (o) { o.classList.remove('is-open'); });
-			if (!open) { point.classList.add('is-open'); flip(point); }
+			closeAll(root);
+			if (!open) { setOpen(point, true); flip(point); }
 			e.preventDefault();
 			return;
 		}
 		if (!(e.target.closest && e.target.closest('.fw-hs__point.is-open'))) {
-			Array.prototype.forEach.call(document.querySelectorAll('.fw-hs__point.is-open'), function (o) { o.classList.remove('is-open'); });
+			closeAll();
 		}
 	}, false);
 
 	document.addEventListener('keydown', function (e) {
 		if (e.key === 'Escape') {
-			Array.prototype.forEach.call(document.querySelectorAll('.fw-hs__point.is-open'), function (o) { o.classList.remove('is-open'); });
+			closeAll();
 		}
 	});
 })();

@@ -98,6 +98,15 @@ if ( $has_link ) {
 	$inner_html = $img_html;
 }
 
+// Image Style preset (Theme Settings → Components → Image Styles): wrap the image
+// (or its link) in a dedicated `.imgs-wrap imgs-{slug}` element — the base rule needs
+// a positioned wrapper for the scrim/duotone layers, and the `<img>` inside consumes
+// the preset's inherited CSS custom properties.
+$imgs_cls = function_exists( 'sc_image_style_class' ) ? sc_image_style_class( $atts ) : '';
+if ( '' !== $imgs_cls ) {
+	$inner_html = '<span class="imgs-wrap ' . esc_attr( $imgs_cls ) . '">' . $inner_html . '</span>';
+}
+
 // Render the wrapper only when it carries something (styling / animation / id /
 // class / custom attrs). Padding on this wrapper is what makes a background
 // color show as a frame around the image.

@@ -74,6 +74,13 @@ if ( ! function_exists( 'sc_ah_render' ) ) {
 		echo '<' . $tag . ' ' . $attr_html . ' data-ah-words="' . esc_attr( wp_json_encode( $words ) ) . '">';
 		if ( $before !== '' ) { echo '<span class="fw-ah__static">' . esc_html( $before ) . ' </span>'; }
 		echo '<span class="fw-ah__rotate"><span class="fw-ah__word">' . esc_html( $first ) . '</span><span class="fw-ah__caret" aria-hidden="true"></span></span>';
+		// Server-render the remaining words (visually hidden) so raw-HTML readers / AI
+		// agents see the full rotating set, not just the first word. JS rotates only
+		// .fw-ah__word (from data-ah-words), so this span is left untouched.
+		$rest = array_slice( $words, 1 );
+		if ( ! empty( $rest ) ) {
+			echo '<span class="screen-reader-text">' . esc_html( implode( ', ', $rest ) ) . '</span>';
+		}
 		if ( $after !== '' ) { echo '<span class="fw-ah__static"> ' . esc_html( $after ) . '</span>'; }
 		echo '</' . $tag . '>';
 		return ob_get_clean();

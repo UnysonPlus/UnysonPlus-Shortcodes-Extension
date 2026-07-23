@@ -115,7 +115,11 @@ if ( ! function_exists( 'sc_pc_render' ) ) {
 		echo '<div class="splide fw-pc__carousel" role="group" aria-label="' . esc_attr__( 'Posts', 'fw' ) . '" data-splide="' . esc_attr( wp_json_encode( $splide_cfg ) ) . '">';
 		echo '<div class="splide__track"><ul class="splide__list">';
 
-		while ( $query->have_posts() ) {
+		// Image Style preset (Components → Image Styles): the .fw-pc__media anchor doubles as .imgs-wrap.
+			$imgs_cls = function_exists( 'sc_image_style_class' ) ? sc_image_style_class( $atts ) : '';
+			$pc_media_cls = 'fw-pc__media' . ( $imgs_cls !== '' ? ' imgs-wrap ' . $imgs_cls : '' );
+
+			while ( $query->have_posts() ) {
 			$query->the_post();
 			$permalink = get_permalink();
 			$has_thumb = has_post_thumbnail();
@@ -123,7 +127,7 @@ if ( ! function_exists( 'sc_pc_render' ) ) {
 			echo '<li class="splide__slide"><article class="fw-pc__card">';
 
 			if ( $design !== 'minimal' && $has_thumb ) {
-				echo '<a class="fw-pc__media" href="' . esc_url( $permalink ) . '">' . get_the_post_thumbnail( get_the_ID(), 'large', array( 'class' => 'fw-pc__img', 'loading' => 'lazy' ) );
+				echo '<a class="' . esc_attr( $pc_media_cls ) . '" href="' . esc_url( $permalink ) . '">' . get_the_post_thumbnail( get_the_ID(), 'large', array( 'class' => 'fw-pc__img', 'loading' => 'lazy' ) );
 				if ( $design === 'overlay' ) { echo '<span class="fw-pc__scrim"></span>'; }
 				echo '</a>';
 			}

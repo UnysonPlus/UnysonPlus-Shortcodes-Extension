@@ -455,6 +455,15 @@ $options = [
                         'value' => 'yes',
                         'desc'  => __('Toggle star display across all designs.', 'fw'),
                     ],
+                    'reviews_schema' => [
+                        'label' => __('Review Schema (JSON-LD)', 'fw'),
+                        'type'  => 'switch',
+                        'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
+                        'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
+                        'value' => 'no',
+                        'desc'  => __('Output Review + AggregateRating structured data so these testimonials are machine-readable to search engines and AI agents.', 'fw'),
+                        'help'  => __('Only enable on genuine customer testimonials. Use it on one testimonials block per page to avoid duplicate review schema.', 'fw'),
+                    ],
                 ],
             ],
             'group_colors' => [

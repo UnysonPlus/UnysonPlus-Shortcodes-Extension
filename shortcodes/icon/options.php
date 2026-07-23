@@ -23,6 +23,12 @@ $options = [
                         'desc'  => __('Icon title', 'fw'),
                         'help'  => __('Optional tooltip text shown on hover; it also serves as an accessible label for screen readers. Leave it empty for purely decorative icons.', 'fw'),
                     ],
+                    'aria_label' => [
+                        'type'  => 'text',
+                        'label' => __('Accessibility Label', 'fw'),
+                        'desc'  => __('Screen-reader label for a MEANINGFUL icon (no visible Title).', 'fw'),
+                        'help'  => __('Fill this only when the icon conveys meaning on its own and has no visible Title/text beside it — it is announced to screen readers and read by AI agents. Leave empty for decorative icons (the default keeps them hidden from assistive tech).', 'fw'),
+                    ],
                 ],
             ],
         ],

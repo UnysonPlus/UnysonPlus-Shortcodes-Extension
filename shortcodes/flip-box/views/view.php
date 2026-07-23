@@ -159,8 +159,15 @@ if ( ! function_exists( 'sc_fb_render' ) ) {
 		if ( $__boxp !== '' ) { $attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' ' . $__boxp ); }
 		$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style_var;
 
-		// Click / hover+click triggers need to be keyboard-operable.
-		$kb = ( $trigger === 'click' || $trigger === 'both' ) ? ' tabindex="0" role="button" aria-pressed="false"' : '';
+		// Click / hover+click triggers make the whole card keyboard-operable — BUT only
+		// when the card holds no interactive descendants of its own (a front flip button
+		// or a back link). role="button" must not wrap other buttons/links, so when the
+		// card has its own controls we leave the wrapper non-interactive (mouse flip is a
+		// pure enhancement; those inner controls carry the accessible semantics).
+		$front_btn        = trim( (string) sc_get( 'front_button_label', $atts, '' ) );
+		$has_interactive  = ( $front_btn !== '' ) || ( $btn_lbl !== '' );
+		$kb = ( ( $trigger === 'click' || $trigger === 'both' ) && ! $has_interactive )
+			? ' tabindex="0" role="button" aria-pressed="false"' : '';
 
 		ob_start();
 		echo '<div ' . fw_attr_to_html( $attr ) . $kb . '>';
@@ -171,7 +178,6 @@ if ( ! function_exists( 'sc_fb_render' ) ) {
 		if ( $icon !== '' ) { echo '<span class="fw-fb__icon" aria-hidden="true">' . $icon . '</span>'; } // phpcs:ignore
 		if ( $front_title !== '' ) { echo '<' . $front_tag . ' class="fw-fb__title">' . esc_html( $front_title ) . '</' . $front_tag . '>'; }
 		if ( $front_text !== '' ) { echo '<div class="fw-fb__text">' . wp_kses_post( wpautop( $front_text ) ) . '</div>'; }
-		$front_btn = trim( (string) sc_get( 'front_button_label', $atts, '' ) );
 		if ( $front_btn !== '' ) {
 			// Flips the card to the back (JS-driven); works on touch. Not a link.
 			echo '<button type="button" class="' . $fb_btn_class( array( 'fw-fb__flip-btn' ) ) . '">' . esc_html( $front_btn ) . '</button>';

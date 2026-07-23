@@ -1287,6 +1287,72 @@ if ( ! function_exists( 'sc_card_box_style_class' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'sc_get_image_style_choices' ) ) :
+	/**
+	 * Image Style choices for the `image_style` select: `imgs-{slug} => Name`, with a
+	 * blank "None" prepended. The slug matches the generated `.imgs-{slug}` class in
+	 * css-tokens.php. Adding a style in Theme Settings → Components → Image Styles
+	 * instantly shows up here.
+	 */
+	function sc_get_image_style_choices() {
+		$out = array( '' => __( 'None', 'fw' ) );
+		if ( ! function_exists( 'unysonplus_get_image_style_presets' ) ) { return $out; }
+		$slug_map = function_exists( 'unysonplus_image_style_preset_slug_map' )
+			? unysonplus_image_style_preset_slug_map()
+			: array();
+		foreach ( unysonplus_get_image_style_presets() as $s ) {
+			if ( ! is_array( $s ) || empty( $s['id'] ) ) { continue; }
+			$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $s['id'] );
+			if ( $id === '' ) { continue; }
+			$slug = isset( $slug_map[ $id ] ) ? $slug_map[ $id ] : $id;
+			$name = ! empty( $s['style_name'] ) ? $s['style_name'] : $s['id'];
+			$out[ 'imgs-' . $slug ] = $name;
+		}
+		return $out;
+	}
+endif;
+
+if ( ! function_exists( 'sc_image_style_field' ) ) :
+	/**
+	 * The shared "Image Style" preset picker any element with an image drops into its
+	 * options (crop, corners, mask, filter, scrim). Consumes the Theme Settings →
+	 * Components → Image Styles library. Saved value is a flat `imgs-{slug}` string.
+	 */
+	function sc_image_style_field( $args = array() ) {
+		$a = array_merge( array(
+			'label' => __( 'Image Style', 'fw' ),
+			'desc'  => __( 'Apply a reusable Image Style (crop, corners, mask, filter, scrim) to this image. Manage presets in Theme Settings → Components → Image Styles.', 'fw' ),
+			'value' => '',
+		), $args );
+		// image-style-picker: a live-preview popover (mirrors the Box Style / Button
+		// pickers) — falls back to a plain select if the option type isn't registered.
+		return array(
+			'type'    => class_exists( 'FW_Option_Type_Image_Style_Picker' ) ? 'image-style-picker' : 'select',
+			'label'   => $a['label'],
+			'desc'    => $a['desc'],
+			'value'   => $a['value'],
+			'choices' => sc_get_image_style_choices(),
+		);
+	}
+endif;
+
+if ( ! function_exists( 'sc_image_style_class' ) ) :
+	/**
+	 * Read + validate a saved Image Style value into a safe `imgs-{slug}` class (or ''
+	 * when unset / malformed). The shared reader for every element that consumes
+	 * sc_image_style_field(), so validation lives in one place. The class goes on the
+	 * image WRAPPER (the `.imgs-wrap` base rule consumes the preset's token vars).
+	 *
+	 * @param array  $atts the shortcode atts.
+	 * @param string $key  the option id (default 'image_style').
+	 * @return string a `imgs-{slug}` class, or ''.
+	 */
+	function sc_image_style_class( $atts, $key = 'image_style' ) {
+		$v = function_exists( 'sc_get' ) ? sc_get( $key, $atts, '' ) : ( isset( $atts[ $key ] ) ? $atts[ $key ] : '' );
+		return ( is_string( $v ) && preg_match( '/^imgs-[a-z0-9_-]+$/i', $v ) ) ? $v : '';
+	}
+endif;
+
 if ( ! function_exists( 'sc_get_table_preset_choices' ) ) :
 	/**
 	 * Table Preset choices for the Table shortcode's `table-style-picker` field:

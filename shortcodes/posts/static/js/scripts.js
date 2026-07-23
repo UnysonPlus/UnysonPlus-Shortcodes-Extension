@@ -125,8 +125,8 @@
 
         $filters.on( 'click', function () {
             var $btn = $( this );
-            $filters.removeClass( 'is-active' );
-            $btn.addClass( 'is-active' );
+            $filters.removeClass( 'is-active' ).attr( 'aria-pressed', 'false' );
+            $btn.addClass( 'is-active' ).attr( 'aria-pressed', 'true' );
 
             var term = $btn.attr( 'data-term' ) || '';
             $.post( ( window.fwScPosts || {} ).ajaxUrl, {

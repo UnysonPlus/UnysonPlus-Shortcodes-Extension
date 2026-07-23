@@ -52,6 +52,12 @@ if ( isset( $align_map[ $al ] ) ) {
 	$atts['css_class'] = trim( ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) . ' ' . $align_map[ $al ] );
 }
 
+// Image Style preset (Theme Settings → Components → Image Styles).
+$imgs_cls = function_exists( 'sc_image_style_class' ) ? sc_image_style_class( $atts ) : '';
+if ( $imgs_cls !== '' ) {
+	$img = '<span class="imgs-wrap ' . esc_attr( $imgs_cls ) . '">' . $img . '</span>';
+}
+
 // sc_build_wrapper_attr auto-applies spacing / animation / advanced via filters.
 $attr = sc_build_wrapper_attr( $atts );
 

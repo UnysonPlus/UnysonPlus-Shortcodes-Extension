@@ -266,11 +266,17 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 			'item_style'     => '',
 			'media_class'    => '',
 			'box_style'      => '', // a `boxp-{slug}` Box Preset class for the card <figure>
+			'image_style'    => '', // an `imgs-{slug}` Image Style class for the media wrapper
 			'item_hover'     => array(), // engine Hover attr array to stamp on each card <figure>
 		), $args );
 
 		// Box Style → the card <figure> (validated to a boxp-{slug} class).
 		$box_style   = ( is_string( $a['box_style'] ) && preg_match( '/^boxp-[a-z0-9_-]+$/i', $a['box_style'] ) ) ? $a['box_style'] : '';
+
+		// Image Style → the `.fw-gallery__media` wrapper doubles as `.imgs-wrap` so the
+		// preset's crop / mask / filter / scrim apply to each tile image (the base rule
+		// targets the inner <img>; scrim/duotone layers overlay the media, pointer-events:none).
+		$image_style = ( is_string( $a['image_style'] ) && preg_match( '/^imgs-[a-z0-9_-]+$/i', $a['image_style'] ) ) ? $a['image_style'] : '';
 
 		// Per-card Hover Interaction → the card <figure>. The engine already escaped every value
 		// (class / data-hover* / style) in upw_hover_apply_instances, so split them out here: class
@@ -290,7 +296,10 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 
 		$media_classes = trim(
 			'fw-gallery__media '
-			. ( $a['rounded'] !== '' ? $a['rounded'] . ' ' : '' )
+			. ( $image_style !== '' ? 'imgs-wrap ' . $image_style . ' ' : '' )
+			// Legacy corner-radius class — applied ONLY when no Image Style is set, so the
+			// preset (when chosen) fully owns the shape and the two never fight.
+			. ( $image_style === '' && $a['rounded'] !== '' ? $a['rounded'] . ' ' : '' )
 			. ( $a['hover_zoom'] ? 'fw-gallery--zoom ' : '' )
 			. ( $has_overlay ? 'fw-gallery--has-overlay ' : '' )
 			. $a['media_class']

@@ -339,79 +339,10 @@ $options = [
                             'xsmall' => __( 'X-Small (140px)', 'fw' ),
                         ),
                     ),
-                    'image_mask' => call_user_func( function () {
-                        $mbase = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/image-box/static/img/mask' );
-                        $items = array(
-                            'none'       => __( 'None', 'fw' ),
-                            'rounded'    => __( 'Rounded', 'fw' ),
-                            'rounded-xl' => __( 'Rounded XL', 'fw' ),
-                            'circle'     => __( 'Circle', 'fw' ),
-                            'squircle'   => __( 'Squircle', 'fw' ),
-                            'arch'       => __( 'Arch', 'fw' ),
-                            'hexagon'    => __( 'Hexagon', 'fw' ),
-                            'diamond'    => __( 'Diamond', 'fw' ),
-                            'triangle'   => __( 'Triangle', 'fw' ),
-                            'pentagon'   => __( 'Pentagon', 'fw' ),
-                            'star'       => __( 'Star', 'fw' ),
-                            'chevron'    => __( 'Chevron', 'fw' ),
-                            'octagon'    => __( 'Octagon', 'fw' ),
-                            'leaf'       => __( 'Leaf', 'fw' ),
-                            'shield'     => __( 'Shield', 'fw' ),
-                            'heart'      => __( 'Heart', 'fw' ),
-                            'flower'       => __( 'Flower', 'fw' ),
-                            'brush'        => __( 'Brush', 'fw' ),
-                            'water-splash' => __( 'Water Splash', 'fw' ),
-                            'grunge-frame' => __( 'Grunge Frame', 'fw' ),
-                            'blob-1'       => __( 'Blob 1', 'fw' ),
-                            'blob-2'       => __( 'Blob 2', 'fw' ),
-                            'custom'       => __( 'Custom', 'fw' ),
-                        );
-                        $ch = array();
-                        foreach ( $items as $k => $lbl ) {
-                            $ch[ $k ] = array(
-                                'small' => array( 'src' => $mbase . '/' . $k . '.svg', 'height' => 56, 'title' => $lbl ),
-                                'label' => $lbl,
-                            );
-                        }
-                        return array(
-                            'type'         => 'multi-picker',
-                            'label'        => false,
-                            'desc'         => false,
-                            'show_borders' => false,
-                            'picker'       => array(
-                                'mask' => array(
-                                    'type'    => 'image-picker',
-                                    'label'   => __( 'Image Mask', 'fw' ),
-                                    'desc'    => __( 'Clip the image to a shape. Shape masks (circle, hexagon, heart, …) force a square crop; Rounded / Arch keep the crop ratio. Pick Custom to supply your own.', 'fw' ),
-                                    'value'   => 'none',
-                                    'choices' => $ch,
-                                ),
-                            ),
-                            'value'        => array( 'mask' => 'none' ),
-                            'choices'      => array(
-                                'custom' => array(
-                                    'custom_svg' => array(
-                                        'type'  => 'textarea',
-                                        'label' => __( 'Inline SVG or SVG URL', 'fw' ),
-                                        'desc'  => __( 'Paste inline SVG markup OR a URL to a hosted .svg. Fill the shape solid on a TRANSPARENT background — the filled area is where the photo shows.', 'fw' ),
-                                        'help'  => __( 'Include a (square) viewBox, use filled paths/shapes (not stroke-only), and keep it script-free. Takes priority over the Upload and clip-path below.', 'fw' ),
-                                    ),
-                                    'custom_upload' => array(
-                                        'type'    => 'upload',
-                                        'label'   => __( 'Or upload an SVG', 'fw' ),
-                                        'desc'    => __( 'Upload an .svg from the Media Library (requires SVG uploads to be enabled on the site).', 'fw' ),
-                                        'files_ext' => array( 'svg' ),
-                                    ),
-                                    'custom_clip' => array(
-                                        'type'  => 'text',
-                                        'label' => __( 'Or a CSS clip-path', 'fw' ),
-                                        'desc'  => __( 'Advanced: a raw CSS clip-path value, e.g. polygon(50% 0, 100% 100%, 0 100%) or path("…").', 'fw' ),
-                                        'help'  => __( 'No SVG needed. Used only if the SVG / Upload fields above are empty.', 'fw' ),
-                                    ),
-                                ),
-                            ),
-                        );
-                    } ),
+                    // Image Mask option removed — image masking is now handled by the shared
+                    // Image Style preset (Styling → Image Style; Theme Settings → Components →
+                    // Image Styles), which carries the same shape library. Existing boxes with a
+                    // saved `image_mask` still RENDER via the view + `.imgbox--mask-*` CSS (back-compat).
                 ],
             ],
         ],
@@ -503,6 +434,9 @@ $options = [
                 'type'    => 'group',
                 'options' => [
                     'box_style'        => sc_card_box_style_field(),
+                    'image_style'      => function_exists( 'sc_image_style_field' )
+                        ? sc_image_style_field()
+                        : [ 'type' => 'select', 'label' => __( 'Image Style', 'fw' ), 'value' => '', 'choices' => [ '' => __( 'None', 'fw' ) ] ],
                     'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
                     'font_size_preset' => sc_font_size_field( array(
                         'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),

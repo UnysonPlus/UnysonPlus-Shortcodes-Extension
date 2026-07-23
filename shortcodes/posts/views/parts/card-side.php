@@ -44,7 +44,7 @@ if ( ! has_post_thumbnail( $post_id ) ) {
     $article_classes[] = 'posts__card--no-image';
 }
 ?>
-<article class="<?php echo esc_attr( implode( ' ', $article_classes ) ); ?>" role="listitem">
+<article class="<?php echo esc_attr( implode( ' ', $article_classes ) ); ?>">
     <?php if ( $image_visible && $is_right ) : ?>
         <div class="posts__col posts__col--body">
             <?php foreach ( $body_slugs as $slug ) : ?>

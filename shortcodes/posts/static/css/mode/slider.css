@@ -27,3 +27,25 @@
 .posts--mode-slider[data-slider-dots="overlay-bottom"] .posts__slider-dots {
     position: absolute; bottom: 0.5rem; left: 0; right: 0; margin: 0; z-index: 2;
 }
+
+/* ==========================================================================
+   Slider arrow / dot base styling (moved out of the always-loaded base — these
+   only exist in slider mode). Arrows are injected by scripts.js.
+   ========================================================================== */
+.posts__slider-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    z-index: 2; width: 2rem; height: 2rem;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, .9); border: 0; cursor: pointer;
+}
+.posts__slider-arrow--prev { left: 0.5rem; }
+.posts__slider-arrow--next { right: 0.5rem; }
+.posts__slider-dots        { display: flex; gap: 0.4em; justify-content: center; margin-top: 0.75em; }
+
+/* Responsive card width (tablet / mobile) — mirrors the desktop flex-basis. */
+@media (max-width: 991px) {
+    .posts--mode-slider .posts__card { flex-basis: calc((100% - (var(--posts-cols-t) - 1) * var(--posts-col-gap)) / var(--posts-cols-t)); }
+}
+@media (max-width: 782px) {
+    .posts--mode-slider .posts__card { flex-basis: calc((100% - (var(--posts-cols-m) - 1) * var(--posts-col-gap)) / var(--posts-cols-m)); }
+}

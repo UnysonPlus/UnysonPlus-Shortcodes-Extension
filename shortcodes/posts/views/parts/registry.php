@@ -30,6 +30,15 @@
  *   alternate    : (optional, bool) flip side-left / side-right per row (zig-zag)
  *   needs_ratio  : (optional, bool) reveals the image-ratio + vertical-align
  *                  sub-options in the Card Style picker (side / alternating / hero)
+ *   category     : (optional) 'decorated' groups the design under the picker's
+ *                  "Decorated" header (a skin reproducible via Box / Image Style
+ *                  presets); anything else is a structural "Layout". Presentational
+ *                  only — the saved value is unchanged.
+ *   has_position : (optional, bool) reveals an Image Position (Left / Right) sub-option
+ *                  in the Card Style picker. `side` resolves it to side-left/side-right
+ *                  (view); the other horizontal styles flip via a `--img-right` class.
+ *   hidden       : (optional, bool) keep the entry for the renderer's dispatch (legacy
+ *                  saved values, Alternating's per-row style) but hide it from the picker.
  */
 return array(
 	'standard' => array(
@@ -37,17 +46,29 @@ return array(
 		'thumb' => 'standard.svg',
 		'part'  => 'standard',
 	),
+	'side' => array(
+		'label'        => __( 'Side — image beside content', 'fw' ),
+		'thumb'        => 'side-left.svg',
+		'part'         => 'side',
+		'needs_ratio'  => true,
+		'has_position' => true, // reveals Image Position (Left / Right); the view resolves to side-left/right
+	),
+	// Legacy directional values — kept for existing saved pages AND as the Alternating
+	// design's per-row effective style; hidden from the picker (superseded by Side +
+	// Image Position, which resolves to these). Never remove — the renderer dispatches them.
 	'side-left' => array(
 		'label'       => __( 'Side — image left', 'fw' ),
 		'thumb'       => 'side-left.svg',
 		'part'        => 'side',
 		'needs_ratio' => true,
+		'hidden'      => true,
 	),
 	'side-right' => array(
 		'label'       => __( 'Side — image right', 'fw' ),
 		'thumb'       => 'side-right.svg',
 		'part'        => 'side',
 		'needs_ratio' => true,
+		'hidden'      => true,
 	),
 	'overlay' => array(
 		'label' => __( 'Overlay — content over image', 'fw' ),
@@ -79,16 +100,19 @@ return array(
 		'label' => __( 'Gradient Overlay (Magazine)', 'fw' ),
 		'thumb' => 'gradient.svg',
 		'part'  => 'gradient',
+		'category' => 'decorated', // reproducible via Box / Image Style presets
 	),
 	'listicle' => array(
 		'label' => __( 'Numbered Listicle', 'fw' ),
 		'thumb' => 'listicle.svg',
 		'part'  => 'listicle',
+		'has_position' => true, // reveals Image Position (Left / Right)
 	),
 	'newslist' => array(
 		'label' => __( 'Compact News List', 'fw' ),
 		'thumb' => 'newslist.svg',
 		'part'  => 'newslist',
+		'has_position' => true, // reveals Image Position (Left / Right)
 	),
 	'editorial' => array(
 		'label' => __( 'Editorial Big-Title', 'fw' ),
@@ -99,6 +123,7 @@ return array(
 		'label' => __( 'Polaroid', 'fw' ),
 		'thumb' => 'polaroid.svg',
 		'part'  => 'polaroid',
+		'category' => 'decorated', // reproducible via Box / Image Style presets
 	),
 	'timeline' => array(
 		'label' => __( 'Timeline', 'fw' ),
@@ -109,6 +134,7 @@ return array(
 		'label' => __( 'Tile (Hover Reveal)', 'fw' ),
 		'thumb' => 'tile.svg',
 		'part'  => 'tile',
+		'category' => 'decorated', // reproducible via Box / Image Style presets
 	),
 	'circular' => array(
 		'label' => __( 'Circular', 'fw' ),
@@ -119,11 +145,13 @@ return array(
 		'label' => __( 'Accent Bar', 'fw' ),
 		'thumb' => 'accent.svg',
 		'part'  => 'accent',
+		'category' => 'decorated', // reproducible via Box / Image Style presets
 	),
 	'cover' => array(
 		'label' => __( 'Magazine Cover', 'fw' ),
 		'thumb' => 'cover.svg',
 		'part'  => 'cover',
+		'category' => 'decorated', // reproducible via Box / Image Style presets
 	),
 	'quote' => array(
 		'label' => __( 'Quote-Led', 'fw' ),
@@ -134,11 +162,13 @@ return array(
 		'label' => __( 'Postcard', 'fw' ),
 		'thumb' => 'postcard.svg',
 		'part'  => 'postcard',
+		'has_position' => true, // reveals Image Position (Left / Right)
 	),
 	'badge' => array(
 		'label' => __( 'Bordered Badge', 'fw' ),
 		'thumb' => 'badge.svg',
 		'part'  => 'badge',
+		'category' => 'decorated', // reproducible via Box / Image Style presets
 	),
 	'filmstrip' => array(
 		'label' => __( 'Filmstrip', 'fw' ),
@@ -149,10 +179,12 @@ return array(
 		'label' => __( 'Diagonal Split', 'fw' ),
 		'thumb' => 'diagonal.svg',
 		'part'  => 'diagonal',
+		'category' => 'decorated', // reproducible via Box / Image Style presets
 	),
 	'glass' => array(
 		'label' => __( 'Glassmorphism', 'fw' ),
 		'thumb' => 'glass.svg',
 		'part'  => 'glass',
+		'category' => 'decorated', // reproducible via Box / Image Style presets
 	),
 );

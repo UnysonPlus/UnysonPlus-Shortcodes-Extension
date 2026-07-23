@@ -58,6 +58,9 @@ $options = [
 			'group_styling' => [
 				'type'    => 'group',
 				'options' => [
+					'image_style' => function_exists( 'sc_image_style_field' )
+						? sc_image_style_field()
+						: [ 'type' => 'select', 'label' => __( 'Image Style', 'fw' ), 'value' => '', 'choices' => [ '' => __( 'None', 'fw' ) ] ],
 					'spacing' => [
 						'type'  => 'spacing',
 						'label' => __( 'Margin & Padding', 'fw' ),

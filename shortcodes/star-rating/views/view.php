@@ -100,6 +100,23 @@ if ( ! function_exists( 'sc_sr_render' ) ) {
 		if ( $count !== '' ) { echo '<span class="fw-sr__count">' . esc_html( $count ) . '</span>'; }
 
 		echo '</div>';
+
+		// Optional AggregateRating JSON-LD (machine-readable rating). A number found in
+		// the Count Text (e.g. "based on 220 reviews") becomes the ratingCount.
+		if ( sc_get( 'rating_schema', $atts, 'no' ) === 'yes' && $rating > 0 ) {
+			$ld = array(
+				'@context'    => 'https://schema.org',
+				'@type'       => 'AggregateRating',
+				'ratingValue' => (float) $val_str,
+				'bestRating'  => $max,
+				'worstRating' => 0,
+			);
+			if ( $count !== '' && preg_match( '/\d[\d,]*/', $count, $m ) ) {
+				$ld['ratingCount'] = (int) str_replace( ',', '', $m[0] );
+			}
+			echo '<script type="application/ld+json">' . wp_json_encode( $ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+		}
+
 		return ob_get_clean();
 	}
 }

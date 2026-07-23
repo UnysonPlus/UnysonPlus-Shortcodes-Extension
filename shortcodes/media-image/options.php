@@ -81,6 +81,14 @@ $options = [
         'title'   => __( 'Styling', 'fw' ),
         'type'    => 'tab',
         'options' => [
+            'group_image_style' => [
+                'type'    => 'group',
+                'options' => [
+                    'image_style' => function_exists( 'sc_image_style_field' )
+                        ? sc_image_style_field()
+                        : [ 'type' => 'select', 'label' => __( 'Image Style', 'fw' ), 'value' => '', 'choices' => [ '' => __( 'None', 'fw' ) ] ],
+                ],
+            ],
             'group_colors' => [
                 'type'    => 'group',
                 'options' => [

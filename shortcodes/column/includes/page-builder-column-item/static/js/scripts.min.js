@@ -214,6 +214,24 @@
 				}
 				this.$el.css(widthCss);
 
+				// Max Width — cap an AUTO column's growth in the canvas, mirroring view.php's inline
+				// max-width on the outer .fw-col. Overrides the 'none' widthCss set above only when a
+				// valid cap is present; a no-cap auto column keeps widthCss's value.
+				if (baseIsAuto) {
+					var mwRaw = atts.max_width, maxW = '';
+					if (mwRaw && typeof mwRaw === 'object') {
+						// unit-input value shape: { value: '600', unit: 'px' }.
+						var mwVal = (mwRaw.value != null) ? String(mwRaw.value).trim() : '';
+						var mwUnit = mwRaw.unit ? String(mwRaw.unit) : 'px';
+						if (/^\d+(\.\d+)?$/.test(mwVal) && /^(px|rem|em|ch|vw|vh|%)$/.test(mwUnit)) { maxW = mwVal + mwUnit; }
+					} else if (typeof mwRaw === 'string' && mwRaw) {
+						var mwS = mwRaw.trim();
+						if (/^\d+(\.\d+)?$/.test(mwS)) { mwS += 'px'; }
+						if (/^\d+(\.\d+)?(px|rem|em|ch|vw|vh|%)$/.test(mwS)) { maxW = mwS; }
+					}
+					if (maxW) { this.$el.css('max-width', maxW); }
+				}
+
 				// Reflect the EFFECTIVE per-device width on the ◄ N ► width label too, so it
 				// matches the canvas + frontend for the previewed device. `w` is the override
 				// for this device ('' = none → restore the native base-width title). On phone
@@ -372,6 +390,23 @@
 
 				this.listenTo(this.modal, {
 					'open': function(){
+						// Max Width is an AUTO-only field. It lives in the LAZY-rendered Layout tab, and
+						// the base width ('col' = auto) is set on the canvas width-changer — not a modal
+						// field to reveal off. So tag the modal when the column isn't auto and let a CSS
+						// rule (injected once) hide the Max Width option WHENEVER it renders — this is
+						// independent of when the lazy tab actually paints (a plain .hide() on open runs
+						// before the field exists and never takes effect).
+						if (!document.getElementById('fw-col-mw-css')) {
+							var st = document.createElement('style');
+							st.id = 'fw-col-mw-css';
+							st.textContent = '.fw-col-mw-hide .fw-backend-option:has([name*="[max_width]"]){display:none !important;}';
+							(document.head || document.documentElement).appendChild(st);
+						}
+						var w = String(this.model.get('width'));
+						var isAuto = (w === 'col' || w === 'auto');
+						setTimeout(function () {
+							jQuery('.fw-options-modal').filter(':visible').last().toggleClass('fw-col-mw-hide', !isAuto);
+						}, 0);
 						fwEvents.trigger(getEventName(this.model, 'options-modal:open'), {
 							modal: this.modal,
 							item: this.model,

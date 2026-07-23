@@ -257,7 +257,9 @@ if ( ! empty( $atts['title'] ) ) {
             ? fw_ext_mega_menu_icon_is_set( $atts['icon'] )
             : ! empty( $atts['icon'] );
         if ( $icon_set ) {
-            $title_icon = sc_icon_render( $atts['icon'], array( 'class' => 'heading-title__icon' ) ) . ' ';
+            // No trailing space — the icon/title gap is the .heading-title__icon
+            // margin-right (a literal space here would add a second, uneven gap).
+            $title_icon = sc_icon_render( $atts['icon'], array( 'class' => 'heading-title__icon' ) );
         }
     }
 

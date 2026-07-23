@@ -11,13 +11,20 @@ if ( ! defined( 'FW' ) ) {
  */
 
 $post_id       = $sc_post->ID;
+
+/* Image-overlay category positions have no image wrapper in this layout — the chips
+   would be absolutely-positioned with no anchor. Collapse them to above-title. */
+$cat_pos = sc_get( 'cat_position', $sc_atts, 'above-title' );
+if ( strpos( $cat_pos, 'image-overlay-' ) === 0 ) {
+    $sc_atts['cat_position'] = 'above-title';
+}
 $body_slugs    = sc_posts_get_ordered_slugs( $sc_atts, [ 'image' ] );
 $image_visible = in_array( 'image', sc_posts_get_ordered_slugs( $sc_atts ), true );
 
 $article_class = 'posts__card posts__card--timeline';
 if ( ! has_post_thumbnail( $post_id ) ) $article_class .= ' posts__card--no-image';
 ?>
-<article class="<?php echo esc_attr( $article_class ); ?>" role="listitem">
+<article class="<?php echo esc_attr( $article_class ); ?>">
     <span class="posts__timeline-marker" aria-hidden="true"></span>
     <div class="posts__timeline-inner">
         <?php if ( $image_visible ) : ?>

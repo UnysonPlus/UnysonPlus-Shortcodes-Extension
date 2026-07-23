@@ -33,19 +33,34 @@
 
 .accordion .accordion-title {
 	position: relative;
-	display: flex;
-	align-items: center;
 	font-weight: 600;
 	color: var(--acc-title-color);
 	background: var(--acc-title-bg);
-	padding: var(--acc-pad-y) var(--acc-pad-x);
 	margin: 0;
-	cursor: pointer;
-	user-select: none;
 	transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.accordion .accordion-title:focus {
+/* The interactive toggle is a <button> that fills the title bar (WAI-ARIA
+   disclosure / accordion pattern). It carries the flex layout, padding, focus and
+   click target, so the wrapping heading keeps its heading semantics (screen-reader
+   heading navigation) while the button supplies aria-expanded + keyboard support. */
+.accordion .accordion-trigger {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	box-sizing: border-box;
+	padding: var(--acc-pad-y) var(--acc-pad-x);
+	margin: 0;
+	background: none;
+	border: 0;
+	font: inherit;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+	user-select: none;
+}
+
+.accordion .accordion-trigger:focus-visible {
 	outline: 2px solid #4a90d9;
 	outline-offset: -2px;
 }
@@ -414,10 +429,10 @@
 /* ── Title alignment ──────────────────────────────────────────
    Left is the flex default; only need rules for center and right. */
 
-.accordion.accordion-title-align-center .accordion-title {
+.accordion.accordion-title-align-center .accordion-trigger {
 	justify-content: center;
 }
-.accordion.accordion-title-align-right .accordion-title {
+.accordion.accordion-title-align-right .accordion-trigger {
 	justify-content: flex-end;
 }
 

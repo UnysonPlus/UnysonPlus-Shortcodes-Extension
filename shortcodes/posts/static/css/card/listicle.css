@@ -10,3 +10,8 @@
     .posts__listicle-num   { font-size: 2rem; }
     .posts__listicle-media { flex-basis: 34%; max-width: 34%; }
 }
+
+/* Image Position → Right: keep the rank number leading; put body then media after it
+   ([num] [body] [media]) via order, rather than reversing the whole row. */
+.posts__card--listicle.posts__card--img-right .posts__body          { order: 1; }
+.posts__card--listicle.posts__card--img-right .posts__listicle-media { order: 2; }

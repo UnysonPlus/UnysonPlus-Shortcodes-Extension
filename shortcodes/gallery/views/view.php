@@ -91,6 +91,10 @@ $container_type = sc_get( 'container_type', $atts, '' );
 $click_action   = sc_get( 'click_action', $atts, 'lightbox' );
 $captions       = sc_get( 'captions', $atts, 'none' );
 $caption_source = sc_get( 'caption_source', $atts, 'caption' );
+// Corner Radius is retired as an option (image shaping now lives in Image Style). This
+// read is a BACK-COMPAT shim: existing galleries keep their saved radius, new galleries
+// keep the pleasant default; when an Image Style is chosen it takes over the shape (the
+// tile renderer skips this class), so the two never fight.
 $rounded        = sc_get( 'rounded', $atts, 'rounded' );
 $hover_zoom      = sc_get( 'hover_zoom', $atts, 'yes' ) === 'yes';
 
@@ -126,6 +130,7 @@ $tile_args = array(
 	'caption_class'  => $caption_class_extra,
 	'caption_style'  => $caption_style_extra,
 	'box_style'      => $box_style,
+	'image_style'    => function_exists( 'sc_image_style_class' ) ? sc_image_style_class( $atts ) : '',
 	'item_hover'     => $hover_item,
 );
 

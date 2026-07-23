@@ -117,6 +117,7 @@ $has_active = array_filter($tabs, fn($t) => !empty($t['is_active']) && $t['is_ac
                         <div class="tab-pane <?php echo $fade_class . ' ' . $active_class; echo esc_attr( $tab_content_class ); ?>"<?php echo $tab_content_style_attr; ?>
                              id="<?php echo esc_attr($tab_id); ?>"
                              role="tabpanel"
+                             tabindex="0"
                              aria-labelledby="<?php echo esc_attr($tab_id . '-tab'); ?>">
                             <?php echo do_shortcode($tab['tab_content']); ?>
                         </div>
@@ -159,6 +160,7 @@ $has_active = array_filter($tabs, fn($t) => !empty($t['is_active']) && $t['is_ac
                 <div class="tab-pane <?php echo $fade_class . ' ' . $active_class; echo esc_attr( $tab_content_class ); ?>"<?php echo $tab_content_style_attr; ?>
                      id="<?php echo esc_attr($tab_id); ?>"
                      role="tabpanel"
+                     tabindex="0"
                      aria-labelledby="<?php echo esc_attr($tab_id . '-tab'); ?>">
                     <?php echo do_shortcode($tab['tab_content']); ?>
                 </div>

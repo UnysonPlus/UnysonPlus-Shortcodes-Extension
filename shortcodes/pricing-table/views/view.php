@@ -178,6 +178,31 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 		}
 
 		echo '</div></div>';
+
+		// Optional Product + Offer JSON-LD, one per plan (machine-readable pricing).
+		if ( sc_get( 'product_schema', $atts, 'no' ) === 'yes' && ! empty( $plans ) ) {
+			$cmap = array( '$' => 'USD', '€' => 'EUR', '£' => 'GBP', '¥' => 'JPY', '₹' => 'INR', 'R$' => 'BRL', 'A$' => 'AUD', 'C$' => 'CAD' );
+			foreach ( $plans as $p ) {
+				$pname = isset( $p['plan_title'] ) ? trim( wp_strip_all_tags( (string) $p['plan_title'] ) ) : '';
+				if ( $pname === '' ) { continue; }
+				$prod = array( '@context' => 'https://schema.org', '@type' => 'Product', 'name' => $pname );
+				$sub  = isset( $p['subtitle'] ) ? trim( wp_strip_all_tags( (string) $p['subtitle'] ) ) : '';
+				if ( $sub !== '' ) { $prod['description'] = $sub; }
+				$price_raw = isset( $p['price'] ) ? (string) $p['price'] : '';
+				if ( preg_match( '/\d[\d.,]*/', $price_raw, $m ) ) {
+					$amount = str_replace( ',', '', $m[0] );
+					$cur    = isset( $p['currency'] ) ? trim( (string) $p['currency'] ) : '';
+					$iso    = preg_match( '/^[A-Za-z]{3}$/', $cur ) ? strtoupper( $cur ) : ( isset( $cmap[ $cur ] ) ? $cmap[ $cur ] : 'USD' );
+					$offer  = array( '@type' => 'Offer', 'price' => $amount, 'priceCurrency' => $iso, 'availability' => 'https://schema.org/InStock' );
+					$url    = isset( $p['button_url'] ) ? trim( (string) $p['button_url'] ) : '';
+					if ( $url !== '' ) { $offer['url'] = $url; }
+					$prod['offers'] = $offer;
+				}
+				echo '<script type="application/ld+json">' . wp_json_encode( $prod, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "
+";
+			}
+		}
+
 		return ob_get_clean();
 	}
 }

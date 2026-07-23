@@ -68,8 +68,9 @@ $stage_img = '<img class="fw-gallery__stage-img" src="' . esc_url( $first['url']
 				echo '<div class="fw-gallery__stage" data-index="0">' . $stage_media . '</div>';
 			}
 
-			// --- Thumbnail strip ---
-			echo '<div class="fw-gallery__thumbs" role="tablist">';
+			// --- Thumbnail strip (a group of buttons that swap the stage image, not a
+			// tab widget — the stage is not a tabpanel, so role="group" is the honest role). ---
+			echo '<div class="fw-gallery__thumbs" role="group" aria-label="' . esc_attr__( 'Gallery thumbnails', 'fw' ) . '">';
 			foreach ( $items as $idx => $item ) {
 				$thumb_src = $item['url'];
 				if ( $item['id'] ) {

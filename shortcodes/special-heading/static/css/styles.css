@@ -154,3 +154,7 @@ h6.heading-title { font-weight: var(--h6-font-weight, revert); }
 .heading-title .heading-title__icon,
 .heading-title__icon.heading-title__icon { display: inline-block; line-height: 1; vertical-align: -0.05em; }
 img.heading-title__icon { width: auto; height: 0.9em; vertical-align: -0.08em; }
+/* Inline icon-v2 SVG (font/library pack) is wrapped in a .heading-title__icon
+   <span>; size the inner <svg> so a pack whose markup carries no width still
+   renders (otherwise it collapses to 0 and the icon looks missing). */
+.heading-title__icon svg { width: auto; height: 0.9em; vertical-align: -0.08em; }

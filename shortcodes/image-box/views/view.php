@@ -425,7 +425,13 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
         /* --- Variables exposed to the part -------------------------------- */
         $sc_atts        = $atts;
         $sc_meta        = $meta;
-        $sc_img_html    = $img_html;
+        // Image Style preset (Theme Settings → Components → Image Styles): wrap the image
+        // in a `.imgs-wrap imgs-{slug}` so crop/mask/filter/scrim apply. Only when set +
+        // an image exists (an empty wrap would defeat the part's `!== ''` visibility check).
+        $sc_imgs        = function_exists( 'sc_image_style_class' ) ? sc_image_style_class( $atts ) : '';
+        $sc_img_html    = ( $img_html !== '' && $sc_imgs !== '' )
+            ? '<span class="imgs-wrap ' . esc_attr( $sc_imgs ) . '">' . $img_html . '</span>'
+            : $img_html;
         $sc_icon_html   = $icon_html;
         $sc_subtitle    = $subtitle_html;
         $sc_title       = $title_html;

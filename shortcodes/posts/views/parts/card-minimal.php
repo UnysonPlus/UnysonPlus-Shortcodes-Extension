@@ -21,7 +21,7 @@ if ( strpos( $cat_pos, 'image-overlay-' ) === 0 ) {
 
 $body_slugs = sc_posts_get_ordered_slugs( $sc_atts, [ 'image' ] );
 ?>
-<article class="posts__card posts__card--minimal" role="listitem">
+<article class="posts__card posts__card--minimal">
     <div class="posts__body entry-content">
         <?php foreach ( $body_slugs as $slug ) : ?>
             <?php echo sc_posts_render_block( $slug, $sc_atts, $post_id ); ?>

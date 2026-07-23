@@ -123,6 +123,11 @@ if ( ! empty( $atts['image'] ) && ! empty( $atts['image']['url'] ) ) {
 		$rel        = $target === '_blank' ? ' rel="noopener noreferrer"' : '';
 		$image_html = '<a href="' . esc_url( $atts['image_link'] ) . '" target="' . esc_attr( $target ) . '"' . $rel . '>' . $image_html . '</a>';
 	}
+	// Image Style preset (Theme Settings → Components → Image Styles).
+	$imgs_cls = function_exists( 'sc_image_style_class' ) ? sc_image_style_class( $atts ) : '';
+	if ( $imgs_cls !== '' ) {
+		$image_html = '<span class="imgs-wrap ' . esc_attr( $imgs_cls ) . '">' . $image_html . '</span>';
+	}
 }
 
 // Content column: text + alignment class + optional readability max-width.

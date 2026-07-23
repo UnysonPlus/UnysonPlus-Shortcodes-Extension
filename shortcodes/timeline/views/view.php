@@ -124,6 +124,29 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 		}
 
 		echo '</div></div>';
+
+		// Optional HowTo JSON-LD — each milestone becomes a step.
+		if ( sc_get( 'howto_schema', $atts, 'no' ) === 'yes' ) {
+			$steps = array();
+			$n     = 0;
+			foreach ( $items as $it ) {
+				$t = isset( $it['title'] ) ? trim( wp_strip_all_tags( (string) $it['title'] ) ) : '';
+				$x = isset( $it['text'] ) ? trim( wp_strip_all_tags( strip_shortcodes( (string) $it['text'] ) ) ) : '';
+				if ( $t === '' && $x === '' ) { continue; }
+				$n++;
+				$step = array( '@type' => 'HowToStep', 'position' => $n );
+				if ( $t !== '' ) { $step['name'] = $t; }
+				$step['text'] = $x !== '' ? preg_replace( '/\s+/u', ' ', $x ) : $t;
+				$steps[] = $step;
+			}
+			if ( ! empty( $steps ) ) {
+				$name = function_exists( 'get_the_title' ) ? wp_strip_all_tags( get_the_title() ) : '';
+				if ( $name === '' ) { $name = __( 'Steps', 'fw' ); }
+				$ld = array( '@context' => 'https://schema.org', '@type' => 'HowTo', 'name' => $name, 'step' => $steps );
+				echo '<script type="application/ld+json">' . wp_json_encode( $ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) . '</script>' . "\n";
+			}
+		}
+
 		return ob_get_clean();
 	}
 }

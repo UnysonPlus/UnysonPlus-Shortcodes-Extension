@@ -49,10 +49,26 @@ foreach ( $sc_layout_labels as $k => $lbl ) {
 
 /* Card styles — from the registry (single source of truth) */
 $sc_card_registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
-$sc_card_choices  = [];
+/* Card Style tiles, GROUPED into Layouts (structural — where the image/content sit)
+   vs Decorated (a skin now reproducible via Box + Image Style presets). The image-picker
+   renders each group as a category header (<optgroup>). Grouping is presentational ONLY —
+   the saved `card/style` value stays flat, so there's no migration and every style stays
+   selectable. A registry entry's `'category' => 'decorated'` buckets it; else it's a Layout. */
+$sc_card_layout_tiles    = [];
+$sc_card_decorated_tiles = [];
 foreach ( $sc_card_registry as $k => $def ) {
-    $sc_card_choices[ $k ] = $sc_img_choice( $posts_uri . '/static/img/card/' . $def['thumb'], $def['label'] );
+    if ( ! empty( $def['hidden'] ) ) { continue; } // legacy dispatch-only styles (side-left/right)
+    $tile = $sc_img_choice( $posts_uri . '/static/img/card/' . $def['thumb'], $def['label'] );
+    if ( isset( $def['category'] ) && $def['category'] === 'decorated' ) {
+        $sc_card_decorated_tiles[ $k ] = $tile;
+    } else {
+        $sc_card_layout_tiles[ $k ] = $tile;
+    }
 }
+$sc_card_choices = [
+    'group_layouts'   => [ 'label' => __( 'Layouts', 'fw' ),                                 'choices' => $sc_card_layout_tiles ],
+    'group_decorated' => [ 'label' => __( 'Decorated — or use Box / Image Style presets', 'fw' ), 'choices' => $sc_card_decorated_tiles ],
+];
 
 /* Pagination types */
 $sc_pag_labels = [
@@ -143,8 +159,9 @@ $sc_opt_columns_rwd = function ( $d_default, $desc, $with_ratio = false ) use ( 
         'label'        => false,
         'desc'         => false,
         'show_borders' => false,
+        'value'        => [ 'count' => (string) $d_default ], // canonical: default on the top level, not inside the picker
         'picker'       => [
-            'count' => [ 'type' => 'select', 'label' => __( 'Columns', 'fw' ), 'value' => (string) $d_default, 'choices' => $sc_col_choices, 'desc' => $desc ],
+            'count' => [ 'type' => 'select', 'label' => __( 'Columns', 'fw' ), 'choices' => $sc_col_choices, 'desc' => $desc ],
         ],
         'choices'      => $choices,
     ];
@@ -189,6 +206,14 @@ $sc_opt_content_valign = [
     'type'    => 'select', 'value' => 'top',
     'choices' => [ 'top' => __( 'Top', 'fw' ), 'center' => __( 'Center', 'fw' ), 'bottom' => __( 'Bottom', 'fw' ), 'space-between' => __( 'Justify', 'fw' ) ],
 ];
+/* Which side the image sits on, for horizontal card styles (Side / Postcard / News
+   List / Listicle / Filmstrip). For "side" the view resolves it to side-left/side-right;
+   the others flip via a `posts__card--img-right` class. */
+$sc_opt_image_position = [
+    'label'   => __( 'Image Position', 'fw' ),
+    'type'    => 'select', 'value' => 'left',
+    'choices' => [ 'left' => __( 'Left', 'fw' ), 'right' => __( 'Right', 'fw' ) ],
+];
 
 /* Slider sub-controls (revealed for the Slider layout) */
 $sc_opt_slider_arrows = [
@@ -221,18 +246,24 @@ $sc_opt_pag_align = [
    reveal sub-options (side / alternating reveal all three; hero reveals ratio). */
 $sc_card_picker_choices = [];
 foreach ( $sc_card_registry as $k => $def ) {
-    if ( empty( $def['needs_ratio'] ) ) {
+    if ( empty( $def['needs_ratio'] ) && empty( $def['has_position'] ) ) {
         continue;
     }
-    if ( $k === 'hero-split' ) {
-        $sc_card_picker_choices[ $k ] = [ 'image_width_ratio' => $sc_opt_img_ratio_split ];
-    } else {
-        $sc_card_picker_choices[ $k ] = [
-            'image_width_ratio'      => $sc_opt_img_ratio_split,
-            'image_vertical_align'   => $sc_opt_img_valign,
-            'content_vertical_align' => $sc_opt_content_valign,
-        ];
+    $reveal = [];
+    // Image Position first (Side + the horizontal styles), then the ratio/valign trio.
+    if ( ! empty( $def['has_position'] ) ) {
+        $reveal['image_position'] = $sc_opt_image_position;
     }
+    if ( ! empty( $def['needs_ratio'] ) ) {
+        if ( $k === 'hero-split' ) {
+            $reveal['image_width_ratio'] = $sc_opt_img_ratio_split;
+        } else {
+            $reveal['image_width_ratio']      = $sc_opt_img_ratio_split;
+            $reveal['image_vertical_align']   = $sc_opt_img_valign;
+            $reveal['content_vertical_align'] = $sc_opt_content_valign;
+        }
+    }
+    $sc_card_picker_choices[ $k ] = $reveal;
 }
 
 $options = [
@@ -448,7 +479,10 @@ $options = [
             'group_appearance' => [
                 'type'    => 'group',
                 'options' => [
-                    'box_style' => sc_card_box_style_field( array( 'desc' => __( 'Apply a Box Preset to each post card. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ) ) ),
+                    'box_style' => sc_card_box_style_field( [ 'desc' => __( 'Apply a Box Preset to each post card. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ) ] ),
+                    'image_style' => function_exists( 'sc_image_style_field' )
+                        ? sc_image_style_field( [ 'desc' => __( 'Apply a reusable Image Style (crop, corners, mask, filter, scrim) to each card image. Manage presets in Theme Settings → Components → Image Styles.', 'fw' ) ] )
+                        : [ 'type' => 'select', 'label' => __( 'Image Style', 'fw' ), 'value' => '', 'choices' => [ '' => __( 'None', 'fw' ) ] ],
                     'image_size' => [
                         'label'   => __( 'Image Size', 'fw' ),
                         'type'    => 'select',
@@ -557,6 +591,12 @@ $options = [
                                 'label' => __( 'Visible', 'fw' ),
                                 'type'  => 'switch',
                                 'value' => 'yes',
+                                // Explicit string choices: a bare switch stores a
+                                // boolean, which serialised to false for every row and
+                                // hid all card blocks. 'yes'/'no' matches the default +
+                                // the view's element_order check.
+                                'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
+                                'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
                             ],
                         ],
                     ],
@@ -822,22 +862,31 @@ $options = [
             'group_colors' => [
                 'type'    => 'group',
                 'options' => [
-                    'text_color'       => sc_color_field_compact( array( 'label' => __( 'Text Color', 'fw' ),       'kind' => 'text' ) ),
-                    'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
-                    'font_size_preset' => sc_font_size_field( array(
+                    'text_color'       => sc_color_field_compact( [ 'label' => __( 'Text Color', 'fw' ),       'kind' => 'text' ] ),
+                    'bg_color'         => sc_color_field_compact( [ 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ] ),
+                    /* Per-part card colors → CSS custom props (--posts-*) consumed by styles.css.
+                       Card SURFACE colors (fill / border / shadow) are deliberately NOT here —
+                       that's the Box Preset's job (box_style, Design tab). */
+                    'title_color'      => sc_color_field_compact( [ 'label' => __( 'Title Color', 'fw' ),   'kind' => 'text' ] ),
+                    'excerpt_color'    => sc_color_field_compact( [ 'label' => __( 'Excerpt Color', 'fw' ), 'kind' => 'text' ] ),
+                    'meta_color'       => sc_color_field_compact( [ 'label' => __( 'Meta Color', 'fw' ),    'kind' => 'text', 'desc' => __( 'Date, author, comments and reading-time bar.', 'fw' ) ] ),
+                    'chip_bg'          => sc_color_field_compact( [ 'label' => __( 'Category Chip Background', 'fw' ), 'kind' => 'bg', 'desc' => __( 'Setting this also gives the chips a pill padding + radius.', 'fw' ) ] ),
+                    'chip_color'       => sc_color_field_compact( [ 'label' => __( 'Category Chip Text', 'fw' ), 'kind' => 'text' ] ),
+                    'accent_color'     => sc_color_field_compact( [ 'label' => __( 'Accent Color', 'fw' ), 'kind' => 'bg', 'desc' => __( 'The interactive bits in one stroke — text-link Read More, current pagination page, active filter chip.', 'fw' ) ] ),
+                    'font_size_preset' => sc_font_size_field( [
                         'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),
-                    ) ),
+                    ] ),
                 ],
             ],
             'group_spacings' => [
                 'type'    => 'group',
                 'options' => [
-                    'spacing' => array(
+                    'spacing' => [
                         'type'  => 'spacing',
                         'label' => __( 'Margin & Padding', 'fw' ),
                         'desc'  => __( 'All Sides applies to every side at once; any per-side value (Top, Right, Bottom, Left) overrides it for that direction.', 'fw' ),
                         'help'  => sc_styling_help_text( 'spacing' ),
-                    ),
+                    ],
                 ],
             ],
         ],
