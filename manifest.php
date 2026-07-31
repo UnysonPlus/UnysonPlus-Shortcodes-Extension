@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.11.98';
+$manifest['version']     = '1.12.47';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,124 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.12.47 - "Announcement Pill" shortcode renamed to "Badge" (slug announcement_pill
+ *          becomes badge). "Badge" is the discoverable, industry-standard name for the
+ *          badge / pill / chip primitive; the description still names pills, chips and
+ *          announcement bars so search finds it. It had never been used in saved
+ *          content, so this is a DIRECT rename with no migration/alias: the folder,
+ *          enqueue handles (fw-shortcode-badge) and JS (badge.js) follow the new slug,
+ *          the builder derives the tag from the folder name so [badge] is the new tag,
+ *          and the Site Converter now emits the badge shortcode. Internal CSS classes
+ *          (.fw-announce / .ap-pill) are intentionally unchanged to avoid a bare
+ *          .badge clash with Bootstrap and to keep existing scoped CSS working.
+ *
+ * 1.12.17 - Shortcode Design Presets (NEW, MVP on Image Box). An uploadable,
+ *          per-element "design": a JSON envelope { unysonplus_design, shortcode,
+ *          name, atts } carrying the element's option VALUES (content + design +
+ *          styling, incl. the per-element custom_css which emits scoped to the
+ *          element). A "Design" bar in the edit modal (Upload design / Export
+ *          current / Browse Library) applies it via the builder's proven
+ *          item.set(atts)+modal.set(values) path, so every option stays editable.
+ *          Values-only (no markup/JS) = safe to share; new markup remains a
+ *          child-theme concern. Enabled shortcodes are filterable
+ *          (unysonplus_design_enabled_shortcodes); Browse Library will reuse the
+ *          Template-Library importer next.
+ * 1.12.16 - Tabs: new "Media panel" layout — a list of tabs on one side and a
+ *          switching image on the other (a feature / product showcase). Each tab
+ *          gains an Image field; its Content becomes the caption under the image;
+ *          Image Side picks left/right. Two new interactions apply to every tabs
+ *          layout: Activate On (Click / Hover) and Auto-rotate (with an interval,
+ *          pausing on hover/focus, honoring reduce-motion). Responsive srcset
+ *          images. For the scroll-pinned cinematic version, the Animation Engine
+ *          Scrollytelling module remains the tool (cross-referenced in the help).
+ * 1.12.15 - Animated Heading: enriched (kept standalone, no Animation Engine
+ *          dependency). New playback controls — Loop (forever / play once & stop
+ *          on the last word), Pause on Hover, Randomize Order. New Typewriter
+ *          caret controls — show/hide, style (bar / block / underscore) and color.
+ *          Two new rotation styles — Blur in and 3D Rotate. Two new Word Highlight
+ *          styles — Gradient text and Pill. Colours are now preset-aware. The
+ *          Animation picker desc cross-references the Animation Engine Text Effects
+ *          (for applying effects to ANY element) and warns against stacking both.
+ * 1.12.14 - Button Style now defaults to the first real preset (Primary) instead
+ *          of the bare `.btn` base, so a freshly-added Button / flip-box back
+ *          button / posts read-more (in button mode) looks intentional out of the
+ *          box. New shared helper sc_get_button_style_default() skips the leading
+ *          blank "Default" row (which stays selectable; the Site Converter still
+ *          sets it explicitly). Only affects NEW instances — saved buttons keep
+ *          their stored value.
+ * 1.12.13 - Bleed Section: correctness fixes + new options. Fixes: the Mobile
+ *          Stacking Order now actually works (the section stacks as a real flex
+ *          column and reorders the image/content — previously the image always
+ *          rendered first on mobile); Image Side = Left no longer overlaps the
+ *          content over the image on desktop (the leaked grid order classes are
+ *          gone — DOM order + a spacer column place each side); the empty spacer
+ *          column no longer shows as a blank block on mobile. New: Minimum Height
+ *          (Auto / 40 / 60 / 80 / 100vh) to make it a hero, an Image Overlay
+ *          (color + opacity scrim), responsive srcset image markup via
+ *          wp_get_attachment_image (with a Lazy-load toggle, off by default for
+ *          LCP), and an Image Alt Text override.
+ * 1.12.10 - Feature List: fix the confusing marker model. A per-item Icon now
+ *          ALWAYS overrides the marker (matching Elementor / Divi / Bricks), so
+ *          adding an icon to an item shows it regardless of the list's marker —
+ *          previously icons were silently ignored unless you also switched the
+ *          global style to "Per-item icons". "Marker Style" is reframed as the
+ *          "Default Marker" fallback for icon-less items, with choices Checkmark,
+ *          Checkmark + icon (shows both), Numbered, Bullets, and Icons only. The
+ *          old "Per-item icons" / "Badge" designs fold into back-compat aliases
+ *          (→ Checkmark, and Checkmark + square Icon Style) so existing lists are
+ *          unchanged. Font-icon markers now honor the Icon Size.
+ * 1.12.9 - Feature List: a substantial layout + styling expansion. New Design
+ *          options — Orientation (Vertical list vs Horizontal strip, the latter
+ *          flowing items in a wrapping inline trust/feature bar), Icon Position
+ *          (Left of text vs Above text, centered), Icon Style presets (Plain /
+ *          Soft tint / Solid circle / Outline / Square badge, a chip drawn around
+ *          the checklist / per-item icon markers), and Alternating (zebra) Rows.
+ *          Per-item additions — a right-aligned Value field for spec/stat rows
+ *          (e.g. "RTP 96%") and a per-item Marker Color override (e.g. a single
+ *          red cross). The list/text/sub colour emission is now preset-aware
+ *          (resolves palette presets to var(--color-*), not just custom hex).
+ *          The item row preview in the builder now shows the chosen icon inline.
+ * 1.12.7 - Full brand-SVG pipeline. The shared inline-SVG sanitiser
+ *          (sc_icon_sanitize_svg) now accepts complete logo artwork, not just
+ *          simple icons: defs, linear/radial gradients + stops, text/tspan,
+ *          use/symbol, mask/clipPath and opacity/transform are allowlisted
+ *          (scripts, event handlers and any non-#fragment href are still
+ *          stripped, and case-sensitive attributes like gradientUnits are
+ *          restored after wp_kses lowercases them). NEW
+ *          sc_icon_flatten_svg_css() inlines an SVG's internal CSS - Adobe
+ *          Illustrator's <style> block of .stN classes plus inline style=""
+ *          lists - as presentation attributes before sanitising, so AI exports
+ *          no longer render black when the style block is stripped. NEW:
+ *          Media-Library SVG uploads (administrators only) - upload_mimes /
+ *          wp_check_filetype_and_ext allow .svg for admins and
+ *          wp_handle_upload_prefilter rewrites the file through the same
+ *          sanitiser+flattener before it is stored, so SVG logos ride the
+ *          normal user-replaceable media flow (Simple Logo, Footer Logo, any
+ *          image element) with no special uploader. Note: sanitisation happens
+ *          at save/upload time, so icon values stored before this version must
+ *          be re-saved to regain stripped markup.
+ *
+ * 1.12.4 - Gallery: "Open Link" click action + On Image Click becomes a multi-picker (NEW
+ *          `click` key, legacy `click_action` scalar honoured as a fallback) — Open Link
+ *          follows each image's own URL: its post's page with the Post Type source, or the
+ *          image's Media-Library "Link URL" field, which now pairs with an "Open link in a
+ *          new tab" CHECKBOX on the same media screen (meta _upw_link_new_tab) so one
+ *          gallery can mix internal and external links per image; external hosts always
+ *          open a new tab automatically. The Link URL media field (meta _upw_link_url)
+ *          moved here from the Animation Engine so it exists wherever a gallery does;
+ *          Images now lives inside the Source picker's Media Library choice (flat-key
+ *          fallback kept). All designs covered incl. the bespoke flipcards/showcase click
+ *          paths via the sc_gallery_item_link() helper.
+ *
+ * 1.12.0 - Gallery: a "Source" picker on the Content tab — Media Library (the images
+ *          option, unchanged at its original path so every existing gallery is untouched)
+ *          or Post Type, which builds the gallery from a post type's featured images
+ *          (public types with thumbnail support listed dynamically, so e.g. Portfolio
+ *          appears when that extension is active; count 1-200 + order controls). The
+ *          posts branch feeds attachment IDs into the existing sc_gallery_get_items
+ *          pipeline, so captions, lightbox and every design work unchanged and the
+ *          gallery stays fresh as posts are published. Mirrors the 3D Gallery's source.
+ *
  * 1.11.96 - Posts: per-part color options (Styling tab) — Title, Excerpt, Meta,
  *          Category Chip Background + Text, and an Accent that themes the interactive
  *          bits in one stroke (text-link Read More, current pagination page, active

@@ -82,14 +82,14 @@ $options = array(
 						'desc'    => __( 'A small marker before the sub-tag. "Pulse Dot" animates — ideal for a "live / now available" pill. "Icon" uses the Leading Icon below.', 'fw' ),
 					),
 					'leading_icon' => array(
-						'type'         => 'icon-v2',
+						'type'         => 'icon',
 						'label'        => __( 'Leading Icon', 'fw' ),
 						'preview_size' => 'small',
 						'modal_size'   => 'medium',
 						'desc'         => __( 'Used only when Leading Marker = Icon.', 'fw' ),
 					),
 					'trailing_icon' => array(
-						'type'         => 'icon-v2',
+						'type'         => 'icon',
 						'label'        => __( 'Trailing Icon', 'fw' ),
 						'preview_size' => 'small',
 						'modal_size'   => 'medium',

@@ -160,7 +160,7 @@ if ( ! function_exists( 'sc_announce_render' ) ) {
 
 // Enqueue ONLY the icon-v2 pack(s) the chosen leading / trailing icons need (not every pack).
 if ( function_exists( 'fw' ) && isset( fw()->backend ) ) {
-	$ot = fw()->backend->option_type( 'icon-v2' );
+	$ot = fw()->backend->option_type( 'icon' );
 	if ( $ot && isset( $ot->packs_loader ) && $ot->packs_loader ) {
 		foreach ( array( 'leading_icon', 'trailing_icon' ) as $ik ) {
 			if ( ! empty( $atts[ $ik ] ) && is_array( $atts[ $ik ] ) && ! empty( $atts[ $ik ]['icon-class'] ) ) {

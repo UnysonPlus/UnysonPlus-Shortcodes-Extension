@@ -6,13 +6,12 @@
      --ap-grad-from / --ap-grad-to   gradient stops (gradient style)
    Clean DOM: every utility lives here, keyed off the wrapper's ap-* modifier classes. */
 
-.fw-announce { display: flex; margin: 0; }
+.fw-announce { --ap-color: #5f6266; display: flex; margin: 0; }
 .fw-announce.ap-align-start  { justify-content: flex-start; }
 .fw-announce.ap-align-center { justify-content: center; }
 .fw-announce.ap-align-end    { justify-content: flex-end; }
 
 .fw-announce .ap-pill {
-	--ap-color: #5f6266;
 	display: inline-flex;
 	align-items: center;
 	gap: .5rem;

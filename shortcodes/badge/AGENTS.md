@@ -1,4 +1,10 @@
-# Announcement Pill shortcode (`announcement_pill`)
+# Badge shortcode (`badge`)
+
+> Renamed from **Announcement Pill** (`announcement_pill`) — a direct rename, no migration
+> (it had no saved usage). The builder derives the tag from this folder name, so the tag is
+> now `badge`. Internal CSS classes (`.fw-announce` / `.ap-pill`) and the Site-Converter's
+> internal recognizer/builder tokens (`announcement_pill`) are intentionally unchanged; only
+> the emitted shortcode became `badge`.
 
 A compact rounded **pill / badge**: an optional leading marker (dot / pulse dot / icon), an optional
 **sub-tag** ("New"), a **message**, an optional **trailing icon**, and an optional **link**. Built for
@@ -12,7 +18,7 @@ A compact rounded **pill / badge**: an optional leading marker (dot / pulse dot 
 - `views/view.php` — `sc_announce_render()`. Resolves colours → CSS vars, builds the semantic markup,
   enqueues only the icon-v2 pack(s) the chosen icons use.
 - `static/css/styles.css` — `.fw-announce` (outer, alignment) + `.ap-pill` (the pill) + all variants.
-- `static/js/announcement-pill.js` — dismissible behaviour (localStorage, per `data-ap-dismiss` key).
+- `static/js/badge.js` — dismissible behaviour (localStorage, per `data-ap-dismiss` key).
 - `static.php` — enqueues the CSS + JS (versioned by the shortcodes extension manifest).
 
 ## Atts
