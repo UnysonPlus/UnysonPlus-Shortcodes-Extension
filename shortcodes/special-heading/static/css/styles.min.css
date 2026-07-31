@@ -37,6 +37,7 @@ h6.heading-title{font-weight:var(--h6-font-weight,revert)}
 /* Subtitle is a semantic <p>; zero its UA margins so spacing matches the old <div>
    (the gap above comes from the title's own margin-bottom). */
 .heading-subtitle { margin-top: 0; margin-bottom: 0; }
+.heading-title{margin-top:0}
 .heading-overline.text-center { justify-content: center; }
 .heading-overline.text-end    { justify-content: flex-end; }
 

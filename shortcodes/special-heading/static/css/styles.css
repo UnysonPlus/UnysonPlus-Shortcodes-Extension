@@ -44,6 +44,11 @@ h6.heading-title { font-weight: var(--h6-font-weight, revert); }
 /* Subtitle is a semantic <p>; zero its UA margins so spacing matches the old <div>
    (the gap above comes from the title's own margin-bottom). */
 .heading-subtitle { margin-top: 0; margin-bottom: 0; }
+/* Reset the theme's default heading TOP margin so the gap ABOVE the title is controlled solely by
+   the overline's margin-bottom (Element Spacing). Without this the theme's h2 top-margin leaks in
+   and a pill-overline heading shows a large (~40px) overline->title gap instead of the set spacing.
+   (The overline and subtitle were already reset; the title was the missing one.) */
+.heading-title { margin-top: 0; }
 .heading-overline.text-center { justify-content: center; }
 .heading-overline.text-end    { justify-content: flex-end; }
 
