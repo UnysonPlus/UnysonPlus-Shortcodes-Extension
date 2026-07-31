@@ -33,7 +33,7 @@ $options = array(
 								'label' => __( 'Text', 'fw' ),
 							),
 							'icon' => array(
-								'type'         => 'icon-v2',
+								'type'         => 'icon',
 								'label'        => __( 'Marker Icon', 'fw' ),
 								'preview_size' => 'small',
 								'desc'         => __( 'Shown in the marker when Marker Style is "Icon".', 'fw' ),
@@ -75,6 +75,15 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'design' => call_user_func( function () {
+						if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+							return array(
+								'type'    => 'image-picker',
+								'label'   => __( 'Layout', 'fw' ),
+								'value'   => 'alternating',
+								'desc'    => __( 'Choose a layout. Hover a tile to see its name.', 'fw' ),
+								'choices' => fw_sc_design_picker_choices( 'timeline' ),
+							);
+						}
 						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
 						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/timeline/static/img/design' );
 						$choices  = array();

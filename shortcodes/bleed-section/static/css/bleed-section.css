@@ -1,7 +1,9 @@
 /* Bleed Section — split content + full-bleed image.
  * The section is positioned; the bg + image halves are absolutely positioned to
- * the viewport edge, the content sits in a relative container above them. On
- * mobile the halves stack (image above content) in normal flow. */
+ * the viewport edge, the content sits in a relative container above them. A
+ * spacer column reserves the image half's width (DOM order alone places each
+ * side correctly — no order classes). On mobile the section becomes a flex
+ * column so the image / content can be reordered via flex `order`. */
 
 .bleed-section {
 	position: relative;
@@ -22,15 +24,42 @@
 	z-index: 1;
 }
 
-.bleed-section__img img {
+.bleed-section__img img,
+.bleed-section__image {
 	display: block;
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
 }
 
+/* Overlay / scrim over the bleed image. */
+.bleed-section__overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+}
+
+.bleed-section__container {
+	position: relative;
+	z-index: 2;
+}
+
+/* Minimum-height (hero) — stretch the container / row so Content Vertical Align
+ * has room to position the content within the section. Desktop only; on mobile
+ * the halves stack in normal flow. */
+@media (min-width: 768px) {
+	.bleed-section--minh > .bleed-section__container,
+	.bleed-section--minh > .bleed-section__container > .fw-row {
+		min-height: inherit;
+	}
+}
+
 @media (max-width: 767.98px) {
+	/* Stack in a real flex column so the image / content order is honored. */
 	.bleed-section {
+		display: flex;
+		flex-direction: column;
 		overflow: visible;
 	}
 
@@ -46,9 +75,18 @@
 		left: auto !important;
 		right: auto !important;
 		margin-bottom: 1rem;
+		order: 0;
 	}
 
-	.bleed-section__img img {
-		max-height: 300px;
-	}
+	.bleed-section__container { order: 1; }
+
+	/* Content First (default): flip the image below the content. */
+	.bleed-section--m-content-first .bleed-section__img { order: 1; }
+	.bleed-section--m-content-first .bleed-section__container { order: 0; }
+
+	.bleed-section__img img,
+	.bleed-section__image { max-height: 300px; }
+
+	/* The desktop spacer column is meaningless once stacked. */
+	.bleed-section__spacer { display: none; }
 }

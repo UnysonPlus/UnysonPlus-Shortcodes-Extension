@@ -54,6 +54,10 @@ class FW_Ext_Shortcodes_Settings_Page {
 		add_action( 'wp_ajax_fw_ext_shortcodes_install_github', array( $this, '_ajax_install_github' ) );
 		add_action( 'wp_ajax_fw_ext_shortcodes_delete', array( $this, '_ajax_delete' ) );
 
+		// Design-pack management (Design packs tab): enable/disable + delete.
+		add_action( 'wp_ajax_fw_ext_shortcodes_design_toggle', array( $this, '_ajax_design_toggle' ) );
+		add_action( 'wp_ajax_fw_ext_shortcodes_design_delete', array( $this, '_ajax_design_delete' ) );
+
 		// Surface a "Settings" link on the WordPress Shortcodes extension card
 		// pointing at this dedicated page (the card has no built-in settings form).
 		add_filter( 'fw_ext_manager_settings_url', array( $this, '_filter_card_settings_url' ), 10, 3 );
@@ -669,10 +673,11 @@ class FW_Ext_Shortcodes_Settings_Page {
 			$version
 		);
 
+		// 'postbox' powers the native collapse toggles on the Design packs tab.
 		wp_enqueue_script(
 			'fw-ext-shortcodes-admin-settings',
 			fw_min_uri($this->extension->get_uri( '/static/js/admin-settings.js' )),
-			array( 'jquery' ),
+			array( 'jquery', 'postbox' ),
 			$version,
 			true
 		);
@@ -699,6 +704,12 @@ class FW_Ext_Shortcodes_Settings_Page {
 					'uploaded'      => __( 'Uploaded', 'fw' ),
 					'github'        => __( 'GitHub', 'fw' ),
 					'zip'           => __( 'Zip', 'fw' ),
+					'confirmDeleteDesign' => __( 'Delete this design pack for good? This removes its files from the server.', 'fw' ),
+					'designToggleError'   => __( 'Could not update the design.', 'fw' ),
+					'enabledState'        => __( 'Enabled', 'fw' ),
+					'disabledState'       => __( 'Disabled', 'fw' ),
+					/* translators: %d: number of installed design packs */
+					'designsLink'         => __( 'Designs (%d)', 'fw' ),
 				),
 			)
 		);
@@ -726,16 +737,31 @@ class FW_Ext_Shortcodes_Settings_Page {
 				$enabled_cnt++;
 			}
 		}
+
+		// Per-shortcode installed-pack counts → the "Designs (N)" shortcut shown on
+		// a shortcode card when it carries at least one installed design pack.
+		$pack_counts = array();
+		if ( function_exists( 'fw_sc_design_capable_tags' ) && function_exists( 'fw_sc_design_pack_count' ) ) {
+			foreach ( array_keys( fw_sc_design_capable_tags() ) as $tg ) {
+				$c = fw_sc_design_pack_count( $tg );
+				if ( $c > 0 ) { $pack_counts[ $tg ] = $c; }
+			}
+		}
 		?>
 		<div class="wrap fw-sc-settings">
 			<h1><?php esc_html_e( 'Shortcodes', 'fw' ); ?></h1>
 			<p class="description">
-				<?php esc_html_e( 'Enable or disable the shortcodes available on your site, or add new ones from a .zip file or a GitHub repository.', 'fw' ); ?>
+				<?php esc_html_e( 'Enable or disable the shortcodes available on your site, add new ones from a .zip file or a GitHub repository, and manage installed design packs.', 'fw' ); ?>
 			</p>
+
+			<h2 class="nav-tab-wrapper fw-sc-nav-tabs" style="margin:.4em 0 1.4em">
+				<a href="#shortcodes" class="nav-tab nav-tab-active" data-tab="shortcodes"><?php esc_html_e( 'Shortcodes', 'fw' ); ?></a>
+				<a href="#designs" class="nav-tab" data-tab="designs"><?php esc_html_e( 'Design packs', 'fw' ); ?></a>
+			</h2>
 
 			<div class="fw-sc-notice fw-sc-notice-hidden" id="fw-sc-notice"></div>
 
-			<h2 class="fw-sc-section-title"><?php esc_html_e( 'Available shortcodes', 'fw' ); ?></h2>
+			<div class="fw-sc-panel" data-panel="shortcodes">
 
 			<div class="fw-sc-toolbar">
 				<input type="search" id="fw-sc-search" class="fw-sc-search"
@@ -775,27 +801,39 @@ class FW_Ext_Shortcodes_Settings_Page {
 								<code class="fw-sc-tag">[<?php echo esc_html( $tag ); ?>]</code>
 							</span>
 						</label>
-						<span class="fw-sc-badge <?php echo esc_attr( $badge_cls ); ?>"><?php echo esc_html( $this->source_label( $meta['source'] ) ); ?></span>
-						<?php if ( ! empty( $meta['deletable'] ) ) : ?>
-							<button type="button" class="button-link fw-sc-delete" data-tag="<?php echo esc_attr( $tag ); ?>" title="<?php esc_attr_e( 'Delete', 'fw' ); ?>">
-								<?php esc_html_e( 'Delete', 'fw' ); ?>
-							</button>
-						<?php endif; ?>
+						<span class="fw-sc-item-aside">
+							<span class="fw-sc-badge <?php echo esc_attr( $badge_cls ); ?>"><?php echo esc_html( $this->source_label( $meta['source'] ) ); ?></span>
+							<?php if ( isset( $pack_counts[ $tag ] ) ) : ?>
+								<a href="#fw-sc-dgroup-<?php echo esc_attr( $tag ); ?>" class="fw-sc-designs-link" data-tag="<?php echo esc_attr( $tag ); ?>">
+									<?php echo esc_html( sprintf( __( 'Designs (%d)', 'fw' ), (int) $pack_counts[ $tag ] ) ); ?>
+								</a>
+							<?php endif; ?>
+							<?php if ( ! empty( $meta['deletable'] ) ) : ?>
+								<button type="button" class="button-link fw-sc-delete" data-tag="<?php echo esc_attr( $tag ); ?>" title="<?php esc_attr_e( 'Delete', 'fw' ); ?>">
+									<?php esc_html_e( 'Delete', 'fw' ); ?>
+								</button>
+							<?php endif; ?>
+						</span>
 					</li>
 				<?php endforeach; ?>
 			</ul>
 
 			<p class="fw-sc-empty fw-sc-notice-hidden" id="fw-sc-empty"><?php esc_html_e( 'No shortcodes match your search.', 'fw' ); ?></p>
+			</div><!-- /.fw-sc-panel[shortcodes] -->
 
-			<h2 class="fw-sc-section-title"><?php esc_html_e( 'Add a shortcode', 'fw' ); ?></h2>
+			<div class="fw-sc-panel fw-sc-panel-hidden" data-panel="designs">
+				<?php $this->render_designs_panel(); ?>
+			</div><!-- /.fw-sc-panel[designs] -->
+
+			<h2 class="fw-sc-section-title"><?php esc_html_e( 'Add a shortcode or design pack', 'fw' ); ?></h2>
 			<p class="description fw-sc-trust">
-				<?php esc_html_e( 'A shortcode is executable PHP. Only install shortcodes from sources you trust — the same level of trust as installing a plugin.', 'fw' ); ?>
+				<?php esc_html_e( 'Shortcodes and design packs are executable PHP. Only install from sources you trust — the same level of trust as installing a plugin.', 'fw' ); ?>
 			</p>
 
 			<div class="fw-sc-install">
 				<div class="fw-sc-card">
 					<h3><?php esc_html_e( 'Upload a .zip', 'fw' ); ?></h3>
-					<p class="description"><?php esc_html_e( 'A zipped shortcode folder containing config.php and views/view.php.', 'fw' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Auto-detected: a shortcode folder (config.php + views/view.php), or a design pack (manifest.json + view.php) that adds a design to an element.', 'fw' ); ?></p>
 					<input type="file" id="fw-sc-zip" accept=".zip" />
 					<button type="button" class="button button-primary" id="fw-sc-install-zip"><?php esc_html_e( 'Upload &amp; install', 'fw' ); ?></button>
 				</div>
@@ -808,6 +846,118 @@ class FW_Ext_Shortcodes_Settings_Page {
 				</div>
 			</div>
 		</div>
+		<?php
+	}
+
+	/**
+	 * The "Design packs" tab body: one group per design-capable shortcode, each a
+	 * grid of design cards (built-in + installed packs) with Enable/Disable, and
+	 * Update + Delete for installed packs. Built-in designs can only be toggled.
+	 */
+	private function render_designs_panel() {
+		if ( ! function_exists( 'fw_sc_design_capable_tags' ) || ! function_exists( 'fw_sc_designs_manage' ) ) {
+			echo '<p class="description">' . esc_html__( 'The design library is unavailable.', 'fw' ) . '</p>';
+			return;
+		}
+
+		$capable = fw_sc_design_capable_tags();
+		?>
+		<p class="description fw-sc-designs-intro">
+			<?php esc_html_e( 'Designs are layout variants an element offers in its Design option. Disable one to hide it from the picker; delete an installed design pack here, or re-upload it below to replace it (you will be asked to confirm).', 'fw' ); ?>
+		</p>
+
+		<?php if ( empty( $capable ) ) : ?>
+			<p class="fw-sc-designs-empty"><?php esc_html_e( 'No designs yet. Upload a design pack below to add one.', 'fw' ); ?></p>
+			<?php return; ?>
+		<?php endif; ?>
+
+		<div class="metabox-holder fw-backend-postboxes fw-sc-dholder">
+		<?php foreach ( $capable as $tag => $title ) :
+			$designs = fw_sc_designs_manage( $tag );
+			if ( empty( $designs ) ) { continue; }
+			$count = count( $designs );
+			?>
+			<div class="postbox fw-sc-dgroup" id="fw-sc-dgroup-<?php echo esc_attr( $tag ); ?>">
+				<div class="postbox-header">
+					<h2 class="hndle">
+						<?php echo esc_html( $title ); ?>
+						<code class="fw-sc-tag">[<?php echo esc_html( $tag ); ?>]</code>
+						<span class="fw-sc-dcount"><?php echo esc_html( sprintf( _n( '%d design', '%d designs', $count, 'fw' ), $count ) ); ?></span>
+					</h2>
+					<div class="handle-actions hide-if-no-js">
+						<button type="button" class="handlediv" aria-expanded="true">
+							<span class="screen-reader-text"><?php echo esc_html( sprintf( __( 'Toggle panel: %s', 'fw' ), $title ) ); ?></span>
+							<span class="toggle-indicator" aria-hidden="true"></span>
+						</button>
+					</div>
+				</div>
+				<div class="inside">
+					<ul class="fw-sc-dgrid">
+						<?php foreach ( $designs as $key => $d ) : ?>
+							<?php $this->render_design_card( $tag, $key, $d ); ?>
+						<?php endforeach; ?>
+					</ul>
+				</div>
+			</div>
+		<?php endforeach; ?>
+		</div><!-- /.metabox-holder -->
+		<?php
+	}
+
+	/**
+	 * A single design card inside the Design packs tab.
+	 */
+	private function render_design_card( $tag, $key, $d ) {
+		$is_pack  = ( isset( $d['origin'] ) ? $d['origin'] : '' ) === 'uploads';
+		$enabled  = ! empty( $d['enabled'] );
+		$lockable = ! empty( $d['lockable'] );
+		$thumb    = isset( $d['thumb_uri'] ) ? (string) $d['thumb_uri'] : '';
+		$label    = isset( $d['label'] ) ? (string) $d['label'] : $key;
+		$version  = isset( $d['version'] ) ? (string) $d['version'] : '';
+		$author   = isset( $d['author'] ) ? (string) $d['author'] : '';
+
+		$sub = array();
+		if ( $version !== '' ) { $sub[] = 'v' . $version; }
+		if ( $author !== '' ) { $sub[] = sprintf( __( 'by %s', 'fw' ), $author ); }
+		?>
+		<li class="fw-sc-dcard<?php echo $enabled ? '' : ' fw-sc-dcard-off'; ?>"
+			data-tag="<?php echo esc_attr( $tag ); ?>"
+			data-key="<?php echo esc_attr( $key ); ?>"
+			data-origin="<?php echo esc_attr( $is_pack ? 'uploads' : 'plugin' ); ?>">
+
+			<div class="fw-sc-dthumb">
+				<?php if ( $thumb !== '' ) : ?>
+					<img src="<?php echo esc_url( $thumb ); ?>" alt="" loading="lazy" />
+				<?php else : ?>
+					<span class="fw-sc-dthumb-ph" aria-hidden="true"><?php echo esc_html( strtoupper( substr( $label, 0, 1 ) ) ); ?></span>
+				<?php endif; ?>
+			</div>
+
+			<div class="fw-sc-dmeta">
+				<span class="fw-sc-dtitle"><?php echo esc_html( $label ); ?></span>
+				<span class="fw-sc-dbadge <?php echo $is_pack ? 'fw-sc-dbadge-pack' : 'fw-sc-dbadge-builtin'; ?>">
+					<?php echo esc_html( $is_pack ? __( 'Pack', 'fw' ) : __( 'Built-in', 'fw' ) ); ?>
+				</span>
+				<?php if ( $sub ) : ?>
+					<span class="fw-sc-dsub"><?php echo esc_html( implode( ' · ', $sub ) ); ?></span>
+				<?php endif; ?>
+			</div>
+
+			<div class="fw-sc-dactions">
+				<?php if ( $lockable ) : ?>
+					<label class="fw-sc-dswitch" title="<?php esc_attr_e( 'Enable or disable this design', 'fw' ); ?>">
+						<input type="checkbox" class="fw-sc-dtoggle" <?php checked( $enabled ); ?> />
+						<span class="fw-sc-dswitch-label"><?php echo esc_html( $enabled ? __( 'Enabled', 'fw' ) : __( 'Disabled', 'fw' ) ); ?></span>
+					</label>
+				<?php else : ?>
+					<span class="fw-sc-dswitch fw-sc-dswitch-locked"><?php esc_html_e( 'Always on', 'fw' ); ?></span>
+				<?php endif; ?>
+
+				<?php if ( $is_pack ) : ?>
+					<button type="button" class="button-link fw-sc-ddelete" title="<?php esc_attr_e( 'Delete this design pack', 'fw' ); ?>"><?php esc_html_e( 'Delete', 'fw' ); ?></button>
+				<?php endif; ?>
+			</div>
+		</li>
 		<?php
 	}
 
@@ -930,7 +1080,8 @@ class FW_Ext_Shortcodes_Settings_Page {
 			wp_send_json_error( array( 'message' => isset( $upload['error'] ) ? $upload['error'] : __( 'Upload failed.', 'fw' ) ) );
 		}
 
-		$result = $this->install_from_zip( $upload['file'], 'zip', null );
+		$confirm = ! empty( $_POST['confirm_replace'] );
+		$result  = $this->install_from_zip( $upload['file'], 'zip', null, $confirm );
 
 		// wp_handle_upload moved the file into uploads; remove the leftover zip.
 		@unlink( $upload['file'] );
@@ -971,7 +1122,8 @@ class FW_Ext_Shortcodes_Settings_Page {
 			wp_send_json_error( array( 'message' => __( 'Could not write the downloaded archive.', 'fw' ) ) );
 		}
 
-		$result = $this->install_from_zip( $tmp_zip, 'github', $repo['repo'] );
+		$confirm = ! empty( $_POST['confirm_replace'] );
+		$result  = $this->install_from_zip( $tmp_zip, 'github', $repo['repo'], $confirm );
 		@unlink( $tmp_zip );
 
 		$this->respond_install( $result );
@@ -1020,6 +1172,85 @@ class FW_Ext_Shortcodes_Settings_Page {
 		wp_send_json_success( array( 'tag' => $tag ) );
 	}
 
+	/**
+	 * @internal
+	 * Enable/disable a design (built-in or pack) for a shortcode. Feeds the shared
+	 * fw_sc_design_packs_disabled map so the pluggable-designs layer hides disabled
+	 * designs from the element's Design picker + render.
+	 */
+	public function _ajax_design_toggle() {
+		$this->guard();
+
+		if ( ! function_exists( 'fw_sc_design_set_enabled' ) ) {
+			wp_send_json_error( array( 'message' => __( 'The design library is unavailable.', 'fw' ) ) );
+		}
+
+		$tag     = isset( $_POST['tag'] ) ? sanitize_key( wp_unslash( $_POST['tag'] ) ) : '';
+		$key     = isset( $_POST['key'] ) ? sanitize_key( wp_unslash( $_POST['key'] ) ) : '';
+		$enabled = ! empty( $_POST['enabled'] );
+
+		if ( '' === $tag || '' === $key ) {
+			wp_send_json_error( array( 'message' => __( 'Missing design.', 'fw' ) ) );
+		}
+		if ( 'default' === $key && ! $enabled ) {
+			wp_send_json_error( array( 'message' => __( 'The default design cannot be disabled.', 'fw' ) ) );
+		}
+
+		if ( ! fw_sc_design_set_enabled( $tag, $key, $enabled ) ) {
+			wp_send_json_error( array( 'message' => __( 'Could not update the design.', 'fw' ) ) );
+		}
+
+		wp_send_json_success( array( 'tag' => $tag, 'key' => $key, 'enabled' => $enabled ) );
+	}
+
+	/**
+	 * @internal
+	 * Delete an installed design PACK (uploads/unysonplus/designs/<tag>/<key>/).
+	 * Built-in designs cannot be deleted (only disabled). Path-contained to the
+	 * designs uploads root, and required to actually be a design pack.
+	 */
+	public function _ajax_design_delete() {
+		$this->guard();
+
+		if ( ! function_exists( 'fw_design_lib_dir' ) ) {
+			wp_send_json_error( array( 'message' => __( 'The design library is unavailable.', 'fw' ) ) );
+		}
+
+		$tag = isset( $_POST['tag'] ) ? sanitize_key( wp_unslash( $_POST['tag'] ) ) : '';
+		$key = isset( $_POST['key'] ) ? sanitize_key( wp_unslash( $_POST['key'] ) ) : '';
+		if ( '' === $tag || '' === $key ) {
+			wp_send_json_error( array( 'message' => __( 'Missing design.', 'fw' ) ) );
+		}
+
+		$root   = wp_normalize_path( fw_design_lib_dir( $tag ) );
+		$target = wp_normalize_path( trailingslashit( $root ) . $key );
+
+		// Hard guard: resolved path must live inside the shortcode's designs dir…
+		if ( strpos( trailingslashit( $target ), trailingslashit( $root ) ) !== 0 || ! is_dir( $target ) ) {
+			wp_send_json_error( array( 'message' => __( 'This design cannot be deleted.', 'fw' ) ) );
+		}
+		// …and actually be a design pack (manifest.json {type:'design'}), never a
+		// stray folder or a Tier-A JSON preset.
+		$manifest = json_decode( (string) @file_get_contents( $target . '/manifest.json' ), true );
+		if ( ! is_array( $manifest ) || ( isset( $manifest['type'] ) ? $manifest['type'] : '' ) !== 'design' ) {
+			wp_send_json_error( array( 'message' => __( 'Only installed design packs can be deleted.', 'fw' ) ) );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		WP_Filesystem();
+		global $wp_filesystem;
+		if ( ! $wp_filesystem->delete( $target, true ) ) {
+			wp_send_json_error( array( 'message' => __( 'Could not remove the design files.', 'fw' ) ) );
+		}
+
+		// Drop it from the disabled map if present (keeps the option tidy).
+		if ( function_exists( 'fw_sc_design_set_enabled' ) ) {
+			fw_sc_design_set_enabled( $tag, $key, true );
+		}
+
+		wp_send_json_success( array( 'tag' => $tag, 'key' => $key ) );
+	}
+
 	/* ---------------------------------------------------------------------- *
 	 * Install helpers
 	 * ---------------------------------------------------------------------- */
@@ -1032,7 +1263,7 @@ class FW_Ext_Shortcodes_Settings_Page {
 	 * @param string|null $preferred_name Fallback folder name (e.g. GitHub repo name).
 	 * @return array|WP_Error array('tag','title','name') on success.
 	 */
-	private function install_from_zip( $zip_real_path, $source, $preferred_name ) {
+	private function install_from_zip( $zip_real_path, $source, $preferred_name, $confirm_replace = false ) {
 		WP_Filesystem();
 		global $wp_filesystem;
 
@@ -1045,6 +1276,16 @@ class FW_Ext_Shortcodes_Settings_Page {
 		if ( is_wp_error( $unzip ) ) {
 			$this->rmdir( $tmp_dir );
 			return $unzip;
+		}
+
+		// Auto-detect: a DESIGN PACK (manifest.json {type:'design'} + view.php) installs
+		// as a design variant onto its target shortcode. Anything else falls through to
+		// the full-shortcode path (config.php + views/view.php) below — backward compatible.
+		$pack_dir = $this->locate_design_pack_folder( $tmp_dir );
+		if ( $pack_dir ) {
+			$result = $this->install_design_pack_from_dir( $pack_dir, $source, $confirm_replace );
+			$this->rmdir( $tmp_dir );
+			return $result;
 		}
 
 		list( $folder_path, $descended ) = $this->locate_shortcode_folder( $tmp_dir );
@@ -1180,6 +1421,114 @@ class FW_Ext_Shortcodes_Settings_Page {
 	}
 
 	/**
+	 * Find a DESIGN PACK folder in an extracted archive: a dir with a
+	 * manifest.json whose type is 'design'. Same descent logic as
+	 * locate_shortcode_folder (root, single wrapper, one level down).
+	 *
+	 * @return string|null pack folder path, or null if not a design pack.
+	 */
+	private function locate_design_pack_folder( $root ) {
+		$is_pack = function ( $dir ) {
+			if ( ! file_exists( $dir . '/manifest.json' ) ) { return false; }
+			$m = json_decode( @file_get_contents( $dir . '/manifest.json' ), true );
+			return is_array( $m ) && isset( $m['type'] ) && $m['type'] === 'design';
+		};
+		if ( $is_pack( $root ) ) { return $root; }
+		$top = glob( $root . '/*', GLOB_ONLYDIR );
+		if ( empty( $top ) ) { return null; }
+		foreach ( $top as $dir ) { if ( $is_pack( $dir ) ) { return $dir; } }
+		foreach ( $top as $dir ) {
+			foreach ( (array) glob( $dir . '/*', GLOB_ONLYDIR ) as $sub ) {
+				if ( $is_pack( $sub ) ) { return $sub; }
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Install a design pack folder into its target shortcode's uploads designs dir
+	 * (uploads/unysonplus/shortcodes/<shortcode>/designs/<key>/). The pack is
+	 * admin-installed code — same trust as a shortcode install.
+	 *
+	 * @return array|WP_Error  { kind:'design', tag(shortcode), key, name, title, source }
+	 */
+	private function install_design_pack_from_dir( $dir, $source, $confirm_replace = false ) {
+		$manifest = json_decode( @file_get_contents( $dir . '/manifest.json' ), true );
+		if ( ! is_array( $manifest ) || ( isset( $manifest['type'] ) ? $manifest['type'] : '' ) !== 'design' ) {
+			return new WP_Error( 'fw_sc', __( 'Invalid design pack manifest.', 'fw' ) );
+		}
+		// A design pack must render (view.php = layout pack) OR style (static/css/styles.css
+		// = skin pack, applied via the design-<key> class). One of the two is required.
+		if ( ! file_exists( $dir . '/view.php' ) && ! file_exists( $dir . '/static/css/styles.css' ) ) {
+			return new WP_Error( 'fw_sc', __( 'The design pack needs a view.php (layout) or static/css/styles.css (skin).', 'fw' ) );
+		}
+		$shortcode = isset( $manifest['shortcode'] ) ? sanitize_key( $manifest['shortcode'] ) : '';
+		if ( $shortcode === '' || ! array_key_exists( $shortcode, $this->extension->discover_all_shortcodes() ) ) {
+			return new WP_Error( 'fw_sc', __( 'The design pack targets an unknown shortcode.', 'fw' ) );
+		}
+		if ( ! function_exists( 'fw_design_lib_dir' ) ) {
+			return new WP_Error( 'fw_sc', __( 'The design library is unavailable.', 'fw' ) );
+		}
+
+		$name = ( isset( $manifest['name'] ) && $manifest['name'] !== '' )
+			? (string) $manifest['name']
+			: ucwords( str_replace( array( '-', '_' ), ' ', $shortcode ) . ' design' );
+		$key = sanitize_key( ( isset( $manifest['design_key'] ) && $manifest['design_key'] !== '' ) ? $manifest['design_key'] : sanitize_title( $name ) );
+		if ( $key === '' ) {
+			return new WP_Error( 'fw_sc', __( 'Could not derive a design key.', 'fw' ) );
+		}
+
+		$root = fw_design_lib_dir( $shortcode );
+		if ( ! wp_mkdir_p( $root ) ) {
+			return new WP_Error( 'fw_sc', __( 'Could not create the designs folder.', 'fw' ) );
+		}
+		// The design_key IS the identity (it scopes the pack's CSS via .design-<key>
+		// and the saved design value), so it must stay stable. A re-install of the
+		// same key is an UPDATE — replace the existing folder rather than renaming.
+		$dest        = wp_normalize_path( trailingslashit( $root ) . $key );
+		$updated     = is_dir( $dest );
+		$new_version = isset( $manifest['version'] ) ? (string) $manifest['version'] : '';
+
+		// A same-key re-install REPLACES the existing pack — but only after the admin
+		// confirms (the JS shows a dialog comparing versions). Until confirmed, report
+		// the conflict + both versions instead of overwriting.
+		if ( $updated && ! $confirm_replace ) {
+			$cur             = json_decode( (string) @file_get_contents( $dest . '/manifest.json' ), true );
+			$current_version = ( is_array( $cur ) && isset( $cur['version'] ) ) ? (string) $cur['version'] : '';
+			return array(
+				'kind'            => 'design',
+				'needs_confirm'   => true,
+				'tag'             => $shortcode,
+				'key'             => $key,
+				'name'            => $name,
+				'current_version' => $current_version,
+				'new_version'     => $new_version,
+			);
+		}
+
+		if ( $updated ) {
+			global $wp_filesystem;
+			$wp_filesystem->delete( $dest, true );
+		}
+
+		$copy = copy_dir( $dir, $dest ); // WP_Filesystem already initialised by install_from_zip()
+		if ( is_wp_error( $copy ) ) { return $copy; }
+		@file_put_contents( $dest . '/.fw-source', $source );
+
+		return array(
+			'kind'    => 'design',
+			'tag'     => $shortcode,
+			'key'     => $key,
+			'name'    => $name,
+			'title'   => $name,
+			'source'  => $source,
+			'updated' => $updated,
+			'version' => $new_version,
+			'author'  => isset( $manifest['author'] ) ? (string) $manifest['author'] : '',
+		);
+	}
+
+	/**
 	 * Parse owner/repo from a GitHub URL or "owner/repo" string.
 	 *
 	 * @return array|null array('owner','repo','user_repo')
@@ -1262,6 +1611,48 @@ class FW_Ext_Shortcodes_Settings_Page {
 	private function respond_install( $result ) {
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+		}
+
+		// Design pack that would replace an existing one — ask the JS to confirm first,
+		// showing the current vs uploaded version. On confirm it re-uploads with
+		// confirm_replace=1 and the overwrite proceeds.
+		if ( isset( $result['kind'] ) && $result['kind'] === 'design' && ! empty( $result['needs_confirm'] ) ) {
+			$cur = $result['current_version'] !== '' ? $result['current_version'] : __( 'unknown', 'fw' );
+			$new = $result['new_version'] !== ''     ? $result['new_version']     : __( 'unknown', 'fw' );
+			wp_send_json_success( array(
+				'needsConfirm'   => true,
+				'tag'            => $result['tag'],
+				'key'            => $result['key'],
+				'confirmMessage' => sprintf(
+					/* translators: 1: design name, 2: current version, 3: uploaded version */
+					__( 'A design named "%1$s" is already installed (v%2$s). Replace it with the uploaded version (v%3$s)?', 'fw' ),
+					$result['name'],
+					$cur,
+					$new
+				),
+			) );
+		}
+
+		// Design pack: no shortcode row to add — it appears in the target element's
+		// Design picker. Return a message the JS shows as a success notice.
+		if ( isset( $result['kind'] ) && $result['kind'] === 'design' ) {
+			$verb = ! empty( $result['updated'] ) ? __( 'updated', 'fw' ) : __( 'installed', 'fw' );
+			wp_send_json_success( array(
+				'kind'    => 'design',
+				'tag'     => $result['tag'],
+				'key'     => $result['key'],
+				'name'    => $result['name'],
+				'version' => isset( $result['version'] ) ? $result['version'] : '',
+				'author'  => isset( $result['author'] ) ? $result['author'] : '',
+				'updated' => ! empty( $result['updated'] ),
+				'message' => sprintf(
+					/* translators: 1: design name, 2: installed|updated, 3: shortcode tag */
+					__( 'Design "%1$s" %2$s for [%3$s]. Select it in that element\'s Design option.', 'fw' ),
+					$result['name'],
+					$verb,
+					$result['tag']
+				),
+			) );
 		}
 
 		wp_send_json_success( array(

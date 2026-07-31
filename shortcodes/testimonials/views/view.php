@@ -39,23 +39,29 @@ if ( ! function_exists( 'sc_get' ) ) {
     }
 }
 
-/* --- Resolve the chosen design (safe: defaults to 'default' for legacy/missing).
-   New path is the design_settings multi-picker; falls back to the original
-   scalar `design` att, then to 'default'. --- */
-$ts_designs = require dirname( __FILE__ ) . '/designs/registry.php';
-$design     = sc_get( 'design_settings/design', $atts, sc_get( 'design', $atts, 'default' ) );
-if ( ! is_string( $design ) || ! isset( $ts_designs[ $design ] ) ) {
-    $design = 'default';
+/* --- Resolve the chosen design via the pluggable-designs layer (built-in designs
+   PLUS installed design packs). Falls back to 'default'. The layer resolves
+   design_settings/design → legacy scalar `design` → 'default', and returns the
+   partial path (an uploads pack's view.php, or a built-in designs/<key>.php). --- */
+if ( function_exists( 'fw_sc_design_resolve' ) ) {
+    $design      = fw_sc_design_resolve( 'testimonials', $atts, 'default' );
+    $design_file = fw_sc_design_partial( 'testimonials', $design );
+} else {
+    $ts_designs = require dirname( __FILE__ ) . '/designs/registry.php';
+    $design     = sc_get( 'design_settings/design', $atts, sc_get( 'design', $atts, 'default' ) );
+    if ( ! is_string( $design ) || ! isset( $ts_designs[ $design ] ) ) { $design = 'default'; }
+    $design_file = dirname( __FILE__ ) . '/designs/' . $design . '.php';
 }
 
 /* Reader for options that moved INTO the per-design multi-picker: prefer the
    new nested path (design_settings/<design>/<sub>), fall back to the legacy
-   flat path, then the default — so existing saved instances keep rendering. */
+   flat path, then the default — so existing saved instances keep rendering.
+   Pack options live under the same design_settings/<key>/<sub> path. */
 $ts_dp = function ( $sub, $old_flat, $default ) use ( $atts, $design ) {
     return sc_get( 'design_settings/' . $design . '/' . $sub, $atts, sc_get( $old_flat, $atts, $default ) );
 };
-$design_file = dirname( __FILE__ ) . '/designs/' . $design . '.php';
-if ( ! file_exists( $design_file ) ) {
+
+if ( ! $design_file || ! file_exists( $design_file ) ) {
     $design      = 'default';
     $design_file = dirname( __FILE__ ) . '/designs/default.php';
 }

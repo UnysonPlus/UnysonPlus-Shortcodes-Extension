@@ -36,9 +36,13 @@ if ( ! function_exists( 'sc_tl_icon' ) ) {
 
 if ( ! function_exists( 'sc_tl_render' ) ) {
 	function sc_tl_render( $atts ) {
-		$registry = require __DIR__ . '/parts/registry.php';
-		$design   = sc_get( 'design', $atts, 'alternating' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'alternating'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'timeline', $atts, 'alternating' );
+		} else {
+			$registry = require __DIR__ . '/parts/registry.php';
+			$design   = sc_get( 'design', $atts, 'alternating' );
+			if ( ! isset( $registry[ $design ] ) ) { $design = 'alternating'; }
+		}
 
 		$items = sc_get( 'items', $atts, array() );
 		if ( ! is_array( $items ) || empty( $items ) ) {
@@ -69,6 +73,7 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 		$classes = array(
 			'fw-tl',
 			'fw-tl--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-tl--marker-' . sanitize_html_class( $marker ),
 			'fw-tl--card-' . sanitize_html_class( $card ),
 		);

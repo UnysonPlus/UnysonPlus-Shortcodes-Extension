@@ -18,7 +18,11 @@ if ( ! function_exists( 'sc_ap_render' ) ) {
 	function sc_ap_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'classic' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'classic'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'audio_player', $atts, 'classic' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'classic';
+		}
 
 		$raw_tracks = sc_get( 'tracks', $atts, array() );
 		if ( ! is_array( $raw_tracks ) ) { $raw_tracks = array(); }
@@ -66,6 +70,7 @@ if ( ! function_exists( 'sc_ap_render' ) ) {
 		$classes = array(
 			'fw-ap',
 			'fw-ap--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			sanitize_html_class( $rounded ),
 		);
 		if ( $is_list ) { $classes[] = 'fw-ap--has-list'; }

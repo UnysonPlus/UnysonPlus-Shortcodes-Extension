@@ -29,7 +29,7 @@ $options = array(
 						'desc'  => __( 'Used by the Text and Button triggers.', 'fw' ),
 					),
 					'trigger_icon' => array(
-						'type'         => 'icon-v2',
+						'type'         => 'icon',
 						'label'        => __( 'Trigger Icon', 'fw' ),
 						'preview_size' => 'small',
 						'desc'         => __( 'Used by the Icon trigger (defaults to a "?" if empty).', 'fw' ),
@@ -64,6 +64,15 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'design' => call_user_func( function () {
+						if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+							return array(
+								'type'    => 'image-picker',
+								'label'   => __( 'Theme', 'fw' ),
+								'value'   => 'dark',
+								'desc'    => __( 'Choose a theme. Hover a tile to see its name.', 'fw' ),
+								'choices' => fw_sc_design_picker_choices( 'tooltip' ),
+							);
+						}
 						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
 						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/tooltip/static/img/design' );
 						$choices  = array();

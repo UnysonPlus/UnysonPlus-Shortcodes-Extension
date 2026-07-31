@@ -30,6 +30,9 @@ if ( ! function_exists( '_fw_avatar_enqueue_design_css' ) ) :
 			return;
 		}
 
+		if ( function_exists( 'fw_sc_design_resolve' ) && function_exists( 'fw_sc_design_enqueue' ) ) {
+			fw_sc_design_enqueue( 'avatar', fw_sc_design_resolve( 'avatar', $atts, 'plain' ) );
+		}
 		$design = fw_akg( 'design', $atts, 'plain' );
 		$design = is_string( $design ) ? sanitize_file_name( $design ) : 'plain';
 		if ( $design === '' ) {

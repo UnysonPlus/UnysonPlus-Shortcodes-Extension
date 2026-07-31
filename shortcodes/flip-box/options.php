@@ -47,7 +47,8 @@ $fb_title_tags = array(
 
 // Back-face button reuses the [button] presets (Theme Settings → General → Buttons).
 $fb_btn_styles        = function_exists( 'sc_get_button_style_choices' ) ? sc_get_button_style_choices() : array();
-$fb_btn_style_default = ( is_array( $fb_btn_styles ) && $fb_btn_styles ) ? (string) key( $fb_btn_styles ) : '';
+// First REAL preset (Primary), not the bare `.btn` base — see sc_get_button_style_default().
+$fb_btn_style_default = function_exists( 'sc_get_button_style_default' ) ? sc_get_button_style_default() : '';
 $fb_btn_sizes         = function_exists( 'sc_get_button_size_choices' ) ? sc_get_button_size_choices() : array();
 $fb_btn_size_default  = ( is_array( $fb_btn_sizes ) && $fb_btn_sizes ) ? (string) key( $fb_btn_sizes ) : '';
 
@@ -62,7 +63,7 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'front_icon' => array(
-						'type'         => 'icon-v2',
+						'type'         => 'icon',
 						'label'        => __( 'Front Icon', 'fw' ),
 						'preview_size' => 'small',
 						'desc'         => __( 'Optional icon shown on the front face.', 'fw' ),
@@ -100,7 +101,7 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'back_icon' => array(
-						'type'         => 'icon-v2',
+						'type'         => 'icon',
 						'label'        => __( 'Back Icon', 'fw' ),
 						'preview_size' => 'small',
 						'desc'         => __( 'Optional icon shown on the back face.', 'fw' ),
@@ -164,15 +165,19 @@ $options = array(
 					// key (the old scalar `design` is read as a fallback in view.php), so no
 					// migration and no editor "illegal string offset" on pre-existing boxes.
 					'design_settings' => call_user_func( function () {
-						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
-						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/flip-box/static/img/design' );
-						$choices  = array();
-						foreach ( (array) $registry as $key => $meta ) {
-							$choices[ $key ] = array( 'small' => array(
-								'src'    => $base . '/' . ( isset( $meta['thumb'] ) ? $meta['thumb'] : $key . '.svg' ),
-								'height' => 72,
-								'title'  => isset( $meta['label'] ) ? $meta['label'] : $key,
-							) );
+						if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+							$choices = fw_sc_design_picker_choices( 'flip_box' );
+						} else {
+							$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
+							$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/flip-box/static/img/design' );
+							$choices  = array();
+							foreach ( (array) $registry as $key => $meta ) {
+								$choices[ $key ] = array( 'small' => array(
+									'src'    => $base . '/' . ( isset( $meta['thumb'] ) ? $meta['thumb'] : $key . '.svg' ),
+									'height' => 72,
+									'title'  => isset( $meta['label'] ) ? $meta['label'] : $key,
+								) );
+							}
 						}
 						return array(
 							'type'         => 'multi-picker',

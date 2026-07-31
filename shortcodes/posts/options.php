@@ -732,7 +732,7 @@ $options = [
                                 'readmore_btn_style' => [
                                     'label'   => __( 'Button Color', 'fw' ),
                                     'type'    => 'select',
-                                    'value'   => '',
+                                    'value'   => function_exists( 'sc_get_button_style_default' ) ? sc_get_button_style_default() : '',
                                     'choices' => function_exists( 'sc_get_button_style_choices' ) ? sc_get_button_style_choices() : [ '' => __( 'Default', 'fw' ) ],
                                     'desc'    => __( 'Reuses your theme button color presets.', 'fw' ),
                                 ],

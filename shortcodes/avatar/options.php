@@ -5,17 +5,21 @@
 /* Build the `design` image-picker choices from the single-source-of-truth
    registry, so adding a design there automatically lists it here. SVG
    thumbnails live under static/img/design/. */
-$av_uri            = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/avatar' );
-$av_designs        = require dirname( __FILE__ ) . '/views/parts/registry.php';
-$av_design_choices = array();
-foreach ( $av_designs as $av_key => $av_def ) {
-	$av_design_choices[ $av_key ] = array(
-		'small' => array(
-			'src'    => $av_uri . '/static/img/design/' . $av_def['thumb'],
-			'height' => 56,
-			'title'  => $av_def['label'],
-		),
-	);
+$av_uri = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/avatar' ); // also used by the Mode picker below
+if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+	$av_design_choices = fw_sc_design_picker_choices( 'avatar' );
+} else {
+	$av_designs        = require dirname( __FILE__ ) . '/views/parts/registry.php';
+	$av_design_choices = array();
+	foreach ( $av_designs as $av_key => $av_def ) {
+		$av_design_choices[ $av_key ] = array(
+			'small' => array(
+				'src'    => $av_uri . '/static/img/design/' . $av_def['thumb'],
+				'height' => 56,
+				'title'  => $av_def['label'],
+			),
+		);
+	}
 }
 
 /* Reusable status select — shared by the single avatar and each group member. */

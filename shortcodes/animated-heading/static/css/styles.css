@@ -19,9 +19,21 @@
 .fw-ah--hl-color .fw-ah__word { color: var(--ah-accent); }
 .fw-ah--hl-underline .fw-ah__word { text-decoration: underline; text-decoration-color: var(--ah-accent); text-underline-offset: .12em; }
 .fw-ah--hl-marker .fw-ah__word { background: var(--ah-accent); color: #fff; padding: 0 .25em; border-radius: .15em; }
+/* Gradient text — accent → base text color, clipped to the glyphs. */
+.fw-ah--hl-gradient .fw-ah__word {
+	background: linear-gradient(90deg, var(--ah-accent), var(--ah-text, currentColor));
+	-webkit-background-clip: text; background-clip: text;
+	-webkit-text-fill-color: transparent; color: transparent;
+}
+/* Pill — a rounded filled chip behind the word. */
+.fw-ah--hl-pill .fw-ah__word { background: var(--ah-accent); color: #fff; padding: .05em .5em; border-radius: 2em; }
 
-/* Caret (typewriter only). */
-.fw-ah__caret { display: none; width: .08em; min-width: 2px; align-self: stretch; margin-left: .06em; background: currentColor; animation: fw-ah-blink 1s steps(1) infinite; }
+/* Caret (typewriter only). Style variants + optional custom color. */
+.fw-ah__caret { display: none; align-self: stretch; margin-left: .06em; background: var(--ah-caret, currentColor); animation: fw-ah-blink 1s steps(1) infinite; }
+.fw-ah__caret--bar        { width: .08em; min-width: 2px; }
+.fw-ah__caret--block      { width: .55em; border-radius: 1px; }
+.fw-ah__caret--underscore { width: .6em; height: .12em; min-height: 2px; align-self: flex-end; }
+.fw-ah--no-caret .fw-ah__caret { display: none !important; }
 @keyframes fw-ah-blink { 50% { opacity: 0; } }
 
 /* Enter animations (retriggered by JS adding .run). */
@@ -32,6 +44,8 @@
 @keyframes fw-ah-flip  { from { opacity: 0; transform: rotateX(-90deg); } to { opacity: 1; transform: none; } }
 @keyframes fw-ah-zoom  { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
 @keyframes fw-ah-clip  { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes fw-ah-blur  { from { opacity: 0; filter: blur(.28em); } to { opacity: 1; filter: blur(0); } }
+@keyframes fw-ah-rotate3d { from { opacity: 0; transform: perspective(400px) rotateX(88deg); transform-origin: 50% 0; } to { opacity: 1; transform: none; } }
 
 .fw-ah__empty { color: #6c757d; font-style: italic; }@media (prefers-reduced-motion: reduce) {
 

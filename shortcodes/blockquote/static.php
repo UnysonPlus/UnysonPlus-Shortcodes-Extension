@@ -18,6 +18,9 @@ if ( ! function_exists( '_fw_bq_enqueue_design_css' ) ) :
 		$post_id = ( isset( $data['post'] ) && isset( $data['post']->ID ) ) ? $data['post']->ID : 0;
 		$atts    = fw_ext_shortcodes_decode_attr( $atts, 'blockquote', $post_id );
 		if ( is_wp_error( $atts ) || ! is_array( $atts ) ) { return; }
+		if ( function_exists( 'fw_sc_design_resolve' ) && function_exists( 'fw_sc_design_enqueue' ) ) {
+			fw_sc_design_enqueue( 'blockquote', fw_sc_design_resolve( 'blockquote', $atts, 'classic' ) );
+		}
 		$design = isset( $atts['design'] ) && is_string( $atts['design'] ) ? sanitize_file_name( $atts['design'] ) : '';
 		if ( $design === '' ) { return; }
 		$path = dirname( __FILE__ ) . '/static/css/design/' . $design . '.css';

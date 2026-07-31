@@ -29,6 +29,10 @@ if ( ! function_exists( '_fw_steps_enqueue_design_css' ) ) :
 			return;
 		}
 
+		if ( function_exists( 'fw_sc_design_resolve' ) && function_exists( 'fw_sc_design_enqueue' ) ) {
+			fw_sc_design_enqueue( 'steps', fw_sc_design_resolve( 'steps', $atts, 'horizontal' ) );
+		}
+
 		$design = fw_akg( 'design', $atts, 'horizontal' );
 		$design = is_string( $design ) ? sanitize_file_name( $design ) : 'horizontal';
 		if ( $design === '' ) {

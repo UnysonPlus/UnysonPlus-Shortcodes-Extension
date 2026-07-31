@@ -18,7 +18,11 @@ if ( ! function_exists( 'sc_pc_render' ) ) {
 	function sc_pc_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'standard' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'standard'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'post_carousel', $atts, 'standard' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'standard';
+		}
 
 		$post_type = sanitize_key( (string) sc_get( 'post_type', $atts, 'post' ) );
 		if ( $post_type === '' || ! post_type_exists( $post_type ) ) { $post_type = 'post'; }
@@ -99,6 +103,7 @@ if ( ! function_exists( 'sc_pc_render' ) ) {
 		$classes = array(
 			'fw-pc',
 			'fw-pc--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-pc--' . sanitize_html_class( $ratio ),
 		);
 

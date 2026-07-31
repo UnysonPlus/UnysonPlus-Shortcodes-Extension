@@ -18,7 +18,11 @@ if ( ! function_exists( 'sc_nl_render' ) ) {
 	function sc_nl_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'inline' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'inline'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'newsletter', $atts, 'inline' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'inline';
+		}
 
 		$title = trim( (string) sc_get( 'title', $atts, '' ) );
 		$desc  = trim( (string) sc_get( 'description', $atts, '' ) );
@@ -51,6 +55,7 @@ if ( ! function_exists( 'sc_nl_render' ) ) {
 		$classes = array(
 			'fw-nl',
 			'fw-nl--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-nl--round-' . sanitize_html_class( $rounded ),
 		);
 		if ( $align_cls ) { $classes[] = $align_cls; }

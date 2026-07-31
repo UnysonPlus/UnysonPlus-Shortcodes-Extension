@@ -29,7 +29,7 @@ $options = array(
 								'desc'  => __( 'Accepts HTML and shortcodes.', 'fw' ),
 							),
 							'icon' => array(
-								'type'         => 'icon-v2',
+								'type'         => 'icon',
 								'label'        => __( 'Icon', 'fw' ),
 								'preview_size' => 'small',
 								'desc'         => __( 'Used when Marker is set to Icon.', 'fw' ),
@@ -55,6 +55,15 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'design' => call_user_func( function () {
+						if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+							return array(
+								'type'    => 'image-picker',
+								'label'   => __( 'Design', 'fw' ),
+								'value'   => 'horizontal',
+								'desc'    => __( 'Choose a design for this element. Hover a tile to see its name.', 'fw' ),
+								'choices' => fw_sc_design_picker_choices( 'steps' ),
+							);
+						}
 						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
 						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/steps/static/img/design' );
 						$choices  = array();

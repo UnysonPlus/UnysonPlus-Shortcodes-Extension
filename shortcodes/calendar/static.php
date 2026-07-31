@@ -39,6 +39,9 @@ if ( ! function_exists( '_fw_calendar_enqueue_design_css' ) ) :
 			return;
 		}
 
+		if ( function_exists( 'fw_sc_design_resolve' ) && function_exists( 'fw_sc_design_enqueue' ) ) {
+			fw_sc_design_enqueue( 'calendar', fw_sc_design_resolve( 'calendar', $atts, 'classic' ) );
+		}
 		$design = fw_akg( 'design', $atts, 'classic' );
 		$design = is_string( $design ) ? sanitize_file_name( $design ) : 'classic';
 		if ( $design === '' ) {

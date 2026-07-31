@@ -44,6 +44,23 @@ if ( ! function_exists( '_fw_gallery_enqueue_design_static' ) ) :
 			return;
 		}
 
+		// Preferred: resolve + enqueue through the pluggable-designs layer, so installed
+		// design PACKS enqueue their assets exactly like built-in designs. Splide (vendored
+		// under Carousel) is registered here first so a slider design's vendor_dep resolves.
+		if ( function_exists( 'fw_sc_design_resolve' ) && function_exists( 'fw_sc_design_enqueue' ) ) {
+			$design  = fw_sc_design_resolve( 'gallery', $atts, 'grid' );
+			$designs = fw_sc_designs( 'gallery' );
+			$d       = isset( $designs[ $design ] ) ? $designs[ $design ] : null;
+			$ext     = fw_ext( 'shortcodes' );
+			if ( $d && in_array( 'splide', (array) $d['vendor_deps'], true ) && ! wp_script_is( 'splide', 'enqueued' ) ) {
+				wp_enqueue_style( 'splide', $ext->get_declared_URI( '/shortcodes/carousel/static/vendor/splide-core.min.css' ) );
+				wp_enqueue_script( 'splide', $ext->get_declared_URI( '/shortcodes/carousel/static/vendor/splide.min.js' ), array(), '4.1.4', true );
+			}
+			fw_sc_design_enqueue( 'gallery', $design );
+			return;
+		}
+
+		// --- Fallback: original registry-driven enqueue (layer unavailable) ---
 		$design = fw_akg( 'design_settings/design', $atts, null );
 		if ( ! is_string( $design ) || $design === '' ) {
 			$design = ( isset( $atts['design'] ) && is_string( $atts['design'] ) ) ? $atts['design'] : 'grid';
@@ -140,6 +157,10 @@ if ( ! function_exists( 'sc_gallery_get_items' ) ) :
 				'caption'     => '',
 				'title'       => '',
 				'description' => '',
+				// Per-item link passthrough (the Post Type source stamps each entry with its post's
+				// permalink); consumed by the 'link' click action. Empty = fall back to the image's
+				// Media-Library "Link URL" meta at render time.
+				'link'        => isset( $img['link'] ) ? (string) $img['link'] : '',
 			);
 
 			if ( $id ) {
@@ -252,9 +273,33 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 	 * }
 	 * @return string
 	 */
+	/**
+	 * Resolve an item's "Open Link" URL + anchor attrs. Returns array( url, attrs ) — url is ''
+	 * when the item has no link. Order: the item's own link (the Post Type source stamps each
+	 * entry with its post's permalink) → the image's Media-Library "Link URL" meta. External
+	 * hosts get target=_blank automatically (the tag_list convention); $force_new_tab forces it
+	 * for internal links too.
+	 */
+	function sc_gallery_item_link( $item, $force_new_tab = false ) {
+		$link      = isset( $item['link'] ) ? trim( (string) $item['link'] ) : '';
+		$from_meta = false;
+		if ( $link === '' && ! empty( $item['id'] ) ) {
+			$link      = trim( (string) get_post_meta( $item['id'], '_upw_link_url', true ) );
+			$from_meta = ( $link !== '' );
+		}
+		if ( $link === '' ) { return array( '', '' ); }
+		$host = (string) wp_parse_url( $link, PHP_URL_HOST );
+		$ext  = ( $host !== '' && strcasecmp( $host, (string) wp_parse_url( home_url(), PHP_URL_HOST ) ) !== 0 );
+		/* Per-image "Open link in a new tab" (checkbox under the Link URL media field) — applies only
+		 * when the link IS that field's URL, so a post permalink never inherits its thumbnail's flag. */
+		$new_tab = $ext || $force_new_tab || ( $from_meta && get_post_meta( $item['id'], '_upw_link_new_tab', true ) === '1' );
+		return array( $link, $new_tab ? ' target="_blank" rel="noopener noreferrer"' : '' );
+	}
+
 	function sc_gallery_render_tile( $item, $args = array() ) {
 		$a = array_merge( array(
 			'click_action'   => 'lightbox',
+			'link_new_tab'   => false, // Open Link: force target=_blank (external hosts get it automatically)
 			'group'          => '',
 			'captions'       => 'none',
 			'caption_source' => 'caption',
@@ -332,6 +377,18 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 				$link  = $item['id'] ? get_attachment_link( $item['id'] ) : $item['full'];
 				$open  = '<a class="' . esc_attr( $media_classes ) . '" href="' . esc_url( $link ) . '">';
 				$close = '</a>';
+				break;
+			case 'link':
+				/* Open Link: the item's own URL — a post's page (Post Type source) or the image's
+				 * Media-Library "Link URL" field. Items with no URL fall back to a plain span. */
+				list( $g_link, $g_link_attrs ) = sc_gallery_item_link( $item, ! empty( $a['link_new_tab'] ) );
+				if ( $g_link !== '' ) {
+					$open  = '<a class="' . esc_attr( $media_classes ) . '" href="' . esc_url( $g_link ) . '"' . $g_link_attrs . '>';
+					$close = '</a>';
+				} else {
+					$open  = '<span class="' . esc_attr( $media_classes ) . '">';
+					$close = '</span>';
+				}
 				break;
 			case 'none':
 			default:

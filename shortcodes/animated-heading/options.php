@@ -64,6 +64,7 @@ $options = array(
 						return array(
 							'type'    => 'image-picker',
 							'label'   => __( 'Animation', 'fw' ),
+							'desc'    => __( 'How the rotating words animate in. This is a self-contained rotating headline (no Animation Engine required). To apply typewriter, scramble, wave, glitch and 30+ other effects to ANY text element, use the Animation Engine → Text Effects (Animations tab) instead — don\'t also add an Engine text effect to this element, or the two will fight.', 'fw' ),
 							'value'   => 'typewriter',
 							'choices' => $choices,
 						);
@@ -88,11 +89,65 @@ $options = array(
 							'color'     => __( 'Accent color', 'fw' ),
 							'underline' => __( 'Underline', 'fw' ),
 							'marker'    => __( 'Marker background', 'fw' ),
+							'gradient'  => __( 'Gradient text', 'fw' ),
+							'pill'      => __( 'Pill', 'fw' ),
 						),
+						'desc'    => __( 'Gradient blends the Accent color into the Text color across the word.', 'fw' ),
+					),
+					'loop' => array(
+						'type'    => 'select',
+						'label'   => __( 'Loop', 'fw' ),
+						'value'   => 'forever',
+						'choices' => array(
+							'forever' => __( 'Loop forever', 'fw' ),
+							'once'    => __( 'Play once (stop on last word)', 'fw' ),
+						),
+					),
+					'pause_hover' => array(
+						'type'         => 'switch',
+						'label'        => __( 'Pause on Hover', 'fw' ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+						'value'        => 'no',
+					),
+					'randomize' => array(
+						'type'         => 'switch',
+						'label'        => __( 'Randomize Order', 'fw' ),
+						'desc'         => __( 'Shuffle the words instead of cycling them in order.', 'fw' ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+						'value'        => 'no',
 					),
 					'align' => sc_alignment_field( array(
 						'label' => __( 'Alignment', 'fw' ),
 						'value' => 'left',
+					) ),
+				),
+			),
+			'group_caret' => array(
+				'type'    => 'group',
+				'options' => array(
+					'caret_show' => array(
+						'type'         => 'switch',
+						'label'        => __( 'Typewriter Caret', 'fw' ),
+						'desc'         => __( 'Show the blinking caret. Only applies to the Typewriter animation.', 'fw' ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Show', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'Hide', 'fw' ) ),
+						'value'        => 'yes',
+					),
+					'caret_style' => array(
+						'type'    => 'select',
+						'label'   => __( 'Caret Style', 'fw' ),
+						'value'   => 'bar',
+						'choices' => array(
+							'bar'        => __( 'Bar', 'fw' ),
+							'block'      => __( 'Block', 'fw' ),
+							'underscore' => __( 'Underscore', 'fw' ),
+						),
+					),
+					'caret_color' => sc_color_field_compact( array(
+						'label' => __( 'Caret Color', 'fw' ),
+						'desc'  => __( 'Blank inherits the text color.', 'fw' ),
 					) ),
 				),
 			),

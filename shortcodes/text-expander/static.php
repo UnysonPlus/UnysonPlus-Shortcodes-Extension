@@ -12,7 +12,7 @@ wp_enqueue_style(
 wp_enqueue_script(
     'fw-shortcode-text-expander',
     fw_min_uri($shortcodes_extension->get_declared_URI( '/shortcodes/text-expander/static/js/scripts.js' )),
-    array( 'jquery' ),
+    array(),
     false,
     true
 );

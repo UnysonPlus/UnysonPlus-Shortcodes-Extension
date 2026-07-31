@@ -13,4 +13,6 @@ return array(
 	'flip'       => array( 'label' => __( 'Flip', 'fw' ),       'thumb' => 'flip.svg' ),
 	'zoom'       => array( 'label' => __( 'Zoom', 'fw' ),       'thumb' => 'zoom.svg' ),
 	'clip'       => array( 'label' => __( 'Clip reveal', 'fw' ),'thumb' => 'clip.svg' ),
+	'blur'       => array( 'label' => __( 'Blur in', 'fw' ),    'thumb' => 'blur.svg' ),
+	'rotate3d'   => array( 'label' => __( '3D Rotate', 'fw' ),  'thumb' => 'rotate3d.svg' ),
 );

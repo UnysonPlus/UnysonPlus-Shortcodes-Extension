@@ -30,7 +30,7 @@ $options = array(
 						'desc'  => __( 'Used by the Button and Text triggers.', 'fw' ),
 					),
 					'trigger_icon' => array(
-						'type'         => 'icon-v2',
+						'type'         => 'icon',
 						'label'        => __( 'Trigger Icon', 'fw' ),
 						'preview_size' => 'small',
 					),
@@ -69,6 +69,15 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'design' => call_user_func( function () {
+						if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+							return array(
+								'type'    => 'image-picker',
+								'label'   => __( 'Modal Style', 'fw' ),
+								'value'   => 'center',
+								'desc'    => __( 'Choose a modal style. Hover a tile to see its name.', 'fw' ),
+								'choices' => fw_sc_design_picker_choices( 'modal_popup' ),
+							);
+						}
 						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
 						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/modal-popup/static/img/design' );
 						$choices  = array();

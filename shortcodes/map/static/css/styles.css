@@ -1,5 +1,11 @@
 /** Map canvas: ensure it has dimensions even before JS sets the height,
-    so it never collapses to 0px while the API loads. **/
+    so it never collapses to 0px while the API loads. The .map wrapper itself
+    also needs an explicit width: inside a centered flex column (Columns
+    Horizontal Alignment) a block child shrinks to fit its content, and the
+    empty canvas has none — so the whole map collapsed to 0px wide. **/
+.map {
+	width: 100%;
+}
 .map .fw-map-canvas {
 	width: 100%;
 	min-height: 300px;

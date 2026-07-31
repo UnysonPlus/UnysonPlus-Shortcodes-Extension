@@ -30,8 +30,8 @@ $size = ! empty( $atts['size'] ) ? $atts['size'] : 'md';
 // own icon needs (in the loop below), so non-global packs (Linecons, Entypo, …)
 // load without pulling every pack onto the page.
 $upw_social_icon_loader = null;
-if ( isset( fw()->backend->option_type( 'icon-v2' )->packs_loader ) ) {
-	$upw_social_icon_loader = fw()->backend->option_type( 'icon-v2' )->packs_loader;
+if ( isset( fw()->backend->option_type( 'icon' )->packs_loader ) ) {
+	$upw_social_icon_loader = fw()->backend->option_type( 'icon' )->packs_loader;
 }
 
 $atts['base_class']       = 'sc-social';

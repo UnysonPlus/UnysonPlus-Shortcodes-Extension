@@ -38,7 +38,7 @@ if ( ! function_exists( 'unysonplus_icons_settings_options' ) ) :
 			);
 		};
 
-		return array(
+		$options = array(
 			'icons' => array(
 				'title'   => __( 'Icon Settings', 'fw' ),
 				'type'    => 'box',
@@ -67,5 +67,16 @@ if ( ! function_exists( 'unysonplus_icons_settings_options' ) ) :
 				),
 			),
 		);
+
+		// Let the opt-in Animated Icons extension add an "Animated" sub-tab here
+		// (its per-technology toggles). The extension hooks this only while it is
+		// active, so with the extension off the Icons page keeps just Library /
+		// Browse / Upload. Return shape = a single `tab` container.
+		$animated_tab = apply_filters( 'unysonplus_icons_animated_settings', array() );
+		if ( is_array( $animated_tab ) && ! empty( $animated_tab ) ) {
+			$options['icons']['options']['tab_animated'] = $animated_tab;
+		}
+
+		return $options;
 	}
 endif;

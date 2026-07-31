@@ -36,9 +36,13 @@ if ( ! function_exists( 'sc_tt_icon' ) ) {
 
 if ( ! function_exists( 'sc_tt_render' ) ) {
 	function sc_tt_render( $atts ) {
-		$registry = require __DIR__ . '/parts/registry.php';
-		$design   = sc_get( 'design', $atts, 'dark' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'dark'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'tooltip', $atts, 'dark' );
+		} else {
+			$registry = require __DIR__ . '/parts/registry.php';
+			$design   = sc_get( 'design', $atts, 'dark' );
+			if ( ! isset( $registry[ $design ] ) ) { $design = 'dark'; }
+		}
 
 		$ttype = sc_get( 'trigger_type', $atts, 'text' );
 		$ttext = trim( (string) sc_get( 'trigger_text', $atts, '' ) );
@@ -75,6 +79,7 @@ if ( ! function_exists( 'sc_tt_render' ) ) {
 		$classes = array(
 			'fw-tt',
 			'fw-tt--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-tt--pos-' . sanitize_html_class( $position ),
 			'fw-tt--' . $event,
 		);

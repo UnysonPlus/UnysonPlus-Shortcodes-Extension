@@ -71,6 +71,7 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 			'tab_patterns'   => $tab( __( 'Background Patterns', 'fw' ), upw_ts_get_options( 'components-patterns' ) ),
 			'tab_image_styles' => $tab( __( 'Image Styles', 'fw' ), upw_ts_get_options( 'components-image-styles', array( 'color_choices' => $color_choices ) ) ),
 			'tab_sections'   => $tab( __( 'Section Styles', 'fw' ), upw_ts_get_options( 'components-section-styles', array( 'color_choices' => $color_choices ) ) ),
+			'tab_element_designs' => $tab( __( 'Element Designs', 'fw' ), upw_ts_get_options( 'components-element-designs' ) ),
 		) );
 	}
 endif;

@@ -200,3 +200,62 @@
 	background: #2e9e5b;
 	border-radius: 2rem;
 }
+
+/* =========================================================================
+ * Media panel layout — a list of tabs on one side, a switching image on the
+ * other (feature / product showcase). The list is a vertical nav; each pane
+ * is the tab's image + an optional caption.
+ * ====================================================================== */
+.tabs-container--media .tabs-media__row { align-items: center; }
+.tabs-container--media .nav { border: 0; gap: .25rem; }
+.tabs-container--media .nav-link {
+	width: 100%;
+	text-align: left;
+	border: 0;
+	border-left: 3px solid transparent;
+	border-radius: .4rem;
+	padding: .7rem .9rem;
+	font-weight: 600;
+	color: inherit;
+	opacity: .7;
+	transition: opacity .2s ease, background-color .2s ease, border-color .2s ease;
+}
+.tabs-container--media .nav-link:hover { opacity: 1; }
+.tabs-container--media .nav-link.active {
+	opacity: 1;
+	background: color-mix(in srgb, currentColor 6%, transparent);
+	border-left-color: currentColor;
+}
+@supports not (background: color-mix(in srgb, red 10%, white)) {
+	.tabs-container--media .nav-link.active { background: rgba(0, 0, 0, .04); }
+}
+
+.tabs-container--media .tabs-media__panel { position: relative; }
+/* Stack the panes so switching doesn't reflow the column height. */
+.tabs-container--media .tab-pane { display: none; }
+.tabs-container--media .tab-pane.active { display: block; }
+.tabs-container--media .tabs-media__figure { margin: 0; }
+.tabs-container--media .tabs-media__img {
+	display: block;
+	width: 100%;
+	height: auto;
+	border-radius: .6rem;
+	object-fit: cover;
+}
+.tabs-container--media .tabs-media__caption {
+	margin-top: .75rem;
+	font-size: .95em;
+	opacity: .85;
+}
+
+/* Fade between images (opt-in via the Fade Animation switch). */
+.tabs-container--media .tab-pane.fade { transition: opacity .35s ease; opacity: 0; }
+.tabs-container--media .tab-pane.fade.show { opacity: 1; }
+
+@media (max-width: 767.98px) {
+	/* Stack list above the image on phones regardless of Image Side. */
+	.tabs-container--media .tabs-media__row { display: block; }
+	.tabs-container--media .tabs-media__list,
+	.tabs-container--media .tabs-media__media { width: 100%; max-width: 100%; }
+	.tabs-container--media .tabs-media__media { margin-top: 1rem; }
+}

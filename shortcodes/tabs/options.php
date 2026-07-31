@@ -23,7 +23,13 @@ $options = [
 					'tab_content' => array(
 						'type'  => 'wp-editor',
 						'label' => __('Content', 'fw'),
-							'help'  => __('The panel shown when this tab is selected. Accepts HTML and shortcodes for richer content.', 'fw'),
+							'help'  => __('The panel shown when this tab is selected. Accepts HTML and shortcodes for richer content. In the "Media panel" layout it becomes the caption shown beneath the image.', 'fw'),
+					),
+					'tab_image' => array(
+						'type'         => 'upload',
+						'label'        => __('Image', 'fw'),
+						'desc'         => __('Shown on the media side in the "Media panel (list + image)" layout — each tab has its own image. Ignored in the default Content layout.', 'fw'),
+						'images_only'  => true,
 					),
 					'badge' => array(
 						'type'  => 'text',
@@ -90,12 +96,58 @@ $options = [
 				'type'    => 'select',
 				'label'   => __('Tabs Orientation', 'fw'),
 				'desc'    => __('Choose whether tabs are horizontal or vertical', 'fw'),
-				'help'    => __('Vertical stacks the tab buttons in a side column with content to the right, which suits longer tab titles or many tabs.', 'fw'),
+				'help'    => __('Vertical stacks the tab buttons in a side column with content to the right, which suits longer tab titles or many tabs. Ignored when Layout is "Media panel".', 'fw'),
 				'value'   => 'horizontal',
 				'choices' => [
 					'horizontal' => __('Horizontal', 'fw'),
 					'vertical'   => __('Vertical', 'fw'),
 				],
+			],
+			'layout' => [
+				'type'    => 'select',
+				'label'   => __('Layout', 'fw'),
+				'desc'    => __('Content panels: the classic tabs (each tab shows its Content). Media panel: a list of tabs on one side and a switching image on the other — each tab shows its own Image, with the Content as a caption. Great for a feature / product showcase.', 'fw'),
+				'help'    => __('For the scroll-driven cinematic version (image pins while steps scroll), use the Animation Engine → Scrollytelling on a Section instead. This element is the click / hover version.', 'fw'),
+				'value'   => 'content',
+				'choices' => [
+					'content' => __('Content panels (default)', 'fw'),
+					'media'   => __('Media panel (list + image)', 'fw'),
+				],
+			],
+			'media_side' => [
+				'type'    => 'select',
+				'label'   => __('Image Side', 'fw'),
+				'desc'    => __('Which side the image sits on in the Media panel layout.', 'fw'),
+				'value'   => 'right',
+				'choices' => [
+					'right' => __('Image Right', 'fw'),
+					'left'  => __('Image Left', 'fw'),
+				],
+			],
+			'activate_on' => [
+				'type'    => 'select',
+				'label'   => __('Activate On', 'fw'),
+				'desc'    => __('Switch tabs on click, or when the pointer hovers a tab.', 'fw'),
+				'value'   => 'click',
+				'choices' => [
+					'click' => __('Click', 'fw'),
+					'hover' => __('Hover', 'fw'),
+				],
+			],
+			'autoplay' => [
+				'type'  => 'switch',
+				'label' => __('Auto-rotate', 'fw'),
+				'desc'  => __('Cycle through the tabs automatically. Pauses while the visitor hovers or focuses the element.', 'fw'),
+				'value' => 'no',
+				'left-choice'  => [ 'value' => 'no',  'label' => __('No', 'fw') ],
+				'right-choice' => [ 'value' => 'yes', 'label' => __('Yes', 'fw') ],
+			],
+			'autoplay_interval' => [
+				'type'       => 'slider',
+				'label'      => __('Auto-rotate Interval (s)', 'fw'),
+				'desc'       => __('Seconds each tab stays active when Auto-rotate is on.', 'fw'),
+				'value'      => 5,
+				'properties' => [ 'min' => 2, 'max' => 12, 'step' => 1 ],
 			],
 			'fade' => [
 				'type'  => 'switch',

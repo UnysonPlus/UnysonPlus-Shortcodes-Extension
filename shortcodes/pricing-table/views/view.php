@@ -40,9 +40,15 @@ if ( ! function_exists( 'sc_pt_icon' ) ) {
 
 if ( ! function_exists( 'sc_pt_render' ) ) {
 	function sc_pt_render( $atts ) {
-		$registry = require __DIR__ . '/parts/registry.php';
-		$design   = sc_get( 'design', $atts, 'classic' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'classic'; }
+		// Resolve against the merged registry (built-in skins + installed skin packs)
+		// so a pack key is accepted; fall back to the local registry whitelist.
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'pricing_table', $atts, 'classic' );
+		} else {
+			$registry = require __DIR__ . '/parts/registry.php';
+			$design   = sc_get( 'design', $atts, 'classic' );
+			if ( ! isset( $registry[ $design ] ) ) { $design = 'classic'; }
+		}
 
 		$plans = sc_get( 'plans', $atts, array() );
 		if ( ! is_array( $plans ) || empty( $plans ) ) {
@@ -92,6 +98,7 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 		$classes = array(
 			'fw-pt',
 			'fw-pt--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-pt--cols-' . $columns,
 		);
 		foreach ( $fstyle as $fs ) { $classes[] = 'fw-pt--feat-' . $fs; }

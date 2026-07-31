@@ -6,7 +6,7 @@ $cfg = array();
 
 $cfg['page_builder'] = array(
 	'title'       => __( 'Animated Heading', 'fw' ),
-	'description' => __( 'A heading where part of the text rotates through several words with a typewriter, fade, slide, flip, zoom or clip animation.', 'fw' ),
+	'description' => __( 'A self-contained rotating headline (no Animation Engine needed): part of the text cycles through several words with a typewriter, fade, slide, flip, zoom, clip, blur or 3D-rotate animation.', 'fw' ),
 	'tab'         => __( 'Content Elements', 'fw' ),
 	'popup_size'  => 'medium',
 

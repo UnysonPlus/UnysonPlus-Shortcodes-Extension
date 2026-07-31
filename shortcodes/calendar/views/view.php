@@ -140,7 +140,11 @@ if ( ! function_exists( 'sc_cal_render' ) ) {
 		global $wp_locale;
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'classic' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'classic'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'calendar', $atts, 'classic' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'classic';
+		}
 
 		$events    = sc_cal_events( $atts );
 		$start_mon = sc_get( 'start_week', $atts, 'mon' ) !== 'sun';
@@ -177,7 +181,7 @@ if ( ! function_exists( 'sc_cal_render' ) ) {
 		$style_var  = $var( 'accent_color', '--cal-accent' );
 		$style_var .= $var( 'text_color', '--cal-text' );
 
-		$classes = array( 'fw-cal', 'fw-cal--design-' . sanitize_html_class( $design ) );
+		$classes = array( 'fw-cal', 'fw-cal--design-' . sanitize_html_class( $design ), 'design-' . sanitize_html_class( $design ) );
 
 		$atts['base_class']       = 'calendar';
 		$atts['unique_id_prefix'] = 'cal-';

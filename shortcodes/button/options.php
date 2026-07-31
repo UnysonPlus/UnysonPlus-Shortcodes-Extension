@@ -2,15 +2,12 @@
     die( 'Forbidden' );
 }
 
-// Button Style defaults to the FIRST preset (Primary in the default order) and has
-// no "None" row — a styleless button is rarely intended (use the Link preset for
-// text-only). Computed once so the default tracks whatever preset is listed first.
+// Button Style defaults to the FIRST real preset (Primary in the default order) —
+// NOT the bare `.btn` base — so a dropped-in CTA looks intentional out of the box.
+// The blank "Default" row stays selectable (the Site Converter sets it explicitly);
+// sc_get_button_style_default() tracks whatever preset is listed first.
 $sc_button_style_choices = function_exists( 'sc_get_button_style_choices' ) ? sc_get_button_style_choices() : array();
-$sc_button_style_default = '';
-if ( is_array( $sc_button_style_choices ) && $sc_button_style_choices ) {
-    reset( $sc_button_style_choices );
-    $sc_button_style_default = (string) key( $sc_button_style_choices );
-}
+$sc_button_style_default = function_exists( 'sc_get_button_style_default' ) ? sc_get_button_style_default() : '';
 
 $options = [
     'tab_content' => [
@@ -52,7 +49,7 @@ $options = [
                         'label' => __('Button Icon', 'fw'),
                         // 'desc'  => __('Optional icon class (e.g. bi bi-star)', 'fw'),
                         'help'  => __('Optional icon shown alongside the label, e.g. an arrow for "Next" or a cart for "Buy". Use Icon Position below to place it before or after the text.', 'fw'),
-                        'type'  => 'icon-v2',
+                        'type'  => 'icon',
                         'preview_size' => 'medium',
                         'modal_size' => 'medium',
                     ],

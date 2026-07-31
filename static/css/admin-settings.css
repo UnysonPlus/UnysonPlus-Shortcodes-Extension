@@ -151,6 +151,15 @@
 	color: #135e29;
 }
 
+/* Right-aligned column on a shortcode card: badge on top, Designs (N) / Delete below. */
+.fw-sc-item-aside {
+	flex: 0 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 3px;
+}
+
 .fw-sc-delete {
 	flex: 0 0 auto;
 	color: #b32d2e !important;
@@ -190,4 +199,196 @@
 	display: block;
 	margin: 10px 0;
 	max-width: 100%;
+}
+
+/* Tabs — native WordPress nav-tabs (matches asset-optimizer / site-converter) */
+.fw-sc-nav-tabs .nav-tab {
+	border-radius: .25rem .25rem 0 0;
+}
+
+.fw-sc-panel-hidden {
+	display: none !important;
+}
+
+/* Shortcode card "Designs (N)" shortcut */
+.fw-sc-designs-link {
+	flex: 0 0 auto;
+	font-size: 11px;
+	font-weight: 600;
+	text-decoration: none;
+	color: #2271b1;
+	white-space: nowrap;
+}
+
+.fw-sc-designs-link:hover {
+	text-decoration: underline;
+}
+
+/* Design packs tab */
+.fw-sc-designs-intro {
+	margin: 14px 0 6px;
+}
+
+.fw-sc-designs-empty {
+	padding: 24px;
+	text-align: center;
+	color: #646970;
+	background: #fff;
+	border: 1px dashed #c3c4c7;
+	border-radius: 6px;
+}
+
+/* Design groups render as native postboxes; these tune the inner bits. */
+.fw-sc-dgroup {
+	scroll-margin-top: 40px;
+}
+
+.fw-sc-dgroup .hndle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	cursor: pointer;
+}
+
+.fw-sc-dgroup .hndle .fw-sc-tag {
+	font-size: 11px;
+	font-weight: 400;
+}
+
+.fw-sc-dcount {
+	margin-left: auto;
+	font-size: 11px;
+	font-weight: 400;
+	color: #787c82;
+}
+
+.fw-sc-dgroup-flash {
+	animation: fw-sc-flash 1.2s ease-out;
+}
+
+@keyframes fw-sc-flash {
+	0%   { box-shadow: 0 0 0 3px rgba( 34, 113, 177, .45 ); }
+	100% { box-shadow: 0 0 0 3px rgba( 34, 113, 177, 0 ); }
+}
+
+.fw-sc-dgrid {
+	margin: 0;
+	display: grid;
+	grid-template-columns: repeat( auto-fill, minmax( 300px, 1fr ) );
+	gap: 10px;
+}
+
+.fw-sc-dcard {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 0;
+	padding: 10px 12px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+}
+
+.fw-sc-dcard-off {
+	opacity: .62;
+	background: #f6f7f7;
+}
+
+.fw-sc-dthumb {
+	flex: 0 0 44px;
+	width: 44px;
+	height: 44px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #f0f0f1;
+	border-radius: 6px;
+	overflow: hidden;
+}
+
+.fw-sc-dthumb img {
+	max-width: 100%;
+	max-height: 100%;
+	width: auto;
+	height: auto;
+}
+
+.fw-sc-dthumb-ph {
+	font-weight: 700;
+	color: #8c8f94;
+	font-size: 18px;
+}
+
+.fw-sc-dmeta {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.fw-sc-dtitle {
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.fw-sc-dbadge {
+	align-self: flex-start;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: .03em;
+	padding: 1px 7px;
+	border-radius: 10px;
+}
+
+.fw-sc-dbadge-builtin {
+	background: #e5f1fb;
+	color: #0a4b78;
+}
+
+.fw-sc-dbadge-pack {
+	background: #edf7ed;
+	color: #135e29;
+}
+
+.fw-sc-dsub {
+	font-size: 11px;
+	color: #787c82;
+}
+
+.fw-sc-dactions {
+	flex: 0 0 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 6px;
+}
+
+.fw-sc-dswitch {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 11px;
+	color: #50575e;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.fw-sc-dswitch-locked {
+	color: #a7aaad;
+	cursor: default;
+	font-style: italic;
+}
+
+.fw-sc-ddelete {
+	color: #b32d2e !important;
+	text-decoration: none;
+}
+
+.fw-sc-ddelete:hover {
+	color: #d63638 !important;
+	text-decoration: underline;
 }

@@ -28,7 +28,7 @@ $options = [
 						'box-options' => [
 							'icon' => [
 								'label'        => __( 'Icon', 'fw' ),
-								'type'         => 'icon-v2',
+								'type'         => 'icon',
 								'preview_size' => 'small',
 								'modal_size'   => 'medium',
 							],

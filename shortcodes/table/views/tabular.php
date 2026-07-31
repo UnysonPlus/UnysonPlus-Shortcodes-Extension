@@ -102,7 +102,7 @@ if ( $is_datatable ) {
 	wp_enqueue_script(
 		'fw-shortcode-table-datatable',
 		fw_min_uri(fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/table/static/js/datatable.js' )),
-		array( 'jquery' ),
+		array(),
 		fw()->theme->manifest->get_version(),
 		true
 	);

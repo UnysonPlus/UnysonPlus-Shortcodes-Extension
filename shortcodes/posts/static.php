@@ -17,7 +17,7 @@ wp_enqueue_style(
 wp_register_script(
     'fw-shortcode-posts',
     fw_min_uri($shortcodes_extension->get_declared_URI( '/shortcodes/posts/static/js/scripts.js' )),
-    [ 'jquery' ],
+    [],
     false,
     true
 );

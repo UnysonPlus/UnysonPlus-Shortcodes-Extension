@@ -17,7 +17,7 @@ $options = array(
 						'dynamic_content' => false,
 					),
 					'icon' => array(
-						'type'         => 'icon-v2',
+						'type'         => 'icon',
 						'label'        => __( 'Icon', 'fw' ),
 						'desc'         => __( 'The cue glyph. Defaults to a chevron-down when left as None.', 'fw' ),
 						'preview_size' => 'small',

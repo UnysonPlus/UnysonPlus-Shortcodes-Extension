@@ -38,7 +38,18 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 	function sc_fl_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'check' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'check'; }
+		// Back-compat: the pre-1.13 designs fold into the new icon-overrides-marker
+		// model. `icon` (marker = item icon, else check) is exactly the new `check`
+		// behavior; `badge` = the same, boxed → `check` + a square Icon Style.
+		$legacy_square = false;
+		if ( $design === 'icon' )  { $design = 'check'; }
+		if ( $design === 'badge' ) { $design = 'check'; $legacy_square = true; }
+		if ( function_exists( 'fw_sc_designs' ) ) {
+			$fl_all = fw_sc_designs( 'feature_list' );
+			if ( ! isset( $fl_all[ $design ] ) ) { $design = 'check'; }
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'check';
+		}
 
 		$items = sc_get( 'items', $atts, array() );
 		if ( ! is_array( $items ) || empty( $items ) ) {
@@ -51,15 +62,22 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 		$columns  = (int) sc_get( 'columns', $atts, 1 );
 		$columns  = max( 1, min( 3, $columns ) );
 		$dividers = sc_get( 'dividers', $atts, 'no' ) === 'yes';
+		$zebra    = sc_get( 'zebra', $atts, 'no' ) === 'yes';
 		$gap      = sc_get( 'spacing_size', $atts, 'md' );
 
+		$orient = sc_get( 'orientation', $atts, 'vertical' ) === 'horizontal' ? 'horizontal' : 'vertical';
+		$ipos   = sc_get( 'icon_position', $atts, 'left' ) === 'top' ? 'top' : 'left';
+		$istyle = sc_get( 'icon_style', $atts, 'plain' );
+		if ( ! in_array( $istyle, array( 'plain', 'tint', 'circle', 'outline', 'square' ), true ) ) { $istyle = 'plain'; }
+		// A legacy `badge` design with no explicit Icon Style keeps its boxed look.
+		if ( $legacy_square && $istyle === 'plain' ) { $istyle = 'square'; }
+
+		// Colour emission — preset-aware (compact {predefined,custom} or legacy
+		// string) via sc_color_to_css, so palette presets resolve to var(--color-*).
 		$var = function ( $key, $name ) use ( $atts ) {
 			$raw = sc_get( $key, $atts, '' );
-			if ( is_array( $raw ) && ! empty( $raw['custom'] ) ) {
-				$hex = preg_replace( '/[^#0-9a-zA-Z(),.%\s-]/', '', (string) $raw['custom'] );
-				if ( $hex !== '' ) { return $name . ':' . $hex . ';'; }
-			}
-			return '';
+			$css = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( $raw, '' ) : '';
+			return ( $css !== '' ) ? $name . ':' . $css . ';' : '';
 		};
 		$style_var  = '--fl-cols:' . $columns . ';';
 		$style_var .= $var( 'marker_color', '--fl-marker' );
@@ -78,9 +96,14 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 		$classes = array(
 			'fw-fl',
 			'fw-fl--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-fl--gap-' . sanitize_html_class( $gap ),
+			'fw-fl--orient-' . $orient,
+			'fw-fl--ipos-' . $ipos,
+			'fw-fl--istyle-' . $istyle,
 		);
 		if ( $dividers ) { $classes[] = 'fw-fl--dividers'; }
+		if ( $zebra )    { $classes[] = 'fw-fl--zebra'; }
 
 		$atts['base_class']       = 'feature-list';
 		$atts['unique_id_prefix'] = 'fl-';
@@ -101,31 +124,55 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 			$i++;
 			$text = isset( $it['text'] ) ? trim( (string) $it['text'] ) : '';
 			$sub  = isset( $it['subtext'] ) ? trim( (string) $it['subtext'] ) : '';
+			$val  = isset( $it['value_text'] ) ? trim( (string) $it['value_text'] ) : '';
 			$icon = sc_fl_icon( isset( $it['icon'] ) ? $it['icon'] : null );
 			$state= ( isset( $it['state'] ) && $it['state'] === 'off' ) ? 'off' : 'on';
 			$lu   = isset( $it['link_url'] ) ? trim( (string) $it['link_url'] ) : '';
 			$lt   = ( isset( $it['link_target'] ) && $it['link_target'] === '_blank' ) ? '_blank' : '_self';
 
-			$marker = '';
-			if ( $design === 'check' ) {
-				$marker = '<span class="fw-fl__marker fw-fl__marker--' . $state . '">' . ( $state === 'off' ? $cross : $check ) . '</span>';
+			// Per-item marker colour override → set --fl-marker on the marker only.
+			$mc = isset( $it['marker_color'] ) && function_exists( 'sc_color_to_css' ) ? sc_color_to_css( $it['marker_color'], '' ) : '';
+			$mstyle = ( $mc !== '' ) ? ' style="--fl-marker:' . esc_attr( $mc ) . '"' : '';
+			$has_icon = ( $icon !== '' );
+
+			// Marker resolution — a per-item ICON always wins when set, so adding an
+			// icon on the Content tab shows it regardless of the Default Marker
+			// (matches Elementor / Divi / Bricks). The Default Marker is the fallback
+			// for icon-less items. Exceptions: an "unavailable" item always shows the
+			// cross (checklist semantics); Numbered is positional (keeps its number);
+			// "Checkmark + icon" deliberately shows both.
+			// `--chip` marks a marker as chip-able so the Icon Style presets
+			// (tint/circle/outline/square) can wrap it.
+			if ( $state === 'off' ) {
+				$marker = '<span class="fw-fl__marker fw-fl__marker--off fw-fl__marker--chip"' . $mstyle . '>' . $cross . '</span>';
 			} elseif ( $design === 'numbered' ) {
-				$marker = '<span class="fw-fl__marker fw-fl__marker--num">' . (int) $i . '</span>';
+				$marker = '<span class="fw-fl__marker fw-fl__marker--num"' . $mstyle . '>' . (int) $i . '</span>';
+			} elseif ( $design === 'check_icon' ) {
+				$inner  = '<span class="fw-fl__ci-check">' . $check . '</span>';
+				if ( $has_icon ) { $inner .= '<span class="fw-fl__ci-icon">' . $icon . '</span>'; }
+				$marker = '<span class="fw-fl__marker fw-fl__marker--dual"' . $mstyle . '>' . $inner . '</span>';
+			} elseif ( $has_icon ) {
+				$marker = '<span class="fw-fl__marker fw-fl__marker--icon fw-fl__marker--chip"' . $mstyle . '>' . $icon . '</span>';
 			} elseif ( $design === 'bullet' ) {
-				$marker = '<span class="fw-fl__marker fw-fl__marker--bullet"></span>';
-			} else { // icon / badge
-				$marker = '<span class="fw-fl__marker fw-fl__marker--icon">' . ( $icon !== '' ? $icon : $check ) . '</span>';
+				$marker = '<span class="fw-fl__marker fw-fl__marker--bullet"' . $mstyle . '></span>';
+			} elseif ( $design === 'none' ) {
+				$marker = ''; // Icons-only: no fallback decoration when an item has no icon.
+			} else { // check
+				$marker = '<span class="fw-fl__marker fw-fl__marker--on fw-fl__marker--chip"' . $mstyle . '>' . $check . '</span>';
 			}
 
 			$body  = '<span class="fw-fl__text">' . esc_html( $text ) . '</span>';
 			if ( $sub !== '' ) { $body .= '<span class="fw-fl__sub">' . esc_html( $sub ) . '</span>'; }
 
-			echo '<li class="fw-fl__item' . ( $__boxp !== '' ? ' ' . $__boxp : '' ) . ( $state === 'off' ? ' is-off' : '' ) . '">';
+			echo '<li class="fw-fl__item' . ( $__boxp !== '' ? ' ' . $__boxp : '' ) . ( $sub !== '' ? ' fw-fl__item--has-sub' : '' ) . ( $state === 'off' ? ' is-off' : '' ) . '">';
 			echo $marker; // phpcs:ignore
 			if ( $lu !== '' ) {
 				echo '<a class="fw-fl__body" href="' . esc_url( $lu ) . '"' . ( $lt === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : '' ) . '>' . $body . '</a>';
 			} else {
 				echo '<span class="fw-fl__body">' . $body . '</span>';
+			}
+			if ( $val !== '' ) {
+				echo '<span class="fw-fl__value">' . esc_html( $val ) . '</span>';
 			}
 			echo '</li>';
 		}

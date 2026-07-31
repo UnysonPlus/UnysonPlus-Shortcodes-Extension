@@ -80,6 +80,15 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'design' => call_user_func( function () {
+						if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+							return array(
+								'type'    => 'image-picker',
+								'label'   => __( 'Design', 'fw' ),
+								'value'   => 'classic',
+								'desc'    => __( 'Choose a design for this element. Hover a tile to see its name.', 'fw' ),
+								'choices' => fw_sc_design_picker_choices( 'calendar' ),
+							);
+						}
 						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
 						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/calendar/static/img/design' );
 						$choices  = array();

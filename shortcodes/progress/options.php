@@ -166,7 +166,7 @@ $options = [
 								'properties' => [ 'min' => 0, 'max' => 100, 'step' => 1 ],
 							],
 							'icon'    => [
-								'type'  => 'icon-v2',
+								'type'  => 'icon',
 								'label' => __( 'Icon', 'fw' ),
 								'desc'  => __( 'Optional icon shown with the label (or inside circles / gauges).', 'fw' ),
 							],

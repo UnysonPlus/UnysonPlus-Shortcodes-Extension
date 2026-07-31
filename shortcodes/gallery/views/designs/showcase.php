@@ -60,6 +60,13 @@ $stage_img = '<img class="fw-gallery__stage-img" src="' . esc_url( $first['url']
 						. ( $cap !== '' ? ' data-fw-caption="' . esc_attr( $cap ) . '"' : '' ) . '></a>';
 				}
 				echo '</div>';
+			} elseif ( $click_action === 'link' ) {
+				list( $g_link, $g_link_attrs ) = sc_gallery_item_link( $first );
+				if ( $g_link !== '' ) {
+					echo '<a class="fw-gallery__stage" data-index="0" href="' . esc_url( $g_link ) . '"' . $g_link_attrs . '>' . $stage_media . '</a>';
+				} else {
+					echo '<div class="fw-gallery__stage" data-index="0">' . $stage_media . '</div>';
+				}
 			} elseif ( $click_action === 'file' || $click_action === 'attachment' ) {
 				$href = ( $click_action === 'attachment' && $first['id'] ) ? get_attachment_link( $first['id'] ) : $first['full'];
 				echo '<a class="fw-gallery__stage" data-index="0" href="' . esc_url( $href ) . '"'

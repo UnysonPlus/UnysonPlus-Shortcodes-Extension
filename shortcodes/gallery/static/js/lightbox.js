@@ -224,10 +224,18 @@
 
 	function collectGroup(group, clickedEl) {
 		var nodes = document.querySelectorAll('[data-fw-lightbox="' + cssEscape(group) + '"]');
-		var list = [], startIndex = 0;
+		var list = [], startIndex = 0, seen = {};
 		Array.prototype.forEach.call(nodes, function (node) {
 			var href = node.getAttribute('data-fw-full') || node.getAttribute('href') || node.getAttribute('data-full');
 			if (!href) { return; }
+			// De-dup by src: tiled galleries (the 3D designs) repeat images to fill their layout, which
+			// would put the same photo in the sequence many times. Every occurrence still OPENS the
+			// lightbox — clicking a repeat just lands on its image's (single) slide.
+			if (Object.prototype.hasOwnProperty.call(seen, href)) {
+				if (node === clickedEl) { startIndex = seen[href]; }
+				return;
+			}
+			seen[href] = list.length;
 			if (node === clickedEl) { startIndex = list.length; }
 			list.push({ src: href, caption: node.getAttribute('data-fw-caption') || '' });
 		});

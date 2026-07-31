@@ -96,10 +96,23 @@ class FW_Extension_Shortcodes extends FW_Extension
 		// Resolve Dynamic Content {{tokens}} in shortcode/page-builder atts at render time.
 		require_once dirname( __FILE__ ) . '/includes/dynamic-content-resolver.php';
 
+		// "Link URL" field on Media Library images (attachment meta `_upw_link_url`) — consumed by
+		// the Gallery + 3D Gallery "Open Link" click actions. Lives here (not in an optional
+		// extension) so the field exists wherever a gallery does.
+		require_once dirname( __FILE__ ) . '/includes/media-link-field.php';
+
 		// Reusable "Use as Section Background" helper (option field + on-demand
 		// runtime that makes any element a full-bleed Section backdrop). Registers
 		// its own wp_footer enqueue, so require it on every request.
 		require_once dirname( __FILE__ ) . '/includes/shortcode-background-helper.php';
+
+		// Shortcode Design Presets — uploadable per-element designs (values bundle).
+		// Registers the builder-side Design bar enqueue + the enabled-shortcodes list.
+		require_once dirname( __FILE__ ) . '/includes/design-presets.php';
+
+		// Pluggable Designs — framework layer merging built-in designs + installed
+		// design packs (fw_sc_designs). Uses fw_design_lib_dir() from design-presets.
+		require_once dirname( __FILE__ ) . '/includes/pluggable-designs.php';
 
 		// WYSIWYG editor enhancements (the "List style" toolbar button + its front-end
 		// CSS). Instantiated always — the front-end style enqueue runs outside admin.
@@ -152,9 +165,10 @@ class FW_Extension_Shortcodes extends FW_Extension
 			return null;
 		}
 
+		$d = fw_upw_uploads_dir( 'shortcodes' );
 		return array(
-			'path' => wp_normalize_path( $upload['basedir'] . '/unysonplus-shortcodes' ),
-			'uri'  => $upload['baseurl'] . '/unysonplus-shortcodes',
+			'path' => $d['path'],
+			'uri'  => $d['url'],
 		);
 	}
 

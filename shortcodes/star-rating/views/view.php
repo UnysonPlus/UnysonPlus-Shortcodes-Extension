@@ -30,9 +30,13 @@ if ( ! function_exists( 'sc_sr_symbol' ) ) {
 
 if ( ! function_exists( 'sc_sr_render' ) ) {
 	function sc_sr_render( $atts ) {
-		$registry = require __DIR__ . '/parts/registry.php';
-		$design   = sc_get( 'design', $atts, 'star' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'star'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'star_rating', $atts, 'star' );
+		} else {
+			$registry = require __DIR__ . '/parts/registry.php';
+			$design   = sc_get( 'design', $atts, 'star' );
+			if ( ! isset( $registry[ $design ] ) ) { $design = 'star'; }
+		}
 
 		$max    = (int) sc_get( 'max', $atts, 5 );
 		$max    = $max === 10 ? 10 : 5;
@@ -61,6 +65,7 @@ if ( ! function_exists( 'sc_sr_render' ) ) {
 		$classes = array(
 			'fw-sr',
 			'fw-sr--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-sr--size-' . sanitize_html_class( $size ),
 		);
 		if ( $align_cls ) { $classes[] = $align_cls; }

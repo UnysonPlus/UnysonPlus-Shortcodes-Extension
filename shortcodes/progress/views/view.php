@@ -64,8 +64,8 @@ if ( ! function_exists( 'fw_progress_icon_html' ) ) {
 				'img_class'  => 'fw-progress__icon',
 			) );
 		}
-		if ( isset( fw()->backend->option_type( 'icon-v2' )->packs_loader ) ) {
-			fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_pack_for_icon( $icon );
+		if ( isset( fw()->backend->option_type( 'icon' )->packs_loader ) ) {
+			fw()->backend->option_type( 'icon' )->packs_loader->enqueue_pack_for_icon( $icon );
 		}
 		$type = $icon['type'] ?? '';
 		if ( $type === 'icon-font' && ! empty( $icon['icon-class'] ) ) {

@@ -153,8 +153,12 @@ $av_registry = require __DIR__ . '/parts/registry.php';
 $mode   = sc_get( 'mode_settings/mode', $atts, 'single' );
 $mode   = ( $mode === 'group' ) ? 'group' : 'single';
 
-$design = sc_get( 'design', $atts, 'plain' );
-if ( ! is_string( $design ) || ! isset( $av_registry[ $design ] ) ) { $design = 'plain'; }
+if ( function_exists( 'fw_sc_design_resolve' ) ) {
+	$design = fw_sc_design_resolve( 'avatar', $atts, 'plain' );
+} else {
+	$design = sc_get( 'design', $atts, 'plain' );
+	if ( ! is_string( $design ) || ! isset( $av_registry[ $design ] ) ) { $design = 'plain'; }
+}
 
 $shape = sc_get( 'shape', $atts, 'circle' );
 if ( ! in_array( $shape, array( 'circle', 'rounded', 'square' ), true ) ) { $shape = 'circle'; }
@@ -198,6 +202,7 @@ $attr = sc_build_wrapper_attr( $atts );
 $attr['class'] = trim(
 	( isset( $attr['class'] ) ? $attr['class'] : '' )
 	. ' fw-avatar--' . $design
+	. ' design-' . $design
 	. ' fw-avatar--shape-' . $shape
 	. ' fw-avatar--mode-' . $mode
 	. ( $font_class_extra ? ' ' . $font_class_extra : '' )

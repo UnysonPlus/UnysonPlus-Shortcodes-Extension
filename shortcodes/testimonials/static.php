@@ -52,36 +52,33 @@ if ( ! function_exists( '_fw_testimonials_enqueue_design_static' ) ) :
 			return;
 		}
 
-		$design = fw_akg( 'design_settings/design', $atts, null ); // new multi-picker path
+		// Resolve + enqueue the active design's assets via the pluggable-designs
+		// layer (origin-aware: built-in designs/<key> OR an installed pack's
+		// uploads static/), keeping the base handle + declared vendor deps.
+		if ( function_exists( 'fw_sc_design_resolve' ) && function_exists( 'fw_sc_design_enqueue' ) ) {
+			$design = fw_sc_design_resolve( 'testimonials', $atts, 'default' );
+			fw_sc_design_enqueue( 'testimonials', $design );
+			return;
+		}
+
+		// Fallback (layer unavailable): the original registry-driven enqueue.
+		$design = fw_akg( 'design_settings/design', $atts, null );
 		if ( ! is_string( $design ) || $design === '' ) {
-			$design = ( isset( $atts['design'] ) && is_string( $atts['design'] ) ) ? $atts['design'] : 'default'; // legacy scalar fallback
+			$design = ( isset( $atts['design'] ) && is_string( $atts['design'] ) ) ? $atts['design'] : 'default';
 		}
 		$registry = require dirname( __FILE__ ) . '/views/designs/registry.php';
 		if ( ! isset( $registry[ $design ] ) ) {
 			$design = 'default';
 		}
-
-		$ext     = fw_ext( 'shortcodes' );
+		$ext      = fw_ext( 'shortcodes' );
 		$base     = '/shortcodes/testimonials/static';
 		$version  = $ext->manifest->get_version();
 		$design_d = $registry[ $design ];
-
 		if ( ! empty( $design_d['css'] ) ) {
-			wp_enqueue_style(
-				'fw-shortcode-testimonials-' . $design,
-				$ext->get_declared_URI( $base . '/css/designs/' . $design_d['css'] ),
-				array( 'fw-shortcode-testimonials' ),
-				$version
-			);
+			wp_enqueue_style( 'fw-shortcode-testimonials-' . $design, $ext->get_declared_URI( $base . '/css/designs/' . $design_d['css'] ), array( 'fw-shortcode-testimonials' ), $version );
 		}
 		if ( ! empty( $design_d['js'] ) ) {
-			wp_enqueue_script(
-				'fw-shortcode-testimonials-' . $design,
-				$ext->get_declared_URI( $base . '/js/designs/' . $design_d['js'] ),
-				array( 'splide', 'fw-shortcode-testimonials' ),
-				$version,
-				true
-			);
+			wp_enqueue_script( 'fw-shortcode-testimonials-' . $design, $ext->get_declared_URI( $base . '/js/designs/' . $design_d['js'] ), array( 'splide', 'fw-shortcode-testimonials' ), $version, true );
 		}
 	}
 	add_action( 'fw_ext_shortcodes_enqueue_static:testimonials', '_fw_testimonials_enqueue_design_static' );

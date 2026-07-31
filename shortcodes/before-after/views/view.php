@@ -130,10 +130,14 @@ if ( ! function_exists( 'sc_bac_render_comparison' ) ) {
 		$registry = sc_bac_registry();
 
 		$design = sc_get( 'type/comparison/design', $atts, 'classic' );
-		if ( ! isset( $registry[ $design ] ) ) {
+		if ( function_exists( 'fw_sc_designs' ) ) {
+			$bac_all = fw_sc_designs( 'before_after' );
+			if ( ! isset( $bac_all[ $design ] ) ) { $design = 'classic'; }
+		} elseif ( ! isset( $registry[ $design ] ) ) {
 			$design = 'classic';
 		}
-		$meta = $registry[ $design ];
+		// A pack design isn't in the local registry — default its meta safely.
+		$meta = isset( $registry[ $design ] ) ? $registry[ $design ] : array();
 
 		/* --- Behaviour ---------------------------------------------------- */
 		$orientation = sc_get( 'type/comparison/orientation', $atts, 'horizontal' ) === 'vertical' ? 'vertical' : 'horizontal';
@@ -170,6 +174,7 @@ if ( ! function_exists( 'sc_bac_render_comparison' ) ) {
 		$classes = array(
 			'fw-bac',
 			'fw-bac--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-bac--' . $orientation,
 			'fw-bac--int-' . sanitize_html_class( $interaction ),
 			'fw-bac--knob-' . sanitize_html_class( $handle_size ),

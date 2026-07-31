@@ -1,0 +1,32 @@
+/* Quote Cards — testimonials design pack. Scoped to the dispatcher's design-<key> class. */
+.design-quote_cards .ts-qcards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 22px;
+}
+.design-quote_cards .ts-qcard {
+	position: relative;
+	padding: 28px 22px 22px;
+	border-radius: 14px;
+	background: #fff;
+	box-shadow: 0 10px 30px rgba(2, 6, 23, .08);
+}
+.design-quote_cards .ts-qcard__mark {
+	position: absolute;
+	top: 6px;
+	left: 16px;
+	font: 700 56px/1 Georgia, "Times New Roman", serif;
+	color: rgba(2, 6, 23, .08);
+}
+.design-quote_cards .ts-qcard .testimonial-quote {
+	position: relative;
+	margin: 8px 0 16px;
+	font-size: 1.02rem;
+	line-height: 1.6;
+}
+.design-quote_cards .ts-qcard__rating { margin-bottom: 12px; color: #f5a623; }
+.design-quote_cards .ts-qcard__author { display: flex; align-items: center; gap: 12px; }
+.design-quote_cards .ts-qcard__avatar { width: 44px; height: 44px; object-fit: cover; flex: 0 0 auto; }
+.design-quote_cards .ts-qcard__byline { display: flex; flex-direction: column; }
+.design-quote_cards .ts-qcard__byline .testimonial-author { font-weight: 700; }
+.design-quote_cards .ts-qcard__byline .testimonial-job { font-size: .85em; opacity: .7; }

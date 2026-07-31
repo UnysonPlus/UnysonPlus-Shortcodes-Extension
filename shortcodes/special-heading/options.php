@@ -66,7 +66,7 @@ $options = [
                         'help'  => __('You can wrap part of the text in inline HTML — e.g. an &lt;em&gt; or a coloured &lt;span&gt; — to emphasise a word.', 'fw'),
                     ],
                     'icon' => [
-                        'type'  => 'icon-v2',
+                        'type'  => 'icon',
                         'label' => __('Title Icon', 'fw'),
                         'desc'  => __('Icon shown before the title. Pick an icon font, emoji, SVG, or upload an image. Leave empty for no icon.', 'fw'),
                         'help'  => __('Kept as a separate icon field (not markup in the Title) so the heading text stays clean and semantic.', 'fw'),

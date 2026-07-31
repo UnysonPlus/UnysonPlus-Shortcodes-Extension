@@ -40,7 +40,12 @@ if ( ! function_exists( 'sc_fb_render' ) ) {
 		// scalar `design` att so boxes saved before the popover conversion still render.
 		$ds     = sc_get( 'design_settings', $atts, array() );
 		$design = ( is_array( $ds ) && ! empty( $ds['skin'] ) ) ? (string) $ds['skin'] : (string) sc_get( 'design', $atts, 'solid' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'solid'; }
+		if ( function_exists( 'fw_sc_designs' ) ) {
+			$fb_all = fw_sc_designs( 'flip_box' );
+			if ( ! isset( $fb_all[ $design ] ) ) { $design = 'solid'; }
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'solid';
+		}
 
 		$front_title = trim( (string) sc_get( 'front_title', $atts, '' ) );
 		$front_text  = trim( (string) sc_get( 'front_text', $atts, '' ) );
@@ -136,6 +141,7 @@ if ( ! function_exists( 'sc_fb_render' ) ) {
 		$classes = array(
 			'fw-fb',
 			'fw-fb--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-fb--dir-' . sanitize_html_class( $dir ),
 			'fw-fb--mode-' . $fx_mode,
 			'fw-fb--' . $trigger,

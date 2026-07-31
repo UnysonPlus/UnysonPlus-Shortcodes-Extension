@@ -92,9 +92,9 @@ if ( ! function_exists( 'sc_button_kses_label' ) ) {
 // Font Awesome glyph doesn't also pull the other pack stylesheets.
 if (
     ! empty( $atts['icon'] ) &&
-    isset( fw()->backend->option_type( 'icon-v2' )->packs_loader )
+    isset( fw()->backend->option_type( 'icon' )->packs_loader )
 ) {
-    fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_pack_for_icon( $atts['icon'] );
+    fw()->backend->option_type( 'icon' )->packs_loader->enqueue_pack_for_icon( $atts['icon'] );
 }
 
 $atts['base_class']       = 'btn';

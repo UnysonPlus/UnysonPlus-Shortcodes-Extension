@@ -195,9 +195,9 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
         if (
             $custom_icon === '' && is_array( $picked_icon ) &&
             isset( $picked_icon['type'] ) && $picked_icon['type'] === 'icon-font' &&
-            isset( fw()->backend->option_type( 'icon-v2' )->packs_loader )
+            isset( fw()->backend->option_type( 'icon' )->packs_loader )
         ) {
-            fw()->backend->option_type( 'icon-v2' )->packs_loader->enqueue_pack_for_icon( $picked_icon );
+            fw()->backend->option_type( 'icon' )->packs_loader->enqueue_pack_for_icon( $picked_icon );
         }
 
         /* --- Design behavior flags (from the resolved flat design) -------- */

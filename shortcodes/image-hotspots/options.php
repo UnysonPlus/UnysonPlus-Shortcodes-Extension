@@ -36,7 +36,7 @@ $options = array(
 								'properties' => array( 'min' => 0, 'max' => 100, 'step' => 1 ),
 							),
 							'icon' => array(
-								'type'         => 'icon-v2',
+								'type'         => 'icon',
 								'label'        => __( 'Pin Icon', 'fw' ),
 								'preview_size' => 'small',
 								'desc'         => __( 'Used by the "Icon" pin design (defaults to +).', 'fw' ),
@@ -80,6 +80,15 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'design' => call_user_func( function () {
+						if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+							return array(
+								'type'    => 'image-picker',
+								'label'   => __( 'Pin Style', 'fw' ),
+								'value'   => 'pulse',
+								'desc'    => __( 'Choose a pin style. Hover a tile to see its name.', 'fw' ),
+								'choices' => fw_sc_design_picker_choices( 'image_hotspots' ),
+							);
+						}
 						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
 						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/image-hotspots/static/img/design' );
 						$choices  = array();

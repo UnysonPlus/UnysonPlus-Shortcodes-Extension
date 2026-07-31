@@ -79,7 +79,7 @@ $options = [
                         'value'         => '',
                     ],
                     'icon' => [
-                        'type'         => 'icon-v2',
+                        'type'         => 'icon',
                         'label'        => __( 'Icon', 'fw' ),
                         'preview_size' => 'small',
                         'modal_size'   => 'medium',

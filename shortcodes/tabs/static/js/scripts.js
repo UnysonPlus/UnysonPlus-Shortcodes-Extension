@@ -104,6 +104,73 @@
 		}
 	}
 
+	// Hover activation — when the container opts in via data-fw-activate="hover".
+	function onOver( e ) {
+		var trigger = e.target.closest ? e.target.closest( '[data-fw-toggle="tab"]' ) : null;
+		if ( ! trigger ) {
+			return;
+		}
+		var container = trigger.closest( '.tabs-container' );
+		if ( ! container || container.getAttribute( 'data-fw-activate' ) !== 'hover' ) {
+			return;
+		}
+		if ( trigger.classList.contains( 'active' ) ) {
+			return;
+		}
+		activate( trigger );
+	}
+
+	// Auto-rotate — cycle a container's tabs on data-fw-autoplay="<ms>". Pauses
+	// while hovered/focused; skipped under prefers-reduced-motion.
+	function setupAutoplay( container ) {
+		var ms = parseInt( container.getAttribute( 'data-fw-autoplay' ), 10 );
+		if ( ! ms || ms < 500 ) {
+			return;
+		}
+		if ( window.matchMedia && window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches ) {
+			return;
+		}
+		var nav = container.querySelector( '.nav, [role="tablist"]' );
+		if ( ! nav ) {
+			return;
+		}
+		var links = [].slice.call( nav.querySelectorAll( '.nav-link' ) );
+		if ( links.length < 2 ) {
+			return;
+		}
+		var paused = false;
+		function tick() {
+			if ( paused ) {
+				return;
+			}
+			var cur = nav.querySelector( '.nav-link.active' ) || links[ 0 ];
+			var idx = links.indexOf( cur );
+			activate( links[ ( idx + 1 ) % links.length ] );
+		}
+		container.addEventListener( 'mouseenter', function () { paused = true; } );
+		container.addEventListener( 'mouseleave', function () { paused = false; } );
+		container.addEventListener( 'focusin', function () { paused = true; } );
+		container.addEventListener( 'focusout', function () { paused = false; } );
+		window.setInterval( tick, ms );
+	}
+
+	function initAutoplay() {
+		[].slice.call( document.querySelectorAll( '.tabs-container[data-fw-autoplay]' ) ).forEach( function ( c ) {
+			if ( c.__fwTabsAuto ) {
+				return;
+			}
+			c.__fwTabsAuto = true;
+			setupAutoplay( c );
+		} );
+	}
+
 	document.addEventListener( 'click', onClick );
 	document.addEventListener( 'keydown', onKeydown );
+	document.addEventListener( 'mouseover', onOver );
+
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', initAutoplay );
+	} else {
+		initAutoplay();
+	}
 } )();

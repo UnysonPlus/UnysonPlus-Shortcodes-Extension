@@ -37,7 +37,11 @@ if ( ! function_exists( 'sc_hs_render' ) ) {
 	function sc_hs_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'pulse' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'pulse'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'image_hotspots', $atts, 'pulse' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'pulse';
+		}
 
 		$image = sc_get( 'image', $atts, array() );
 		$img_url = ( is_array( $image ) && ! empty( $image['url'] ) ) ? $image['url'] : '';
@@ -76,6 +80,7 @@ if ( ! function_exists( 'sc_hs_render' ) ) {
 		$classes = array(
 			'fw-hs',
 			'fw-hs--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-hs--' . $trigger,
 			'fw-hs--pin-' . sanitize_html_class( $psize ),
 		);

@@ -42,6 +42,7 @@ if ( ! function_exists( '_fw_bac_enqueue_design_css' ) ) :
 		if ( $design === '' ) {
 			return;
 		}
+		if ( function_exists( 'fw_sc_design_enqueue' ) ) { fw_sc_design_enqueue( 'before_after', $design ); }
 
 		$path = dirname( __FILE__ ) . '/static/css/design/' . $design . '.css';
 		if ( file_exists( $path ) ) {

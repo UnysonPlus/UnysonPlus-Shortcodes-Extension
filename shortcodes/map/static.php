@@ -19,7 +19,7 @@ wp_enqueue_style(
 wp_enqueue_script(
 	'fw-shortcode-map-script',
 	fw_min_uri($shortcodes_extension->get_uri('/shortcodes/map/static/js/scripts.js')),
-	array('jquery', 'underscore'),
+	array(),
 	fw()->manifest->get_version(),
 	true
 );

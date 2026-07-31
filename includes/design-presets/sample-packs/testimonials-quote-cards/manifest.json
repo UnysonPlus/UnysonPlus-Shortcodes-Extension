@@ -1,0 +1,11 @@
+{
+  "pack": 1,
+  "type": "design",
+  "id": "testimonials-quote-cards",
+  "design_key": "quote_cards",
+  "name": "Quote Cards",
+  "shortcode": "testimonials",
+  "version": "1.0.0",
+  "author": "UnysonPlus",
+  "license": "free"
+}

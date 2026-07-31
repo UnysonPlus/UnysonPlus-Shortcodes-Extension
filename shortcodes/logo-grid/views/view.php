@@ -56,9 +56,13 @@ if ( ! function_exists( 'sc_lg_item' ) ) {
 
 if ( ! function_exists( 'sc_lg_render' ) ) {
 	function sc_lg_render( $atts ) {
-		$registry = require __DIR__ . '/parts/registry.php';
-		$design   = sc_get( 'design', $atts, 'grid' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'grid'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'logo_grid', $atts, 'grid' );
+		} else {
+			$registry = require __DIR__ . '/parts/registry.php';
+			$design   = sc_get( 'design', $atts, 'grid' );
+			if ( ! isset( $registry[ $design ] ) ) { $design = 'grid'; }
+		}
 
 		$logos = sc_get( 'logos', $atts, array() );
 		if ( ! is_array( $logos ) ) { $logos = array(); }
@@ -101,7 +105,7 @@ if ( ! function_exists( 'sc_lg_render' ) ) {
 		$style_var  = '--lg-cols:' . $columns . ';--lg-h:' . $height . 'px;--lg-gap:' . $gap_css . ';';
 		$style_var .= $var( 'box_bg', '--lg-box-bg' );
 
-		$classes = array( 'fw-lg', 'fw-lg--design-' . sanitize_html_class( $design ) );
+		$classes = array( 'fw-lg', 'fw-lg--design-' . sanitize_html_class( $design ), 'design-' . sanitize_html_class( $design ) );
 		if ( $gray ) { $classes[] = 'fw-lg--grayscale'; }
 
 		$atts['base_class']       = 'logo-grid';

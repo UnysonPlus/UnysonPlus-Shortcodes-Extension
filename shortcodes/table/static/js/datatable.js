@@ -4,12 +4,12 @@
  * Adds client-side sorting, search/filter, pagination, length-change and an
  * info line to any <table class="fw-datatable"> — no external library. The
  * renderer (views/tabular.php) only adds this when the table opts in and has no
- * merged cells, so every body row is uniform.
+ * merged cells, so every body row is uniform. Vanilla JS — no jQuery.
  */
-( function ( $ ) {
+( function () {
 	'use strict';
 
-	var T = $.extend( {
+	var T = Object.assign( {
 		search: 'Search:',
 		searchPlaceholder: 'Type to filter…',
 		show: 'Show',
@@ -34,25 +34,29 @@
 		return parseFloat( cleaned );
 	}
 
+	function el( html ) {
+		var tpl = document.createElement( 'template' );
+		tpl.innerHTML = html;
+		return tpl.content.firstElementChild;
+	}
+
 	function init( table ) {
-		var $table = $( table );
-		if ( $table.data( 'fwDt' ) ) { return; }
-		$table.data( 'fwDt', 1 );
+		if ( table._fwDt ) { return; }
+		table._fwDt = 1;
 
 		var opt = {
-			sort: $table.attr( 'data-sort' ) === '1',
-			search: $table.attr( 'data-search' ) === '1',
-			paginate: $table.attr( 'data-paginate' ) === '1',
-			pageLen: parseInt( $table.attr( 'data-page-length' ), 10 ) || 10,
-			lengthChange: $table.attr( 'data-length-change' ) === '1',
-			info: $table.attr( 'data-info' ) === '1'
+			sort: table.getAttribute( 'data-sort' ) === '1',
+			search: table.getAttribute( 'data-search' ) === '1',
+			paginate: table.getAttribute( 'data-paginate' ) === '1',
+			pageLen: parseInt( table.getAttribute( 'data-page-length' ), 10 ) || 10,
+			lengthChange: table.getAttribute( 'data-length-change' ) === '1',
+			info: table.getAttribute( 'data-info' ) === '1'
 		};
 
-		var $wrap = $table.closest( '.table' );
-		if ( ! $wrap.length ) { $wrap = $table.parent(); }
+		var wrap = table.closest( '.table' ) || table.parentNode;
 
-		var $tbody = $table.children( 'tbody' ).first();
-		var rows = $tbody.children( 'tr' ).get();
+		var tbody = table.querySelector( ':scope > tbody' ) || table.tBodies[ 0 ];
+		var rows = tbody ? Array.prototype.slice.call( tbody.children ).filter( function ( r ) { return r.tagName === 'TR'; } ) : [];
 
 		var state = {
 			q: '',
@@ -63,9 +67,9 @@
 		};
 
 		// ---- chrome ----------------------------------------------------
-		var $top = $( '<div class="fw-dt-top"></div>' );
-		var $bottom = $( '<div class="fw-dt-bottom"></div>' );
-		var $lengthSel, $search, $info, $pager;
+		var top = el( '<div class="fw-dt-top"></div>' );
+		var bottom = el( '<div class="fw-dt-bottom"></div>' );
+		var lengthSel = null, search = null, info = null, pager = null;
 
 		if ( opt.paginate && opt.lengthChange ) {
 			var lens = [ 10, 25, 50, 100 ];
@@ -73,50 +77,56 @@
 			var optsHtml = lens.map( function ( n ) {
 				return '<option value="' + n + '"' + ( n === opt.pageLen ? ' selected' : '' ) + '>' + n + '</option>';
 			} ).join( '' ) + '<option value="-1">' + T.all + '</option>';
-			$lengthSel = $( '<label class="fw-dt-length">' + T.show + ' <select>' + optsHtml + '</select> ' + T.entries + '</label>' );
-			$top.append( $lengthSel );
+			lengthSel = el( '<label class="fw-dt-length">' + T.show + ' <select>' + optsHtml + '</select> ' + T.entries + '</label>' );
+			top.appendChild( lengthSel );
 		}
 
 		if ( opt.search ) {
-			$search = $( '<label class="fw-dt-search">' + T.search + ' <input type="search" placeholder="' + T.searchPlaceholder + '"></label>' );
-			$top.append( $search );
+			search = el( '<label class="fw-dt-search">' + T.search + ' <input type="search" placeholder="' + T.searchPlaceholder + '"></label>' );
+			top.appendChild( search );
 		}
 
-		if ( opt.info ) { $info = $( '<div class="fw-dt-info"></div>' ); $bottom.append( $info ); }
-		if ( opt.paginate ) { $pager = $( '<div class="fw-dt-pager"></div>' ); $bottom.append( $pager ); }
+		if ( opt.info ) { info = el( '<div class="fw-dt-info"></div>' ); bottom.appendChild( info ); }
+		if ( opt.paginate ) { pager = el( '<div class="fw-dt-pager"></div>' ); bottom.appendChild( pager ); }
 
-		if ( $top.children().length ) { $wrap.before( $top ); }
-		if ( $bottom.children().length ) { $wrap.after( $bottom ); }
+		if ( top.children.length ) { wrap.parentNode.insertBefore( top, wrap ); }
+		if ( bottom.children.length ) { wrap.parentNode.insertBefore( bottom, wrap.nextSibling ); }
 
 		// ---- sorting headers -------------------------------------------
-		var $headerRow = $table.children( 'thead' ).children( 'tr' ).last();
-		if ( opt.sort && $headerRow.length ) {
-			$headerRow.children( 'th, td' ).each( function ( i ) {
-				var $th = $( this );
-				$th.addClass( 'fw-dt-sortable' ).attr( 'tabindex', 0 ).attr( 'role', 'button' );
+		var thead = table.querySelector( ':scope > thead' );
+		var headerRow = null;
+		if ( thead ) {
+			var headerRows = thead.querySelectorAll( ':scope > tr' );
+			headerRow = headerRows.length ? headerRows[ headerRows.length - 1 ] : null;
+		}
+		if ( opt.sort && headerRow ) {
+			Array.prototype.forEach.call( headerRow.children, function ( th, i ) {
+				th.classList.add( 'fw-dt-sortable' );
+				th.setAttribute( 'tabindex', '0' );
+				th.setAttribute( 'role', 'button' );
 				function doSort() {
 					if ( state.sortCol === i ) { state.dir = -state.dir; }
 					else { state.sortCol = i; state.dir = 1; }
 					state.page = 0;
 					render();
 				}
-				$th.on( 'click', doSort );
-				$th.on( 'keydown', function ( e ) {
+				th.addEventListener( 'click', doSort );
+				th.addEventListener( 'keydown', function ( e ) {
 					if ( e.keyCode === 13 || e.keyCode === 32 ) { e.preventDefault(); doSort(); }
 				} );
 			} );
 		}
 
 		// ---- events ----------------------------------------------------
-		if ( $search ) {
-			$search.find( 'input' ).on( 'input', function () {
+		if ( search ) {
+			search.querySelector( 'input' ).addEventListener( 'input', function () {
 				state.q = this.value.toLowerCase();
 				state.page = 0;
 				render();
 			} );
 		}
-		if ( $lengthSel ) {
-			$lengthSel.find( 'select' ).on( 'change', function () {
+		if ( lengthSel ) {
+			lengthSel.querySelector( 'select' ).addEventListener( 'change', function () {
 				var v = parseInt( this.value, 10 );
 				state.len = v === -1 ? rows.length : v;
 				state.page = 0;
@@ -142,12 +152,14 @@
 			var sorted = rows.slice();
 			if ( state.sortCol >= 0 ) { sorted.sort( compare ); }
 			// reorder DOM
-			$tbody.append( sorted );
+			sorted.forEach( function ( r ) { tbody.appendChild( r ); } );
 
-			if ( $headerRow.length ) {
-				$headerRow.children().removeClass( 'fw-dt-asc fw-dt-desc' );
-				if ( state.sortCol >= 0 ) {
-					$( $headerRow.children()[ state.sortCol ] ).addClass( state.dir > 0 ? 'fw-dt-asc' : 'fw-dt-desc' );
+			if ( headerRow ) {
+				Array.prototype.forEach.call( headerRow.children, function ( h ) {
+					h.classList.remove( 'fw-dt-asc', 'fw-dt-desc' );
+				} );
+				if ( state.sortCol >= 0 && headerRow.children[ state.sortCol ] ) {
+					headerRow.children[ state.sortCol ].classList.add( state.dir > 0 ? 'fw-dt-asc' : 'fw-dt-desc' );
 				}
 			}
 
@@ -163,50 +175,55 @@
 			var end = opt.paginate ? Math.min( start + len, visible.length ) : visible.length;
 			for ( var i = start; i < end; i++ ) { visible[ i ].style.display = ''; }
 
-			if ( $info ) {
+			if ( info ) {
 				if ( ! visible.length ) {
-					$info.text( T.infoEmpty );
+					info.textContent = T.infoEmpty;
 				} else {
-					$info.text(
-						T.info.replace( '_START_', visible.length ? start + 1 : 0 )
-							.replace( '_END_', end )
-							.replace( '_TOTAL_', visible.length )
-					);
+					info.textContent = T.info.replace( '_START_', visible.length ? start + 1 : 0 )
+						.replace( '_END_', end )
+						.replace( '_TOTAL_', visible.length );
 				}
 			}
 
-			if ( $pager ) { renderPager( pages ); }
+			if ( pager ) { renderPager( pages ); }
 		}
 
 		function renderPager( pages ) {
-			$pager.empty();
+			pager.innerHTML = '';
 			if ( pages <= 1 ) { return; }
 
 			var btn = function ( label, page, opts ) {
 				opts = opts || {};
-				var $b = $( '<button type="button" class="fw-dt-page"></button>' ).html( label );
-				if ( opts.active ) { $b.addClass( 'is-active' ); }
-				if ( opts.disabled ) { $b.prop( 'disabled', true ).addClass( 'is-disabled' ); }
-				else { $b.on( 'click', function () { state.page = page; render(); } ); }
-				return $b;
+				var b = el( '<button type="button" class="fw-dt-page"></button>' );
+				b.innerHTML = label;
+				if ( opts.active ) { b.classList.add( 'is-active' ); }
+				if ( opts.disabled ) { b.disabled = true; b.classList.add( 'is-disabled' ); }
+				else { b.addEventListener( 'click', function () { state.page = page; render(); } ); }
+				return b;
 			};
 
-			$pager.append( btn( T.prev, state.page - 1, { disabled: state.page === 0 } ) );
+			pager.appendChild( btn( T.prev, state.page - 1, { disabled: state.page === 0 } ) );
 
 			// windowed page numbers
 			var from = Math.max( 0, state.page - 2 ), to = Math.min( pages - 1, state.page + 2 );
-			if ( from > 0 ) { $pager.append( btn( '1', 0 ) ); if ( from > 1 ) { $pager.append( $( '<span class="fw-dt-ellipsis">…</span>' ) ); } }
-			for ( var p = from; p <= to; p++ ) { $pager.append( btn( String( p + 1 ), p, { active: p === state.page } ) ); }
-			if ( to < pages - 1 ) { if ( to < pages - 2 ) { $pager.append( $( '<span class="fw-dt-ellipsis">…</span>' ) ); } $pager.append( btn( String( pages ), pages - 1 ) ); }
+			if ( from > 0 ) { pager.appendChild( btn( '1', 0 ) ); if ( from > 1 ) { pager.appendChild( el( '<span class="fw-dt-ellipsis">…</span>' ) ); } }
+			for ( var p = from; p <= to; p++ ) { pager.appendChild( btn( String( p + 1 ), p, { active: p === state.page } ) ); }
+			if ( to < pages - 1 ) { if ( to < pages - 2 ) { pager.appendChild( el( '<span class="fw-dt-ellipsis">…</span>' ) ); } pager.appendChild( btn( String( pages ), pages - 1 ) ); }
 
-			$pager.append( btn( T.next, state.page + 1, { disabled: state.page === pages - 1 } ) );
+			pager.appendChild( btn( T.next, state.page + 1, { disabled: state.page === pages - 1 } ) );
 		}
 
 		render();
 	}
 
-	$( function () {
-		$( 'table.fw-datatable' ).each( function () { init( this ); } );
-	} );
+	function boot() {
+		Array.prototype.forEach.call( document.querySelectorAll( 'table.fw-datatable' ), init );
+	}
 
-}( jQuery ) );
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', boot );
+	} else {
+		boot();
+	}
+
+}() );

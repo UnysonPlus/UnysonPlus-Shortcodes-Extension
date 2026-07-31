@@ -19,7 +19,11 @@ if ( ! function_exists( 'sc_ab_render' ) ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$catalog  = require __DIR__ . '/parts/socials.php';
 		$design   = sc_get( 'design', $atts, 'card' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'card'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'author_box', $atts, 'card' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'card';
+		}
 
 		$source = sc_get( 'source', $atts, 'current' );
 		$uid    = 0;
@@ -78,6 +82,7 @@ if ( ! function_exists( 'sc_ab_render' ) ) {
 		$classes = array(
 			'fw-ab',
 			'fw-ab--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-ab--avatar-' . sanitize_html_class( $shape ),
 		);
 

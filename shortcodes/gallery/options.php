@@ -2,21 +2,25 @@
 	die( 'Forbidden' );
 }
 
-/* Build the `design` image-picker choices from the single-source-of-truth
-   registry, so adding a design there automatically lists it here. SVG
-   thumbnails live under static/img/designs/. */
-$g_uri           = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/gallery' );
-$g_designs       = require dirname( __FILE__ ) . '/views/designs/registry.php';
-$g_design_choices = array();
-foreach ( $g_designs as $g_key => $g_def ) {
-	$g_design_choices[ $g_key ] = array(
-		'small' => array(
-			'src'   => $g_uri . '/static/img/designs/' . $g_def['thumb'],
-			'alt'   => $g_def['label'],
-			'title' => $g_def['label'], // native hover tooltip = the design name
-		),
-		'label' => $g_def['label'],
-	);
+/* Build the `design` image-picker choices from the pluggable-designs layer, so
+   built-in designs AND installed design packs both list here (and disabled ones are
+   hidden). Falls back to the local registry when the layer is unavailable. */
+if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+	$g_design_choices = fw_sc_design_picker_choices( 'gallery' );
+} else {
+	$g_uri            = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/gallery' );
+	$g_designs        = require dirname( __FILE__ ) . '/views/designs/registry.php';
+	$g_design_choices = array();
+	foreach ( $g_designs as $g_key => $g_def ) {
+		$g_design_choices[ $g_key ] = array(
+			'small' => array(
+				'src'   => $g_uri . '/static/img/designs/' . $g_def['thumb'],
+				'alt'   => $g_def['label'],
+				'title' => $g_def['label'], // native hover tooltip = the design name
+			),
+			'label' => $g_def['label'],
+		);
+	}
 }
 
 /* ---------------------------------------------------------------------------
@@ -192,6 +196,15 @@ $g_opt_pause_hover = array(
 	'desc'  => __( 'Stop autoplay while hovered.', 'fw' ),
 );
 
+/* Post types offered by the Post Type source: public + featured-image support, built dynamically so
+ * e.g. Portfolio simply appears when that extension is active (no hard dependency). */
+$g_pt_choices = array();
+foreach ( get_post_types( array( 'public' => true ), 'objects' ) as $g_pt_obj ) {
+	if ( 'attachment' === $g_pt_obj->name || ! post_type_supports( $g_pt_obj->name, 'thumbnail' ) ) { continue; }
+	$g_pt_choices[ $g_pt_obj->name ] = $g_pt_obj->labels->name;
+}
+if ( empty( $g_pt_choices ) ) { $g_pt_choices = array( 'post' => __( 'Posts', 'fw' ) ); }
+
 $options = array(
 
 	/* ----------------------------------------------------------------------
@@ -204,12 +217,63 @@ $options = array(
 			'group' => array(
 				'type'    => 'group',
 				'options' => array(
-					'images' => array(
-						'label'       => __( 'Images', 'fw' ),
-						'desc'        => __( 'Add or arrange the gallery images.', 'fw' ),
-						'help'        => __( 'Upload new images or pick existing ones from the Media Library, then drag to reorder. Captions, alt text and titles are read from each image\'s Media Library fields (see the Caption Source option on the Style tab).', 'fw' ),
-						'type'        => 'multi-upload',
-						'images_only' => true,
+					/* Where the images come from. The picker natively reveals only the chosen source's
+					 * options: Media Library → the Images upload; Post Type → the query settings. The view
+					 * still reads the legacy flat `images` key as a fallback (per the user's call that no
+					 * formal migration is needed). */
+					'source' => array(
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'show_borders' => false,
+						'value'        => array( 'kind' => 'media' ),
+						'picker'       => array(
+							'kind' => array(
+								'type'    => 'select',
+								'label'   => __( 'Source', 'fw' ),
+								'desc'    => __( 'Media Library = the images you pick below. Post Type = a post type\'s featured images build the gallery automatically (and stay fresh as you publish).', 'fw' ),
+								'choices' => array( 'media' => __( 'Media Library', 'fw' ), 'posts' => __( 'Post Type', 'fw' ) ),
+							),
+						),
+						'choices' => array(
+							'media' => array(
+								'images' => array(
+									'label'       => __( 'Images', 'fw' ),
+									'desc'        => __( 'Add or arrange the gallery images.', 'fw' ),
+									'help'        => __( 'Upload new images or pick existing ones from the Media Library, then drag to reorder. Captions, alt text and titles are read from each image\'s Media Library fields (see the Caption Source option on the Style tab).', 'fw' ),
+									'type'        => 'multi-upload',
+									'images_only' => true,
+								),
+							),
+							'posts' => array(
+								'post_type' => array(
+									'label'   => __( 'Post Type', 'fw' ),
+									'type'    => 'select',
+									'value'   => isset( $g_pt_choices['post'] ) ? 'post' : key( $g_pt_choices ),
+									'choices' => $g_pt_choices,
+									'desc'    => __( 'Public post types with featured-image support — e.g. Portfolio appears here when that extension is active.', 'fw' ),
+								),
+								'count'   => array(
+									'label' => __( 'Number of Images', 'fw' ),
+									'type'  => 'text',
+									'value' => '12',
+									'attr'  => array( 'inputmode' => 'numeric', 'pattern' => '[0-9]*', 'style' => 'width:90px' ),
+									'desc'  => __( 'How many posts to pull (1–200). Only posts WITH a featured image are included.', 'fw' ),
+								),
+								'orderby' => array(
+									'label'   => __( 'Order', 'fw' ),
+									'type'    => 'select',
+									'value'   => 'date_desc',
+									'choices' => array(
+										'date_desc'  => __( 'Newest first', 'fw' ),
+										'date_asc'   => __( 'Oldest first', 'fw' ),
+										'title'      => __( 'Title (A–Z)', 'fw' ),
+										'menu_order' => __( 'Menu order', 'fw' ),
+										'rand'       => __( 'Random', 'fw' ),
+									),
+								),
+							),
+						),
 					),
 				),
 			),
@@ -496,17 +560,33 @@ $options = array(
 						),
 						'desc' => __( 'Outer width wrapper around the gallery.', 'fw' ),
 					),
-					'click_action' => array(
-						'label' => __( 'On Image Click', 'fw' ),
-						'type'  => 'select',
-						'value' => 'lightbox',
-						'choices' => array(
-							'lightbox'   => __( 'Open Lightbox', 'fw' ),
-							'file'       => __( 'Open Full Image (new tab)', 'fw' ),
-							'attachment' => __( 'Go to Attachment Page', 'fw' ),
-							'none'       => __( 'Do Nothing', 'fw' ),
+					/* On Image Click as a multi-picker: each action reveals only its own settings. NEW key
+					 * (`click`) — the legacy flat `click_action` scalar is honoured as a view fallback, so
+					 * no value-shape migration is needed. */
+					'click' => array(
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'show_borders' => false,
+						'value'        => array( 'action' => 'lightbox' ),
+						'picker'       => array(
+							'action' => array(
+								'type'    => 'select',
+								'label'   => __( 'On Image Click', 'fw' ),
+								'desc'    => __( 'What happens when a visitor clicks an image.', 'fw' ),
+								'choices' => array(
+									'lightbox'   => __( 'Open Lightbox', 'fw' ),
+									'link'       => __( 'Open Link', 'fw' ),
+									'file'       => __( 'Open Full Image (new tab)', 'fw' ),
+									'attachment' => __( 'Go to Attachment Page', 'fw' ),
+									'none'       => __( 'Do Nothing', 'fw' ),
+								),
+							),
 						),
-						'desc' => __( 'What happens when a visitor clicks an image.', 'fw' ),
+						/* No per-action reveals yet: Open Link's URL AND its "open in a new tab" checkbox both
+						 * live on the image itself (the Media Library fields), so one gallery can freely mix
+						 * internal and external links. External hosts always open a new tab automatically. */
+						'choices' => array(),
 					),
 					'captions' => array(
 						'label' => __( 'Captions', 'fw' ),
@@ -601,4 +681,12 @@ if ( function_exists( 'sc_image_style_field' ) ) {
 	$options['tab_style']['options']['group_behavior']['options']['image_style'] = sc_image_style_field( array(
 		'desc' => __( 'Apply a reusable Image Style (crop, corners, mask, filter, scrim) to each gallery image. Manage presets in Theme Settings → Components → Image Styles.', 'fw' ),
 	) );
+}
+
+/* Merge installed layout design PACKS' option fragments into the design_settings
+   multi-picker, so a pack's own controls appear (design-scoped) when selected. */
+if ( function_exists( 'fw_sc_design_pack_option_fragments' ) ) {
+	foreach ( fw_sc_design_pack_option_fragments( 'gallery' ) as $g_pk => $g_frag ) {
+		$options['tab_design']['options']['group']['options']['design_settings']['choices'][ $g_pk ] = $g_frag;
+	}
 }

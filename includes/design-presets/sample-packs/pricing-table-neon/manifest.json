@@ -1,0 +1,12 @@
+{
+  "pack": 1,
+  "type": "design",
+  "render": "skin",
+  "id": "pricing-table-neon",
+  "design_key": "neon",
+  "name": "Neon",
+  "shortcode": "pricing_table",
+  "version": "1.0.0",
+  "author": "UnysonPlus",
+  "license": "free"
+}

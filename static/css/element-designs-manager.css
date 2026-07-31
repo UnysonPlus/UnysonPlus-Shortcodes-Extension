@@ -1,0 +1,43 @@
+/* Element Designs manager (Theme Settings → Components → Element Designs). */
+.upw-eldesigns { margin: 4px 0; }
+.upw-eldesigns__loading { color: #64748b; font-style: italic; }
+
+.upw-eld-toolbar { display: flex; gap: 8px; margin-bottom: 18px; }
+
+.upw-eld-empty {
+	margin: 8px 0; padding: 26px; text-align: center; color: #64748b;
+	background: #f6f8fb; border: 1px dashed #cbd5e1; border-radius: 8px;
+}
+
+.upw-eld-group { margin: 0 0 22px; }
+.upw-eld-group__title {
+	margin: 0 0 10px; font-size: 12px; font-weight: 700; text-transform: uppercase;
+	letter-spacing: .06em; color: #64748b;
+}
+.upw-eld-grid {
+	display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px;
+}
+
+.upw-eld-tile {
+	background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;
+}
+.upw-eld-tile__thumb {
+	display: block; width: 100%; aspect-ratio: 3 / 2; background: #f1f5f9 center / cover no-repeat;
+}
+.upw-eld-tile__thumb--none { background: repeating-linear-gradient(45deg, #eef2f7 0 8px, #f6f8fb 8px 16px); }
+.upw-eld-tile__body { padding: 9px 11px; }
+.upw-eld-tile__name {
+	display: block; font-size: 13px; font-weight: 600; color: #334155;
+	white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.upw-eld-tile__actions { display: flex; gap: 10px; margin-top: 6px; }
+.upw-eld-tile__actions .button-link { font-size: 12px; }
+.upw-eld-danger { color: #b32d2e; }
+
+.upw-eld-edit {
+	margin-top: 10px; padding: 10px; background: #f8fafc; border-top: 1px solid #e2e8f0;
+}
+.upw-eld-edit label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: #475569; }
+.upw-eld-edit input, .upw-eld-edit textarea { margin-top: 3px; font-family: inherit; }
+.upw-eld-edit textarea { font-family: Menlo, Consolas, monospace; font-size: 12px; }
+.upw-eld-edit__actions { margin-top: 6px; }

@@ -20,7 +20,11 @@ if ( ! function_exists( 'sc_ss_render' ) ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 
 		$design = sc_get( 'design', $atts, 'brand' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'brand'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'social_share', $atts, 'brand' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'brand';
+		}
 
 		$selected = sc_get( 'networks', $atts, array() );
 		if ( ! is_array( $selected ) ) { $selected = array(); }
@@ -78,6 +82,7 @@ if ( ! function_exists( 'sc_ss_render' ) ) {
 		$classes = array(
 			'fw-ss',
 			'fw-ss--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-ss--shape-' . sanitize_html_class( $shape ),
 			'fw-ss--size-' . sanitize_html_class( $size ),
 			'fw-ss--layout-' . sanitize_html_class( $layout ),

@@ -76,6 +76,15 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'design' => call_user_func( function () {
+						if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+							return array(
+								'type'    => 'image-picker',
+								'label'   => __( 'Card Design', 'fw' ),
+								'value'   => 'standard',
+								'desc'    => __( 'Choose a card design. Hover a tile to see its name.', 'fw' ),
+								'choices' => fw_sc_design_picker_choices( 'post_carousel' ),
+							);
+						}
 						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
 						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/post-carousel/static/img/design' );
 						$choices  = array();

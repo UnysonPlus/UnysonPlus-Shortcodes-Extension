@@ -42,7 +42,11 @@ if ( ! function_exists( 'sc_bi_render' ) ) {
 	function sc_bi_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'card' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'card'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'business_info', $atts, 'card' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'card';
+		}
 
 		$day_labels = array(
 			'mon' => __( 'Monday', 'fw' ), 'tue' => __( 'Tuesday', 'fw' ), 'wed' => __( 'Wednesday', 'fw' ),
@@ -105,7 +109,7 @@ if ( ! function_exists( 'sc_bi_render' ) ) {
 		$style_var .= $var( 'card_bg', '--bi-card-bg' );
 		$style_var .= $var( 'text_color', '--bi-text' );
 
-		$classes = array( 'fw-bi', 'fw-bi--design-' . sanitize_html_class( $design ) );
+		$classes = array( 'fw-bi', 'fw-bi--design-' . sanitize_html_class( $design ), 'design-' . sanitize_html_class( $design ) );
 
 		$atts['base_class']       = 'business-info';
 		$atts['unique_id_prefix'] = 'bi-';

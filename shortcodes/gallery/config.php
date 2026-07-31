@@ -10,7 +10,10 @@ $cfg['page_builder'] = array(
 	'tab'            => __( 'Media Elements', 'fw' ),
 	'popup_size'     => 'large', // can be large, medium or small
 	'title_template' => '
-		{{ if ( o["images"] && o["images"].length > 0 ) { }}
+		{{ var gsrc = ( o["source"] && typeof o["source"] === "object" ) ? o["source"] : null; }}
+		{{ if ( gsrc && gsrc["kind"] === "posts" ) { }}
+			<em>Gallery — images from post type: <strong>{{- ( gsrc["posts"] && gsrc["posts"]["post_type"] ) || "post" }}</strong></em>
+		{{ } else if ( o["images"] && o["images"].length > 0 ) { }}
 			<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">
 				{{ for ( var i = 0; i < o["images"].length; i++ ) { }}
 					{{ var gimg = o["images"][i]; var gurl = ( gimg && typeof gimg === "object" ) ? gimg.url : ""; }}

@@ -16,9 +16,13 @@ if ( ! function_exists( 'sc_get' ) ) {
 
 if ( ! function_exists( 'sc_bq_render' ) ) {
 	function sc_bq_render( $atts ) {
-		$registry = require __DIR__ . '/parts/registry.php';
-		$design   = sc_get( 'design', $atts, 'classic' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'classic'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'blockquote', $atts, 'classic' );
+		} else {
+			$registry = require __DIR__ . '/parts/registry.php';
+			$design   = sc_get( 'design', $atts, 'classic' );
+			if ( ! isset( $registry[ $design ] ) ) { $design = 'classic'; }
+		}
 
 		$quote = trim( (string) sc_get( 'quote', $atts, '' ) );
 		if ( $quote === '' ) {
@@ -62,7 +66,7 @@ if ( ! function_exists( 'sc_bq_render' ) ) {
 		$style_var .= $var( 'bg_color', '--bq-bg' );
 		if ( $max_w !== '' ) { $style_var .= 'max-width:' . $max_w . ';'; }
 
-		$classes = array( 'fw-bq', 'fw-bq--design-' . sanitize_html_class( $design ) );
+		$classes = array( 'fw-bq', 'fw-bq--design-' . sanitize_html_class( $design ), 'design-' . sanitize_html_class( $design ) );
 		if ( $align_cls ) { $classes[] = $align_cls; }
 		if ( $mark )      { $classes[] = 'fw-bq--mark'; }
 

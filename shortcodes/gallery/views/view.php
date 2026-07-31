@@ -22,20 +22,53 @@ if ( ! function_exists( 'sc_get' ) ) {
 	}
 }
 
-/* Content */
-$images = sc_get( 'images', $atts, sc_get( 'group/images', $atts, array() ) );
-if ( ! is_array( $images ) ) {
+/* Content — Media Library images OR a post type's featured images. `source` is a NEW key (pre-source
+ * saves have nothing at it and fall through to 'media'); the posts branch simply collects featured
+ * attachment IDs and feeds the SAME normalizer, so captions/lightbox/designs are untouched. */
+if ( sc_get( 'source/kind', $atts, 'media' ) === 'posts' ) {
+	$g_q_type  = (string) sc_get( 'source/posts/post_type', $atts, 'post' );
+	$g_q_count = max( 1, min( 200, (int) sc_get( 'source/posts/count', $atts, 12 ) ) );
+	$g_q_order = (string) sc_get( 'source/posts/orderby', $atts, 'date_desc' );
+	$g_q_args  = array(
+		'post_type'           => $g_q_type,
+		'post_status'         => 'publish',
+		'posts_per_page'      => $g_q_count,
+		'ignore_sticky_posts' => true,
+		'no_found_rows'       => true,
+		'meta_key'            => '_thumbnail_id', // only posts WITH a featured image
+	);
+	switch ( $g_q_order ) {
+		case 'date_asc':   $g_q_args['orderby'] = 'date';       $g_q_args['order'] = 'ASC';  break;
+		case 'title':      $g_q_args['orderby'] = 'title';      $g_q_args['order'] = 'ASC';  break;
+		case 'menu_order': $g_q_args['orderby'] = 'menu_order'; $g_q_args['order'] = 'ASC';  break;
+		case 'rand':       $g_q_args['orderby'] = 'rand';                                     break;
+		default:           $g_q_args['orderby'] = 'date';       $g_q_args['order'] = 'DESC';
+	}
 	$images = array();
+	foreach ( get_posts( $g_q_args ) as $g_qp ) {
+		$g_tid = (int) get_post_thumbnail_id( $g_qp );
+		if ( $g_tid ) { $images[] = array( 'attachment_id' => $g_tid, 'link' => (string) get_permalink( $g_qp ) ); }
+	}
+} else {
+	$images = sc_get( 'source/media/images', $atts, null );
+	if ( ! is_array( $images ) ) { $images = sc_get( 'images', $atts, sc_get( 'group/images', $atts, array() ) ); } // pre-source saves (flat key)
+	if ( ! is_array( $images ) ) {
+		$images = array();
+	}
 }
 
-/* Resolve the chosen design (safe: defaults to 'grid' for legacy/missing). */
-$g_designs = require dirname( __FILE__ ) . '/designs/registry.php';
-$design    = sc_get( 'design_settings/design', $atts, sc_get( 'design', $atts, 'grid' ) );
-if ( ! is_string( $design ) || ! isset( $g_designs[ $design ] ) ) {
-	$design = 'grid';
+/* Resolve the chosen design via the pluggable-designs layer (built-in designs PLUS
+   installed layout packs), falling back to the local registry. Defaults to 'grid'. */
+if ( function_exists( 'fw_sc_design_resolve' ) ) {
+	$design      = fw_sc_design_resolve( 'gallery', $atts, 'grid' );
+	$design_file = fw_sc_design_partial( 'gallery', $design );
+} else {
+	$g_designs   = require dirname( __FILE__ ) . '/designs/registry.php';
+	$design      = sc_get( 'design_settings/design', $atts, sc_get( 'design', $atts, 'grid' ) );
+	if ( ! is_string( $design ) || ! isset( $g_designs[ $design ] ) ) { $design = 'grid'; }
+	$design_file = dirname( __FILE__ ) . '/designs/' . $design . '.php';
 }
-$design_file = dirname( __FILE__ ) . '/designs/' . $design . '.php';
-if ( ! file_exists( $design_file ) ) {
+if ( ! $design_file || ! file_exists( $design_file ) ) {
 	$design      = 'grid';
 	$design_file = dirname( __FILE__ ) . '/designs/grid.php';
 }
@@ -88,7 +121,10 @@ $g_cols = function ( $d = 3 ) use ( $g_dp ) {
 
 /* Cross-design appearance (top-level on the Style tab). */
 $container_type = sc_get( 'container_type', $atts, '' );
-$click_action   = sc_get( 'click_action', $atts, 'lightbox' );
+/* Click is the NEW `click` multi-picker (with the legacy flat `click_action` scalar as a fallback,
+ * so pre-picker saves keep behaving identically). Open Link's per-image new-tab preference lives on
+ * the image itself (the Media Library checkbox) — resolved in sc_gallery_item_link(). */
+$click_action   = sc_get( 'click/action', $atts, sc_get( 'click_action', $atts, 'lightbox' ) );
 $captions       = sc_get( 'captions', $atts, 'none' );
 $caption_source = sc_get( 'caption_source', $atts, 'caption' );
 // Corner Radius is retired as an option (image shaping now lives in Image Style). This

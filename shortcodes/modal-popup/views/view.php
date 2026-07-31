@@ -38,7 +38,11 @@ if ( ! function_exists( 'sc_mp_render' ) ) {
 	function sc_mp_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'center' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'center'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'modal_popup', $atts, 'center' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'center';
+		}
 
 		$ttype = sc_get( 'trigger_type', $atts, 'button' );
 		$label = trim( (string) sc_get( 'trigger_label', $atts, '' ) );
@@ -103,6 +107,7 @@ if ( ! function_exists( 'sc_mp_render' ) ) {
 		$overlay_classes = array(
 			'fw-mp__overlay',
 			'fw-mp--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-mp--size-' . sanitize_html_class( $size ),
 			'fw-mp--anim-' . sanitize_html_class( $animation ),
 		);

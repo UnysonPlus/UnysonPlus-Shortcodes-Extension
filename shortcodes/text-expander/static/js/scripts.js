@@ -5,7 +5,7 @@
  *  tagged via `data-expander-hidden="true"`. CSS handles all visibility
  *  via the wrapper's `.fw-text-expander--open` class. This script only
  *  needs to flip that one class and keep aria-expanded in sync across
- *  the (two) toggle buttons.
+ *  the (two) toggle buttons. Vanilla JS — no jQuery.
  *
  *  Responsibilities:
  *   - flip `.fw-text-expander--open` on the wrapper
@@ -16,11 +16,8 @@
  *   - native <details> hash handling
  * ===================================================================== */
 
-jQuery(function ($) {
-
-    function wrapperOf($el) {
-        return $el.closest('.fw-text-expander');
-    }
+( function () {
+    'use strict';
 
     function prefersReducedMotion() {
         return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -48,15 +45,15 @@ jQuery(function ($) {
      *  toggle the class.
      * ------------------------------------------------------------------ */
 
-    function setState($wrapper, isOpen) {
-        var el       = $wrapper[0];
-        var $buttons = $wrapper.find('.fw-text-expander__toggle');
-
-        $buttons.attr('aria-expanded', String(isOpen));
+    function setState(el, isOpen) {
+        var buttons = el.querySelectorAll('.fw-text-expander__toggle');
+        Array.prototype.forEach.call(buttons, function (b) {
+            b.setAttribute('aria-expanded', String(isOpen));
+        });
 
         if (prefersReducedMotion()) {
-            $wrapper.toggleClass('fw-text-expander--open', isOpen);
-            $wrapper.removeClass('fw-text-expander--animating');
+            el.classList.toggle('fw-text-expander--open', isOpen);
+            el.classList.remove('fw-text-expander--animating');
             el.style.height     = '';
             el.style.overflow   = '';
             el.style.transition = '';
@@ -80,8 +77,8 @@ jQuery(function ($) {
         // height first so the measurement reflects the natural size.
         el.style.height   = '';
         el.style.overflow = '';
-        $wrapper.removeClass('fw-text-expander--animating');
-        $wrapper.toggleClass('fw-text-expander--open', isOpen);
+        el.classList.remove('fw-text-expander--animating');
+        el.classList.toggle('fw-text-expander--open', isOpen);
 
         // Step 3: natural target height.
         var endH = el.scrollHeight;
@@ -89,7 +86,7 @@ jQuery(function ($) {
         // Step 4: for close, pin children visible during the shrink.
         // (For open, the children are visible via --open already.)
         if (!isOpen) {
-            $wrapper.addClass('fw-text-expander--animating');
+            el.classList.add('fw-text-expander--animating');
         }
 
         // Step 5: snap to start, then transition to end.
@@ -116,7 +113,7 @@ jQuery(function ($) {
             el.style.height     = '';
             el.style.overflow   = '';
             el.style.transition = '';
-            $wrapper.removeClass('fw-text-expander--animating');
+            el.classList.remove('fw-text-expander--animating');
             el.removeEventListener('transitionend', onEnd);
             el._fwTeOnEnd = null;
         };
@@ -124,35 +121,33 @@ jQuery(function ($) {
         el.addEventListener('transitionend', onEnd);
     }
 
-    function openPanel($wrapper)  { setState($wrapper, true);  }
-    function closePanel($wrapper) { setState($wrapper, false); }
+    function openPanel(el)  { setState(el, true);  }
+    function closePanel(el) { setState(el, false); }
 
     /* ---- Click handlers ------------------------------------------------ */
 
-    $(document).on('click', '.fw-text-expander__toggle', function () {
-        var $wrapper = wrapperOf($(this));
-        if (!$wrapper.length) return;
-        if ($wrapper.hasClass('fw-text-expander--open')) {
-            closePanel($wrapper);
-        } else {
-            openPanel($wrapper);
-        }
-    });
-
-    /* Click-anywhere: clicking a visible <p> (not marked hidden) expands
-       the wrapper. Guard against double-firing on interactive descendants. */
-    $(document).on(
-        'click',
-        '.fw-text-expander--click-anywhere:not(.fw-text-expander--open) > p:not([data-expander-hidden])',
-        function (e) {
-            if ($(e.target).closest('.fw-text-expander__toggle, a, button, input, textarea, select, label').length) {
-                return;
+    document.addEventListener('click', function (e) {
+        var toggle = e.target.closest('.fw-text-expander__toggle');
+        if (toggle) {
+            var wrapper = toggle.closest('.fw-text-expander');
+            if (!wrapper) return;
+            if (wrapper.classList.contains('fw-text-expander--open')) {
+                closePanel(wrapper);
+            } else {
+                openPanel(wrapper);
             }
-            var $wrapper = wrapperOf($(this));
-            if (!$wrapper.length || $wrapper.hasClass('fw-text-expander--open')) return;
-            openPanel($wrapper);
+            return;
         }
-    );
+
+        /* Click-anywhere: clicking a visible <p> (not marked hidden) expands
+           the wrapper. Guard against double-firing on interactive descendants. */
+        if (e.target.closest('a, button, input, textarea, select, label')) return;
+        var p = e.target.closest('.fw-text-expander--click-anywhere:not(.fw-text-expander--open) > p:not([data-expander-hidden])');
+        if (!p) return;
+        var caWrapper = p.closest('.fw-text-expander');
+        if (!caWrapper || caWrapper.classList.contains('fw-text-expander--open')) return;
+        openPanel(caWrapper);
+    });
 
     /* ---- Word / character count ---------------------------------------
      *  Harvest text from every `[data-expander-hidden="true"]` descendant
@@ -162,16 +157,16 @@ jQuery(function ($) {
      *  appended " (N words/chars)" suffix.
      * ------------------------------------------------------------------ */
 
-    function injectCount($wrapper) {
-        var mode = $wrapper.attr('data-count-mode');
+    function injectCount(wrapper) {
+        var mode = wrapper.getAttribute('data-count-mode');
         if (!mode || mode === 'none') return;
 
-        var $buttons = $wrapper.find('.fw-text-expander__toggle');
-        if (!$buttons.length) return;
+        var buttons = wrapper.querySelectorAll('.fw-text-expander__toggle');
+        if (!buttons.length) return;
 
         var text = '';
-        $wrapper.find('[data-expander-hidden="true"]').each(function () {
-            text += ' ' + (this.textContent || '');
+        Array.prototype.forEach.call(wrapper.querySelectorAll('[data-expander-hidden="true"]'), function (n) {
+            text += ' ' + (n.textContent || '');
         });
         text = text.trim();
 
@@ -192,17 +187,16 @@ jQuery(function ($) {
             return label + ' (' + count + ' ' + unit + ')';
         }
 
-        $buttons.each(function () {
-            var $btn = $(this);
-            var original = $btn.attr('data-label');
+        Array.prototype.forEach.call(buttons, function (btn) {
+            var original = btn.getAttribute('data-label');
             if (original == null) return;
             var rewritten = applyToken(original);
-            $btn.attr('data-label', rewritten);
-            var $label = $btn.find('.fw-text-expander__label');
-            if ($label.length) {
-                $label.text(rewritten);
+            btn.setAttribute('data-label', rewritten);
+            var label = btn.querySelector('.fw-text-expander__label');
+            if (label) {
+                label.textContent = rewritten;
             } else {
-                $btn.text(rewritten);
+                btn.textContent = rewritten;
             }
         });
     }
@@ -219,17 +213,17 @@ jQuery(function ($) {
         }
         if (!target) return false;
 
-        var $wrapper = $(target).closest('.fw-text-expander');
-        if (!$wrapper.length) return false;
+        var wrapper = target.closest('.fw-text-expander');
+        if (!wrapper) return false;
 
         /* Native <details>: just set [open]; the browser does the rest. */
-        if ($wrapper.is('details.fw-text-expander--native')) {
-            $wrapper.attr('open', 'open');
+        if (wrapper.matches('details.fw-text-expander--native')) {
+            wrapper.setAttribute('open', 'open');
             return true;
         }
 
-        if ($wrapper.hasClass('fw-text-expander--open')) return true;
-        openPanel($wrapper);
+        if (wrapper.classList.contains('fw-text-expander--open')) return true;
+        openPanel(wrapper);
         return true;
     }
 
@@ -250,12 +244,16 @@ jQuery(function ($) {
 
     /* ---- Init ---------------------------------------------------------- */
 
-    $(function () {
-        $('.fw-text-expander[data-count-mode]').each(function () {
-            injectCount($(this));
-        });
+    function init() {
+        Array.prototype.forEach.call(document.querySelectorAll('.fw-text-expander[data-count-mode]'), injectCount);
         handleHash();
-    });
+    }
 
-    $(window).on('hashchange', handleHash);
-});
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    window.addEventListener('hashchange', handleHash);
+}() );

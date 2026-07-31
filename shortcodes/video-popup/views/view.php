@@ -33,7 +33,11 @@ if ( ! function_exists( 'sc_vp_render' ) ) {
 	function sc_vp_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'classic' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'classic'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'video_popup', $atts, 'classic' );
+		} elseif ( ! isset( $registry[ $design ] ) ) {
+			$design = 'classic';
+		}
 
 		$poster = sc_get( 'poster', $atts, array() );
 		$poster_url = ( is_array( $poster ) && ! empty( $poster['url'] ) ) ? $poster['url'] : '';
@@ -76,6 +80,7 @@ if ( ! function_exists( 'sc_vp_render' ) ) {
 		$classes = array(
 			'fw-vp',
 			'fw-vp--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-vp--' . sanitize_html_class( $ratio ),
 			'fw-vp--play-' . sanitize_html_class( $psize ),
 			sanitize_html_class( $rounded ),

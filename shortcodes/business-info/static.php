@@ -18,6 +18,9 @@ if ( ! function_exists( '_fw_bi_enqueue_design_css' ) ) :
 		$post_id = ( isset( $data['post'] ) && isset( $data['post']->ID ) ) ? $data['post']->ID : 0;
 		$atts    = fw_ext_shortcodes_decode_attr( $atts, 'business_info', $post_id );
 		if ( is_wp_error( $atts ) || ! is_array( $atts ) ) { return; }
+		if ( function_exists( 'fw_sc_design_resolve' ) && function_exists( 'fw_sc_design_enqueue' ) ) {
+			fw_sc_design_enqueue( 'business_info', fw_sc_design_resolve( 'business_info', $atts, 'card' ) );
+		}
 		$design = isset( $atts['design'] ) && is_string( $atts['design'] ) ? sanitize_file_name( $atts['design'] ) : '';
 		if ( $design === '' ) { return; }
 		$path = dirname( __FILE__ ) . '/static/css/design/' . $design . '.css';

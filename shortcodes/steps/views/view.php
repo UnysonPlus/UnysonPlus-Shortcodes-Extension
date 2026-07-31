@@ -36,9 +36,13 @@ if ( ! function_exists( 'sc_steps_icon' ) ) {
 
 if ( ! function_exists( 'sc_steps_render' ) ) {
 	function sc_steps_render( $atts ) {
-		$registry = require __DIR__ . '/parts/registry.php';
-		$design   = sc_get( 'design', $atts, 'horizontal' );
-		if ( ! isset( $registry[ $design ] ) ) { $design = 'horizontal'; }
+		if ( function_exists( 'fw_sc_design_resolve' ) ) {
+			$design = fw_sc_design_resolve( 'steps', $atts, 'horizontal' );
+		} else {
+			$registry = require __DIR__ . '/parts/registry.php';
+			$design   = sc_get( 'design', $atts, 'horizontal' );
+			if ( ! isset( $registry[ $design ] ) ) { $design = 'horizontal'; }
+		}
 
 		$steps = sc_get( 'steps', $atts, array() );
 		if ( ! is_array( $steps ) || empty( $steps ) ) {
@@ -72,6 +76,7 @@ if ( ! function_exists( 'sc_steps_render' ) ) {
 		$classes = array(
 			'fw-steps',
 			'fw-steps--design-' . sanitize_html_class( $design ),
+			'design-' . sanitize_html_class( $design ), // generic scope for skin packs
 			'fw-steps--marker-' . sanitize_html_class( $marker ),
 			'fw-steps--shape-' . sanitize_html_class( $shape ),
 			'fw-steps--connector-' . sanitize_html_class( $connector ),

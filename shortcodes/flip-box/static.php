@@ -47,6 +47,7 @@ if ( ! function_exists( '_fw_fb_enqueue_design_css' ) ) :
 			$design = sanitize_file_name( $atts['design'] ); // legacy scalar
 		}
 		if ( $design === '' ) { return; }
+		if ( function_exists( 'fw_sc_design_enqueue' ) ) { fw_sc_design_enqueue( 'flip_box', $design ); }
 		$path = dirname( __FILE__ ) . '/static/css/design/' . $design . '.css';
 		if ( file_exists( $path ) ) {
 			$ext = fw_ext( 'shortcodes' );

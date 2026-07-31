@@ -62,7 +62,9 @@ $options = array(
 
 				/* Design skin choices (revealed under the Comparison type). */
 				$design_choices = array();
-				if ( is_array( $registry ) ) {
+				if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+					$design_choices = fw_sc_design_picker_choices( 'before_after' );
+				} elseif ( is_array( $registry ) ) {
 					foreach ( $registry as $key => $meta ) {
 						$thumb = isset( $meta['thumb'] ) ? $meta['thumb'] : ( $key . '.svg' );
 						$design_choices[ $key ] = array(

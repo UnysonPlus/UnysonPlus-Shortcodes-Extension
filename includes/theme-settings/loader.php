@@ -170,6 +170,45 @@ add_action( 'admin_enqueue_scripts', function () {
 		true
 	);
 
+	// Element Designs manager (Components → Element Designs) — a client-side grid over
+	// the uploads design catalog, talking to the fw_design_lib_manage AJAX endpoint.
+	if ( function_exists( 'fw_design_lib_installed_items' ) ) {
+		wp_enqueue_style(
+			'upw-element-designs-manager',
+			$ext->get_declared_URI( '/static/css/element-designs-manager.css' ),
+			array(),
+			$ver
+		);
+		wp_enqueue_script(
+			'upw-element-designs-manager',
+			$ext->get_declared_URI( '/static/js/element-designs-manager.js' ),
+			array( 'jquery' ),
+			$ver,
+			true
+		);
+		wp_localize_script( 'upw-element-designs-manager', 'upwElDesigns', array(
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'fw_design_lib_manage' ),
+			'items'   => fw_design_lib_installed_items(),
+			'enabled' => array_values( (array) ( function_exists( 'sc_design_enabled_shortcodes' ) ? sc_design_enabled_shortcodes() : array() ) ),
+			'l10n'    => array(
+				'import'        => __( 'Import design…', 'fw' ),
+				'browse'        => __( 'Browse Library', 'fw' ),
+				'browseSoon'    => __( 'The remote Design Library is coming soon.', 'fw' ),
+				'edit'          => __( 'Edit', 'fw' ),
+				'export'        => __( 'Export', 'fw' ),
+				'delete'        => __( 'Delete', 'fw' ),
+				'name'          => __( 'Name', 'fw' ),
+				'css'           => __( 'Scoped CSS (use the keyword "selector")', 'fw' ),
+				'save'          => __( 'Save', 'fw' ),
+				'cancel'        => __( 'Cancel', 'fw' ),
+				'empty'         => __( 'No designs yet. Import one here, or use "Export current design" inside an element and import the file.', 'fw' ),
+				'confirmDelete' => __( 'Delete this design? Elements where you already applied it keep their look — this only removes it from the library.', 'fw' ),
+				'error'         => __( 'Something went wrong. Please try again.', 'fw' ),
+			),
+		) );
+	}
+
 	// Optional overflow diagnostic — loads only with ?upw_preset_debug=1. Logs the
 	// exact elements wider than the viewport (with their width chain) to the console.
 	if ( isset( $_GET['upw_preset_debug'] ) && $_GET['upw_preset_debug'] === '1' ) {

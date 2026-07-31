@@ -45,6 +45,16 @@ $cap_style = $caption_style_extra !== '' ? ' style="' . esc_attr( $caption_style
 						$open  = '<a class="fw-gallery__flip" href="' . esc_url( $href ) . '">';
 						$close = '</a>';
 						break;
+					case 'link':
+						list( $g_link, $g_link_attrs ) = sc_gallery_item_link( $item, ! empty( $tile_args['link_new_tab'] ) );
+						if ( $g_link !== '' ) {
+							$open  = '<a class="fw-gallery__flip" href="' . esc_url( $g_link ) . '"' . $g_link_attrs . '>';
+							$close = '</a>';
+						} else {
+							$open  = '<div class="fw-gallery__flip">';
+							$close = '</div>';
+						}
+						break;
 					case 'none':
 						$open  = '<div class="fw-gallery__flip">';
 						$close = '</div>';

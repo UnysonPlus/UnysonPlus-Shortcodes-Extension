@@ -39,16 +39,25 @@ if ( ! function_exists( 'sc_ah_render' ) ) {
 		$align = sc_get( 'align', $atts, 'left' );
 		$align_cls = function_exists( 'sc_alignment_class' ) ? sc_alignment_class( $align ) : '';
 
+		// Playback behaviors (JS-driven) — passed via data attributes.
+		$loop      = ( sc_get( 'loop', $atts, 'forever' ) === 'once' ) ? 'once' : 'forever';
+		$pause     = ( sc_get( 'pause_hover', $atts, 'no' ) === 'yes' );
+		$randomize = ( sc_get( 'randomize', $atts, 'no' ) === 'yes' );
+
+		// Typewriter caret.
+		$caret_show  = ( sc_get( 'caret_show', $atts, 'yes' ) !== 'no' );
+		$caret_style = sc_get( 'caret_style', $atts, 'bar' );
+		if ( ! in_array( $caret_style, array( 'bar', 'block', 'underscore' ), true ) ) { $caret_style = 'bar'; }
+
+		// Colour emission — preset-aware (compact {predefined,custom} or legacy string).
 		$var = function ( $key, $name ) use ( $atts ) {
 			$raw = sc_get( $key, $atts, '' );
-			if ( is_array( $raw ) && ! empty( $raw['custom'] ) ) {
-				$hex = preg_replace( '/[^#0-9a-zA-Z(),.%\s-]/', '', (string) $raw['custom'] );
-				if ( $hex !== '' ) { return $name . ':' . $hex . ';'; }
-			}
-			return '';
+			$css = function_exists( 'sc_color_to_css' ) ? sc_color_to_css( $raw, '' ) : '';
+			return ( $css !== '' ) ? $name . ':' . $css . ';' : '';
 		};
 		$style_var  = $var( 'text_color', '--ah-text' );
 		$style_var .= $var( 'accent_color', '--ah-accent' );
+		$style_var .= $var( 'caret_color', '--ah-caret' );
 
 		$classes = array(
 			'fw-ah',
@@ -56,6 +65,7 @@ if ( ! function_exists( 'sc_ah_render' ) ) {
 			'fw-ah--speed-' . sanitize_html_class( $speed ),
 			'fw-ah--hl-' . sanitize_html_class( $hl ),
 		);
+		if ( ! $caret_show ) { $classes[] = 'fw-ah--no-caret'; }
 		if ( $align_cls ) { $classes[] = $align_cls; }
 
 		$atts['base_class']       = 'animated-heading';
@@ -70,10 +80,15 @@ if ( ! function_exists( 'sc_ah_render' ) ) {
 
 		$first = isset( $words[0] ) ? $words[0] : '';
 
+		$data_attrs  = ' data-ah-words="' . esc_attr( wp_json_encode( $words ) ) . '"';
+		$data_attrs .= ' data-ah-loop="' . esc_attr( $loop ) . '"';
+		if ( $pause )     { $data_attrs .= ' data-ah-pause="1"'; }
+		if ( $randomize ) { $data_attrs .= ' data-ah-random="1"'; }
+
 		ob_start();
-		echo '<' . $tag . ' ' . $attr_html . ' data-ah-words="' . esc_attr( wp_json_encode( $words ) ) . '">';
+		echo '<' . $tag . ' ' . $attr_html . $data_attrs . '>';
 		if ( $before !== '' ) { echo '<span class="fw-ah__static">' . esc_html( $before ) . ' </span>'; }
-		echo '<span class="fw-ah__rotate"><span class="fw-ah__word">' . esc_html( $first ) . '</span><span class="fw-ah__caret" aria-hidden="true"></span></span>';
+		echo '<span class="fw-ah__rotate"><span class="fw-ah__word">' . esc_html( $first ) . '</span><span class="fw-ah__caret fw-ah__caret--' . esc_attr( $caret_style ) . '" aria-hidden="true"></span></span>';
 		// Server-render the remaining words (visually hidden) so raw-HTML readers / AI
 		// agents see the full rotating set, not just the first word. JS rotates only
 		// .fw-ah__word (from data-ah-words), so this span is left untouched.

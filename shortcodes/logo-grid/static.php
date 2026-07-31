@@ -19,6 +19,9 @@ if ( ! function_exists( '_fw_lg_enqueue_design_static' ) ) :
 		$post_id = ( isset( $data['post'] ) && isset( $data['post']->ID ) ) ? $data['post']->ID : 0;
 		$atts    = fw_ext_shortcodes_decode_attr( $atts, 'logo_grid', $post_id );
 		if ( is_wp_error( $atts ) || ! is_array( $atts ) ) { return; }
+		if ( function_exists( 'fw_sc_design_resolve' ) && function_exists( 'fw_sc_design_enqueue' ) ) {
+			fw_sc_design_enqueue( 'logo_grid', fw_sc_design_resolve( 'logo_grid', $atts, 'grid' ) );
+		}
 		$design = isset( $atts['design'] ) && is_string( $atts['design'] ) ? $atts['design'] : 'grid';
 		$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
 		if ( ! isset( $registry[ $design ] ) ) { $design = 'grid'; }

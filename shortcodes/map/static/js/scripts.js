@@ -1,40 +1,49 @@
-(function($, _) {
+(function() {
+	'use strict';
+
 	var maxZoom = 16;
 
 	var isNotEmptyString = function(str) {
-		if (_.isString(str)) {
-			return str.trim().length;
-		}
-		return 0;
+		return typeof str === 'string' && str.trim().length > 0;
+	};
+
+	var escapeHtml = function(str) {
+		return String(str)
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#x27;');
 	};
 
 	// Build the info-window / popup HTML for a single location. Shared by both
 	// the Google Maps and the Leaflet (OpenStreetMap) rendering paths.
-	var infoTemplate = _.template(
-		"<% function isNotEmptyString(str) { if (_.isString(str)) {	return str.trim().length;} return 0; }  %>" +
+	// (Was an _.template; now plain string building — title/url are escaped,
+	// thumb src and description stay raw, matching the original template.)
+	var infoTemplate = function(data) {
+		var location = data.location;
+		var html = "<div class='infowindow'>";
 
-			"<div class='infowindow'>" +
+		if (isNotEmptyString(location.thumb)) {
+			html += "<div class='infowindow-thump'><img src='" + location.thumb + "' ></div> ";
+		}
 
-				"<% if (isNotEmptyString(location.thumb)) { %>" +
-					"<div class='infowindow-thump'>" +
-						"<img src='<%= location.thumb %>' >" +
-					"</div> " +
-				"<% } %>" +
+		html += "<div class='infowindow-content'>";
 
-				"<div class='infowindow-content'>" +
-					"<% if ( isNotEmptyString(location.url) || isNotEmptyString(location.title) ) { %>" +
-						"<div class='infowindow-title'>" +
-							"<% if ( isNotEmptyString(location.url) ) { %><a href='<%- location.url %>'><% } %><%- isNotEmptyString(location.title) ?  location.title : location.url  %><% if ( isNotEmptyString(location.url) ) { %></a><% } %>" +
-						"</div>" +
-					"<% } %>" +
-					"<% if ( isNotEmptyString(location.description) ) { %>" +
-						"<div class='infowindow-description'>" +
-							"<%= location.description %>" +
-						"</div>" +
-					"<% } %>" +
-				"</div>" +
+		if (isNotEmptyString(location.url) || isNotEmptyString(location.title)) {
+			html += "<div class='infowindow-title'>";
+			if (isNotEmptyString(location.url)) { html += "<a href='" + escapeHtml(location.url) + "'>"; }
+			html += escapeHtml(isNotEmptyString(location.title) ? location.title : location.url);
+			if (isNotEmptyString(location.url)) { html += "</a>"; }
+			html += "</div>";
+		}
+		if (isNotEmptyString(location.description)) {
+			html += "<div class='infowindow-description'>" + location.description + "</div>";
+		}
 
-			"</div>");
+		html += "</div></div>";
+		return html;
+	};
 
 	var locationHasContent = function(location) {
 		return isNotEmptyString(location.description) || isNotEmptyString(location.title) || isNotEmptyString(location.url) || isNotEmptyString(location.thumb);
@@ -71,35 +80,52 @@
 		return { lng: (Lng * 180 / Math.PI), lat: (Lat * 180 / Math.PI) };
 	};
 
-	var readConfig = function($mapWrapper, $mapCanvas) {
-		var locations = $mapWrapper.data('locations');
+	// data-* readers replacing jQuery .data(): JSON attributes are parsed,
+	// "true"/"false" strings become booleans.
+	var dataAttr = function(el, name) {
+		var v = el.getAttribute('data-' + name);
+		return (v === null) ? undefined : v;
+	};
+
+	var dataJson = function(el, name) {
+		var v = dataAttr(el, name);
+		if (v === undefined || v === '') { return undefined; }
+		try { return JSON.parse(v); } catch (e) { return undefined; }
+	};
+
+	var dataBool = function(el, name) {
+		var v = dataAttr(el, name);
+		return v === 'true' || v === '1' || v === true;
+	};
+
+	var readConfig = function(mapWrapper, mapCanvas) {
+		var locations = dataJson(mapWrapper, 'locations');
 
 		// Height arrives as a CSS length string ("400px", "50vh"); apply it
 		// verbatim so non-pixel units work. Falls back to a 3:2-ish ratio of the
 		// current width (in px) when nothing is set.
-		var rawHeight = $mapWrapper.data('map-height');
+		var rawHeight = dataAttr(mapWrapper, 'map-height');
 		rawHeight = (rawHeight === undefined || rawHeight === null) ? '' : ('' + rawHeight).trim();
-		var height = rawHeight !== '' ? rawHeight : (parseInt($mapCanvas.width() * 0.66) + 'px');
+		var height = rawHeight !== '' ? rawHeight : (parseInt(mapCanvas.clientWidth * 0.66, 10) + 'px');
 
 		return {
-			locations: ('undefined' !== locations && locations && locations.length) ? locations : [],
+			locations: (locations && locations.length) ? locations : [],
 			height: height,
-			mapType: $mapWrapper.data('map-type'),
-			// jQuery .data() parses the "true"/"false" string into a real boolean.
-			disableScroll: !!$mapWrapper.data('disable-scrolling'),
+			mapType: dataAttr(mapWrapper, 'map-type'),
+			disableScroll: dataBool(mapWrapper, 'disable-scrolling'),
 			// OpenStreetMap tile style + the site-wide provider keys (for keyed styles).
-			osmStyle: $mapWrapper.data('osm-style'),
+			osmStyle: dataAttr(mapWrapper, 'osm-style'),
 			keys: {
-				stadia: $mapWrapper.data('stadia-key') || '',
-				thunderforest: $mapWrapper.data('thunderforest-key') || '',
-				maptiler: $mapWrapper.data('maptiler-key') || ''
+				stadia: dataAttr(mapWrapper, 'stadia-key') || '',
+				thunderforest: dataAttr(mapWrapper, 'thunderforest-key') || '',
+				maptiler: dataAttr(mapWrapper, 'maptiler-key') || ''
 			}
 		};
 	};
 
 	// ---- Google Maps -------------------------------------------------------
-	var initGoogle = function($mapWrapper, $mapCanvas, cfg) {
-		$mapCanvas.css('height', cfg.height);
+	var initGoogle = function(mapWrapper, mapCanvas, cfg) {
+		mapCanvas.style.height = cfg.height;
 
 		var mapOptions = {
 				center: cfg.locations.length ? calculateCenter(cfg.locations) : new google.maps.LatLng(-34, 150),
@@ -109,7 +135,7 @@
 				gestureHandling: cfg.disableScroll ? 'cooperative' : 'greedy'
 			},
 			markerBounds = new google.maps.LatLngBounds(),
-			map = new google.maps.Map($mapCanvas.get(0), mapOptions);
+			map = new google.maps.Map(mapCanvas, mapOptions);
 
 		cfg.locations.forEach(function(location) {
 			var gMapsCoords = new google.maps.LatLng(location.coordinates.lat, location.coordinates.lng);
@@ -133,7 +159,7 @@
 			google.maps.event.removeListener(listener);
 		});
 
-		$mapCanvas.data('map', map);
+		mapCanvas._fwMap = map;
 	};
 
 	// ---- Leaflet / OpenStreetMap ------------------------------------------
@@ -220,15 +246,15 @@
 		return L.tileLayer(url, def.opts);
 	};
 
-	var initLeaflet = function($mapWrapper, $mapCanvas, cfg) {
+	var initLeaflet = function(mapWrapper, mapCanvas, cfg) {
 		configureLeafletIcons();
 
 		// Leaflet needs the container sized before init.
-		$mapCanvas.css('height', cfg.height);
+		mapCanvas.style.height = cfg.height;
 
 		var center = cfg.locations.length ? calculateCenter(cfg.locations) : { lat: -34, lng: 150 };
 
-		var map = L.map($mapCanvas.get(0), {
+		var map = L.map(mapCanvas, {
 			scrollWheelZoom: !cfg.disableScroll
 		}).setView([center.lat, center.lng], 13);
 
@@ -252,7 +278,7 @@
 		// Container height was set after potential layout; make sure tiles fill it.
 		setTimeout(function() { map.invalidateSize(); }, 0);
 
-		$mapCanvas.data('map', map);
+		mapCanvas._fwMap = map;
 	};
 
 	// Run init once the engine's library global is available. The library is
@@ -279,16 +305,16 @@
 		}, 100);
 	};
 
-	var init = function($mapWrapper) {
-		var $mapCanvas = $mapWrapper.find('.fw-map-canvas'),
-			engine = ($mapWrapper.data('map-engine') === 'google') ? 'google' : 'osm',
-			cfg = readConfig($mapWrapper, $mapCanvas);
+	var init = function(mapWrapper) {
+		var mapCanvas = mapWrapper.querySelector('.fw-map-canvas'),
+			engine = (dataAttr(mapWrapper, 'map-engine') === 'google') ? 'google' : 'osm',
+			cfg = readConfig(mapWrapper, mapCanvas);
 
 		whenEngineReady(engine, function() {
 			if (engine === 'google') {
-				initGoogle($mapWrapper, $mapCanvas, cfg);
+				initGoogle(mapWrapper, mapCanvas, cfg);
 			} else {
-				initLeaflet($mapWrapper, $mapCanvas, cfg);
+				initLeaflet(mapWrapper, mapCanvas, cfg);
 			}
 		});
 	};
@@ -296,18 +322,16 @@
 	// Lazy-init each map only when it scrolls into view, to avoid creating maps
 	// (and the associated tile/API cost) for maps far below the fold.
 	var observeMap = function(el) {
-		var $wrapper = $(el);
-
-		if ($wrapper.hasClass('fw-map-initialized')) {
+		if (el.classList.contains('fw-map-initialized')) {
 			return;
 		}
 
 		var run = function() {
-			if ($wrapper.hasClass('fw-map-initialized')) {
+			if (el.classList.contains('fw-map-initialized')) {
 				return;
 			}
-			$wrapper.addClass('fw-map-initialized');
-			init($wrapper);
+			el.classList.add('fw-map-initialized');
+			init(el);
 		};
 
 		if (typeof IntersectionObserver === 'undefined') {
@@ -327,13 +351,19 @@
 		observer.observe(el);
 	};
 
-	$(document).ready(function() {
-		$('.map').each(function() {
+	var boot = function() {
+		Array.prototype.forEach.call(document.querySelectorAll('.map'), function(el) {
 			// Only treat as a map shortcode wrapper if it contains a canvas.
-			if ($(this).find('.fw-map-canvas').length) {
-				observeMap(this);
+			if (el.querySelector('.fw-map-canvas')) {
+				observeMap(el);
 			}
 		});
-	});
+	};
 
-}(jQuery, _));
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', boot);
+	} else {
+		boot();
+	}
+
+}());

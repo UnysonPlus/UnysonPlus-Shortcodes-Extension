@@ -1,0 +1,11 @@
+/* Neon — a pricing-table SKIN pack. Scoped to the generic .design-<key> class the
+   host emits, so no shortcode-specific prefix is needed. */
+.design-neon .fw-pt__card,
+.design-neon .fw-pt-plan {
+	background: #0b1020;
+	color: #e6f1ff;
+	border: 1px solid #21e6c1;
+	border-radius: 14px;
+	box-shadow: 0 0 24px rgba(33, 230, 193, .35);
+}
+.design-neon .fw-pt__price { color: #21e6c1; }

@@ -29,7 +29,7 @@ $options = array(
 								'value' => __( 'Starter', 'fw' ),
 							),
 							'icon' => array(
-								'type'         => 'icon-v2',
+								'type'         => 'icon',
 								'label'        => __( 'Icon', 'fw' ),
 								'preview_size' => 'small',
 								'desc'         => __( 'Optional icon shown above the plan name.', 'fw' ),
@@ -107,17 +107,23 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'design' => call_user_func( function () {
-						$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
-						$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/pricing-table/static/img/design' );
-						$choices  = array();
-						foreach ( (array) $registry as $key => $meta ) {
-							$choices[ $key ] = array(
-								'small' => array(
-									'src'    => $base . '/' . ( isset( $meta['thumb'] ) ? $meta['thumb'] : $key . '.svg' ),
-									'height' => 72,
-									'title'  => isset( $meta['label'] ) ? $meta['label'] : $key,
-								),
-							);
+						// Built-in skins PLUS installed skin packs (disabled ones hidden),
+						// via the pluggable-designs layer; local registry as fallback.
+						if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+							$choices = fw_sc_design_picker_choices( 'pricing_table' );
+						} else {
+							$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
+							$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/pricing-table/static/img/design' );
+							$choices  = array();
+							foreach ( (array) $registry as $key => $meta ) {
+								$choices[ $key ] = array(
+									'small' => array(
+										'src'    => $base . '/' . ( isset( $meta['thumb'] ) ? $meta['thumb'] : $key . '.svg' ),
+										'height' => 72,
+										'title'  => isset( $meta['label'] ) ? $meta['label'] : $key,
+									),
+								);
+							}
 						}
 						return array(
 							'type'    => 'image-picker',

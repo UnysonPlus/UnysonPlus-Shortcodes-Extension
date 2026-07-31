@@ -12,8 +12,13 @@ $options = array(
 						'type'        => 'upload',
 						'label'       => __( 'Bleed Image', 'fw' ),
 						'desc'        => __( 'Image that fills one side and extends to the viewport edge.', 'fw' ),
-						'help'        => __( 'Use a high-resolution image — it is cropped to fill its half (cover), so detail near the edges may be trimmed depending on the Image / Content Ratio.', 'fw' ),
+						'help'        => __( 'Use a high-resolution image — it is cropped to fill its half (cover), so detail near the edges may be trimmed depending on the Image / Content Ratio. Served responsively (srcset) when picked from the Media Library.', 'fw' ),
 						'images_only' => true,
+					),
+					'bleed_image_alt' => array(
+						'type'  => 'text',
+						'label' => __( 'Image Alt Text', 'fw' ),
+						'desc'  => __( 'Describe the image for screen readers / SEO. Leave blank to use the alt text saved on the image in the Media Library; leave empty only for a purely decorative image.', 'fw' ),
 					),
 					'bleed_image_side' => array(
 						'type'    => 'select',
@@ -61,6 +66,14 @@ $options = array(
 							'right bottom' => __( 'Right Bottom', 'fw' ),
 						),
 					),
+					'bleed_image_lazy' => array(
+						'type'         => 'switch',
+						'label'        => __( 'Lazy-load Image', 'fw' ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+						'value'        => 'no',
+						'help'         => __( 'Off (default) loads the image immediately — best when the Bleed Section is near the top of the page (better LCP). Turn on for a section lower down the page.', 'fw' ),
+					),
 					'bleed_mobile_stacking' => array(
 						'type'    => 'select',
 						'label'   => __( 'Mobile Stacking Order', 'fw' ),
@@ -69,6 +82,19 @@ $options = array(
 						'choices' => array(
 							'content-first' => __( 'Content First', 'fw' ),
 							'image-first'   => __( 'Image First', 'fw' ),
+						),
+					),
+					'bleed_min_height' => array(
+						'type'    => 'select',
+						'label'   => __( 'Minimum Height', 'fw' ),
+						'desc'    => __( 'Force a minimum section height so the split reads as a hero even when the content is short. The Content Vertical Align then positions the content within it.', 'fw' ),
+						'value'   => 'none',
+						'choices' => array(
+							'none' => __( 'Auto (fit content)', 'fw' ),
+							'sm'   => __( 'Small (40vh)', 'fw' ),
+							'md'   => __( 'Medium (60vh)', 'fw' ),
+							'lg'   => __( 'Large (80vh)', 'fw' ),
+							'full' => __( 'Fullscreen (100vh)', 'fw' ),
 						),
 					),
 					'is_fullwidth' => array(
@@ -92,6 +118,18 @@ $options = array(
 						'type'  => 'background-pro',
 						'label' => __( 'Content Background', 'fw' ),
 						'desc'  => __( 'Background for the CONTENT side (color, gradient and/or image). It bleeds to the viewport edge behind the content. The image side is the Bleed Image on the Layout tab.', 'fw' ),
+					),
+					'bleed_overlay_color' => sc_color_field_compact( array(
+						'label' => __( 'Image Overlay', 'fw' ),
+						'kind'  => 'bg',
+						'desc'  => __( 'A tint laid over the bleed image — e.g. to darken it or wash it toward a brand color. Pair with the opacity below.', 'fw' ),
+					) ),
+					'bleed_overlay_opacity' => array(
+						'type'       => 'slider',
+						'label'      => __( 'Overlay Opacity', 'fw' ),
+						'desc'       => __( '0 = no overlay, 100 = fully opaque. Only used when an Image Overlay color is set.', 'fw' ),
+						'value'      => 0,
+						'properties' => array( 'min' => 0, 'max' => 100, 'step' => 5 ),
 					),
 					'bleed_vertical_align' => array(
 						'type'    => 'select',

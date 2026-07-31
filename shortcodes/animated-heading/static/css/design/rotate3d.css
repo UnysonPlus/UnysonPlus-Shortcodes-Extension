@@ -1,0 +1,2 @@
+/* Design-specific CSS — auto-split from styles.css. Loaded only when the "rotate3d" design is used. */
+.fw-ah--anim-rotate3d .fw-ah__word.run { animation-name: fw-ah-rotate3d; }

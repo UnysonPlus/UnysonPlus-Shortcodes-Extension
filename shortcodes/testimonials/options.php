@@ -2,20 +2,21 @@
     die( 'Forbidden' );
 }
 
-/* Build the `design` image-picker choices from the single-source-of-truth
-   registry, so adding a design there automatically lists it here. SVG
-   thumbnails live under static/img/designs/. */
-$ts_uri          = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/testimonials' );
-$ts_designs      = require dirname( __FILE__ ) . '/views/designs/registry.php';
-$ts_design_choices = [];
-foreach ( $ts_designs as $ts_key => $ts_def ) {
-    $ts_design_choices[ $ts_key ] = [
-        'small' => [
-            'src' => $ts_uri . '/static/img/designs/' . $ts_def['thumb'],
-            'alt' => $ts_def['label'],
-        ],
-        'label' => $ts_def['label'],
-    ];
+/* Design image-picker choices via the pluggable-designs layer: built-in designs
+   PLUS installed design packs (each pack's img/icon.svg becomes a tile). Falls
+   back to the built-in registry if the layer isn't loaded. */
+if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+    $ts_design_choices = fw_sc_design_picker_choices( 'testimonials' );
+} else {
+    $ts_uri            = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/testimonials' );
+    $ts_designs        = require dirname( __FILE__ ) . '/views/designs/registry.php';
+    $ts_design_choices = [];
+    foreach ( $ts_designs as $ts_key => $ts_def ) {
+        $ts_design_choices[ $ts_key ] = [
+            'small' => [ 'src' => $ts_uri . '/static/img/designs/' . $ts_def['thumb'], 'alt' => $ts_def['label'] ],
+            'label' => $ts_def['label'],
+        ];
+    }
 }
 
 /* ---------------------------------------------------------------------------
@@ -522,3 +523,12 @@ $options = [
         ],
     ],
 ];
+
+/* Merge installed design-PACK option fragments into the design multi-picker, so a
+   pack that ships options.php shows its (design-scoped) controls when selected. */
+if ( function_exists( 'fw_sc_design_pack_option_fragments' )
+    && isset( $options['tab_design']['options']['group']['options']['design_settings']['choices'] ) ) {
+    foreach ( fw_sc_design_pack_option_fragments( 'testimonials' ) as $ts_pack_key => $ts_pack_frag ) {
+        $options['tab_design']['options']['group']['options']['design_settings']['choices'][ $ts_pack_key ] = $ts_pack_frag;
+    }
+}

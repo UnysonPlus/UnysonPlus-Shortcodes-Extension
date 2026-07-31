@@ -1216,6 +1216,25 @@ if ( ! function_exists( 'sc_get_button_style_choices' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'sc_get_button_style_default' ) ) :
+	/**
+	 * The default Button Style for a freshly-added button: the first REAL preset
+	 * (Primary, in the default order) — NOT the bare `.btn` base. `sc_get_button_style_choices()`
+	 * prepends a `'' => Default` row, so the naive `key()` of the first choice is `''`
+	 * (an unstyled button); this skips that leading blank and returns the first
+	 * non-empty `btn-{slug}` key so a dropped-in CTA looks intentional out of the box.
+	 * The blank "Default" row stays selectable (and the Site Converter still sets it
+	 * explicitly). Returns '' only when no presets exist.
+	 */
+	function sc_get_button_style_default() {
+		if ( ! function_exists( 'sc_get_button_style_choices' ) ) { return ''; }
+		foreach ( sc_get_button_style_choices() as $key => $label ) {
+			if ( (string) $key !== '' ) { return (string) $key; }
+		}
+		return '';
+	}
+endif;
+
 if ( ! function_exists( 'sc_get_border_preset_choices' ) ) :
 	/**
 	 * Dropdown choices for a column's Border Preset picker, sourced from the saved
@@ -2354,7 +2373,7 @@ if ( ! function_exists( 'sc_icon_enqueue_pack' ) ) :
 	 */
 	function sc_icon_enqueue_pack( $value ) {
 		if ( ! function_exists( 'fw' ) ) { return; }
-		$ot = fw()->backend->option_type( 'icon-v2' );
+		$ot = fw()->backend->option_type( 'icon' );
 		if ( $ot && isset( $ot->packs_loader ) ) {
 			$ot->packs_loader->enqueue_pack_for_icon( $value );
 		}
@@ -2492,6 +2511,7 @@ if ( ! function_exists( 'sc_icon_render' ) ) :
 
 		if ( $type === 'lottie' ) {
 			$src = isset( $value['src'] ) ? trim( (string) $value['src'] ) : '';
+			if ( function_exists( 'fw_upw_normalize_legacy_upload_url' ) ) { $src = fw_upw_normalize_legacy_upload_url( $src ); }
 			if ( $src === '' ) { return ''; }
 
 			$trigger = isset( $value['trigger'] ) ? preg_replace( '/[^a-z]/', '', (string) $value['trigger'] ) : 'loop';
@@ -2508,6 +2528,25 @@ if ( ! function_exists( 'sc_icon_render' ) ) :
 				. ' data-src="' . esc_url( $src ) . '"'
 				. ' data-trigger="' . esc_attr( $trigger ) . '"'
 				. ' data-speed="' . esc_attr( $speed ) . '"'
+				. $extra . $aria . '></span>';
+		}
+
+		if ( $type === 'rive' ) {
+			$src = isset( $value['src'] ) ? trim( (string) $value['src'] ) : '';
+			if ( function_exists( 'fw_upw_normalize_legacy_upload_url' ) ) { $src = fw_upw_normalize_legacy_upload_url( $src ); }
+			if ( $src === '' ) { return ''; }
+
+			$trigger = isset( $value['trigger'] ) ? preg_replace( '/[^a-z]/', '', (string) $value['trigger'] ) : 'loop';
+			if ( ! in_array( $trigger, array( 'loop', 'once', 'hover', 'click' ), true ) ) { $trigger = 'loop'; }
+
+			if ( $args['enqueue'] && function_exists( 'sc_icon_enqueue_rive' ) ) { sc_icon_enqueue_rive(); }
+
+			$cls  = sc_icon_join_classes( array( 'upw-rive', $args['class'] ) );
+			$aria = $args['aria_hidden'] ? ' aria-hidden="true"' : ' role="img"';
+
+			return '<span class="' . esc_attr( $cls ) . '"'
+				. ' data-src="' . esc_url( $src ) . '"'
+				. ' data-trigger="' . esc_attr( $trigger ) . '"'
 				. $extra . $aria . '></span>';
 		}
 
@@ -2538,6 +2577,33 @@ if ( ! function_exists( 'sc_icon_enqueue_lottie' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'sc_icon_enqueue_rive' ) ) :
+	/**
+	 * Enqueue the bundled Rive canvas runtime (rive.js + rive.wasm) + the
+	 * UnysonPlus hydrator, once. Called from sc_icon_render() only when a Rive
+	 * icon is actually output, so pages without a Rive icon never load the heavy
+	 * (~2 MB) WASM runtime. The hydrator pins the WASM URL to our bundled copy via
+	 * the localized upwRiveWasm, so the runtime never reaches out to a CDN.
+	 */
+	function sc_icon_enqueue_rive() {
+		$base = fw_get_framework_directory_uri( '/static/libs/rive' );
+		$ver  = function_exists( 'fw' ) ? fw()->manifest->get_version() : '1';
+
+		if ( ! wp_style_is( 'upw-rive', 'enqueued' ) ) {
+			wp_enqueue_style( 'upw-rive', $base . '/upw-rive.css', array(), $ver );
+		}
+		if ( ! wp_script_is( 'rive-canvas', 'enqueued' ) ) {
+			wp_enqueue_script( 'rive-canvas', $base . '/rive.js', array(), $ver, true );
+		}
+		if ( ! wp_script_is( 'upw-rive', 'enqueued' ) ) {
+			wp_enqueue_script( 'upw-rive', $base . '/upw-rive.js', array( 'rive-canvas' ), $ver, true );
+			// Pin the WASM to our bundled copy (a plain string, read before the
+			// hydrator runs) so the runtime never fetches it from a CDN.
+			wp_add_inline_script( 'upw-rive', 'window.upwRiveWasm=' . wp_json_encode( $base . '/rive.wasm' ) . ';', 'before' );
+		}
+	}
+endif;
+
 /* -----------------------------------------------------------------------------
  * Shared inline-SVG sanitiser + custom-icon (emoji / SVG) renderer.
  *
@@ -2555,17 +2621,43 @@ if ( ! function_exists( 'sc_icon_svg_allowed' ) ) :
 			'fill' => true, 'stroke' => true, 'stroke-width' => true,
 			'stroke-linecap' => true, 'stroke-linejoin' => true,
 			'fill-rule' => true, 'clip-rule' => true, 'class' => true,
+			// Presentation attrs real-world brand SVGs rely on (Illustrator
+			// exports, gradient fills, reflections). Values are inert - the
+			// XSS surface is scripts/handlers/foreignObject, all still absent.
+			'opacity' => true, 'fill-opacity' => true, 'stroke-opacity' => true,
+			'transform' => true, 'id' => true, 'clip-path' => true, 'mask' => true,
+			'stroke-dasharray' => true, 'stroke-dashoffset' => true, 'stroke-miterlimit' => true,
 		);
-		return array(
+		// <text>/<tspan>: real text in logo SVGs (wordmarks). Font attrs only -
+		// no style attr, no event handlers.
+		$text = array_merge( $stroke, array(
+			'x' => true, 'y' => true, 'dx' => true, 'dy' => true, 'rotate' => true,
+			'font-family' => true, 'font-size' => true, 'font-weight' => true,
+			'font-style' => true, 'letter-spacing' => true, 'text-anchor' => true,
+		) );
+		// Gradient plumbing (defs / stops / units). href is allowed for
+		// gradient templates + <use>, but sc_icon_sanitize_svg() strips any
+		// href that is not a same-document '#fragment' reference.
+		$grad = array(
+			'id' => true, 'gradientunits' => true, 'gradienttransform' => true,
+			'spreadmethod' => true, 'href' => true, 'xlink:href' => true,
+			'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true,
+			'cx' => true, 'cy' => true, 'r' => true, 'fx' => true, 'fy' => true, 'fr' => true,
+		);
+		$allowed = array(
 			'svg'      => array(
-				'xmlns' => true, 'viewbox' => true, 'width' => true, 'height' => true,
-				'x' => true, 'y' => true,
+				'xmlns' => true, 'xmlns:xlink' => true, 'viewbox' => true, 'width' => true, 'height' => true,
+				'x' => true, 'y' => true, 'version' => true, 'id' => true,
 				'fill' => true, 'stroke' => true, 'stroke-width' => true,
 				'stroke-linecap' => true, 'stroke-linejoin' => true,
 				'preserveaspectratio' => true, 'class' => true, 'role' => true,
 				'aria-hidden' => true, 'aria-label' => true, 'focusable' => true,
+				'xml:space' => true,
 			),
-			'g'        => array_merge( $stroke, array( 'transform' => true ) ),
+			'g'        => $stroke,
+			'defs'     => array( 'id' => true ),
+			'symbol'   => array_merge( $stroke, array( 'viewbox' => true, 'preserveaspectratio' => true ) ),
+			'use'      => array_merge( $stroke, array( 'href' => true, 'xlink:href' => true, 'x' => true, 'y' => true, 'width' => true, 'height' => true ) ),
 			'path'     => array_merge( $stroke, array( 'd' => true ) ),
 			'circle'   => array_merge( $stroke, array( 'cx' => true, 'cy' => true, 'r' => true ) ),
 			'ellipse'  => array_merge( $stroke, array( 'cx' => true, 'cy' => true, 'rx' => true, 'ry' => true ) ),
@@ -2573,9 +2665,166 @@ if ( ! function_exists( 'sc_icon_svg_allowed' ) ) :
 			'line'     => array_merge( $stroke, array( 'x1' => true, 'y1' => true, 'x2' => true, 'y2' => true ) ),
 			'polyline' => array_merge( $stroke, array( 'points' => true ) ),
 			'polygon'  => array_merge( $stroke, array( 'points' => true ) ),
+			'text'     => $text,
+			'tspan'    => $text,
+			'lineargradient' => $grad,
+			'radialgradient' => $grad,
+			'stop'     => array( 'offset' => true, 'stop-color' => true, 'stop-opacity' => true, 'id' => true ),
+			'clippath' => array( 'id' => true, 'clippathunits' => true ),
+			'mask'     => array_merge( $stroke, array( 'x' => true, 'y' => true, 'width' => true, 'height' => true, 'maskunits' => true, 'maskcontentunits' => true ) ),
 			'title'    => array(),
 			'desc'     => array(),
 		);
+
+		// SMIL animation elements — allowed ONLY when the Animated Icons extension
+		// has enabled "Animated SVG". They declaratively animate an attribute /
+		// transform / motion over time and CANNOT execute JavaScript; the XSS
+		// surface (scripts, event handlers, <foreignObject>, external refs) stays
+		// excluded exactly as before. The camelCase attrs below (attributeName,
+		// keyTimes, …) are restored from wp_kses's lowercasing in
+		// sc_icon_sanitize_svg(), or the browser would ignore them.
+		if ( function_exists( 'fw_icon_svg_animation_enabled' ) && fw_icon_svg_animation_enabled() ) {
+			$anim = array(
+				'attributename' => true, 'attributetype' => true,
+				'from' => true, 'to' => true, 'by' => true, 'values' => true,
+				'keytimes' => true, 'keysplines' => true, 'calcmode' => true,
+				'dur' => true, 'begin' => true, 'end' => true, 'min' => true, 'max' => true,
+				'restart' => true, 'repeatcount' => true, 'repeatdur' => true,
+				'fill' => true, 'additive' => true, 'accumulate' => true, 'id' => true,
+			);
+			$allowed['animate']          = $anim;
+			$allowed['set']              = $anim;
+			$allowed['animatetransform'] = array_merge( $anim, array( 'type' => true ) );
+			$allowed['animatemotion']    = array_merge( $anim, array( 'path' => true, 'keypoints' => true, 'rotate' => true, 'origin' => true ) );
+			$allowed['mpath']            = array( 'href' => true, 'xlink:href' => true, 'id' => true );
+		}
+
+		return $allowed;
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_flatten_svg_css' ) ) :
+	/**
+	 * Flatten an SVG's internal CSS into presentation attributes so the markup
+	 * survives sanitisation intact. Adobe Illustrator exports style everything
+	 * through a <style> block of `.stN{...}` classes (plus inline style="...")
+	 * - wp_kses strips both, which used to turn AI exports black. This inlines:
+	 *   1. every simple single-class rule (`.st0{fill:#123}`) onto the elements
+	 *      carrying that class, and
+	 *   2. every inline style="prop:val" list,
+	 * as plain attributes (fill="#123"), then drops the <style> block. Only a
+	 * safe property allowlist is inlined - anything else is discarded.
+	 */
+	function sc_icon_flatten_svg_css( $markup ) {
+		$markup = (string) $markup;
+		if ( stripos( $markup, '<style' ) === false && stripos( $markup, 'style=' ) === false ) {
+			return $markup;
+		}
+
+		// Properties worth inlining (matching SVG presentation attributes 1:1).
+		$props = array(
+			'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin',
+			'stroke-dasharray', 'stroke-dashoffset', 'stroke-miterlimit',
+			'fill-rule', 'clip-rule', 'opacity', 'fill-opacity', 'stroke-opacity',
+			'stop-color', 'stop-opacity', 'font-family', 'font-size', 'font-weight',
+			'font-style', 'letter-spacing', 'text-anchor', 'clip-path', 'mask',
+			'transform',
+		);
+		$parse_decls = function ( $body ) use ( $props ) {
+			$out = array();
+			foreach ( explode( ';', $body ) as $decl ) {
+				$decl = trim( $decl );
+				if ( $decl === '' || strpos( $decl, ':' ) === false ) { continue; }
+				list( $prop, $val ) = array_map( 'trim', explode( ':', $decl, 2 ) );
+				$prop = strtolower( $prop );
+				if ( in_array( $prop, $props, true ) && $val !== '' && strpos( $val, '<' ) === false ) {
+					$out[ $prop ] = $val;
+				}
+			}
+			// Illustrator writes PostScript font names ('Arial-Black',
+			// 'Montserrat-SemiBoldItalic') which browsers do NOT resolve - CSS
+			// wants the family name + weight/style. Normalise: strip a trailing
+			// weight/style suffix into font-weight / font-style, de-hyphenate
+			// the family, and keep the original name as a fallback for
+			// environments that do resolve PostScript names (Illustrator).
+			if ( isset( $out['font-family'] ) ) {
+				$raw = trim( $out['font-family'], " \t'\"" );
+				if ( preg_match( '/^([A-Za-z0-9 ]+?)-?(Thin|ExtraLight|UltraLight|Light|Regular|Medium|SemiBold|DemiBold|Bold|ExtraBold|UltraBold|Black|Heavy)?(Italic|Oblique)?$/', $raw, $fm ) ) {
+					$family  = trim( preg_replace( '/(?<=[a-z])(?=[A-Z])/', ' ', $fm[1] ) ); // CamelCase -> spaced
+					$weights = array(
+						'Thin' => '100', 'ExtraLight' => '200', 'UltraLight' => '200',
+						'Light' => '300', 'Regular' => '400', 'Medium' => '500',
+						'SemiBold' => '600', 'DemiBold' => '600', 'Bold' => '700',
+						'ExtraBold' => '800', 'UltraBold' => '800', 'Black' => '900', 'Heavy' => '900',
+					);
+					if ( $family !== '' && $family !== $raw ) {
+						// The spaced full name first ("Arial Black" IS a family of
+						// its own), then the bare family + weight, then the raw
+						// PostScript name for environments that resolve it.
+						$stack = array();
+						if ( ! empty( $fm[2] ) ) { $stack[] = "'" . $family . ' ' . $fm[2] . "'"; }
+						$stack[] = "'" . $family . "'";
+						$stack[] = "'" . $raw . "'";
+						$stack[] = 'sans-serif';
+						$out['font-family'] = implode( ', ', array_unique( $stack ) );
+						if ( ! empty( $fm[2] ) && ! isset( $out['font-weight'] ) && isset( $weights[ $fm[2] ] ) ) {
+							$out['font-weight'] = $weights[ $fm[2] ];
+						}
+						if ( ! empty( $fm[3] ) && ! isset( $out['font-style'] ) ) {
+							$out['font-style'] = 'italic';
+						}
+					}
+				}
+			}
+			return $out;
+		};
+
+		// 1. Collect single-class rules from every <style> block, in order (a
+		//    later rule for the same class overrides an earlier one, like CSS).
+		$class_map = array();
+		if ( preg_match_all( '/<style[^>]*>(.*?)<\/style>/is', $markup, $style_blocks ) ) {
+			foreach ( $style_blocks[1] as $css ) {
+				if ( preg_match_all( '/\.([A-Za-z_][\w-]*)\s*\{([^}]*)\}/', $css, $rules, PREG_SET_ORDER ) ) {
+					foreach ( $rules as $rule ) {
+						$decls = $parse_decls( $rule[2] );
+						if ( $decls ) {
+							$class_map[ $rule[1] ] = isset( $class_map[ $rule[1] ] )
+								? array_merge( $class_map[ $rule[1] ], $decls )
+								: $decls;
+						}
+					}
+				}
+			}
+			$markup = preg_replace( '/<style[^>]*>.*?<\/style>\s*/is', '', $markup );
+		}
+
+		// 2. Rewrite each element: inline its classes' declarations + its own
+		//    style="" (inline style wins over class rules, like CSS), written as
+		//    presentation attributes REPLACING same-name existing attributes
+		//    (class/style would have out-cascaded them anyway).
+		$markup = preg_replace_callback( '/<([a-zA-Z][\w:-]*)((?:[^>"\']|"[^"]*"|\'[^\']*\')*?)(\/?)>/', function ( $m ) use ( $class_map, $parse_decls ) {
+			$tag  = $m[1];
+			$attr = $m[2];
+			$decls = array();
+			if ( preg_match( '/\sclass\s*=\s*(["\'])(.*?)\1/', $attr, $cm ) ) {
+				foreach ( preg_split( '/\s+/', trim( $cm[2] ) ) as $cls ) {
+					if ( isset( $class_map[ $cls ] ) ) { $decls = array_merge( $decls, $class_map[ $cls ] ); }
+				}
+			}
+			if ( preg_match( '/\sstyle\s*=\s*(["\'])(.*?)\1/', $attr, $sm ) ) {
+				$decls = array_merge( $decls, $parse_decls( $sm[2] ) );
+				$attr  = preg_replace( '/\sstyle\s*=\s*(["\'])(?:.*?)\1/', '', $attr );
+			}
+			foreach ( $decls as $prop => $val ) {
+				// Replace an existing same-name attribute, else append.
+				$val  = str_replace( array( '"', '<', '>' ), '', $val );
+				$attr = preg_replace( '/\s' . preg_quote( $prop, '/' ) . '\s*=\s*(["\'])(?:.*?)\1/', '', $attr );
+				$attr .= ' ' . $prop . '="' . $val . '"';
+			}
+			return '<' . $tag . $attr . $m[3] . '>';
+		}, $markup );
+
+		return $markup;
 	}
 endif;
 
@@ -2584,18 +2833,50 @@ if ( ! function_exists( 'sc_icon_sanitize_svg' ) ) :
 	function sc_icon_sanitize_svg( $markup ) {
 		$markup = (string) $markup;
 		if ( stripos( $markup, '<svg' ) === false ) { return ''; }
+		// Inline any internal CSS (Illustrator's <style> + classes / style="")
+		// as presentation attributes FIRST, so the styling survives wp_kses.
+		$markup = sc_icon_flatten_svg_css( $markup );
 		$clean = wp_kses( $markup, sc_icon_svg_allowed() );
 		// wp_kses lowercases attribute NAMES, but several SVG attributes are
 		// case-SENSITIVE and silently break when lowercased — most importantly
 		// `viewBox` (a lowercased `viewbox` is ignored by the browser, collapsing
 		// the SVG's intrinsic aspect ratio so `width:auto` mis-sizes it). Restore
 		// their canonical camelCase on the way out.
-		$camel = array( 'viewbox' => 'viewBox', 'preserveaspectratio' => 'preserveAspectRatio' );
+		$camel = array(
+			'viewbox'             => 'viewBox',
+			'preserveaspectratio' => 'preserveAspectRatio',
+			'gradientunits'       => 'gradientUnits',
+			'gradienttransform'   => 'gradientTransform',
+			'spreadmethod'        => 'spreadMethod',
+			'clippathunits'       => 'clipPathUnits',
+			'maskunits'           => 'maskUnits',
+			'maskcontentunits'    => 'maskContentUnits',
+			// SMIL animation attrs (only present when Animated SVG is enabled) —
+			// camelCase-sensitive; a lowercased `attributename`/`repeatcount`/…
+			// is ignored by the browser and the animation silently dies.
+			'attributename'       => 'attributeName',
+			'attributetype'       => 'attributeType',
+			'keytimes'            => 'keyTimes',
+			'keysplines'          => 'keySplines',
+			'calcmode'            => 'calcMode',
+			'repeatcount'         => 'repeatCount',
+			'repeatdur'           => 'repeatDur',
+			'keypoints'           => 'keyPoints',
+		);
 		$clean = preg_replace_callback(
-			'/\s(viewbox|preserveaspectratio)=/i',
+			'/\s(viewbox|preserveaspectratio|gradientunits|gradienttransform|spreadmethod|clippathunits|maskunits|maskcontentunits|attributename|attributetype|keytimes|keysplines|calcmode|repeatcount|repeatdur|keypoints)=/i',
 			function ( $m ) use ( $camel ) { return ' ' . $camel[ strtolower( $m[1] ) ] . '='; },
 			$clean
 		);
+		// href / xlink:href are only allowed as same-document '#fragment'
+		// references (gradient templates, <use>). Strip anything else so an
+		// external or javascript: URL can never survive the allowlist.
+		$clean = preg_replace( '/\s(href|xlink:href)\s*=\s*(["\'])(?!#)[^"\']*\2/i', '', $clean );
+		// SVG forbids negative radii, but an Illustrator mirror-export can emit
+		// them (e.g. ry="-14" on a reflected ellipse) - browsers log a console
+		// error and SKIP the shape. The geometric intent is the absolute value.
+		$clean = preg_replace( '/\s(r|rx|ry)\s*=\s*"-([\d.]+)"/i', ' $1="$2"', $clean );
+		$clean = preg_replace( "/\s(r|rx|ry)\s*=\s*'-([\d.]+)'/i", " \$1='\$2'", $clean );
 		return $clean;
 	}
 endif;
@@ -2630,4 +2911,158 @@ if ( ! function_exists( 'sc_icon_svg_library_markup' ) ) :
 		}
 		return (string) apply_filters( 'sc_icon_svg_library_markup', $markup, $id );
 	}
+endif;
+
+/* -----------------------------------------------------------------------------
+ * SVG uploads (Media Library) - administrators only, sanitised on the way in.
+ *
+ * WordPress blocks .svg uploads entirely; these hooks allow them for admins and
+ * rewrite the file THROUGH the shared icon sanitiser before it is stored, so a
+ * Media Library SVG is exactly as safe as an inline icon SVG: scripts, event
+ * handlers and external refs are stripped, and Illustrator's <style>/class
+ * exports are flattened to presentation attributes (sc_icon_flatten_svg_css) -
+ * an AI export can never render black. This is what lets SVG logos ride the
+ * normal user-replaceable media flow (Simple Logo, Footer Logo, image
+ * elements) with no special uploader.
+ * -------------------------------------------------------------------------- */
+if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
+	function sc_svg_upload_mimes( $mimes ) {
+		if ( current_user_can( 'manage_options' ) ) {
+			$mimes['svg'] = 'image/svg+xml';
+		}
+		return $mimes;
+	}
+	add_filter( 'upload_mimes', 'sc_svg_upload_mimes' );
+
+	function sc_svg_check_filetype( $data, $file, $filename, $mimes ) {
+		if ( preg_match( '/\.svg$/i', (string) $filename ) && current_user_can( 'manage_options' ) ) {
+			$data['ext']  = 'svg';
+			$data['type'] = 'image/svg+xml';
+		}
+		return $data;
+	}
+	add_filter( 'wp_check_filetype_and_ext', 'sc_svg_check_filetype', 10, 4 );
+
+	function sc_svg_sanitize_upload( $file ) {
+		if ( empty( $file['name'] ) || ! preg_match( '/\.svg$/i', (string) $file['name'] ) ) {
+			return $file;
+		}
+		if ( ! current_user_can( 'manage_options' ) ) {
+			$file['error'] = __( 'SVG uploads are limited to administrators.', 'fw' );
+			return $file;
+		}
+		$raw   = ( ! empty( $file['tmp_name'] ) && is_readable( $file['tmp_name'] ) ) ? file_get_contents( $file['tmp_name'] ) : false;
+		$clean = ( false !== $raw ) ? sc_icon_sanitize_svg( $raw ) : '';
+		if ( '' === $clean ) {
+			$file['error'] = __( 'This SVG could not be sanitised and was rejected.', 'fw' );
+			return $file;
+		}
+		// Standalone-file prolog (the sanitiser output is a bare <svg> fragment).
+		if ( false === stripos( $clean, '<?xml' ) ) {
+			$clean = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" . $clean;
+		}
+		file_put_contents( $file['tmp_name'], $clean );
+		$file['size'] = strlen( $clean );
+		return $file;
+	}
+	add_filter( 'wp_handle_upload_prefilter', 'sc_svg_sanitize_upload' );
+	// Sideloads (media_handle_sideload / programmatic imports) run a separate
+	// prefilter hook - sanitise that path identically.
+	add_filter( 'wp_handle_sideload_prefilter', 'sc_svg_sanitize_upload' );
+
+	/**
+	 * Read an SVG file's intrinsic dimensions: width/height attributes first,
+	 * else the viewBox, else the SVG default 300x150.
+	 */
+	function sc_svg_file_dimensions( $file ) {
+		$w = 300; $h = 150;
+		$head = ( $file && is_readable( $file ) ) ? file_get_contents( $file, false, null, 0, 4096 ) : '';
+		if ( $head && preg_match( '/<svg[^>]*>/i', $head, $tag ) ) {
+			$has_wh = preg_match( '/\swidth\s*=\s*["\']([0-9.]+)(?:px)?["\']/i', $tag[0], $mw )
+				&& preg_match( '/\sheight\s*=\s*["\']([0-9.]+)(?:px)?["\']/i', $tag[0], $mh );
+			if ( $has_wh ) {
+				$w = (float) $mw[1]; $h = (float) $mh[1];
+			} elseif ( preg_match( '/viewBox\s*=\s*["\']\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)\s*["\']/i', $tag[0], $vb ) ) {
+				$w = (float) $vb[1];
+				$h = (float) $vb[2];
+			}
+		}
+		return array( max( 1, (int) round( $w ) ), max( 1, (int) round( $h ) ) );
+	}
+
+	/**
+	 * WordPress generates NO metadata for SVG attachments, which breaks the
+	 * admin: the grid shows no thumbnail, Edit Media says "Image data does not
+	 * exist", and image functions return no dimensions. Provide metadata from
+	 * the SVG's own width/height/viewBox so SVGs behave like normal images.
+	 */
+	function sc_svg_attachment_metadata( $metadata, $attachment_id ) {
+		if ( 'image/svg+xml' !== get_post_mime_type( $attachment_id ) ) {
+			return $metadata;
+		}
+		$file = get_attached_file( $attachment_id );
+		if ( ! $file ) { return $metadata; }
+		list( $w, $h ) = sc_svg_file_dimensions( $file );
+		return array(
+			'width'    => $w,
+			'height'   => $h,
+			'file'     => _wp_relative_upload_path( $file ),
+			'filesize' => (int) filesize( $file ),
+			'sizes'    => array(),
+			'image_meta' => array(),
+		);
+	}
+	add_filter( 'wp_generate_attachment_metadata', 'sc_svg_attachment_metadata', 10, 2 );
+
+	/** Media-modal / grid JS payload: give SVGs a usable preview + dimensions. */
+	function sc_svg_prepare_attachment_js( $response, $attachment ) {
+		if ( empty( $response['mime'] ) || 'image/svg+xml' !== $response['mime'] ) {
+			return $response;
+		}
+		$url = $response['url'];
+		list( $w, $h ) = sc_svg_file_dimensions( get_attached_file( $attachment->ID ) );
+		$response['width']  = $w;
+		$response['height'] = $h;
+		$response['image']  = array( 'src' => $url, 'width' => $w, 'height' => $h );
+		$response['thumb']  = array( 'src' => $url, 'width' => 150, 'height' => (int) round( 150 * $h / max( 1, $w ) ) );
+		$response['sizes']  = array(
+			'full'      => array( 'url' => $url, 'width' => $w, 'height' => $h, 'orientation' => $w >= $h ? 'landscape' : 'portrait' ),
+			'thumbnail' => array( 'url' => $url, 'width' => 150, 'height' => (int) round( 150 * $h / max( 1, $w ) ), 'orientation' => $w >= $h ? 'landscape' : 'portrait' ),
+		);
+		return $response;
+	}
+	add_filter( 'wp_prepare_attachment_for_js', 'sc_svg_prepare_attachment_js', 10, 2 );
+
+	/** wp_get_attachment_image()/image_downsize(): serve the SVG itself at its intrinsic size. */
+	function sc_svg_image_downsize( $out, $attachment_id, $size ) {
+		if ( 'image/svg+xml' !== get_post_mime_type( $attachment_id ) ) {
+			return $out;
+		}
+		$url = wp_get_attachment_url( $attachment_id );
+		if ( ! $url ) { return $out; }
+		list( $w, $h ) = sc_svg_file_dimensions( get_attached_file( $attachment_id ) );
+		if ( is_array( $size ) && ! empty( $size[0] ) ) {
+			$ratio = $h / max( 1, $w );
+			$w     = (int) $size[0];
+			$h     = (int) round( $w * $ratio );
+		}
+		return array( $url, $w, $h, false );
+	}
+	add_filter( 'image_downsize', 'sc_svg_image_downsize', 10, 3 );
+
+	/**
+	 * The Edit-Media screen (and any other surface that falls back to a mime
+	 * icon) gates its real preview on wp_attachment_is_image(), whose extension
+	 * whitelist excludes svg. Serve the SVG itself as its own "icon" so those
+	 * surfaces preview the actual artwork instead of a generic document glyph.
+	 */
+	function sc_svg_mime_type_icon( $icon, $mime, $post_id ) {
+		if ( 'image/svg+xml' === $mime
+			|| ( $post_id && 'image/svg+xml' === get_post_mime_type( $post_id ) ) ) {
+			$url = $post_id ? wp_get_attachment_url( $post_id ) : '';
+			if ( $url ) { return $url; }
+		}
+		return $icon;
+	}
+	add_filter( 'wp_mime_type_icon', 'sc_svg_mime_type_icon', 10, 3 );
 endif;
