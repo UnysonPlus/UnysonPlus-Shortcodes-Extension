@@ -170,7 +170,13 @@ if ( is_array( $cwv ) ) {
 		$cw_max = $cw_map[ $cw_preset ];
 	}
 	if ( $cw_max !== '' ) {
-		$container_style = 'max-width:' . $cw_max . ';margin-left:auto;margin-right:auto;';
+		// Content-width model (matches the global Container Width decision): the value the user
+		// sets IS the content width, with the gutter living OUTSIDE it. Because .fw-container
+		// carries the gutter as border-box padding, we add 2*gutter to the max-width so the
+		// content ends up exactly $cw_max. This reproduces a source's `max-w-* px-*` (gutter
+		// inside a capped box) identically at every viewport — content caps at the value, and
+		// the gutter only bites once the viewport is narrower than value + 2*gutter.
+		$container_style = 'max-width:calc(' . $cw_max . ' + 2 * var(--container-gutter, clamp(1.25rem, 3vw, 2rem)));margin-left:auto;margin-right:auto;';
 	}
 }
 

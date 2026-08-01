@@ -24,7 +24,7 @@ if ( ic.type === "svg" && ic.markup ) {
 	iconHtml = '<img src="' + ic.url + '" style="height:1em;width:auto;vertical-align:-.12em;margin-right:.4em">';
 }
 }}<div>{{= o.overline }}</div>
-<{{= o.heading }}>{{= iconHtml }}{{= o.title }}</{{= o.heading }}>
+<{{= o.heading }}>{{= ( o.title_icon_position === "after" ) ? ( o.title + iconHtml ) : ( iconHtml + o.title ) }}</{{= o.heading }}>
 <div>{{= o.subtitle }}</div>
 TPL,
 );

@@ -127,16 +127,37 @@ if ( ! function_exists( 'sc_testimonial_fields' ) ) {
 }
 
 
-/* Rating renderer — self-contained inline SVG stars (no Font Awesome
-   dependency, so ratings render on any theme). Full = filled, half = 50%
-   gradient fill + outline, empty = outline. Stars inherit color via
-   currentColor (see .testimonial-rating in styles.css). */
+/* Request-scoped rating style for the current testimonials instance. view.php sets
+   this (symbol / fill / empty / size, from the element's Rating option group) once
+   per render, so every design's sc_render_rating( $rating ) call picks it up without
+   threading a 2nd argument through the ~9 design partials. */
+if ( ! function_exists( 'sc_render_rating_set_style' ) ) {
+    function sc_render_rating_set_style( $style = null ) {
+        static $current = array();
+        if ( $style !== null ) { $current = is_array( $style ) ? $style : array(); }
+        return $current;
+    }
+}
+
+/* Rating renderer — delegates to the shared sc_rating_stars() engine (the same
+   two-tone symbol used by Products), honoring the element's Rating style (symbol /
+   colors / size). Falls back to a self-contained inline SVG when the shared helper
+   isn't available, so ratings still render on any theme. */
 if ( ! function_exists( 'sc_render_rating' ) ) {
     function sc_render_rating( $rating ) {
         if ($rating === '' || $rating === null) return '';
         $rating = (float) $rating;
         if ($rating <= 0) return '';
         if ($rating > 5) $rating = 5.0;
+
+        // Preferred path: the shared rating engine (matches Products, respects the
+        // per-element Rating option group set via sc_render_rating_set_style()).
+        if ( function_exists( 'sc_rating_stars' ) ) {
+            $args = sc_render_rating_set_style();
+            if ( ! is_array( $args ) ) { $args = array(); }
+            $args['label'] = sprintf( __( 'Rated %s out of 5', 'fw' ), number_format( $rating, 1 ) );
+            return sc_rating_stars( $rating, $args );
+        }
 
         $full  = (int) floor($rating);
         $half  = ($rating - $full) >= 0.5 ? 1 : 0;
@@ -230,29 +251,68 @@ if ( ! function_exists( 'sc_render_card' ) ) {
         }
 
         $job_class  = trim( 'testimonial-job ' . $author_job_color_class );
-        $meta_parts = array_filter( [
-            $author_job ? '<span class="' . esc_attr( $job_class ) . '"' . $maybe_style( $author_job_color_style ) . '>' . esc_html( $author_job ) . '</span>' : '',
-            $site_html,
-        ] );
+
+        // Individual author pieces, built SEPARATELY so the Card Rows slot layout can place each one.
+        $name_html = '';
+        if ( $author_name ) {
+            $name_class = trim( 'testimonial-author fw-semibold ' . $author_name_color_class );
+            $name_html  = '<div class="' . esc_attr( $name_class ) . '"' . $maybe_style( $author_name_color_style ) . '>' . esc_html( $author_name ) . '</div>';
+        }
+        $role_html = $author_job
+            ? '<span class="' . esc_attr( $job_class ) . '"' . $maybe_style( $author_job_color_style ) . '>' . esc_html( $author_job ) . '</span>'
+            : '';
+
+        $quote_class = trim( 'testimonial-quote mb-3 ' . $quote_color_class );
+        $quote_only  = '<blockquote class="' . esc_attr( $quote_class ) . '"' . $maybe_style( $quote_color_style ) . '><p class="mb-0">'
+            . sc_testimonial_quote_html( $content ) . '</p></blockquote>';
+
+        $box_class = isset( $args['box_class'] ) ? trim( (string) $args['box_class'] ) : '';
+        $card_rows = ( isset( $args['card_rows'] ) && is_array( $args['card_rows'] ) ) ? $args['card_rows'] : array();
+
+        // PER-DESIGN SLOT FILTER — slots a structural design renders in its OWN fixed position (e.g. Split
+        // fixes the avatar to the media column). Those slots are removed from the Card Rows so they don't
+        // double up; the rows then compose only the remaining slots (the body). Card-grid designs pass none.
+        $filter = ( isset( $args['filter_slots'] ) && is_array( $args['filter_slots'] ) ) ? $args['filter_slots'] : array();
+        if ( in_array( 'avatar', $filter, true ) )   { $avatar_html = ''; } // design owns the image
+
+        // SLOTTED card (Card Rows designer) — compose the card from slots; a slot renders only when it's
+        // in a row AND has content. Avatar position falls out of which row it's in + that row's direction.
+        if ( $card_rows && function_exists( 'sc_card_rows_render' ) ) {
+            $role_wrapped = $role_html ? '<div class="testimonial-meta small text-muted">' . $role_html . '</div>' : '';
+            // COMPOSITE slots: `author` = name + role stacked (the byline molecule), so an inline row
+            // `[avatar, author]` gives avatar-left with name-over-role beside it. `identity` = the whole
+            // avatar + author block as one unit (handy to hand to a structural design's fixed spot).
+            $author_unit = ( $name_html || $role_wrapped ) ? '<div class="ts-card__author">' . $name_html . $role_wrapped . '</div>' : '';
+            $identity     = ( $avatar_html || $author_unit ) ? '<div class="ts-card__identity">' . $avatar_html . $author_unit . '</div>' : '';
+            $slot_map = array(
+                'quote'     => $quote_only,
+                'quotemark' => '<span class="ts-card__quotemark" aria-hidden="true">&#8220;</span>',
+                'avatar'    => $avatar_html,
+                'name'      => $name_html,
+                'role'      => $role_wrapped,
+                'author'    => $author_unit,
+                'identity'  => $identity,
+                'rating'    => $rating_html ? '<div class="ts-card__rating">' . $rating_html . '</div>' : '',
+                'site'      => $site_html ? '<div class="testimonial-meta small text-muted">' . $site_html . '</div>' : '',
+            );
+            foreach ( $filter as $fs ) { if ( isset( $slot_map[ $fs ] ) ) { $slot_map[ $fs ] = ''; } } // design renders these itself
+            $inner = sc_card_rows_render( $card_rows, $slot_map, 'ts-card' );
+            $cls   = preg_replace( '/\s+/', ' ', trim( 'testimonial-item testimonial-item--slotted ' . $box_class . ' ' . $text_align ) );
+            return '<div class="' . esc_attr( $cls ) . '">' . $inner . '</div>';
+        }
+
+        // LEGACY layout (no Card Rows) — avatar top/left/right + a fixed author block.
+        $meta_parts  = array_filter( array( $role_html, $site_html ) );
         $author_meta = $meta_parts
             ? '<div class="testimonial-meta small text-muted">' . implode( ' <span class="sep">|</span> ', $meta_parts ) . '</div>'
             : '';
-
-        $author_block = '';
-        if ( $author_name ) {
-            $name_class    = trim( 'testimonial-author fw-semibold ' . $author_name_color_class );
-            $author_block .= '<div class="' . esc_attr( $name_class ) . '"' . $maybe_style( $author_name_color_style ) . '>' . esc_html( $author_name ) . '</div>';
-        }
-        $author_block .= $author_meta;
+        $author_block = $name_html . $author_meta;
         if ( $rating_html ) {
             $author_block .= '<div class="mt-2">' . $rating_html . '</div>';
         }
+        $quote_html = $quote_only . $author_block;
 
-        $quote_class = trim( 'testimonial-quote mb-3 ' . $quote_color_class );
-        $quote_html  = '<blockquote class="' . esc_attr( $quote_class ) . '"' . $maybe_style( $quote_color_style ) . '><p class="mb-0">'
-            . sc_testimonial_quote_html( $content ) . '</p></blockquote>' . $author_block;
-
-        $classes = trim( 'testimonial-item ' . $card_style . ' ' . $text_align . ' avatar-pos-' . $avatar_position );
+        $classes = trim( 'testimonial-item ' . $card_style . ' ' . $box_class . ' ' . $text_align . ' avatar-pos-' . $avatar_position );
         $classes = preg_replace( '/\s+/', ' ', $classes );
 
         ob_start();

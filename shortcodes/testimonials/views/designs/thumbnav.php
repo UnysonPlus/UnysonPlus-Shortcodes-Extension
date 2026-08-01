@@ -55,17 +55,9 @@ $nav_config = array(
 					<ul class="splide__list">
 						<?php foreach ( $testimonials as $t ):
 							$f      = sc_testimonial_fields( $t );
-							$rating = ( $show_rating && function_exists( 'sc_render_rating' ) ) ? sc_render_rating( $f['rating'] ) : '';
 							?>
 							<li class="splide__slide">
-								<div class="ts-thumbnav__quotewrap text-center">
-									<?php if ( $rating ) echo '<div class="ts-thumbnav__rating">' . $rating . '</div>'; ?>
-									<blockquote class="testimonial-quote <?php echo esc_attr( $quote_class_extra ); ?>"><?php echo sc_testimonial_quote_html( $f['content'] ); ?></blockquote>
-									<div class="ts-thumbnav__author">
-										<?php if ( $f['author_name'] ) echo '<span class="testimonial-author ' . esc_attr( $author_name_class_extra ) . '">' . esc_html( $f['author_name'] ) . '</span>'; ?>
-										<?php if ( $f['author_job'] ) echo '<span class="testimonial-job ' . esc_attr( $author_job_class_extra ) . '">' . esc_html( $f['author_job'] ) . '</span>'; ?>
-									</div>
-								</div>
+								<div class="ts-thumbnav__quotewrap text-center"><?php echo sc_render_card( $t, array_merge( $card_args, array( 'filter_slots' => $card_filter ) ) ); ?></div>
 							</li>
 						<?php endforeach; ?>
 					</ul>

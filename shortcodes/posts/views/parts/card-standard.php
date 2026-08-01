@@ -46,8 +46,6 @@ if ( ! has_post_thumbnail( $post_id ) ) {
     <?php endif; ?>
 
     <div class="posts__body entry-content">
-        <?php foreach ( $body_slugs as $slug ) : ?>
-            <?php echo sc_posts_render_block( $slug, $sc_atts, $post_id ); ?>
-        <?php endforeach; ?>
+        <?php echo sc_posts_render_body_rows( $sc_atts, $post_id, $exclude_in_body ); // phpcs:ignore WordPress.Security.EscapeOutput — blocks escaped at source ?>
     </div>
 </article>

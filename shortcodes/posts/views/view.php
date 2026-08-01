@@ -583,12 +583,63 @@ if ( ! function_exists( 'sc_posts_render_block' ) ) {
 
 /*
 |--------------------------------------------------------------------------
+| Helper: render the card BODY as Card Rows (flex rows) — used by flow cards
+|--------------------------------------------------------------------------
+| Groups the body blocks into the rows the user designed (inline / stacked +
+| alignment) via the shared sc_card_rows_render(). `image` is excluded here — the
+| card style owns image position. Falls back to a flat stack of ordered blocks.
+*/
+if ( ! function_exists( 'sc_posts_render_body_rows' ) ) {
+    function sc_posts_render_body_rows( $atts, $post_id, $exclude = [ 'image' ] ) {
+        // Pre-build each body block's HTML (skip empties so blank rows collapse).
+        $slot_map = [];
+        foreach ( [ 'cats', 'title', 'meta', 'excerpt', 'readmore' ] as $slug ) {
+            if ( in_array( $slug, $exclude, true ) ) { continue; }
+            $html = sc_posts_render_block( $slug, $atts, $post_id );
+            if ( $html !== '' ) { $slot_map[ $slug ] = $html; }
+        }
+
+        // Real row grouping via the shared Card Rows renderer (posts__row … classes).
+        if ( function_exists( 'sc_card_rows_value' ) && function_exists( 'sc_card_rows_render' ) ) {
+            $rows = sc_card_rows_value( $atts, 'card_rows' );
+            if ( $rows ) {
+                $out = sc_card_rows_render( $rows, $slot_map, 'posts' );
+                if ( $out !== '' ) { return $out; }
+            }
+        }
+
+        // Fallback: a flat stack in the resolved order.
+        $out = '';
+        foreach ( sc_posts_get_ordered_slugs( $atts, $exclude ) as $slug ) {
+            $out .= sc_posts_render_block( $slug, $atts, $post_id );
+        }
+        return $out;
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | Helper: return ordered, enabled element slugs (filtered for context)
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_get_ordered_slugs' ) ) {
     function sc_posts_get_ordered_slugs( $atts, $exclude = [] ) {
-        $items = sc_get( 'element_order', $atts, [] );
+        // Prefer the Card Rows designer: flatten its rows (in order) → block slugs. A
+        // block is "visible" when it's in a row; its order is the row order. Falls back
+        // to the legacy element_order list, then the default block set.
+        $items = [];
+        $rows  = sc_get( 'card_rows', $atts, [] );
+        if ( is_array( $rows ) && $rows ) {
+            foreach ( $rows as $row ) {
+                if ( ! is_array( $row ) || empty( $row['slots'] ) ) { continue; }
+                foreach ( (array) $row['slots'] as $slug ) {
+                    $items[] = [ 'slug' => $slug, 'enabled' => 'yes' ];
+                }
+            }
+        }
+        if ( empty( $items ) ) {
+            $items = sc_get( 'element_order', $atts, [] );
+        }
         if ( ! is_array( $items ) || empty( $items ) ) {
             $items = [
                 [ 'slug' => 'image',    'enabled' => 'yes' ],

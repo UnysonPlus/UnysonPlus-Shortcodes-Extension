@@ -15,3 +15,29 @@
 	font-size: 13px;
 	color: #666666;
 }
+
+/* Card Rows designer output — each saved row is a flex line. */
+.fw-team .fw-team__row {
+	display: flex;
+	gap: 6px;
+}
+.fw-team .fw-team-row--stack {
+	flex-direction: column;
+}
+.fw-team .fw-team-row--inline {
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+.fw-team .fw-team-j-start   { justify-content: flex-start; }
+.fw-team .fw-team-j-center  { justify-content: center; }
+.fw-team .fw-team-j-between { justify-content: space-between; }
+.fw-team .fw-team-j-end     { justify-content: flex-end; }
+.fw-team .fw-team-a-start   { align-items: flex-start; text-align: left; }
+.fw-team .fw-team-a-center  { align-items: center; text-align: center; }
+.fw-team .fw-team-a-end     { align-items: flex-end; text-align: right; }
+.fw-team .fw-team-a-stretch { align-items: stretch; }
+/* Job title as its own slot (mirrors the legacy .fw-team-name span look). */
+.fw-team .fw-team-job {
+	font-size: 13px;
+	color: #666666;
+}

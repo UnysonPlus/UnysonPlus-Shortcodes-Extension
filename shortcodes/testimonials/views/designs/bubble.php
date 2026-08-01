@@ -24,22 +24,12 @@ $cols = max( 1, min( 4, (int) $bubble_columns ) );
 		<div class="ts-bubble-grid ts-bubble-grid--cols-<?php echo (int) $cols; ?>">
 			<?php foreach ( $testimonials as $t ):
 				$f      = sc_testimonial_fields( $t );
-				$rating = ( $show_rating && function_exists( 'sc_render_rating' ) ) ? sc_render_rating( $f['rating'] ) : '';
 				?>
 				<div class="fw-tst-item <?php echo esc_attr( $box_style ); ?> ts-bubble">
 					<blockquote class="ts-bubble__quote testimonial-quote <?php echo esc_attr( $quote_class_extra ); ?>">
 						<?php echo sc_testimonial_quote_html( $f['content'] ); ?>
 					</blockquote>
-					<div class="ts-bubble__author">
-						<?php if ( $f['avatar'] ): ?>
-							<img class="ts-bubble__avatar <?php echo esc_attr( $avatar_shape ); ?>" src="<?php echo esc_url( $f['avatar'] ); ?>" alt="<?php echo esc_attr( $f['author_name'] ); ?>" loading="lazy" />
-						<?php endif; ?>
-						<span class="ts-bubble__byline">
-							<?php if ( $f['author_name'] ) echo '<span class="testimonial-author ' . esc_attr( $author_name_class_extra ) . '">' . esc_html( $f['author_name'] ) . '</span>'; ?>
-							<?php if ( $f['author_job'] ) echo '<span class="testimonial-job ' . esc_attr( $author_job_class_extra ) . '">' . esc_html( $f['author_job'] ) . '</span>'; ?>
-							<?php if ( $rating ) echo '<span class="ts-bubble__rating">' . $rating . '</span>'; ?>
-						</span>
-					</div>
+					<div class="ts-bubble__author"><?php echo sc_render_card( $t, array_merge( $card_args, array( 'filter_slots' => $card_filter ) ) ); ?></div>
 				</div>
 			<?php endforeach; ?>
 		</div>

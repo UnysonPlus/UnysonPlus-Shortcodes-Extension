@@ -22,6 +22,8 @@
                     <?php foreach ( $testimonials as $t ): ?>
                         <div class="fw-col mb-4 d-flex">
                             <?php echo sc_render_card( $t, [
+                                'card_rows'       => $card_rows,
+                                'box_class'       => $box_style,
                                 'card_style'      => $card_style,
                                 'text_align'      => $text_align,
                                 'show_avatar'     => $show_avatar,
@@ -48,6 +50,8 @@
                 <div class="d-flex flex-column align-items-center">
                     <div class="w-100" style="max-width:700px;">
                         <?php echo sc_render_card( $t, [
+                            'card_rows'       => $card_rows,
+                            'box_class'       => $box_style,
                             'card_style'      => $card_style,
                             'text_align'      => $text_align,
                             'show_avatar'     => $show_avatar,
@@ -101,6 +105,8 @@
                             <?php foreach ( $testimonials as $t ): ?>
                                 <li class="splide__slide">
                                     <?php echo sc_render_card( $t, [
+                                        'card_rows'       => $card_rows,
+                                        'box_class'       => $box_style,
                                         'card_style'      => trim( $card_style . ' w-100' ),
                                         'text_align'      => $text_align,
                                         'show_avatar'     => $show_avatar,

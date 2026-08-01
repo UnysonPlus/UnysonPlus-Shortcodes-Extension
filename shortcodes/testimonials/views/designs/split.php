@@ -43,7 +43,6 @@ $splide_modifier = ( $indicator_style === 'lines' ) ? ' testimonials-splide--lin
 				<ul class="splide__list">
 					<?php foreach ( $testimonials as $t ):
 						$f      = sc_testimonial_fields( $t );
-						$rating = ( $show_rating && function_exists( 'sc_render_rating' ) ) ? sc_render_rating( $f['rating'] ) : '';
 						?>
 						<li class="splide__slide">
 							<div class="ts-split__inner">
@@ -53,19 +52,12 @@ $splide_modifier = ( $indicator_style === 'lines' ) ? ' testimonials-splide--lin
 									</div>
 								<?php endif; ?>
 								<div class="ts-split__body">
-									<?php if ( $rating ) echo '<div class="ts-split__rating">' . $rating . '</div>'; ?>
-									<blockquote class="testimonial-quote <?php echo esc_attr( $quote_class_extra ); ?>"><?php echo sc_testimonial_quote_html( $f['content'] ); ?></blockquote>
-									<div class="ts-split__author">
-										<?php if ( $f['author_name'] ) echo '<span class="testimonial-author ' . esc_attr( $author_name_class_extra ) . '">' . esc_html( $f['author_name'] ) . '</span>'; ?>
-										<?php
-										$meta = array();
-										if ( $f['author_job'] )  $meta[] = '<span class="testimonial-job ' . esc_attr( $author_job_class_extra ) . '">' . esc_html( $f['author_job'] ) . '</span>';
-										if ( $f['site_name'] && $f['site_url'] ) $meta[] = '<span class="testimonial-site ' . esc_attr( $site_link_class_extra ) . '"><a href="' . esc_url( $f['site_url'] ) . '" rel="nofollow" target="_blank">' . esc_html( $f['site_name'] ) . '</a></span>';
-										if ( $meta ) echo '<span class="ts-split__meta">' . implode( ' <span class="sep">|</span> ', $meta ) . '</span>';
+									<?php
+										// Image = the design's FIXED media column (filtered from the rows via $card_filter);
+										// the body composes the remaining slots from the Card Rows.
+										echo sc_render_card( $t, array_merge( $card_args, array( 'filter_slots' => $card_filter ) ) );
 										?>
 									</div>
-								</div>
-							</div>
 						</li>
 					<?php endforeach; ?>
 				</ul>

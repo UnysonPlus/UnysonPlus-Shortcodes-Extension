@@ -85,22 +85,69 @@ if ( $items_per_slide < 1 ) $items_per_slide = 1;
 
 /* Cross-design appearance (stay top-level — no path change). */
 $text_align      = sc_get( 'text_align', $atts, '' );
-$container_cls   = sc_get( 'container_type', $atts, 'container' );
-$container_cls   = $container_cls ?: 'container';
+$container_cls   = sc_get( 'container_type', $atts, 'container' ); // '' = None → no wrapper, fills the parent (e.g. nested in a section)
 $avatar_shape    = sc_get( 'avatar_shape', $atts, 'rounded-circle' );
 $avatar_size     = sc_get( 'avatar_size', $atts, 'avatar-md' );
 $show_rating     = sc_get( 'show_rating', $atts, 'yes' ) === 'yes';
+
+/* Rating star style (symbol / colors / size) from the element's Rating option group.
+   Registered request-scoped so every design's sc_render_rating() call renders with it. */
+if ( function_exists( 'sc_render_rating_set_style' ) && function_exists( 'sc_rating_style_from_atts' ) ) {
+    sc_render_rating_set_style( sc_rating_style_from_atts( $atts, 'rating_' ) );
+}
 
 /* Style — Classic design only (moved into design_settings/default/*). */
 $card_style       = $ts_dp( 'card_style', 'card_style', '' );
 $box_style        = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : ''; // Box Style per testimonial card (grid/card designs)
 $show_avatar      = true; /* default unless explicitly hidden */
-$avatar_position  = $ts_dp( 'avatar_position', 'avatar_position', 'top' ); // top|left|right|none
+$avatar_position  = $ts_dp( 'avatar_position', 'avatar_position', 'top' ); // top|left|right|none (LEGACY fallback; the Card Rows slots own position now)
 if ( $avatar_position === 'none' ) $show_avatar = false;
+
+/* Card Rows — the slot designer for the Classic (default) design's card. When set, sc_render_card
+   composes each card from these rows (avatar position = which row + its direction), superseding the
+   old card_style / avatar_position / show_rating options. Empty → the legacy avatar-top layout. */
+$card_rows        = function_exists( 'sc_card_rows_value' ) ? sc_card_rows_value( $atts, 'card_rows' ) : array();
+
+/* Per-design SLOT FILTER (from the design study): slots a STRUCTURAL design renders in its own fixed
+   position, so they're removed from the Card Rows body. Card-grid designs (default/masonry/bento/
+   stacked/marquee) filter nothing — the rows drive the whole card. Structural designs fix the image
+   (Split/Zigzag = media column, Thumbnav = thumb rail) or the quote (Bubble = balloon). Passed to
+   sc_render_card as 'filter_slots'; a design view that owns a slot renders it itself + filters it here. */
+$ts_card_filters  = array(
+	'split'    => array( 'avatar', 'identity' ),
+	'zigzag'   => array( 'avatar', 'identity' ),
+	'thumbnav' => array( 'avatar', 'identity' ),
+	'bubble'   => array( 'quote' ),
+);
+$card_filter      = isset( $ts_card_filters[ $design ] ) ? $ts_card_filters[ $design ] : array();
 
 /* Avatar dimensions (custom utility classes expected in CSS) */
 $avatar_dim_map = [ 'avatar-sm' => 64, 'avatar-md' => 96, 'avatar-lg' => 128 ];
 $avatar_dim     = isset( $avatar_dim_map[ $avatar_size ] ) ? $avatar_dim_map[ $avatar_size ] : 96;
+
+/* Shared sc_render_card() args — any card-family OR structural design can call
+   sc_render_card( $t, $card_args ) (a structural design merges 'filter_slots' => $card_filter, and
+   renders the filtered slot itself in its fixed position). Keeps every design's card body identical. */
+$card_args = array(
+	'card_rows'                => $card_rows,
+	'box_class'                => $box_style,
+	'card_style'               => $card_style,
+	'text_align'               => $text_align,
+	'show_avatar'              => $show_avatar,
+	'avatar_shape'             => $avatar_shape,
+	'avatar_size'              => $avatar_size,
+	'avatar_dim'               => $avatar_dim,
+	'show_rating'              => $show_rating,
+	'avatar_position'          => $avatar_position,
+	'quote_color_class'        => $quote_class_extra,
+	'author_name_color_class'  => $author_name_class_extra,
+	'author_job_color_class'   => $author_job_class_extra,
+	'site_link_color_class'    => $site_link_class_extra,
+	'quote_color_style'        => $quote_style_extra,
+	'author_name_color_style'  => $author_name_style_extra,
+	'author_job_color_style'   => $author_job_style_extra,
+	'site_link_color_style'    => $site_link_style_extra,
+);
 
 /* Carousel behavior — read from the active design's group (Classic/Split/Thumbnav). */
 $carousel_autoplay    = $ts_dp( 'carousel_autoplay', 'carousel_autoplay', 'yes' ) === 'yes';
@@ -120,7 +167,7 @@ $bubble_columns    = (int) sc_get( 'design_settings/bubble/bubble_columns', $att
 /* Map saved Bootstrap grid/container values onto the plugin's self-contained
    .fw- grid (the plugin no longer ships Bootstrap). Saved values are unchanged
    in the DB — only the emitted class names are translated here. */
-$container_cls = ( $container_cls === 'container-fluid' ) ? 'fw-container-fluid' : 'fw-container';
+$container_cls = ( $container_cls === 'container-fluid' ) ? 'fw-container-fluid' : ( '' === $container_cls ? '' : 'fw-container' );
 $grid_columns  = str_replace( 'row-cols-', 'fw-row-cols-', (string) $grid_columns );
 
 /* Dispatch to the chosen design template (inherits all of the above). */

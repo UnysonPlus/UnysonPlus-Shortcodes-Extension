@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.12.48';
+$manifest['version']     = '1.12.75';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,105 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.12.73 - Arbitrary-value spacing (Tailwind-style pt-[40px], mb-md-[3.5rem]). The fixed spacing
+ *          scale is Bootstrap-aligned (0-5 match Bootstrap on purpose) and can't express every value
+ *          (e.g. 40px falls between the 24px and 48px steps), which made the converter snap captured
+ *          padding with up to 12px of error. Rather than renumber the scale (breaking: it would need
+ *          a migration and would diverge from the Bootstrap-5 foundation), a spacing option may now
+ *          hold an ARBITRARY token and the per-page dynamic CSS emits a matching escaped rule
+ *          (.pt-\[40px\]{padding-top:40px}), breakpoint-aware for md/lg. sc_sanitize_class() preserves
+ *          only the strict arbitrary pattern (no XSS surface); the responsive-infix builder handles
+ *          both slugs and arbitrary values. Non-breaking: the scale, containers, gutters and every
+ *          existing pt-N are untouched. The Site Converter now emits a preset slug when the captured
+ *          px lands on the scale, else an exact pt-[Npx] — so converted sites capture spacing losslessly.
+ *          The editable Spacing Scale (Theme Settings -> Components -> Spacing) doubles as the "custom
+ *          value" UI: a spacer NAMED as an arbitrary value (e.g. [40px]) produces that same pt-[40px]
+ *          class (dropdown keeps the bracket form; css-tokens skips it since the per-page dynamic CSS
+ *          renders it), so a converter-set value shows as a selected scale option and survives re-save
+ *          — no per-field multi-picker needed.
+ *
+ * 1.12.71 - New shared Button STYLE helpers so any element can wear the theme's button presets.
+ *          sc_button_style_field() returns the Style-tab option group (Button Style preset, Size,
+ *          Shape, Width, Alignment, Hover Animation — the same Theme Settings → Buttons sources as
+ *          the [button] shortcode) and sc_button_style_atts() turns the saved values into button
+ *          classes + inline width + alignment. The WooCommerce Add to Cart element is the first
+ *          consumer, so a standalone buy button can carry any button style without hand-CSS.
+ *
+ * 1.12.63 - Custom CSS can no longer leak into wp-admin. misc_custom_css is folded into the shared
+ *          presets stylesheet that the page builder also loads in wp-admin (for canvas WYSIWYG), so an
+ *          unscoped top-level `body` / `html` rule (background, overflow, …) used to repaint the EDITOR
+ *          chrome. upw_ts_custom_css() now runs the CSS through fw_admin_safe_custom_css(), which
+ *          rewrites global body/html selectors to front-end-only variants (`body:not(.wp-admin)`,
+ *          `html:not(:has(.wp-admin))`) while leaving class/id/descendant rules (.pb-*, .upwc-*) alone so
+ *          they still skin the builder canvas. Idempotent + applies to ALL Custom CSS — hand-written OR
+ *          emitted by the Site Converter — so this can't recur regardless of who wrote the CSS.
+ * 1.12.59 - Testimonials: the STRUCTURAL designs now consume the Card Rows too, via per-design slot
+ *          filters. Split & Zigzag keep the image as their fixed media column, Thumbnail-Nav keeps the
+ *          avatar in its thumbnail rail, and Speech-Bubble keeps the quote in its balloon — those slots
+ *          are filtered from the Card Rows body (sc_render_card 'filter_slots') so they never double up,
+ *          and the rest of each card composes from the rows. So the row designer drives every design's
+ *          body (card-grid + structural), each design just owning its signature fixed piece. Also: the
+ *          live-preview composites render correctly (Author = Name stacked over Role; Identity = image +
+ *          byline) and the image chip is a square thumbnail (was a wide banner).
+ *
+ * 1.12.58 - Testimonials: the shared live Card preview on the Card tab (a wireframe that redraws as
+ *          rows/slots change, same as Products / Team Member / Posts), plus the foundation for
+ *          per-design slot FILTERS. A structural design can declare slots it renders in its own fixed
+ *          position (e.g. Split fixes the image to the media column) — those are filtered out of the
+ *          Card Rows body via sc_render_card's new `filter_slots`, so they don't double up; card-grid
+ *          designs filter nothing. The preview JS learned the testimonials slots (quote / avatar /
+ *          author / identity / quotemark / site). (Wiring each structural design's view to consume the
+ *          filtered rows is a per-design follow-up.)
+ *
+ * 1.12.57 - Card Rows shared system: composite "molecule" slots + a per-row Reverse toggle, and the
+ *          Testimonials Card Rows moved to their own dedicated "Card" tab (with Box Style), matching
+ *          Products. New composite slots let a row hold a grouped unit instead of only flat siblings:
+ *          "Author" = Name + Position stacked, and "Identity" = Image + Name + Position — so an inline
+ *          row [ Image, Author ] gives the classic avatar-left with the name/role stacked beside it
+ *          (previously impossible in a flat row). A row's new Reverse switch flips an inline row (e.g.
+ *          avatar left <-> right) without re-ordering slots. Testimonials' Card Rows + Box Style now
+ *          live on a cross-design "Card" tab instead of inside the Classic design's options.
+ *
+ * 1.12.55 - Posts: the flat "Element Order" list is replaced by the Card Rows designer + live preview.
+ *          Arrange each post card's blocks (image, categories, title, meta, excerpt, read-more) into
+ *          inline or stacked rows with distribution + alignment — a block is "visible" simply when it's
+ *          in a row (no separate toggles). The rows drive block order + visibility across every card
+ *          style, and the standard flow card renders true rows (inline grouping + alignment); a card
+ *          with no rows falls back to the classic flat stack. Same shared Card Rows system as Products /
+ *          Testimonials / Team Member.
+ *
+ * 1.12.54 - Team Member: a Card Rows designer + live preview. The element now builds its card from
+ *          the shared Card Rows system — arrange the image / name / job title / description slots into
+ *          inline or stacked rows with distribution + alignment — with the schematic live preview in
+ *          the builder (a wireframe that redraws as rows/slots change). The default rows reproduce the
+ *          classic centered stack, so existing team members render unchanged. Also extracts that Card
+ *          Rows LIVE PREVIEW into a shared engine (includes/card-preview) so any card element
+ *          (wc_products, team_member, …) gets the same preview from one sc_card_preview_mount_html() call.
+ *
+ * 1.12.53 - Testimonials: a Card Rows slot designer for the Classic (default) design — the same
+ *          composable card model as the Products element, via a shared helper (sc_card_rows_field /
+ *          _value / _render). Each card is built from an editable, drag-sortable list of ROWS, and in
+ *          each row you pick & order the SLOTS (Quote, Quote Mark, Image, Name, Position, Rating,
+ *          Website Link) and set direction (inline / stacked), distribute and align. Avatar position
+ *          now falls out of which row the avatar is in (inline = beside, stacked = above/below), so the
+ *          old "Avatar Position", "Card Style" and "Show Rating Stars" options were REMOVED (never
+ *          used): presence is "is the slot in a row", and the card SKIN comes from the Box Preset. The
+ *          default design's grid/single/carousel cards render from these rows; structural designs
+ *          (split / bubble / marquee / masonry / …) keep their bespoke layout. This is the shape the
+ *          Site Converter can emit from a captured testimonial card.
+ *
+ * 1.12.50 - Special Heading: an "Overline Icon" and a new "Icons" tab. The Content tab now holds
+ *          just Overline / Title / Subtitle / Title Tag; the Overline Icon and Title Icon moved to a
+ *          dedicated "Icons" tab, each with a Placement control (Before / After the text). The
+ *          overline icon renders inside the overline label (recolours via Overline Color when it uses
+ *          currentColor). Both icons use the shared icon picker (font / emoji / SVG / upload), and the
+ *          Site Converter now maps a source overline's SVG into the native Overline Icon (kept out of
+ *          the text). Replaces per-site ::before CSS masks for overline icons.
+ * 1.12.49 - Builder: broken-image artifacts fixed. WordPress's emoji feature rewrote emoji in
+ *          element previews (badge / eyebrow text, emoji icon picks) into <img> tags from s.w.org,
+ *          which rendered as broken images inside the page-builder canvas. The emoji detection script
+ *          is now dropped in wp-admin (native emoji render fine there); the frontend is unchanged and
+ *          still governed by the "Disable WordPress emojis" performance setting.
  * 1.12.47 - "Announcement Pill" shortcode renamed to "Badge" (slug announcement_pill
  *          becomes badge). "Badge" is the discoverable, industry-standard name for the
  *          badge / pill / chip primitive; the description still names pills, chips and

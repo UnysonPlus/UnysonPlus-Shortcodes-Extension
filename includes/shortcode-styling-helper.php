@@ -44,7 +44,15 @@ if ( ! function_exists( 'sc_sanitize_class' ) ) :
 	 * Allowed: a-z A-Z 0-9 _ -. Everything else is stripped.
 	 */
 	function sc_sanitize_class( $value ) {
-		return preg_replace( '/[^a-zA-Z0-9_-]/', '', trim( (string) $value ) );
+		$value = trim( (string) $value );
+		// Preserve Tailwind-style ARBITRARY-VALUE spacing/gap tokens (e.g. pt-[40px],
+		// mb-md-[3.5rem], g-[24px]) — the brackets / dot / percent are meaningful there,
+		// and the per-page dynamic CSS emits a matching escaped rule. Only the strict
+		// arbitrary pattern is exempt; every other class keeps the [a-zA-Z0-9_-] filter.
+		if ( preg_match( '/^(?:m|p|g)(?:x|y|t|b|s|e|l|r)?(?:-(?:sm|md|lg|xl|xxl))?-\[[0-9.]+(?:px|rem|em|%|vw|vh)\]$/', $value ) ) {
+			return $value;
+		}
+		return preg_replace( '/[^a-zA-Z0-9_-]/', '', $value );
 	}
 endif;
 
@@ -1021,11 +1029,21 @@ if ( ! function_exists( 'sc_get_spacing_select_choices' ) ) :
 			if ( ! is_array( $entry ) ) { continue; }
 			if ( ! isset( $entry['name'] ) || $entry['name'] === '' ) { continue; }
 
-			$slug = strtolower( sc_sanitize_class( $entry['name'] ) );
+			$name = (string) $entry['name'];
+			// An arbitrary-value entry (e.g. `[40px]`) keeps its bracket form, so it produces the
+			// SAME `pt-[40px]` class as the Site Converter and the per-page dynamic CSS — one class,
+			// one render path, and a converter-set value shows as this option (durable on re-save).
+			if ( preg_match( '/^\[[0-9.]+(?:px|rem|em|%|vw|vh)\]$/', $name ) ) {
+				$slug = $name;
+			} else {
+				$slug = strtolower( sc_sanitize_class( $name ) );
+			}
 			if ( $slug === '' ) { continue; }
 
 			$size  = isset( $entry['size'] ) ? $entry['size'] : '';
-			$label = $entry['name'] . ( $size !== '' ? ' (' . $size . ')' : '' );
+			// An arbitrary-value name (e.g. [40px]) already IS the value — don't append a redundant size.
+			$is_arb = ( isset( $name[0] ) && $name[0] === '[' );
+			$label  = $name . ( ( $size !== '' && ! $is_arb ) ? ' (' . $size . ')' : '' );
 
 			$out[ $prefix . '-' . $slug ] = $label;
 		}
@@ -1303,6 +1321,134 @@ if ( ! function_exists( 'sc_card_box_style_class' ) ) :
 	function sc_card_box_style_class( $atts, $key = 'box_style' ) {
 		$v = function_exists( 'sc_get' ) ? sc_get( $key, $atts, '' ) : ( isset( $atts[ $key ] ) ? $atts[ $key ] : '' );
 		return ( is_string( $v ) && preg_match( '/^boxp-[a-z0-9_-]+$/i', $v ) ) ? $v : '';
+	}
+endif;
+
+if ( ! function_exists( 'sc_card_rows_field' ) ) :
+	/**
+	 * The shared "Card Rows" slot designer — an addable, drag-sortable list of ROWS, each row a set of
+	 * SLOTS with a flex direction (inline/stacked) + distribute (justify) + align. This is the ONE
+	 * composable card model, used by wc_products and testimonials (and any element whose card is a
+	 * stack of rows). Parameterise the SLOT choices + the seeded default per element; presence of a
+	 * slot = "it's in a row" (a slot renders only when placed in a row and it has content).
+	 *
+	 * @param array $args  'label','desc','slots'=>[slug=>Label], 'value'=>[ …seed rows… ]
+	 */
+	function sc_card_rows_field( $args = array() ) {
+		$img = plugins_url( 'card-rows/img', __FILE__ );
+		$sw  = function ( $file, $title ) use ( $img ) {
+			return array( 'small' => array( 'src' => $img . '/' . $file, 'height' => 34, 'title' => $title ) );
+		};
+		$a = array_merge( array(
+			'label' => __( 'Card Rows', 'fw' ),
+			'desc'  => __( 'The card layout. Add / drag rows; in each row pick & order the slots and set inline/stacked + alignment. A slot appears only when it\'s in a row and has content — remove a slot to hide it.', 'fw' ),
+			'slots' => array(),
+			'value' => array(),
+		), $args );
+		return array(
+			'type'          => 'addable-popup',
+			'label'         => $a['label'],
+			'desc'          => $a['desc'],
+			'popup-title'   => __( 'Row', 'fw' ),
+			'template'      => '{{= (slots && slots.length ? slots.join(", ") : "Row") }}',
+			'popup-options' => array(
+				'slots' => array(
+					'type'       => 'multi-select',
+					'label'      => __( 'Slots', 'fw' ),
+					'desc'       => __( 'Pick and order the elements in this row.', 'fw' ),
+					'population'  => 'array',
+					'choices'    => $a['slots'],
+					'value'      => array(),
+				),
+				'direction' => array(
+					'type'    => 'image-picker',
+					'label'   => __( 'Direction', 'fw' ),
+					'value'   => 'inline',
+					'choices' => array(
+						'inline' => $sw( 'dir-inline.svg', __( 'Inline (side by side)', 'fw' ) ),
+						'stack'  => $sw( 'dir-stack.svg',  __( 'Stacked (own lines)', 'fw' ) ),
+					),
+				),
+				// Flip an INLINE row (e.g. avatar left ↔ right) without re-ordering the slots. No effect on stacked rows.
+				'reverse' => array(
+					'type'         => 'switch',
+					'label'        => __( 'Reverse', 'fw' ),
+					'desc'         => __( 'Flip an inline row (e.g. move the avatar to the other side). No effect on stacked rows.', 'fw' ),
+					'value'        => 'no',
+					'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+					'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+				),
+				'justify' => array(
+					'type'    => 'image-picker',
+					'label'   => __( 'Distribute', 'fw' ),
+					'value'   => 'start',
+					'choices' => array(
+						'start'   => $sw( 'just-start.svg',   __( 'Start', 'fw' ) ),
+						'center'  => $sw( 'just-center.svg',  __( 'Center', 'fw' ) ),
+						'between' => $sw( 'just-between.svg', __( 'Space between', 'fw' ) ),
+						'end'     => $sw( 'just-end.svg',     __( 'End', 'fw' ) ),
+					),
+				),
+				'align' => array(
+					'type'    => 'image-picker',
+					'label'   => __( 'Align', 'fw' ),
+					'value'   => 'center',
+					'choices' => array(
+						'start'   => $sw( 'align-start.svg',   __( 'Start', 'fw' ) ),
+						'center'  => $sw( 'align-center.svg',  __( 'Center', 'fw' ) ),
+						'end'     => $sw( 'align-end.svg',     __( 'End', 'fw' ) ),
+						'stretch' => $sw( 'align-stretch.svg', __( 'Stretch', 'fw' ) ),
+					),
+				),
+			),
+			'value' => $a['value'],
+		);
+	}
+endif;
+
+if ( ! function_exists( 'sc_card_rows_value' ) ) :
+	/** Normalise a saved Card Rows value → a clean list of { slots[], dir, justify, align }. '' rows drop. */
+	function sc_card_rows_value( $atts, $key = 'card_rows' ) {
+		$raw = ( function_exists( 'sc_get' ) ? sc_get( $key, $atts, array() ) : ( isset( $atts[ $key ] ) ? $atts[ $key ] : array() ) );
+		$out = array();
+		if ( ! is_array( $raw ) ) { return $out; }
+		foreach ( $raw as $row ) {
+			if ( ! is_array( $row ) ) { continue; }
+			$slots = isset( $row['slots'] ) ? array_values( (array) $row['slots'] ) : array();
+			if ( ! $slots ) { continue; }
+			$out[] = array(
+				'slots'   => $slots,
+				'dir'     => isset( $row['direction'] ) ? (string) $row['direction'] : 'inline',
+				'justify' => isset( $row['justify'] ) ? (string) $row['justify'] : 'start',
+				'align'   => isset( $row['align'] ) ? (string) $row['align'] : 'center',
+				'reverse' => ( isset( $row['reverse'] ) && 'yes' === $row['reverse'] ),
+			);
+		}
+		return $out;
+	}
+endif;
+
+if ( ! function_exists( 'sc_card_rows_render' ) ) :
+	/**
+	 * Assemble Card Rows → HTML. $slot_map = [ slug => html ]; empty slots (and empty rows) collapse.
+	 * CSS classes: "{prefix}__row {prefix}-row--{dir} {prefix}-j-{justify} {prefix}-a-{align}".
+	 */
+	function sc_card_rows_render( $rows, $slot_map, $prefix ) {
+		$out = '';
+		foreach ( (array) $rows as $row ) {
+			$cells = '';
+			foreach ( (array) $row['slots'] as $sk ) {
+				if ( isset( $slot_map[ $sk ] ) && '' !== $slot_map[ $sk ] ) { $cells .= $slot_map[ $sk ]; }
+			}
+			if ( '' === $cells ) { continue; }
+			$cls = $prefix . '__row'
+				. ' ' . $prefix . '-row--' . preg_replace( '/[^a-z]/', '', $row['dir'] )
+				. ' ' . $prefix . '-j-' . preg_replace( '/[^a-z]/', '', $row['justify'] )
+				. ' ' . $prefix . '-a-' . preg_replace( '/[^a-z]/', '', $row['align'] )
+				. ( ! empty( $row['reverse'] ) ? ' ' . $prefix . '-row--reverse' : '' );
+			$out .= '<div class="' . esc_attr( $cls ) . '">' . $cells . '</div>';
+		}
+		return $out;
 	}
 endif;
 
@@ -1602,9 +1748,11 @@ if ( ! function_exists( 'sc_apply_styling_classes' ) ) :
 					if ( $raw === '' ) { continue; }
 					$cls = sc_sanitize_class( $raw );
 					if ( $cls === '' ) { continue; }
-					if ( $infix !== '' && strpos( $cls, '-' ) !== false ) {
-						list( $prefix, $rest ) = explode( '-', $cls, 2 );
-						$cls = $prefix . '-' . $infix . '-' . $rest; // pt-3 -> pt-md-3
+					if ( $infix !== '' ) {
+						// Insert the breakpoint infix right after the utility prefix — works for
+						// both scale slugs (pt-3 -> pt-md-3) and arbitrary values (pt-[40px] ->
+						// pt-md-[40px]), which a naive first-hyphen split would mangle.
+						$cls = preg_replace( '/^((?:m|p|g)(?:x|y|t|b|s|e|l|r)?)-/', '${1}-' . $infix . '-', $cls, 1 );
 					}
 					$classes[] = $cls;
 				}
@@ -3065,4 +3213,332 @@ if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
 		return $icon;
 	}
 	add_filter( 'wp_mime_type_icon', 'sc_svg_mime_type_icon', 10, 3 );
+endif;
+
+/* ---------------------------------------------------------------------------
+ * Shared RATING STARS — one two-tone SVG renderer + a reusable options field,
+ * used by any star-showing element (Products, Testimonials, …) so ratings look
+ * and behave the same and are customizable per element (symbol + colors + size).
+ * The symbol SHAPE is also swappable in code via the sc_rating_star_paths /
+ * sc_rating_star_svg filters (see the manual).
+ * ------------------------------------------------------------------------- */
+
+if ( ! function_exists( 'sc_rating_star_paths' ) ) :
+	/** Symbol key => { vb: viewBox, d: filled path }. Filterable to add shapes. */
+	function sc_rating_star_paths() {
+		return apply_filters( 'sc_rating_star_paths', array(
+			'star'   => array( 'vb' => '0 0 24 25', 'd' => 'M12.864 3.37a.952.952 0 0 0-1.728 0L8.675 8.676l-5.836.688a.95.95 0 0 0-.792.646.94.94 0 0 0 .258.987l4.315 3.966-1.145 5.729a.94.94 0 0 0 .373.95c.3.216.7.24 1.024.06L12 18.847l5.128 2.854a.96.96 0 0 0 1.023-.06.94.94 0 0 0 .375-.95l-1.146-5.73 4.315-3.965a.94.94 0 0 0 .258-.987.95.95 0 0 0-.792-.646l-5.836-.688z' ),
+			'heart'  => array( 'vb' => '0 0 24 24', 'd' => 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z' ),
+			'circle' => array( 'vb' => '0 0 24 24', 'd' => 'M12 2a10 10 0 100 20 10 10 0 000-20z' ),
+		) );
+	}
+endif;
+
+if ( ! function_exists( 'sc_rating_stars' ) ) :
+	/**
+	 * Render a two-tone rating (gray base row + filled row overlaid and clipped to
+	 * the value, so fractional ratings show a partial last symbol). Self-contained:
+	 * the symbol <symbol> sprite and the base CSS are printed once per request.
+	 *
+	 * @param float $rating 0..max.
+	 * @param array $args   max (5), symbol (star|heart|circle|…), fill/empty (compact
+	 *                      color value or CSS string), size (sm|md|lg|CSS length), label.
+	 */
+	function sc_rating_stars( $rating, $args = array() ) {
+		$rating = (float) $rating;
+		if ( $rating <= 0 ) { return ''; }
+
+		$a   = array_merge( array( 'max' => 5, 'symbol' => 'star', 'fill' => '', 'empty' => '', 'size' => '', 'label' => '' ), $args );
+		$max = max( 1, (int) $a['max'] );
+		$pct = max( 0, min( 100, $rating / $max * 100 ) );
+
+		$symbol = preg_replace( '/[^a-z0-9_-]/', '', strtolower( (string) $a['symbol'] ) );
+		$paths  = sc_rating_star_paths();
+		if ( $symbol === '' || ! isset( $paths[ $symbol ] ) ) { $symbol = 'star'; }
+		$def = $paths[ $symbol ];
+		$id  = 'sc-rating-' . $symbol;
+
+		// Colors → class/style (accepts a compact-color value or a plain CSS color).
+		$fill  = sc_normalize_color_value( $a['fill'], 'text' );
+		$empty = sc_normalize_color_value( $a['empty'], 'text' );
+
+		// Size → CSS length.
+		$size_map = array( 'sm' => '.95em', 'md' => '1.15em', 'lg' => '1.5em' );
+		$size     = isset( $size_map[ $a['size'] ] ) ? $size_map[ $a['size'] ] : ( $a['size'] !== '' ? preg_replace( '/[^0-9a-z.%]/i', '', (string) $a['size'] ) : '' );
+
+		// Print the symbol sprite + base CSS once per request.
+		static $printed_sym = array();
+		static $printed_css = false;
+		$once = '';
+		if ( ! $printed_css ) {
+			$printed_css = true;
+			$once .= '<style>.sc-rating{position:relative;display:inline-flex;line-height:0;vertical-align:middle}'
+				. '.sc-rating__base,.sc-rating__fill{display:inline-flex}'
+				. '.sc-rating__base{color:#DADEF3}.sc-rating__fill{position:absolute;top:0;left:0;overflow:hidden;color:#FFB629}'
+				. '.sc-rating svg{width:var(--sc-star-size,1.15em);height:var(--sc-star-size,1.15em);display:block;flex:0 0 auto}</style>';
+		}
+		if ( empty( $printed_sym[ $symbol ] ) ) {
+			$printed_sym[ $symbol ] = true;
+			$custom = apply_filters( 'sc_rating_star_svg', '', $symbol, $a ); // full path/markup override
+			$inner  = $custom !== '' ? $custom : '<path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="' . esc_attr( $def['d'] ) . '"/>';
+			$once  .= '<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">'
+				. '<defs><symbol id="' . esc_attr( $id ) . '" viewBox="' . esc_attr( $def['vb'] ) . '">' . $inner . '</symbol></defs></svg>';
+		}
+
+		$one = '<svg viewBox="' . esc_attr( $def['vb'] ) . '" aria-hidden="true" focusable="false"><use href="#' . esc_attr( $id ) . '"></use></svg>';
+		$row = str_repeat( $one, $max );
+
+		$root_style = ( $size !== '' ) ? ' style="--sc-star-size:' . esc_attr( $size ) . '"' : '';
+		$base_attr  = ' class="sc-rating__base' . ( $empty['class'] !== '' ? ' ' . esc_attr( $empty['class'] ) : '' ) . '"'
+			. ( $empty['style'] !== '' ? ' style="' . esc_attr( $empty['style'] ) . '"' : '' );
+		$fill_attr  = ' class="sc-rating__fill' . ( $fill['class'] !== '' ? ' ' . esc_attr( $fill['class'] ) : '' ) . '"'
+			. ' style="width:' . $pct . '%' . ( $fill['style'] !== '' ? ';' . esc_attr( $fill['style'] ) : '' ) . '"';
+
+		$label = $a['label'] !== '' ? $a['label'] : sprintf( __( 'Rated %s out of %d', 'fw' ), $rating, $max );
+
+		return $once . '<span class="sc-rating"' . $root_style . ' role="img" aria-label="' . esc_attr( $label ) . '">'
+			. '<span' . $base_attr . '>' . $row . '</span>'
+			. '<span' . $fill_attr . '>' . $row . '</span>'
+			. '</span>';
+	}
+endif;
+
+if ( ! function_exists( 'sc_rating_style_field' ) ) :
+	/**
+	 * Reusable "Rating style" options (Symbol + Filled/Empty color + Size) for any
+	 * star-showing element. Returns an option-id => option-def array to merge into a
+	 * group. Read the saved values back with sc_rating_style_from_atts().
+	 */
+	function sc_rating_style_field( $args = array() ) {
+		$doc = 'https://unysonplus.github.io/docs/developers/rating-stars';
+
+		// Image-picker swatches, generated on the fly from the registered symbol paths
+		// (each drawn as a small filled data-URI SVG). Any shape added via the
+		// sc_rating_star_paths filter therefore shows up here automatically.
+		$sym_labels  = array( 'star' => __( 'Star', 'fw' ), 'heart' => __( 'Heart', 'fw' ), 'circle' => __( 'Dot', 'fw' ) );
+		$sym_choices = array();
+		foreach ( sc_rating_star_paths() as $sym_key => $sym_def ) {
+			if ( ! is_array( $sym_def ) || empty( $sym_def['d'] ) ) { continue; }
+			$vb  = isset( $sym_def['vb'] ) ? $sym_def['vb'] : '0 0 24 24';
+			$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' . $vb . '"><path fill="#FFB629" d="' . $sym_def['d'] . '"/></svg>';
+			$sym_choices[ $sym_key ] = array( 'small' => array(
+				'src'    => 'data:image/svg+xml;base64,' . base64_encode( $svg ),
+				'height' => 30,
+				'title'  => isset( $sym_labels[ $sym_key ] ) ? $sym_labels[ $sym_key ] : ucwords( str_replace( array( '-', '_' ), ' ', $sym_key ) ),
+			) );
+		}
+
+		return array(
+			'rating_symbol' => array(
+				'type'    => 'image-picker',
+				'label'   => __( 'Rating Symbol', 'fw' ),
+				'value'   => 'star',
+				'choices' => $sym_choices,
+				'desc'    => __( 'The rating shape.', 'fw' ),
+				'help'    => sprintf(
+					/* translators: %s: manual URL */
+					__( 'Developers can register more shapes with the sc_rating_star_paths filter (they appear here automatically), or return full SVG with sc_rating_star_svg. See the manual: %s', 'fw' ),
+					'<a href="' . esc_url( $doc ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $doc ) . '</a>'
+				),
+			),
+			'rating_fill_color'  => sc_color_field_compact( array( 'label' => __( 'Filled Color', 'fw' ), 'kind' => 'text', 'desc' => __( 'Default: gold.', 'fw' ) ) ),
+			'rating_empty_color' => sc_color_field_compact( array( 'label' => __( 'Empty Color', 'fw' ), 'kind' => 'text', 'desc' => __( 'Default: light grey.', 'fw' ) ) ),
+			'rating_size' => array(
+				'type'    => 'select',
+				'label'   => __( 'Symbol Size', 'fw' ),
+				'value'   => 'md',
+				'choices' => array( 'sm' => __( 'Small', 'fw' ), 'md' => __( 'Medium', 'fw' ), 'lg' => __( 'Large', 'fw' ) ),
+			),
+		);
+	}
+endif;
+
+if ( ! function_exists( 'sc_rating_style_from_atts' ) ) :
+	/** Pull the sc_rating_style_field values from an element's atts → sc_rating_stars() args. */
+	function sc_rating_style_from_atts( $atts, $prefix = 'rating_' ) {
+		$get = function ( $k, $d = '' ) use ( $atts ) {
+			return function_exists( 'sc_get' ) ? sc_get( $k, $atts, $d ) : ( isset( $atts[ $k ] ) ? $atts[ $k ] : $d );
+		};
+		return array(
+			'symbol' => $get( $prefix . 'symbol', 'star' ),
+			'fill'   => $get( $prefix . 'fill_color', '' ),
+			'empty'  => $get( $prefix . 'empty_color', '' ),
+			'size'   => $get( $prefix . 'size', 'md' ),
+		);
+	}
+endif;
+
+if ( ! function_exists( 'sc_button_style_field' ) ) :
+	/**
+	 * The shared Button STYLE option group — Button Style preset, Size, Shape, Width,
+	 * Alignment and Hover Animation — sourced from the same Theme Settings → Buttons
+	 * presets as the [button] shortcode. Any element that renders a themed button
+	 * (e.g. the WooCommerce Add to Cart element) can drop this into a Style tab and
+	 * read the values back with sc_button_style_atts(), so the button look never drifts.
+	 *
+	 * @param array $args Optional overrides (currently unused; reserved).
+	 * @return array Option definitions keyed style / size / shape / width / alignment / hover_animation.
+	 */
+	function sc_button_style_field( $args = array() ) {
+		$style_choices = function_exists( 'sc_get_button_style_choices' ) ? sc_get_button_style_choices() : array();
+		$style_default = function_exists( 'sc_get_button_style_default' ) ? sc_get_button_style_default() : '';
+
+		// Shape swatches ride along with the [button] shortcode's assets.
+		$shape_field = array(
+			'type'    => 'select',
+			'label'   => __( 'Button Shape', 'fw' ),
+			'desc'    => __( 'Corner rounding. Default keeps the radius from the selected Size; Pill / Rounded / Square override it.', 'fw' ),
+			'value'   => 'default',
+			'choices' => array(
+				'default' => __( 'Default (from Size)', 'fw' ),
+				'pill'    => __( 'Pill', 'fw' ),
+				'rounded' => __( 'Rounded', 'fw' ),
+				'square'  => __( 'Square', 'fw' ),
+			),
+		);
+		if ( function_exists( 'fw_ext' ) && fw_ext( 'shortcodes' ) ) {
+			$img  = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/button/static/img/shapes' );
+			$tile = function ( $file, $title ) use ( $img ) {
+				return array( 'small' => array( 'src' => $img . '/' . $file, 'height' => 34, 'title' => $title ) );
+			};
+			$shape_field = array(
+				'type'    => 'image-picker',
+				'label'   => __( 'Button Shape', 'fw' ),
+				'desc'    => __( 'Corner rounding. Default keeps the radius from the selected Size; Pill / Rounded / Square override it.', 'fw' ),
+				'value'   => 'default',
+				'choices' => array(
+					'default' => $tile( 'default.svg', __( 'Default (from Size)', 'fw' ) ),
+					'pill'    => $tile( 'pill.svg',    __( 'Pill', 'fw' ) ),
+					'rounded' => $tile( 'rounded.svg', __( 'Rounded', 'fw' ) ),
+					'square'  => $tile( 'square.svg',  __( 'Square', 'fw' ) ),
+				),
+			);
+		}
+
+		return array(
+			'style' => array(
+				'label'        => __( 'Button Style', 'fw' ),
+				'desc'         => __( 'Sourced from Theme Settings → General → Buttons. Includes the outline presets. Each option previews the real button.', 'fw' ),
+				'type'         => 'button-style-picker',
+				'choices'      => $style_choices,
+				'value'        => $style_default,
+				'allow_none'   => false,
+				'preview_text' => __( 'Add to Cart', 'fw' ),
+				'help'         => function_exists( 'sc_styling_help_text' ) ? sc_styling_help_text( 'button_style' ) : '',
+			),
+			'size' => array(
+				'label'        => __( 'Button Size', 'fw' ),
+				'desc'         => __( 'Sourced from Theme Settings → General → Buttons → Sizes. Each option previews the button at that size.', 'fw' ),
+				'type'         => 'button-style-picker',
+				'choices'      => function_exists( 'sc_get_button_size_choices' ) ? sc_get_button_size_choices() : array(),
+				'preview_text' => __( 'Add to Cart', 'fw' ),
+				'preview_base' => 'btn btn-primary',
+				'help'         => function_exists( 'sc_styling_help_text' ) ? sc_styling_help_text( 'button_size' ) : '',
+			),
+			'shape' => $shape_field,
+			'width' => array(
+				'type'   => 'multi-picker',
+				'label'  => false,
+				'desc'   => false,
+				'picker' => array(
+					'mode' => array(
+						'label'   => __( 'Button Width', 'fw' ),
+						'desc'    => __( 'Auto fits the label; Full Width spans its container; Custom reveals a width field.', 'fw' ),
+						'type'    => 'select',
+						'choices' => array(
+							''       => __( 'Auto (fit content)', 'fw' ),
+							'w-100'  => __( 'Full Width', 'fw' ),
+							'custom' => __( 'Custom', 'fw' ),
+						),
+						'value'   => '',
+					),
+				),
+				'choices' => array(
+					'custom' => array(
+						'custom_width' => array(
+							'label' => __( 'Custom Width', 'fw' ),
+							'help'  => __( 'Enter a number and unit, e.g. 200px or 50%. Only used when Button Width is set to Custom.', 'fw' ),
+							'type'  => 'unit-input',
+							'units' => array( 'px', '%', 'rem', 'em', 'vw' ),
+							'min'   => 0,
+						),
+					),
+				),
+				'show_borders' => false,
+			),
+			'alignment' => array(
+				'label'   => __( 'Alignment', 'fw' ),
+				'desc'    => __( 'Aligns the button within its container. Has no effect when Button Width is Full Width.', 'fw' ),
+				'type'    => 'select',
+				'choices' => array(
+					''       => __( 'Default (inherit)', 'fw' ),
+					'left'   => __( 'Left', 'fw' ),
+					'center' => __( 'Center', 'fw' ),
+					'right'  => __( 'Right', 'fw' ),
+				),
+				'value'   => '',
+			),
+			'hover_animation' => array(
+				'label'   => __( 'Hover Animation', 'fw' ),
+				'desc'    => __( 'Motion applied on hover/focus. Animates transform/shadow only, so the preset keeps its colors.', 'fw' ),
+				'type'    => 'button-hover-animation',
+				'choices' => function_exists( 'sc_get_hover_animation_choices' ) ? sc_get_hover_animation_choices() : array(),
+				'fx_css'  => ( function_exists( 'fw_ext' ) && fw_ext( 'shortcodes' ) ) ? fw_min_uri( fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/button/static/css/hover-fx.css' ) ) : '',
+			),
+		);
+	}
+endif;
+
+if ( ! function_exists( 'sc_button_style_atts' ) ) :
+	/**
+	 * Turn saved sc_button_style_field() values into button classes + inline width + alignment.
+	 * Mirrors the [button] shortcode's class assembly so both look identical.
+	 *
+	 * @param array $atts Element atts (style / size / shape / width / alignment / hover_animation).
+	 * @return array { classes: string[], style: string (inline, e.g. "width: 200px;"), align: '' | left | center | right }
+	 */
+	function sc_button_style_atts( $atts ) {
+		$atts    = is_array( $atts ) ? $atts : array();
+		$classes = array();
+
+		$style = ! empty( $atts['style'] ) ? (string) $atts['style'] : '';
+		$size  = ! empty( $atts['size'] ) ? (string) $atts['size'] : '';
+		if ( '' !== $style ) { $classes[] = $style; }
+		if ( '' !== $size ) { $classes[] = $size; }
+
+		$shape = ! empty( $atts['shape'] ) ? (string) $atts['shape'] : '';
+		if ( in_array( $shape, array( 'pill', 'rounded', 'square' ), true ) ) {
+			$classes[] = 'btn-shape-' . $shape;
+		}
+
+		// Width multi-picker: [ 'mode' => ''|'w-100'|'custom', 'custom' => [ 'custom_width' => {value,unit} ] ].
+		$width_raw = isset( $atts['width'] ) ? $atts['width'] : '';
+		if ( is_array( $width_raw ) ) {
+			$mode = isset( $width_raw['mode'] ) ? (string) $width_raw['mode'] : '';
+			$cw   = isset( $width_raw['custom']['custom_width'] ) ? $width_raw['custom']['custom_width'] : '';
+		} else {
+			$mode = (string) $width_raw;
+			$cw   = isset( $atts['custom_width'] ) ? $atts['custom_width'] : '';
+		}
+		if ( 'w-100' === $mode ) { $classes[] = 'w-100'; }
+		$inline = '';
+		if ( 'custom' === $mode && ! empty( $cw ) && class_exists( 'FW_Option_Type_Unit_Input' ) ) {
+			$custom_width = FW_Option_Type_Unit_Input::to_string( $cw );
+			if ( '' !== $custom_width ) { $inline = 'width: ' . $custom_width . ';'; }
+		}
+
+		$hover = ! empty( $atts['hover_animation'] ) ? (string) $atts['hover_animation'] : '';
+		if ( '' !== $hover && preg_match( '/^btnfx-[a-z0-9-]+$/', $hover ) ) {
+			$classes[] = $hover;
+		}
+
+		$align = ! empty( $atts['alignment'] ) ? (string) $atts['alignment'] : '';
+		if ( ! in_array( $align, array( 'left', 'center', 'right' ), true ) ) { $align = ''; }
+
+		return array(
+			'classes' => array_values( array_unique( array_filter( $classes ) ) ),
+			'style'   => $inline,
+			'align'   => $align,
+		);
+	}
 endif;

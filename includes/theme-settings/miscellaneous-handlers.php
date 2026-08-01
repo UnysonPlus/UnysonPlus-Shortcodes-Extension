@@ -13,10 +13,61 @@
 
 /* ===================== Custom CSS ===================== */
 
+if ( ! function_exists( 'fw_admin_safe_custom_css' ) ) :
+	/**
+	 * Make site Custom CSS wp-admin-safe. misc_custom_css is folded into the shared presets stylesheet,
+	 * which the page builder ALSO loads in wp-admin (canvas WYSIWYG) — so an unscoped top-level `body` /
+	 * `html` rule (background, overflow, …) would repaint the EDITOR chrome ("the front end leaked into
+	 * the backend"). This rewrites those global selectors to front-end-only variants
+	 * (`body:not(.wp-admin)`, `html:not(:has(.wp-admin))`) so a global rule can never leak into the admin,
+	 * while class/id/descendant rules (`.pb-*`, `.upwc-*`, `#x`) are left untouched so they still skin the
+	 * builder canvas. Applies to ALL Custom CSS — hand-written OR emitted by the Site Converter — so this
+	 * cannot recur regardless of who wrote the CSS. Already-scoped selectors are left alone (idempotent).
+	 *
+	 * @param string $css
+	 * @return string
+	 */
+	function fw_admin_safe_custom_css( $css ) {
+		$css = (string) $css;
+		// Fast bail: nothing to scope unless a body/html token is present.
+		if ( '' === trim( $css ) || ( false === stripos( $css, 'body' ) && false === stripos( $css, 'html' ) ) ) {
+			return $css;
+		}
+		// Rewrite each rule's selector list (a run of chars after `}`/start, up to `{`, that isn't an @-rule).
+		return (string) preg_replace_callback(
+			'/(^|\})([^{}@]*)\{/s',
+			function ( $m ) {
+				$sel = $m[2];
+				if ( ! preg_match( '/(^|[\s,])(body|html)\b/i', $sel ) ) {
+					return $m[0]; // no body/html at a selector head → leave untouched
+				}
+				$parts = explode( ',', $sel );
+				foreach ( $parts as &$p ) {
+					$t    = ltrim( $p );
+					$lead = substr( $p, 0, strlen( $p ) - strlen( $t ) ); // keep original leading whitespace
+					if ( preg_match( '/^html\b/i', $t ) ) {
+						if ( false === strpos( $t, ':has(' ) ) {
+							$t = preg_replace( '/^html\b/i', 'html:not(:has(.wp-admin))', $t, 1 );
+						}
+					} elseif ( preg_match( '/^body\b/i', $t ) ) {
+						if ( false === strpos( $t, ':not(.wp-admin)' ) ) {
+							$t = preg_replace( '/^body\b/i', 'body:not(.wp-admin)', $t, 1 );
+						}
+					}
+					$p = $lead . $t;
+				}
+				unset( $p );
+				return $m[1] . implode( ',', $parts ) . '{';
+			},
+			$css
+		);
+	}
+endif;
+
 if ( ! function_exists( 'upw_ts_custom_css' ) ) :
 	function upw_ts_custom_css() {
 		$css = trim( (string) upw_ts_setting( 'misc_custom_css', 'custom_css', '' ) );
-		return $css === '' ? '' : wp_strip_all_tags( $css );
+		return $css === '' ? '' : fw_admin_safe_custom_css( wp_strip_all_tags( $css ) );
 	}
 endif;
 
@@ -111,6 +162,25 @@ add_action( 'wp_body_open', function () {
 }, 10 );
 
 /* ===================== Performance Tweaks ===================== */
+
+// The page-builder canvas renders element previews that contain emoji (badge / eyebrow text,
+// emoji icon picks). WordPress's emoji feature rewrites those emoji into <img> tags served from
+// s.w.org, which show up as BROKEN images inside the builder. Native emoji render fine in the
+// admin, so drop the emoji detection script in wp-admin UNCONDITIONALLY (independent of the
+// frontend "Disable WordPress emojis" toggle below) — it only affects the admin and removes the
+// broken-image artifact editors were seeing in the builder.
+add_action( 'admin_init', function () {
+	remove_action( 'admin_print_scripts', 'print_emoji_detection_script' );
+	remove_action( 'admin_print_styles', 'print_emoji_styles' );
+	// The page-builder canvas renders element previews via TinyMCE — kill the TinyMCE emoji
+	// plugin too, so it can't rewrite emoji into <img> inside the editor iframe/preview.
+	add_filter( 'tiny_mce_plugins', function ( $plugins ) {
+		return is_array( $plugins ) ? array_diff( $plugins, array( 'wpemoji' ) ) : $plugins;
+	} );
+	// Belt-and-suspenders: if the detection script still prints, an empty svg base URL stops it
+	// building any s.w.org <img> (emoji stay as native text).
+	add_filter( 'emoji_svg_url', '__return_empty_string' );
+} );
 
 add_action( 'init', function () {
 	if ( upw_ts_setting( 'misc_performance', 'perf_disable_emojis' ) === 'yes' ) {

@@ -114,6 +114,10 @@ class FW_Extension_Shortcodes extends FW_Extension
 		// design packs (fw_sc_designs). Uses fw_design_lib_dir() from design-presets.
 		require_once dirname( __FILE__ ) . '/includes/pluggable-designs.php';
 
+		// Shared "Card Rows" designer + live preview (sc_card_rows_field / _render /
+		// sc_card_preview_mount_html). Used by card elements like [team_member].
+		require_once dirname( __FILE__ ) . '/includes/card-preview/loader.php';
+
 		// WYSIWYG editor enhancements (the "List style" toolbar button + its front-end
 		// CSS). Instantiated always — the front-end style enqueue runs outside admin.
 		require_once dirname( __FILE__ ) . '/includes/class-fw-shortcodes-editor.php';

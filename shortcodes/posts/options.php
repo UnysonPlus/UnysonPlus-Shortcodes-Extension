@@ -558,48 +558,36 @@ $options = [
             'group_order' => [
                 'type'    => 'group',
                 'options' => [
-                    'element_order' => [
-                        'label'    => __( 'Element Order (drag to reorder)', 'fw' ),
-                        'desc'     => __( 'Reorder the blocks inside each card. Toggle Visible off to hide a block. Image position inside side/overlay cards is governed by Card Style, not this list.', 'fw' ),
-                        'type'     => 'addable-box',
-                        'template' => '{{- slug }}',
-                        'limit'    => 6,
-                        'sortable' => true,
-                        'value'    => [
-                            [ 'slug' => 'image',    'enabled' => 'yes' ],
-                            [ 'slug' => 'cats',     'enabled' => 'yes' ],
-                            [ 'slug' => 'title',    'enabled' => 'yes' ],
-                            [ 'slug' => 'meta',     'enabled' => 'yes' ],
-                            [ 'slug' => 'excerpt',  'enabled' => 'yes' ],
-                            [ 'slug' => 'readmore', 'enabled' => 'yes' ],
-                        ],
-                        'box-options' => [
-                            'slug' => [
-                                'label'   => __( 'Block', 'fw' ),
-                                'type'    => 'select',
-                                'value'   => 'title',
-                                'choices' => [
-                                    'image'    => __( 'Featured image', 'fw' ),
-                                    'cats'     => __( 'Categories / taxonomy chips', 'fw' ),
-                                    'title'    => __( 'Title', 'fw' ),
-                                    'meta'     => __( 'Meta bar (author / date / comments)', 'fw' ),
-                                    'excerpt'  => __( 'Excerpt', 'fw' ),
-                                    'readmore' => __( 'Read-more link', 'fw' ),
-                                ],
-                            ],
-                            'enabled' => [
-                                'label' => __( 'Visible', 'fw' ),
-                                'type'  => 'switch',
-                                'value' => 'yes',
-                                // Explicit string choices: a bare switch stores a
-                                // boolean, which serialised to false for every row and
-                                // hid all card blocks. 'yes'/'no' matches the default +
-                                // the view's element_order check.
-                                'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
-                                'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
-                            ],
-                        ],
+                    // CARD ROWS — the block designer (replaces the old flat "Element Order" list).
+                    // Arrange each card's blocks into rows and pick inline / stacked + alignment; a
+                    // block shows only when it's in a row. A live schematic preview sits above it.
+                    // (Image POSITION inside side / overlay card styles is still governed by Card
+                    // Style, not the rows — the rows own order + visibility + grouping of the body.)
+                    'card_preview' => [
+                        'type'  => 'html-full',
+                        'label' => false,
+                        'html'  => function_exists( 'sc_card_preview_mount_html' ) ? sc_card_preview_mount_html() : '',
                     ],
+                    'card_rows' => function_exists( 'sc_card_rows_field' ) ? sc_card_rows_field( [
+                        'label' => __( 'Card Rows', 'fw' ),
+                        'desc'  => __( 'The blocks inside each post card. Add / drag rows; in each row pick & order the blocks (image, categories, title, meta, excerpt, read-more) and set inline / stacked + alignment. A block appears only when it\'s in a row — remove it to hide it. Image position inside side / overlay card styles is governed by the Card Style, not this list.', 'fw' ),
+                        'slots' => [
+                            'image'    => __( 'Featured image', 'fw' ),
+                            'cats'     => __( 'Categories', 'fw' ),
+                            'title'    => __( 'Title', 'fw' ),
+                            'meta'     => __( 'Meta (author / date)', 'fw' ),
+                            'excerpt'  => __( 'Excerpt', 'fw' ),
+                            'readmore' => __( 'Read-more', 'fw' ),
+                        ],
+                        'value' => [
+                            [ 'slots' => [ 'image' ],    'direction' => 'stack',  'justify' => 'start', 'align' => 'stretch' ],
+                            [ 'slots' => [ 'cats' ],     'direction' => 'inline', 'justify' => 'start', 'align' => 'center' ],
+                            [ 'slots' => [ 'title' ],    'direction' => 'stack',  'justify' => 'start', 'align' => 'start' ],
+                            [ 'slots' => [ 'meta' ],     'direction' => 'inline', 'justify' => 'start', 'align' => 'center' ],
+                            [ 'slots' => [ 'excerpt' ],  'direction' => 'stack',  'justify' => 'start', 'align' => 'start' ],
+                            [ 'slots' => [ 'readmore' ], 'direction' => 'inline', 'justify' => 'start', 'align' => 'center' ],
+                        ],
+                    ] ) : [ 'type' => 'text', 'label' => __( 'Card Rows', 'fw' ), 'value' => '' ],
                 ],
             ],
             'group_title' => [

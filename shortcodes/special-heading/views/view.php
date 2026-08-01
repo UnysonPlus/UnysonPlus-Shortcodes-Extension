@@ -238,9 +238,23 @@ $subtitle_style_attr = $subtitle_style !== '' ? ' style="' . esc_attr( $subtitle
 // its text, so the markup is genuinely clean (no leading/trailing space inside the
 // element). Content is trimmed for the same reason.
 if ( ! empty( $atts['overline'] ) ) {
-    $overline_inner = $overline_needs_label
-        ? '<span class="heading-overline__label">' . wp_kses_post( trim( (string) $atts['overline'] ) ) . '</span>'
-        : wp_kses_post( trim( (string) $atts['overline'] ) );
+    // Optional overline icon (before/after the text, following Marker Position). An icon forces the
+    // __label wrapper so it can flex the icon + text with a gap (like a pill).
+    $ov_icon_html = '';
+    if ( ! empty( $atts['overline_icon'] ) && function_exists( 'sc_icon_render' ) ) {
+        if ( isset( fw()->backend ) && ( $iot = fw()->backend->option_type( 'icon' ) ) && isset( $iot->packs_loader ) ) {
+            $iot->packs_loader->enqueue_pack_for_icon( $atts['overline_icon'] );
+        }
+        $ov_icon_html = sc_icon_render( $atts['overline_icon'], array( 'class' => 'heading-overline__icon' ) );
+    }
+    $ov_need_label = $overline_needs_label || $ov_icon_html !== '';
+    $ov_text       = wp_kses_post( trim( (string) $atts['overline'] ) );
+    $ov_icon_after = ( ( $atts['overline_icon_position'] ?? 'before' ) === 'after' );
+    $ov_body       = ( $ov_icon_after && $ov_icon_html !== '' ) ? ( $ov_text . $ov_icon_html ) : ( $ov_icon_html . $ov_text );
+    $overline_inner = $ov_need_label
+        ? '<span class="heading-overline__label">' . $ov_body . '</span>'
+        : $ov_body;
+    if ( $ov_icon_html !== '' ) { $overline_classes[] = 'heading-overline--has-icon'; }
     echo '<p class="' . esc_attr( implode( ' ', $overline_classes ) ) . '"' . $overline_style_attr . '>' . $overline_inner . '</p>';
 }
 
@@ -263,7 +277,11 @@ if ( ! empty( $atts['title'] ) ) {
         }
     }
 
-    echo '<' . $hd_tag . ' class="' . esc_attr( implode( ' ', $title_classes ) ) . '"' . $title_style_attr . '>' . $title_icon . wp_kses_post( trim( (string) $atts['title'] ) ) . '</' . $hd_tag . '>';
+    $ti_after   = ( ( $atts['title_icon_position'] ?? 'before' ) === 'after' );
+    $title_txt  = wp_kses_post( trim( (string) $atts['title'] ) );
+    $title_body = ( $ti_after && $title_icon !== '' ) ? ( $title_txt . $title_icon ) : ( $title_icon . $title_txt );
+    if ( $title_icon !== '' ) { $title_classes[] = $ti_after ? 'heading-title--icon-after' : 'heading-title--icon-before'; }
+    echo '<' . $hd_tag . ' class="' . esc_attr( implode( ' ', $title_classes ) ) . '"' . $title_style_attr . '>' . $title_body . '</' . $hd_tag . '>';
 }
 
 if ( ! empty( $atts['subtitle'] ) ) {

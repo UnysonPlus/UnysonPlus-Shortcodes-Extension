@@ -163,3 +163,9 @@ img.heading-title__icon { width: auto; height: 0.9em; vertical-align: -0.08em; }
    <span>; size the inner <svg> so a pack whose markup carries no width still
    renders (otherwise it collapses to 0 and the icon looks missing). */
 .heading-title__icon svg { width: auto; height: 0.9em; vertical-align: -0.08em; }
+
+/* Overline icon (Icons tab) — sized to the overline text; the label's inline-flex gap spaces it. */
+.heading-overline__icon { flex: none; display: inline-flex; align-items: center; }
+.heading-overline__icon svg, .heading-overline__icon img { width: auto; height: 1em; display: block; }
+/* Title-icon placement — DOM order sets before/after; flip the gap side for "after". */
+.heading-title--icon-after .heading-title__icon { margin-right: 0; margin-left: 0.4em; }

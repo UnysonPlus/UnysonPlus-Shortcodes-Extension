@@ -226,11 +226,7 @@ $attr = sc_build_wrapper_attr( $atts );
 		<?php if ( $label !== '' ) : ?>
 			<strong<?php echo $label_bare_attr; ?><?php echo $label_style_attr; ?>><?php echo esc_html( $label ); ?></strong><?php echo ' '; ?>
 		<?php endif; ?>
-		<?php if ( ! empty( $message_extras ) || $message_has_style_only ) : ?>
-			<span<?php echo $message_inline_attr; ?><?php echo $message_style_attr; ?>><?php echo wp_kses_post( $message ); ?></span>
-		<?php else : ?>
-			<?php echo wp_kses_post( $message ); ?>
-		<?php endif; ?>
+		<span class="alert__message<?php echo ! empty( $message_extras ) ? ' ' . esc_attr( implode( ' ', $message_extras ) ) : ''; ?>"<?php echo $message_style_attr; ?>><?php echo wp_kses_post( $message ); ?></span>
 	<?php else : ?>
 		<?php
 		// Legacy inline path — emit the exact DOM of the old view, extended with
@@ -242,11 +238,9 @@ $attr = sc_build_wrapper_attr( $atts );
 		if ( $label !== '' ) {
 			echo '<strong' . $label_bare_attr . $label_style_attr . '>' . esc_html( $label ) . '</strong> ';
 		}
-		if ( ! empty( $message_extras ) || $message_has_style_only ) {
-			echo '<span' . $message_inline_attr . $message_style_attr . '>' . wp_kses_post( $message ) . '</span>';
-		} else {
-			echo wp_kses_post( $message );
-		}
+		echo '<span class="alert__message'
+			. ( ! empty( $message_extras ) ? ' ' . esc_attr( implode( ' ', $message_extras ) ) : '' )
+			. '"' . $message_style_attr . '>' . wp_kses_post( $message ) . '</span>';
 		?>
 	<?php endif; ?>
 

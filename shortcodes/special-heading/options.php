@@ -65,12 +65,6 @@ $options = [
                         'desc'  => __('Write the heading title content', 'fw'),
                         'help'  => __('You can wrap part of the text in inline HTML — e.g. an &lt;em&gt; or a coloured &lt;span&gt; — to emphasise a word.', 'fw'),
                     ],
-                    'icon' => [
-                        'type'  => 'icon',
-                        'label' => __('Title Icon', 'fw'),
-                        'desc'  => __('Icon shown before the title. Pick an icon font, emoji, SVG, or upload an image. Leave empty for no icon.', 'fw'),
-                        'help'  => __('Kept as a separate icon field (not markup in the Title) so the heading text stays clean and semantic.', 'fw'),
-                    ],
                     'subtitle' => [
                         'type'  => 'text',
                         'label' => __('Subtitle', 'fw'),
@@ -91,6 +85,44 @@ $options = [
                             'h6' => 'H6',
                         ],
                         'value' => 'h2'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'tab_icons' => [
+        'title'   => __( 'Icons', 'fw' ),
+        'type'    => 'tab',
+        'options' => [
+            'group_icons' => [
+                'type'    => 'group',
+                'options' => [
+                    'overline_icon' => [
+                        'type'  => 'icon',
+                        'label' => __( 'Overline Icon', 'fw' ),
+                        'desc'  => __( 'Icon shown with the overline label. Pick an icon font, emoji, SVG, or upload an image. Leave empty for no icon.', 'fw' ),
+                        'help'  => __( 'Recolours via the Overline Color when the icon uses fill/stroke="currentColor".', 'fw' ),
+                    ],
+                    'overline_icon_position' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Overline Icon Placement', 'fw' ),
+                        'desc'    => __( 'Whether the overline icon sits before or after the overline text.', 'fw' ),
+                        'choices' => [ 'before' => __( 'Before text', 'fw' ), 'after' => __( 'After text', 'fw' ) ],
+                        'value'   => 'before',
+                    ],
+                    'icon' => [
+                        'type'  => 'icon',
+                        'label' => __( 'Title Icon', 'fw' ),
+                        'desc'  => __( 'Icon shown with the title. Pick an icon font, emoji, SVG, or upload an image. Leave empty for no icon.', 'fw' ),
+                        'help'  => __( 'Kept as a separate icon field (not markup in the Title) so the heading text stays clean and semantic.', 'fw' ),
+                    ],
+                    'title_icon_position' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Title Icon Placement', 'fw' ),
+                        'desc'    => __( 'Whether the title icon sits before or after the title text.', 'fw' ),
+                        'choices' => [ 'before' => __( 'Before text', 'fw' ), 'after' => __( 'After text', 'fw' ) ],
+                        'value'   => 'before',
                     ],
                 ],
             ],

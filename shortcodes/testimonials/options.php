@@ -245,31 +245,8 @@ $options = [
                                     'choices' => [ '1' => '1', '2' => '2', '3' => '3' ],
                                     'desc'  => __('Cards shown simultaneously per carousel slide.', 'fw'),
                                 ],
-                                'card_style' => [
-                                    'label' => __('Card Style', 'fw'),
-                                    'type'  => 'select',
-                                    'choices' => [
-                                        ''                                  => __('Plain', 'fw'),
-                                        'card card-body'                    => __('Card', 'fw'),
-                                        'card card-body border'             => __('Card Bordered', 'fw'),
-                                        'card card-body shadow'             => __('Card Shadow', 'fw'),
-                                        'card card-body bg-light'           => __('Card Light', 'fw'),
-                                        'card card-body bg-dark text-light' => __('Card Dark', 'fw'),
-                                    ],
-                                    'desc' => __('Visual container style for each item.', 'fw'),
-                                ],
-                                'avatar_position' => [
-                                    'label' => __('Avatar Position', 'fw'),
-                                    'type'  => 'select',
-                                    'value' => 'top',
-                                    'choices' => [
-                                        'top'   => __('Top (Above Content)', 'fw'),
-                                        'left'  => __('Left of Content', 'fw'),
-                                        'right' => __('Right of Content', 'fw'),
-                                        'none'  => __('Hide Avatar', 'fw'),
-                                    ],
-                                    'desc' => __('Placement of the avatar relative to the quote.', 'fw'),
-                                ],
+                                // (Card Rows + Box Style now live on their own dedicated "Card" tab —
+                                // cross-design — instead of here inside the Classic design.)
                                 'carousel_autoplay'        => $ts_opt_autoplay,
                                 'carousel_interval'        => $ts_opt_interval,
                                 'carousel_pause_hover'     => $ts_opt_pause_hover,
@@ -397,6 +374,56 @@ $options = [
      * These options apply across designs, so they stay top-level (no path
      * change vs. before).
      * -------------------------------------------------------------------- */
+    /* ----------------------------------------------------------------------
+     * CARD — the card LAYOUT (Card Rows slot designer, shared with wc_products)
+     * + the card SKIN (Box Preset). Its own tab, cross-design: the Classic
+     * design's grid/single/carousel cards render from these rows; structural
+     * designs consume what they can (filters per design are a follow-up).
+     * -------------------------------------------------------------------- */
+    'tab_card' => [
+        'title'   => __( 'Card', 'fw' ),
+        'type'    => 'tab',
+        'options' => [
+            'group_card' => [
+                'type'    => 'group',
+                'options' => [
+                    // Live wireframe preview of the card (shared with wc_products / team-member / posts).
+                    'card_preview' => [
+                        'type'  => 'html-full',
+                        'label' => false,
+                        'html'  => function_exists( 'sc_card_preview_mount_html' ) ? sc_card_preview_mount_html() : '',
+                    ],
+                    'card_rows' => sc_card_rows_field( [
+                        'label' => __( 'Card Rows', 'fw' ),
+                        'desc'  => __( 'The testimonial card layout — add / drag rows and pick each row\'s slots. Avatar position = which row it\'s in (inline = beside, stacked = above/below); use a row\'s Reverse to flip an inline row. A slot shows only when it\'s in a row and has content. "Author" = Name + Position stacked as one unit, so [ Image, Author ] inline gives avatar-left with the name/role beside it.', 'fw' ),
+                        'slots' => [
+                            'quotemark' => __( 'Quote Mark', 'fw' ),
+                            'quote'     => __( 'Quote', 'fw' ),
+                            'avatar'    => __( 'Image', 'fw' ),
+                            'name'      => __( 'Name', 'fw' ),
+                            'role'      => __( 'Position', 'fw' ),
+                            'author'    => __( 'Author (Name + Position)', 'fw' ),
+                            'identity'  => __( 'Identity (Image + Name + Position)', 'fw' ),
+                            'rating'    => __( 'Rating', 'fw' ),
+                            'site'      => __( 'Website Link', 'fw' ),
+                        ],
+                        'value' => [
+                            [ 'slots' => [ 'rating' ],           'direction' => 'inline', 'justify' => 'center', 'align' => 'center' ],
+                            [ 'slots' => [ 'quote' ],            'direction' => 'stack',  'justify' => 'start',  'align' => 'center' ],
+                            [ 'slots' => [ 'avatar', 'author' ], 'direction' => 'inline', 'justify' => 'center', 'align' => 'center' ],
+                        ],
+                    ] ),
+                    'box_style' => sc_card_box_style_field( array( 'desc' => __( 'Apply a Box Preset to each testimonial card (border / corners / shadow / fill + hover). Manage presets in Theme Settings → Components → Box Presets.', 'fw' ) ) ),
+                ],
+            ],
+            // Rating star styling — shared with wc_products (symbol / colors / size).
+            'group_rating' => [
+                'type'    => 'group',
+                'options' => function_exists( 'sc_rating_style_field' ) ? sc_rating_style_field() : [],
+            ],
+        ],
+    ],
+
     'tab_style' => [
         'title'   => __('Style', 'fw'),
         'type'    => 'tab',
@@ -404,7 +431,6 @@ $options = [
             'group_appearance' => [
                 'type'    => 'group',
                 'options' => [
-                    'box_style' => sc_card_box_style_field( array( 'desc' => __( 'Apply a Box Preset to each testimonial card (grid / card designs). Manage presets in Theme Settings → Components → Box Presets.', 'fw' ) ) ),
                     'container_type' => [
                         'label' => __('Container', 'fw'),
                         'type'  => 'select',
@@ -448,14 +474,9 @@ $options = [
                         ],
                         'desc' => __('Avatar size (mainly affects the Classic design).', 'fw'),
                     ],
-                    'show_rating' => [
-                        'label' => __('Show Rating Stars', 'fw'),
-                        'type'  => 'switch',
-                        'right-choice' => ['value'=>'yes','label'=>__('Yes','fw')],
-                        'left-choice'  => ['value'=>'no','label'=>__('No','fw')],
-                        'value' => 'yes',
-                        'desc'  => __('Toggle star display across all designs.', 'fw'),
-                    ],
+                    // 'show_rating' switch removed 2026-08-01 — the Rating is a Card Rows SLOT now
+                    // (presence = the rating slot is in a row and the entry has a rating value), matching
+                    // the wc_products model. Structural designs still render the rating from entry data.
                     'reviews_schema' => [
                         'label' => __('Review Schema (JSON-LD)', 'fw'),
                         'type'  => 'switch',

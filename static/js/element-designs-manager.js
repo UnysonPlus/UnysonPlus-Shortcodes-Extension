@@ -117,9 +117,12 @@
 		if ( $mountGlobal ) { render( $mountGlobal ); }
 	}
 
-	$( function () {
+	// Find the mount, render it, and bind its handlers. Idempotent: returns true
+	// once wired, so it can be retried until the (lazily-rendered) mount exists.
+	function initManager() {
+		if ( $mountGlobal ) { return true; }
 		var $mount = $( '[data-upw-eldesigns]' ).first();
-		if ( ! $mount.length ) { return; }
+		if ( ! $mount.length ) { return false; }
 		$mountGlobal = $mount;
 		render( $mount );
 
@@ -155,5 +158,20 @@
 				if ( ! $tile.find( '.upw-eld-edit' ).length ) { openEdit( it, $tile ); }
 			}
 		} );
+		return true;
+	}
+
+	$( function () {
+		if ( initManager() ) { return; }
+		// The Components → Element Designs sub-tab renders its mount LAZILY (only when
+		// that sub-tab is first opened), so it isn't in the DOM at DOMReady and the
+		// one-shot init above finds nothing. Watch for the mount to appear, then wire
+		// it once and stop observing. (Fixes the permanent "Loading designs…".)
+		if ( typeof window.MutationObserver === 'function' ) {
+			var mo = new window.MutationObserver( function () {
+				if ( initManager() ) { mo.disconnect(); }
+			} );
+			mo.observe( document.body, { childList: true, subtree: true } );
+		}
 	} );
 } )( jQuery );
