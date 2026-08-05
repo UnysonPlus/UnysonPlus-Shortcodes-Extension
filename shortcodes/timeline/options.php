@@ -149,6 +149,7 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'accent_color' => sc_color_field_compact( array( 'label' => __( 'Accent (line + markers)', 'fw' ), 'kind' => 'bg' ) ),
+						'icon_badge_preset' => sc_icon_badge_preset_field( array( 'desc' => __( 'Apply a reusable Icon Badge — a shaped tile (fill, border, corners, shadow) with its own icon colour + size — to EVERY milestone marker\'s icon (Marker = Icon). Manage presets in Theme Settings → Components → Icon Badges.', 'fw' ) ) ),
 					'line_color'   => sc_color_field_compact( array( 'label' => __( 'Line Color', 'fw' ) ) ),
 					'card_bg'      => sc_color_field_compact( array( 'label' => __( 'Card Background', 'fw' ), 'kind' => 'bg' ) ),
 					'date_color'   => sc_color_field_compact( array( 'label' => __( 'Date Color', 'fw' ) ) ),

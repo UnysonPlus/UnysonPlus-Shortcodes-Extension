@@ -2,7 +2,7 @@
  * Scroll to Top & Reading Progress.
  * ========================================================================== */
 .fw-stt {
-	--stt-accent: #4a90d9;
+	--stt-accent: var(--color-primary, #4a90d9);
 	--stt-icon: #ffffff;
 	--stt-size: 48px;
 }

@@ -61,7 +61,7 @@
 }
 
 .accordion .accordion-trigger:focus-visible {
-	outline: 2px solid #4a90d9;
+	outline: 2px solid var(--color-primary, #4a90d9);
 	outline-offset: -2px;
 }
 

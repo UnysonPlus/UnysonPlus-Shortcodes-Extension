@@ -90,6 +90,9 @@ if ( ! function_exists( 'sc_steps_render' ) ) {
 			$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style_var;
 		}
 
+		// Shortcode-level Icon Badge Preset — one `iconb-{slug}` styling EVERY step icon.
+		$icon_badge_pre = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
+
 		ob_start();
 		echo '<ol ' . fw_attr_to_html( $attr ) . '>';
 		$i = 0;
@@ -105,7 +108,7 @@ if ( ! function_exists( 'sc_steps_render' ) ) {
 			if ( $marker !== 'none' ) {
 				echo '<div class="fw-steps__marker">';
 				if ( $marker === 'icon' && $icon !== '' ) {
-					echo '<span class="fw-steps__icon">' . $icon . '</span>';
+					echo '<span class="fw-steps__icon' . ( $icon_badge_pre !== '' ? ' ' . $icon_badge_pre : '' ) . '">' . $icon . '</span>';
 				} else {
 					echo '<span class="fw-steps__num">' . esc_html( $num ) . '</span>';
 				}

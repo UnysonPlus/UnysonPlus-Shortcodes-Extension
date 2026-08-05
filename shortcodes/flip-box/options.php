@@ -293,6 +293,7 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'box_style'   => sc_card_box_style_field(),
+					'icon_badge_preset' => sc_icon_badge_preset_field(),
 					'front_bg'    => sc_color_field_compact( array( 'label' => __( 'Front Background', 'fw' ), 'kind' => 'bg' ) ),
 					'front_image' => array(
 						'type'  => 'upload',

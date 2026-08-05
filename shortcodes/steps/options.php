@@ -137,6 +137,7 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'accent_color'      => sc_color_field_compact( array( 'label' => __( 'Marker / Connector', 'fw' ), 'kind' => 'bg' ) ),
+						'icon_badge_preset' => sc_icon_badge_preset_field( array( 'desc' => __( 'Apply a reusable Icon Badge — a shaped tile (fill, border, corners, shadow) with its own icon colour + size — to EVERY step marker\'s icon (Marker = Icon). Manage presets in Theme Settings → Components → Icon Badges.', 'fw' ) ) ),
 					'marker_text_color' => sc_color_field_compact( array( 'label' => __( 'Marker Text', 'fw' ) ) ),
 					'title_color'       => sc_color_field_compact( array( 'label' => __( 'Title Color', 'fw' ) ) ),
 					'text_color'        => sc_color_field_compact( array( 'label' => __( 'Description Color', 'fw' ) ) ),

@@ -331,6 +331,38 @@ if ( ! function_exists( 'sc_extract_styling_atts' ) ) :
 	 * @param array $keys Att keys to extract.
 	 * @return array { classes: string[], styles: string[] }
 	 */
+	/**
+	 * wp_kses_post PLUS a safe inline-SVG element set. Headings / rich text can legitimately carry a
+	 * decorative inline `<svg>` (a hand-drawn underline squiggle, a highlight stroke); wp_kses_post
+	 * strips it, so the graphic vanishes. Allow the SHAPE + PRESENTATION element/attribute set only —
+	 * never `<script>` / `<foreignObject>` / `on*` handlers, so no script surface is introduced.
+	 * wp_kses also LOWERCASES attribute names, but a handful of SVG attrs are case-SENSITIVE
+	 * (`viewBox`, `preserveAspectRatio`, gradient units) and break when lowercased — restore them.
+	 */
+	function sc_kses_svg( $html ) {
+		static $allowed = null;
+		if ( $allowed === null ) {
+			$attrs = array_fill_keys( array(
+				'class', 'style', 'fill', 'fill-opacity', 'fill-rule', 'stroke', 'stroke-width', 'stroke-linecap',
+				'stroke-linejoin', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-opacity', 'transform', 'opacity',
+				'width', 'height', 'x', 'y', 'cx', 'cy', 'r', 'rx', 'ry', 'x1', 'y1', 'x2', 'y2', 'd', 'points',
+				'viewbox', 'preserveaspectratio', 'xmlns', 'xmlns:xlink', 'aria-hidden', 'focusable', 'role',
+				'offset', 'stop-color', 'stop-opacity', 'gradientunits', 'gradienttransform', 'href', 'xlink:href',
+			), true );
+			$svg = array_fill_keys( array(
+				'svg', 'path', 'g', 'defs', 'lineargradient', 'radialgradient', 'stop', 'circle', 'ellipse',
+				'rect', 'line', 'polyline', 'polygon', 'use', 'title', 'clippath', 'mask',
+			), $attrs );
+			$allowed = array_merge( wp_kses_allowed_html( 'post' ), $svg );
+		}
+		$out = wp_kses( (string) $html, $allowed );
+		return str_ireplace(
+			array( 'viewbox=', 'preserveaspectratio=', 'gradientunits=', 'gradienttransform=', 'clippathunits=' ),
+			array( 'viewBox=', 'preserveAspectRatio=', 'gradientUnits=', 'gradientTransform=', 'clipPathUnits=' ),
+			$out
+		);
+	}
+
 	function sc_extract_styling_atts( &$atts, array $keys ) {
 		$out = array( 'classes' => array(), 'styles' => array() );
 		if ( ! is_array( $atts ) ) { return $out; }
@@ -1276,6 +1308,160 @@ if ( ! function_exists( 'sc_get_border_preset_choices' ) ) :
 			$out[ 'boxp-' . $slug ] = $name;
 		}
 		return $out;
+	}
+endif;
+
+if ( ! function_exists( 'sc_get_icon_badge_preset_choices' ) ) :
+	/**
+	 * Dropdown choices for an element's Icon Badge Preset picker, sourced from the
+	 * saved Icon Badge presets (Theme Settings → Components → Icon Badges). Each
+	 * preset's name-based slug becomes the option value `iconb-{slug}` (matching the
+	 * generated CSS class in css-tokens.php). A blank "None" is prepended. Adding a
+	 * preset in Theme Settings instantly shows up in every Icon Badge Preset dropdown.
+	 */
+	function sc_get_icon_badge_preset_choices() {
+		$out = array( '' => __( 'None', 'fw' ) );
+		if ( ! function_exists( 'unysonplus_get_icon_badge_presets' ) ) { return $out; }
+		$slug_map = function_exists( 'unysonplus_icon_badge_preset_slug_map' )
+			? unysonplus_icon_badge_preset_slug_map()
+			: array();
+		foreach ( unysonplus_get_icon_badge_presets() as $bp ) {
+			if ( empty( $bp['id'] ) ) { continue; }
+			$id = sc_sanitize_class( $bp['id'] );
+			if ( $id === '' ) { continue; }
+			$slug = isset( $slug_map[ $id ] ) ? $slug_map[ $id ] : $id;
+			$name = ! empty( $bp['preset_name'] ) ? $bp['preset_name'] : $bp['id'];
+			$out[ 'iconb-' . $slug ] = $name;
+		}
+		return $out;
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_badge_preset_field' ) ) :
+	/**
+	 * The shared "Icon Badge Preset" control — a `border-style-picker` of the saved Icon
+	 * Badge presets (Theme Settings → Components → Icon Badges), each previewed inline.
+	 * The saved value is an `iconb-{slug}` class the element stamps on its icon WRAPPER
+	 * (so the preset's shaped tile — fill / border / corners / shadow — plus its icon
+	 * colour, size and hover effects apply). The single source used by every icon-bearing
+	 * shortcode (icon-box, icon, feature-list, steps, timeline, flip-box, image-box,
+	 * special-heading, pricing-table) so the field is identical everywhere.
+	 *
+	 * @param array $args  label / desc / value overrides.
+	 * @return array option field.
+	 */
+	function sc_icon_badge_preset_field( $args = array() ) {
+		$a = array_merge( array(
+			'label' => __( 'Icon Badge Preset', 'fw' ),
+			'desc'  => __( 'Apply a reusable Icon Badge — a shaped tile (fill, border, corners, shadow) with its own icon colour + size and hover effects. Manage presets in Theme Settings → Components → Icon Badges.', 'fw' ),
+			'value' => '',
+		), $args );
+		return array(
+			'type'         => 'border-style-picker',
+			'label'        => $a['label'],
+			'desc'         => $a['desc'],
+			'value'        => $a['value'],
+			'choices'      => function_exists( 'sc_get_icon_badge_preset_choices' ) ? sc_get_icon_badge_preset_choices() : array( '' => __( 'None', 'fw' ) ),
+			'preview_text' => __( 'Badge', 'fw' ),
+			'placeholder'  => __( '— Select an icon badge —', 'fw' ),
+			// Badge mode: draw a REAL mini tile per choice (inline-styled from the
+			// preset) with the name beside it, instead of the box-outline preview.
+			'preview_kind' => 'badge',
+			'previews'     => function_exists( 'sc_icon_badge_preset_previews' ) ? sc_icon_badge_preset_previews() : array(),
+		);
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_badge_preset_previews' ) ) :
+	/**
+	 * Ready-to-use inline preview styles for each Icon Badge preset, keyed by its
+	 * `iconb-{slug}` class:  iconb-{slug} => array( 'tile_style' => '…', 'icon_style' => '…' ).
+	 * Derived from each preset's DEFAULT state (shape + tile fill + border + icon colour,
+	 * colours resolved against the Color Presets). Fed to the `border-style-picker` in
+	 * badge mode so it draws a REAL mini tile per choice with inline styles — the preview
+	 * is correct without depending on the generated front-end `.iconb-` CSS being present
+	 * (and cached) in wp-admin. Preview tile SIZE is fixed by CSS (uniform rows), so the
+	 * preset's own badge/icon size is intentionally not applied here.
+	 */
+	function sc_icon_badge_preset_previews() {
+		$out = array();
+		if ( ! function_exists( 'unysonplus_get_icon_badge_presets' ) ) { return $out; }
+		$slug_map = function_exists( 'unysonplus_icon_badge_preset_slug_map' ) ? unysonplus_icon_badge_preset_slug_map() : array();
+		$choices  = function_exists( 'unysonplus_components_color_choices' ) ? unysonplus_components_color_choices() : array();
+
+		$resolve = function ( $v ) use ( $choices ) {
+			if ( is_array( $v ) ) {
+				if ( ! empty( $v['custom'] ) )     { return (string) $v['custom']; }
+				if ( ! empty( $v['predefined'] ) ) {
+					$p = (string) $v['predefined'];
+					return isset( $choices[ $p ]['color'] ) ? (string) $choices[ $p ]['color'] : $p;
+				}
+				return '';
+			}
+			return is_string( $v ) ? $v : '';
+		};
+		$bg_color = function ( $bg ) {
+			if ( ! is_array( $bg ) ) { return ''; }
+			$cv = ( isset( $bg['color']['value'] ) && is_array( $bg['color']['value'] ) ) ? $bg['color']['value'] : array();
+			return ! empty( $cv['custom'] ) ? (string) $cv['custom'] : ( ! empty( $cv['predefined'] ) ? (string) $cv['predefined'] : '' );
+		};
+		$ustr = function ( $u ) {
+			if ( is_array( $u ) && class_exists( 'FW_Option_Type_Unit_Input' ) ) { return FW_Option_Type_Unit_Input::to_string( $u ); }
+			return is_array( $u ) ? '' : (string) $u;
+		};
+
+		foreach ( unysonplus_get_icon_badge_presets() as $bp ) {
+			if ( empty( $bp['id'] ) ) { continue; }
+			$id = sc_sanitize_class( $bp['id'] );
+			if ( $id === '' ) { continue; }
+			$slug  = isset( $slug_map[ $id ] ) ? $slug_map[ $id ] : $id;
+			$def   = ( isset( $bp['states']['default'] ) && is_array( $bp['states']['default'] ) ) ? $bp['states']['default'] : array();
+			$shape = isset( $bp['badge_shape'] ) ? (string) $bp['badge_shape'] : 'circle';
+			$corner = $ustr( isset( $bp['border_radius'] ) ? $bp['border_radius'] : '' );
+			if ( $corner !== '' && preg_match( '/^-?[0-9.]+$/', $corner ) ) { $corner .= 'px'; }
+
+			$tile = array();
+			switch ( $shape ) {
+				case 'hexagon': $tile[] = 'clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)'; break;
+				case 'square':  $tile[] = 'border-radius:' . ( $corner !== '' ? $corner : '3px' ); break;
+				case 'rounded': $tile[] = 'border-radius:' . ( $corner !== '' ? $corner : '8px' ); break;
+				default:        $tile[] = 'border-radius:50%'; break;
+			}
+			$fill = $bg_color( isset( $def['background'] ) ? $def['background'] : null );
+			if ( $fill !== '' ) { $tile[] = 'background:' . $fill; }
+
+			$bstyle = isset( $def['border_style'] ) ? (string) $def['border_style'] : '';
+			if ( $bstyle !== '' ) {
+				$bw = $ustr( isset( $def['border_width'] ) ? $def['border_width'] : '' );
+				if ( $bw !== '' && preg_match( '/^-?[0-9.]+$/', $bw ) ) { $bw .= 'px'; }
+				$bc = $resolve( isset( $def['border_color'] ) ? $def['border_color'] : '' );
+				$tile[] = 'border:' . ( $bw !== '' ? $bw : '1px' ) . ' ' . $bstyle . ' ' . ( $bc !== '' ? $bc : 'currentColor' );
+			}
+
+			$icon = $resolve( isset( $def['icon_color'] ) ? $def['icon_color'] : '' );
+
+			$out[ 'iconb-' . $slug ] = array(
+				'tile_style' => implode( ';', $tile ),
+				'icon_style' => $icon !== '' ? 'color:' . $icon : '',
+			);
+		}
+		return $out;
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_badge_preset_class' ) ) :
+	/**
+	 * Read + validate an element's saved Icon Badge Preset value into a safe
+	 * `iconb-{slug}` class (or '' when unset / malformed). The shared reader for every
+	 * element that consumes sc_icon_badge_preset_field(), so validation lives in one place.
+	 *
+	 * @param array  $atts  the shortcode atts.
+	 * @param string $key   the option id (default 'icon_badge_preset').
+	 * @return string  an `iconb-{slug}` class, or '' .
+	 */
+	function sc_icon_badge_preset_class( $atts, $key = 'icon_badge_preset' ) {
+		$v = function_exists( 'sc_get' ) ? sc_get( $key, $atts, '' ) : ( isset( $atts[ $key ] ) ? $atts[ $key ] : '' );
+		return ( is_string( $v ) && preg_match( '/^iconb-[a-z0-9_-]+$/i', $v ) ) ? $v : '';
 	}
 endif;
 

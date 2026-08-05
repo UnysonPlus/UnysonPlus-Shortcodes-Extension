@@ -36,6 +36,20 @@ $options = [
 						'label' => __('Badge', 'fw'),
 						'help'  => __('Optional small pill shown next to this tab title (e.g. "Save 20%"). Handy for a Monthly / Yearly pricing toggle.', 'fw'),
 					),
+					'icon' => array(
+						'type'         => 'icon',
+						'label'        => __('Icon', 'fw'),
+						'preview_size' => 'small',
+						'desc'         => __('Optional icon shown before the tab title.', 'fw'),
+					),
+					'disabled' => array(
+						'type'  => 'switch',
+						'label' => __('Disabled', 'fw'),
+						'help'  => __('Greys the tab out and blocks selection. A visual/UX state only.', 'fw'),
+						'value' => 'no',
+						'left-choice'  => [ 'value' => 'no',  'label' => __('No', 'fw') ],
+						'right-choice' => [ 'value' => 'yes', 'label' => __('Yes', 'fw') ],
+					),
 					'is_active' => array(
 						'type'  => 'switch',
 						'label' => __('Active Tab', 'fw'),
@@ -52,32 +66,41 @@ $options = [
 					),
 				),
 			],
-			'tab_style' => [
+			// Tab STYLE — the visual design, via the shared design registry (image-picker),
+			// so it also becomes skin-pack-extensible. Legacy `tab_style` values (tabs/pills/
+			// underline/segmented) match these keys, so saved instances keep their look.
+			'design' => call_user_func( function () {
+				if ( function_exists( 'fw_sc_design_picker_choices' ) ) {
+					return array(
+						'type'    => 'image-picker',
+						'label'   => __( 'Tab Style', 'fw' ),
+						'desc'    => __( 'The visual style of the tab navigation. Underline is the quiet editorial default; Pills / Buttons read as standalone buttons; Segmented is a compact switcher (great for Monthly / Yearly); Boxed is the classic folder look; Minimal is text-only; Popover floats the panel above the page.', 'fw' ),
+						'value'   => 'underline',
+						'choices' => fw_sc_design_picker_choices( 'tabs' ),
+					);
+				}
+				$registry = require dirname( __FILE__ ) . '/views/parts/registry.php';
+				$base     = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/tabs/static/img/design' );
+				$choices  = array();
+				foreach ( (array) $registry as $key => $meta ) {
+					$choices[ $key ] = array( 'small' => array(
+						'src'    => $base . '/' . ( isset( $meta['thumb'] ) ? $meta['thumb'] : $key . '.svg' ),
+						'height' => 44,
+						'title'  => isset( $meta['label'] ) ? $meta['label'] : $key,
+					) );
+				}
+				return array( 'type' => 'image-picker', 'label' => __( 'Tab Style', 'fw' ), 'value' => 'underline', 'choices' => $choices );
+			} ),
+			'tab_width' => [
 				'type'    => 'select',
-				'label'   => __('Tab Style', 'fw'),
-				'desc'    => __('Choose the style of the tabs', 'fw'),
-				'help'    => __('Pills read as standalone buttons; Underline is a quieter editorial strip; Segmented Toggle is a compact pill switcher (ideal for a Monthly / Yearly pricing toggle). Pick the look that suits the section.', 'fw'),
-				'value'   => 'tabs',
+				'label'   => __('Tab Width', 'fw'),
+				'desc'    => __('How the tab buttons share the row width (horizontal, content layout).', 'fw'),
+				'help'    => __('Auto: each tab is as wide as its label. Fill: tabs grow to fill the row, proportional to their labels. Equal: every tab gets the same width (best with a few tabs).', 'fw'),
+				'value'   => 'auto',
 				'choices' => [
-					'tabs'      => __('Tabs (Default)', 'fw'),
-					'pills'     => __('Pills', 'fw'),
-					'underline' => __('Underline (v5.2+)', 'fw'),
-					'segmented' => __('Segmented Toggle (switcher)', 'fw'),
-				],
-			],
-			'justified' => [
-				'type'  => 'switch',
-				'label' => __('Justified Tabs', 'fw'),
-				'desc'  => __('Stretch tabs to the full width of the container', 'fw'),
-				'help'  => __('When on, each tab button gets an equal share of the full width. Best with a small number of tabs; many tabs become very narrow.', 'fw'),
-				'value' => 'no',
-				'left-choice'  => [
-					'value' => 'no',
-					'label' => __('No', 'fw'),
-				],
-				'right-choice' => [
-					'value' => 'yes',
-					'label' => __('Yes', 'fw'),
+					'auto'  => __('Auto (fit content)', 'fw'),
+					'fill'  => __('Fill (proportional)', 'fw'),
+					'equal' => __('Equal width', 'fw'),
 				],
 			],
 			'alignment' => [
@@ -134,6 +157,29 @@ $options = [
 					'hover' => __('Hover', 'fw'),
 				],
 			],
+			'activation' => [
+				'type'    => 'select',
+				'label'   => __('Keyboard Activation', 'fw'),
+				'desc'    => __('WAI-ARIA behaviour when moving between tabs with the arrow keys.', 'fw'),
+				'help'    => __('Automatic: the panel changes the instant a tab receives focus. Manual: arrow keys only move focus and the visitor presses Enter/Space to switch — use this if panels are heavy.', 'fw'),
+				'value'   => 'automatic',
+				'choices' => [
+					'automatic' => __('Automatic (on focus)', 'fw'),
+					'manual'    => __('Manual (Enter / Space)', 'fw'),
+				],
+			],
+			'mobile' => [
+				'type'    => 'select',
+				'label'   => __('On Mobile', 'fw'),
+				'desc'    => __('How the tab bar behaves on narrow screens.', 'fw'),
+				'help'    => __('Accordion collapses the tabs into stacked expandable panels (best for content-heavy tabs). Scroll keeps one horizontal row that swipes sideways. Wrap (default) lets the tab buttons wrap onto multiple rows.', 'fw'),
+				'value'   => 'none',
+				'choices' => [
+					'none'      => __('Wrap (default)', 'fw'),
+					'accordion' => __('Collapse to accordion', 'fw'),
+					'scroll'    => __('Horizontal scroll', 'fw'),
+				],
+			],
 			'autoplay' => [
 				'type'  => 'switch',
 				'label' => __('Auto-rotate', 'fw'),
@@ -163,6 +209,23 @@ $options = [
 					'value' => 'yes',
 					'label' => __('Yes', 'fw'),
 				],
+			],
+			'deep_link' => [
+				'type'  => 'switch',
+				'label' => __('Deep-link (URL hash)', 'fw'),
+				'desc'  => __('Open a specific tab from the page URL (#tab) and update the URL as tabs switch — so a tab is shareable / bookmarkable.', 'fw'),
+				'help'  => __('Set a CSS ID on this element (Advanced tab) for links that survive a page reload; otherwise deep-linking works within the current page load only.', 'fw'),
+				'value' => 'no',
+				'left-choice'  => [ 'value' => 'no',  'label' => __('No', 'fw') ],
+				'right-choice' => [ 'value' => 'yes', 'label' => __('Yes', 'fw') ],
+			],
+			'remember' => [
+				'type'  => 'switch',
+				'label' => __('Remember Last Tab', 'fw'),
+				'desc'  => __('Re-open the tab the visitor last viewed (stored in their browser). Works best with a CSS ID on this element (Advanced tab).', 'fw'),
+				'value' => 'no',
+				'left-choice'  => [ 'value' => 'no',  'label' => __('No', 'fw') ],
+				'right-choice' => [ 'value' => 'yes', 'label' => __('Yes', 'fw') ],
 			],
         ],
     ],

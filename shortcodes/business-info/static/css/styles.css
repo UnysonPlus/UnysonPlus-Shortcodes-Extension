@@ -2,7 +2,7 @@
  * Business Info — opening hours (+ live status) and contact details.
  * ========================================================================== */
 .fw-bi {
-	--bi-accent: #4a90d9;
+	--bi-accent: var(--color-primary, #4a90d9);
 	--bi-card-bg: #ffffff;
 	--bi-text: inherit;
 	color: var(--bi-text);

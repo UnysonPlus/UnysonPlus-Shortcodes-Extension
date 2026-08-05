@@ -2,7 +2,7 @@
  * Newsletter — AJAX signup form (inline / stacked / boxed).
  * ========================================================================== */
 .fw-nl {
-	--nl-accent: #4a90d9;
+	--nl-accent: var(--color-primary, #4a90d9);
 	--nl-field-bg: #ffffff;
 	--nl-bg: #f3f5f8;
 	--nl-text: inherit;

@@ -11,9 +11,9 @@
 	--sc-toc-bg: #f8f9fa;
 	--sc-toc-border: #e6e8eb;
 	--sc-toc-title-color: inherit;
-	--sc-toc-link: #2c6ecb;
-	--sc-toc-link-hover: #174a99;
-	--sc-toc-link-active: #174a99;
+	--sc-toc-link: var(--color-primary, #2c6ecb);
+	--sc-toc-link-hover: color-mix(in srgb, var(--color-primary, #174a99) 82%, #000);
+	--sc-toc-link-active: color-mix(in srgb, var(--color-primary, #174a99) 82%, #000);
 	--sc-toc-sticky-top: 20px;
 
 	display: block;

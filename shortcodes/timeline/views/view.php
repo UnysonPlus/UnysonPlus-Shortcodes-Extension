@@ -84,6 +84,9 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 		$attr = sc_build_wrapper_attr( $atts );
 		$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style_var;
 
+		// Shortcode-level Icon Badge Preset — one `iconb-{slug}` styling EVERY milestone icon.
+		$icon_badge_pre = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
+
 		ob_start();
 		echo '<div ' . fw_attr_to_html( $attr ) . '>';
 		echo '<div class="fw-tl__track">';
@@ -104,7 +107,7 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 
 			echo '<div class="fw-tl__marker" aria-hidden="true">';
 			if ( $marker === 'icon' && $icon !== '' ) {
-				echo '<span class="fw-tl__marker-icon">' . $icon . '</span>'; // phpcs:ignore
+				echo '<span class="fw-tl__marker-icon' . ( $icon_badge_pre !== '' ? ' ' . $icon_badge_pre : '' ) . '">' . $icon . '</span>'; // phpcs:ignore
 			} elseif ( $marker === 'number' ) {
 				echo '<span class="fw-tl__marker-num">' . (int) $i . '</span>';
 			} else {

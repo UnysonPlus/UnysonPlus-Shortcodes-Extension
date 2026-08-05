@@ -291,7 +291,12 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
         $icon_inner = sc_imgbox_icon_markup( $custom_icon, $picked_icon );
         $icon_html  = '';
         if ( $icon_inner !== '' ) {
-            $icon_html = '<span class="imgbox__icon' . esc_attr( $cls_str( $icon_st['classes'] ) ) . '"'
+            // Icon Badge PRESET (Theme Settings → Components → Icon Badges) — a reusable
+            // `.iconb-{slug}` tile stamped on the `.imgbox__icon` span that directly wraps
+            // the glyph (only added when a preset is chosen AND an icon is present).
+            $icon_badge_preset_class = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
+            $icon_badge_cls          = $icon_badge_preset_class !== '' ? ' ' . $icon_badge_preset_class : '';
+            $icon_html = '<span class="imgbox__icon' . esc_attr( $cls_str( $icon_st['classes'] ) . $icon_badge_cls ) . '"'
                 . $style_str( $icon_st['styles'] ) . ' aria-hidden="true">' . $icon_inner . '</span>';
         }
 

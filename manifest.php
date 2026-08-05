@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.12.75';
+$manifest['version']     = '1.13.2';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,46 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.12.94 - Tabs shortcode — the remaining robustness follow-ups. Deep-link (open a tab from the URL
+ *          #hash and update the hash as tabs switch, so a tab is shareable/bookmarkable) and Remember
+ *          Last Tab (localStorage) — both use the element's CSS ID for stable ids that survive reloads.
+ *          The Underline design now has an animated sliding indicator bar (JS-positioned; falls back to
+ *          the static per-tab border with no JS). "Justified Tabs" (switch) is replaced by a Tab Width
+ *          select — Auto / Fill (proportional grow) / Equal width; the legacy justified=yes maps to
+ *          Equal. Autoplay no longer rewrites the URL/last-tab (only user activation does).
+ *
+ * 1.12.93 - Tabs shortcode overhaul — design-capable + more robust & accessible. The Tab Style is now
+ *          a visual Design picker (image-picker) backed by the shared design registry, so tabs is
+ *          skin-pack-extensible like the other elements. Ships eight designs: Underline (new default),
+ *          Bordered, Pills, Segmented, Boxed/Folder, Minimal, Buttons, and a new floating Popover panel.
+ *          New options: per-tab Icon + Disabled state; Keyboard Activation (automatic on-focus vs manual
+ *          Enter/Space, per WAI-ARIA); On Mobile (collapse-to-accordion, horizontal-scroll, or wrap).
+ *          Accessibility hardened: server-rendered roving tabindex (correct before JS), aria-orientation
+ *          on vertical tablists, and orientation-aware arrow keys that skip disabled tabs. The three
+ *          duplicated render branches were consolidated into shared markup builders. Legacy `tab_style`
+ *          values (tabs/pills/underline/segmented) map to the same design keys, so existing tabs render
+ *          unchanged. Accent colours track --color-primary.
+ *
+ * 1.12.87 - Pricing Table billing polish: the plan editor is now grouped (Plan / Pricing / Features /
+ *          Highlight / Button), and Price · Period · Original Price are each ONE `multi-inline` field
+ *          with a Monthly and a Yearly input side by side (value shape { monthly, yearly }) instead of
+ *          six separate fields — clearer, and each yearly input falls back to its monthly value per
+ *          field so a yearly-only struck-out "was" price swaps even on free ($0) plans. The "Button
+ *          Style" solid/outline select is replaced by a "Button Preset" (Theme Settings → Buttons)
+ *          picker; when set the plan buttons wear the themed preset. Back-compat: plans/tables saved
+ *          before these changes (scalar price/period, legacy button_style) still render. Also fixed the
+ *          builder title_template (was throwing on escaped quotes → blank preview) and enriched it to
+ *          show the billing labels/note, struck-out originals and yearly prices.
+ *
+ * 1.12.83 - Pricing Table: a Monthly / Yearly billing toggle. Turn on "Monthly / Yearly Toggle"
+ *          (Content tab) and each plan gains a Yearly Price (+ its own yearly period and struck-out
+ *          "was" price); a switch above the plans swaps every card's monthly price for its yearly one.
+ *          Editable Monthly/Yearly labels, a default-period choice, and an optional savings note
+ *          (e.g. "Save 20%"). A blank yearly price falls back to the monthly figure so no card ever
+ *          blanks. Dependency-free: the price is rendered in both --monthly / --yearly variants and a
+ *          tiny event-delegated script flips `is-yearly` on the table (CSS-driven; monthly is the
+ *          no-JS default). Fully inert when the toggle is off — existing tables are unchanged.
+ *
  * 1.12.73 - Arbitrary-value spacing (Tailwind-style pt-[40px], mb-md-[3.5rem]). The fixed spacing
  *          scale is Bootstrap-aligned (0-5 match Bootstrap on purpose) and can't express every value
  *          (e.g. 40px falls between the 24px and 48px steps), which made the converter snap captured

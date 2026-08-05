@@ -21,18 +21,29 @@ class), static.php (auto-gates `static/css/design/<key>.css` — none ship, base
 covers all).
 
 ## Options (atts)
-- **Content**: `title` (optional heading) + `plans` (`addable-popup`). Per plan:
-  `plan_title`, `icon` (icon-v2), `subtitle`, `currency`, `price`, `period`,
-  `features` (textarea, one per line; a line starting `-`/`!` = unavailable,
-  crossed out), `featured` (switch), `ribbon`, `button_label`, `button_url`,
-  `button_target`.
+- **Content**: `title` (optional heading) + `plans` (`addable-popup`, options split into
+  `group_plan` / `group_pricing` / `group_features` / `group_highlight` / `group_button`
+  — the groups flatten, so plan fields stay flat). Per plan: `plan_title`, `icon` (icon-v2),
+  `subtitle`, `currency`; then **`price`, `period`, `original_price` are each `multi-inline`**
+  with a `monthly` + `yearly` input → value shape `{ monthly, yearly }` (the yearly input is
+  used only when the billing toggle is on; a blank yearly falls back to monthly, per field).
+  **Back-compat:** a plan saved before the merge stores these as a plain string = the monthly
+  value; `view.php`'s `$mi_val()` and the title_template's `mi()` both handle string-or-object.
+  Then `features` (textarea, one per line; a line starting `-`/`!` = unavailable, crossed out),
+  `featured` (switch), `ribbon`, `button_label`, `button_url`, `button_target`. Plus a
+  `group_billing`: `billing_toggle` (switch, def no), `billing_default` (monthly/yearly, def
+  monthly), `billing_monthly_label` / `billing_yearly_label` (def "Bill Monthly" / "Bill
+  Yearly"), `billing_note` (optional, e.g. "Save 20%").
 - **Design**: `design` (image-picker, def classic), `columns` (2–5, def 3), `gap`
   (Gap-Scale slug → `var(--gap-<slug>)`, def 4), `featured_style` (multi-select of
   composable emphasis treatments, def `[raise, highlight, glow, badge,
   accent_button]`; choices: `raise`, `enlarge`, `highlight`, `glow`, `fill`,
   `badge`, `accent_button`, `emphasize`; empty = no emphasis. Legacy `featured_raise`
-  = `yes` maps to `[enlarge]`), `button_style` (select `solid`/`outline`, def solid),
-  `align` (alignment field, def center).
+  = `yes` maps to `[enlarge]`), `button_preset` (`button-style-picker`, allow_none, def none
+  — a themed Button Preset from Theme Settings → Buttons; when set the plan buttons render as
+  `.fw-pt__btn-preset btn {preset}` and the preset owns the look, so the accent-button emphasis
+  no longer applies; None keeps the accent `.fw-pt__btn`. Legacy `button_style` `solid`/`outline`
+  is still read as a fallback for pre-preset instances), `align` (alignment field, def center).
 - **Styling**: `accent_color` (featured/price/button), `bg_color`, `card_bg`,
   `title_color`, `price_color`, `text_color`, `font_size_preset`, `spacing`.
   Per-element colors honor a CUSTOM hex → CSS var (`--pt-accent`, `--pt-card-bg`,

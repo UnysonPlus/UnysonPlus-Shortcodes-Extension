@@ -59,6 +59,15 @@ $icon_html = sc_icon_render( $icon, array(
     'img_class'  => 'icon-image',
     'style'      => $icon_style,
 ) );
+
+// Icon Badge PRESET (Theme Settings → Components → Icon Badges) — a reusable
+// `.iconb-{slug}` tile. The glyph has no dedicated wrapper here, so when a preset
+// is set AND an icon is actually rendered we wrap the glyph in a span carrying the
+// `iconb-{slug}` class (the badge CSS targets `.iconb-{slug} svg` / `.iconb-{slug} i`).
+$icon_badge_preset_class = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
+if ( $icon_badge_preset_class !== '' && $icon_html !== '' ) {
+    $icon_html = '<span class="' . esc_attr( $icon_badge_preset_class ) . '">' . $icon_html . '</span>';
+}
 ?>
 <span <?php echo fw_attr_to_html( $attr ); ?>>
     <?php echo $icon_html; // already escaped by sc_icon_render() ?>

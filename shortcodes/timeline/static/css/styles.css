@@ -2,7 +2,7 @@
  * Timeline — base + layouts (alternating / left / right / horizontal).
  * ========================================================================== */
 .fw-tl {
-	--tl-accent: #4a90d9;
+	--tl-accent: var(--color-primary, #4a90d9);
 	--tl-line: #d9dee3;
 	--tl-card-bg: #ffffff;
 	--tl-date: var(--tl-accent);

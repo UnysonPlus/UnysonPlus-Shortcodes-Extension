@@ -2,7 +2,7 @@
  * Steps / Process — horizontal / vertical / alternating / cards / circles.
  * ========================================================================== */
 .fw-steps {
-	--st-accent: #4a90d9;
+	--st-accent: var(--color-primary, #4a90d9);
 	--st-marker-text: #ffffff;
 	--st-title: inherit;
 	--st-text: #6b7280;

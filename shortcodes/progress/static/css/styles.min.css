@@ -29,7 +29,7 @@ img.fw-progress__icon { width: 1.1em; height: 1.1em; object-fit: contain; }
 	justify-content: flex-end;
 	height: 100%;
 	width: 0;
-	background: #2563eb;
+	background: var(--color-primary, #2563eb);
 	transition: width .9s cubic-bezier(.22, .61, .36, 1);
 	white-space: nowrap;
 }
@@ -70,7 +70,7 @@ img.fw-progress__icon { width: 1.1em; height: 1.1em; object-fit: contain; }
 .fw-progress__svg { display: block; }
 .fw-progress__svg-track { stroke: rgba(0, 0, 0, .08); }
 .fw-progress__svg-fill {
-	stroke: #2563eb;
+	stroke: var(--color-primary, #2563eb);
 	transition: stroke-dashoffset 1s cubic-bezier(.22, .61, .36, 1);
 }
 .fw-progress__center {
@@ -127,7 +127,7 @@ img.fw-progress__icon { width: 1.1em; height: 1.1em; object-fit: contain; }
 }
 .fw-progress--rounded .fw-progress__vtrack,
 .fw-progress--rounded .fw-progress__vfill { border-radius: 9999px; }
-.fw-progress__vfill { width: 100%; height: 0; margin-top: auto; background: #2563eb; transition: height .9s cubic-bezier(.22, .61, .36, 1); }
+.fw-progress__vfill { width: 100%; height: 0; margin-top: auto; background: var(--color-primary, #2563eb); transition: height .9s cubic-bezier(.22, .61, .36, 1); }
 .fw-progress--vertical .fw-progress__value { opacity: 1; font-size: 1rem; }
 .fw-progress--vertical .fw-progress__caption { margin-top: .4rem; }
 
@@ -137,7 +137,7 @@ img.fw-progress__icon { width: 1.1em; height: 1.1em; object-fit: contain; }
 .fw-progress__segments { display: flex; gap: 4px; width: 100%; }
 .fw-progress__seg { flex: 1 1 0; height: var(--fwp-h, 10px); background: rgba(0, 0, 0, .12); transition: background .3s ease; }
 .fw-progress--rounded .fw-progress__seg { border-radius: 3px; }
-.fw-progress__seg.is-on { background: #2563eb; }
+.fw-progress__seg.is-on { background: var(--color-primary, #2563eb); }
 
 @media (prefers-reduced-motion: reduce) {
 	.fw-progress__vfill { transition: none !important; }

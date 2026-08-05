@@ -4,7 +4,7 @@
 .fw-tt {
 	--tt-bg: #1f2530;
 	--tt-color: #ffffff;
-	--tt-accent: #4a90d9;
+	--tt-accent: var(--color-primary, #4a90d9);
 	--tt-maxw: 240px;
 	position: relative;
 	display: inline-block;

@@ -1,118 +1,90 @@
 ---
 type: shortcode
 name: tabs
-since: original Unyson (extended in Unyson+ — Bootstrap 5.2+ underline style, vertical orientation, justified)
+since: original Unyson (overhauled in Unyson+ — design registry, popover, a11y, mobile accordion)
 provides: leaf-shortcode
 ---
 
 # Tabs
 
-A horizontal or vertical tabbed-content widget. Each tab has a title and
-a textarea body. Three Bootstrap visual variants (`tabs`, `pills`,
-`underline`). Justified-width, alignment, vertical orientation, and fade
-animation between tabs.
+Tabbed content with switchable panels. Self-contained: WAI-ARIA roles + vanilla JS
+switching (no Bootstrap / jQuery). Design-capable via the shared design registry.
 
 ## Registration
 
-No custom class file — leaf shortcode auto-instantiated. No item class.
+No custom class file (leaf shortcode). `config.php` declares a `title_template`
+previewing each tab's title + content on the canvas.
 
-`config.php` declares a `title_template` that previews every tab's title
-+ content snippet on the canvas — similar to the accordion shortcode.
+## Designs (registry)
+
+`views/parts/registry.php` (SKIN shape: `key => { label, thumb }`). Seven built-in:
+`underline` (default), `pills`, `segmented`, `boxed` (folder), `minimal`, `buttons`,
+`popover` (floating panel). (An old `tabs`/"Bordered" style was dropped as a near-duplicate of `boxed`.) The style is chosen via a Design
+**image-picker** (`fw_sc_design_picker_choices('tabs')`), resolved in `view.php` and
+emitted as `tabs--design-<key>` + `design-<key>` on the wrapper. Because a
+`views/parts/registry.php` exists, tabs auto-registers in the design-pack manager and
+is skin-pack-extensible (add a design = one registry entry + a thumb `static/img/design/<key>.svg`
+[+ optional `static/css/design/<key>.css`, auto-gated by `static.php`]). Legacy
+`tab_style` values (tabs/pills/underline/segmented) match these keys → old instances render unchanged.
 
 ## Options schema (atts)
 
-Source of truth: `options.php`. Two tabs + Animations + Advanced. **Note**:
-Content-tab options are NOT wrapped in a group (they're flat at the
-content-tab level), unlike most shortcodes which group their content
-fields.
+Source of truth: `options.php`.
 
-### Tab: Content
+### Content tab
 
-| Att | Type | Default | Description |
-|-----|------|---------|-------------|
-| `tabs` | `addable-popup` (sortable list) | — | Tab entries. Each: `{ tab_title, tab_content, is_active }` |
-| `tabs[].tab_title` | `text` | — | Tab nav-button label |
-| `tabs[].tab_content` | `textarea` | — | Tab panel body (plain text or HTML) |
-| `tabs[].is_active` | `switch` (`yes` / `no`) | `no` | Which tab is open on first load. **If multiple are set to `yes`, the first one wins** |
-| `tab_style` | `select` (`tabs` / `pills` / `underline`) | `tabs` | Bootstrap nav style |
-| `justified` | `switch` (`yes` / `no`) | `no` | Stretch tab nav to fill container width |
-| `alignment` | `select` (`start` / `center` / `end`) | `start` | Horizontal alignment of the tab nav |
-| `orientation` | `select` (`horizontal` / `vertical`) | `horizontal` | Tabs above content (horizontal) or beside (vertical) |
-| `fade` | `switch` (`yes` / `no`) | `no` | Fade transition between tab panels |
+| Att | Type | Default | Notes |
+|-----|------|---------|-------|
+| `tabs` | `addable-popup` | — | Per tab: `tab_title` (text), `tab_content` (`wp-editor`), `tab_image` (upload — media layout), `badge` (text pill), `icon` (icon — before the title), `disabled` (switch), `is_active` (switch — open on load; first wins). |
+| `design` | `image-picker` | `underline` | The visual tab style (registry). Legacy: `tab_style`. |
+| `tab_width` | select | `auto` | auto / fill (proportional) / equal (nav-justified). Legacy `justified`=yes → equal. |
+| `deep_link` | switch | `no` | Open a tab from the URL `#hash` + update the hash on switch (stable with a CSS ID). |
+| `remember` | switch | `no` | Re-open the last-viewed tab (localStorage, keyed by CSS ID). |
+| `alignment` | select | `start` | start/center/end (horizontal). |
+| `orientation` | select | `horizontal` | horizontal/vertical (sets `aria-orientation`). |
+| `layout` | select | `content` | `content` panels, or `media` (tab list + switching image + caption). |
+| `media_side` | select | `right` | Image side in the media layout. |
+| `activate_on` | select | `click` | click/hover pointer activation. |
+| `activation` | select | `automatic` | WAI-ARIA keyboard: `automatic` (panel on focus) / `manual` (Enter/Space). |
+| `mobile` | select | `none` | `none` (wrap) / `accordion` (collapse) / `scroll` (horizontal). |
+| `autoplay` + `autoplay_interval` | switch + slider | `no`, 5s | Auto-rotate (pauses on hover/focus, respects reduced-motion). |
+| `fade` | switch | `no` | Cross-fade between panels. |
 
-### Tab: Styling
+### Styling / Animations / Advanced
 
-Wrapped in `group_colors` + `group_spacings` (both flatten).
+`group_colors` (text/bg/font-size + `tab_title_color`, `tab_content_color`) + `group_spacings`; standard Animations + Advanced.
 
-| Att | Type | Default | Description |
-|-----|------|---------|-------------|
-| `text_color` | `sc_color_field_compact` (text) | — | Wrapper text color |
-| `bg_color` | `sc_color_field_compact` (bg) | — | Wrapper background |
-| `font_size_preset` | `sc_font_size_field` | — | Named size from theme presets |
-| `tab_title_color` | `sc_color_field_compact` | — | Tab nav-button text color |
-| `tab_content_color` | `sc_color_field_compact` | — | Tab panel body text color |
-| `spacing` | `sc_spacing_field` | — | Wrapper margin/padding |
+## Rendering (`views/view.php`)
 
-### Tabs: Animations + Advanced
+Shared markup builders `$render_nav()` / `$render_panes()` (de-duplicated) composed per
+layout: horizontal (`nav` + `tab-content`), vertical (`.fw-col-3` nav + `.fw-col-9`
+content), media (`.tabs-media__*` list + switching figure). Classes: wrapper
+`tabs-container tabs--design-<key> design-<key>`; nav `nav nav-<key>` [+ alignment/justified];
+buttons `.nav-link` with `role=tab`, `aria-selected`, `aria-controls`, and a
+**server-rendered roving tabindex** (active `0`, others `-1`); panes `.tab-pane[.fade][.show active]`
+`role=tabpanel tabindex=0 aria-labelledby`. Behaviour data-attrs on the wrapper:
+`data-fw-activate` (hover), `data-fw-activation` (manual), `data-fw-autoplay` (ms),
+`data-fw-mobile` (accordion/scroll).
 
-Standard.
+## JS (`static/js/scripts.js`)
 
-## Rendering
+Document-delegated (works for injected tabs). Click / hover activation; orientation-aware
+Arrow keys (skip disabled) + Home/End; manual vs automatic keyboard activation; auto-rotate;
+mobile accordion (nests each pane inside its `<li>` at ≤767.98px, restores on resize). The
+`.min.*` files were removed so `fw_min_uri` falls back to the full assets.
 
-`views/view.php` outputs a Bootstrap nav + tab-content structure:
+## Accessibility
 
-```html
-<ul class="nav nav-{tab_style} {justified ? 'nav-justified' : ''} justify-content-{alignment}">
-  <li class="nav-item"><a class="nav-link {is_active ? 'active' : ''}" data-bs-toggle="tab" href="#tab-{i}">{tab_title}</a></li>
-  ...
-</ul>
-<div class="tab-content">
-  <div class="tab-pane {fade ? 'fade' : ''} {is_active ? 'show active' : ''}" id="tab-{i}">{tab_content}</div>
-  ...
-</div>
-```
+Full WAI-ARIA Tabs pattern: tablist/tab/tabpanel, aria-selected/controls/labelledby,
+aria-orientation on vertical, server + JS roving tabindex, arrow/Home/End keys, manual/automatic activation.
 
-When `orientation: vertical`, the nav becomes a sidebar (Bootstrap
-`flex-column` + `nav-pills`) beside the content.
+## Behaviour extras
 
-`static/js/scripts.js` initializes Bootstrap's tab JS for any tabs that
-need it.
-
-## Pitfalls
-
-1. **`tab_content` is `textarea`, not `wp-editor`** — unlike accordion's
-   rich-text content, tabs use a plain textarea. HTML markup IS rendered
-   (the view doesn't escape), but there's no TinyMCE editor to help author
-   it. Generators can produce HTML strings freely.
-2. **No `group` wrapping on content fields** — most shortcodes wrap their
-   tab_content options in a `group_content` group; tabs does NOT. Atts
-   like `tab_style`, `justified`, `alignment` are flat at the content-tab
-   level (which is fine — `tab` is a layout type, not a saved value).
-3. **`is_active` is per-item, not a global default** — set ONE tab item's
-   `is_active: 'yes'` to control the initial open state. Setting none
-   means no tab is initially active (Bootstrap then opens the first).
-4. **`orientation: vertical` requires a wider wrapper** — vertical tabs
-   take horizontal space for the nav sidebar, leaving less for content.
-   Pair with a column that's wide enough.
-5. **Bootstrap 5 dependency** — the `underline` style requires Bootstrap
-   5.2+. Older Bootstrap themes won't render it correctly (falls back to
-   the default tab style visually).
-
-## Verification
-
-1. Drag Tabs → modal opens; add 3 tab entries.
-2. Reload → renders as horizontal tabs, no tab initially active.
-3. Set one tab's `is_active: yes` → that tab opens by default.
-4. Switch `tab_style: pills` → tabs render as Bootstrap pills.
-5. Switch `tab_style: underline` (on Bootstrap 5.2+) → underline style.
-6. Switch `orientation: vertical` → tabs sidebar beside content.
-7. Set `fade: yes` → switching tabs fades the content panel.
-
-## Files
-
-- `config.php`, `options.php`, `static.php`, `views/view.php`
-- `static/js/scripts.js` — Bootstrap tab JS init
-- `static/css/styles.css` (via static.php) — extends Bootstrap defaults
-- `static/img/page_builder.png` — Layout Elements thumbnail
-
-Standard leaf layout.
+- **Deep-link** (`deep_link`) — reads `#hash` on load to open a pane and `history.replaceState`s the
+  hash on activation. Ids are STABLE when the element has a CSS ID (so links survive reloads); without
+  one, ids are per-render (session-only). Autoplay does not rewrite the hash.
+- **Remember** (`remember`) — stores the active tab index in `localStorage` (`fwTabs:<css_id>`), restored
+  on load; a matching `#hash` wins over the remembered tab.
+- **Sliding indicator** — the Underline design gets a JS-positioned `.nav-indicator` bar (repositioned on
+  activate + resize); the nav gets `.has-indicator` so the static per-tab border is the no-JS fallback.
+- **Tab Width** — `auto` / `fill` (`nav-fill`, proportional) / `equal` (`nav-justified`).

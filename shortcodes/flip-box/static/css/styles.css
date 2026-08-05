@@ -2,7 +2,7 @@
  * Flip Box — 3D two-sided card. Direction via --fb-rot; trigger via hover/JS.
  * ========================================================================== */
 .fw-fb {
-	--fb-front-bg: #2b6cb0;
+	--fb-front-bg: var(--color-primary, #2b6cb0);
 	--fb-front-color: #ffffff;
 	--fb-back-bg: #1f2937;
 	--fb-back-color: #ffffff;

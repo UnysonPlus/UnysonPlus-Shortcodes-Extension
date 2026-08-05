@@ -54,6 +54,12 @@ if ( ! function_exists( 'sc_fb_render' ) ) {
 		$icon        = sc_fb_icon( sc_get( 'front_icon', $atts, null ) );
 		$back_icon   = sc_fb_icon( sc_get( 'back_icon', $atts, null ) );
 
+		// Icon Badge PRESET (Theme Settings -> Components -> Icon Badges) - a reusable
+		// `.iconb-{slug}` tile stamped on the `.fw-fb__icon` span that directly wraps
+		// each face's glyph (only when a preset is chosen; guarded per-face below).
+		$icon_badge_preset_class = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
+		$fb_icon_span_class = 'fw-fb__icon' . ( $icon_badge_preset_class !== '' ? ' ' . $icon_badge_preset_class : '' );
+
 		$title_tags = array( 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'p' );
 		$front_tag  = (string) sc_get( 'front_title_tag', $atts, 'h3' );
 		$back_tag   = (string) sc_get( 'back_title_tag', $atts, 'h3' );
@@ -181,7 +187,7 @@ if ( ! function_exists( 'sc_fb_render' ) ) {
 
 		/* Front (content wrapped so Parallax can float it forward in 3D). */
 		echo '<div class="fw-fb__face fw-fb__front"><div class="fw-fb__content">';
-		if ( $icon !== '' ) { echo '<span class="fw-fb__icon" aria-hidden="true">' . $icon . '</span>'; } // phpcs:ignore
+		if ( $icon !== '' ) { echo '<span class="' . esc_attr( $fb_icon_span_class ) . '" aria-hidden="true">' . $icon . '</span>'; } // phpcs:ignore
 		if ( $front_title !== '' ) { echo '<' . $front_tag . ' class="fw-fb__title">' . esc_html( $front_title ) . '</' . $front_tag . '>'; }
 		if ( $front_text !== '' ) { echo '<div class="fw-fb__text">' . wp_kses_post( wpautop( $front_text ) ) . '</div>'; }
 		if ( $front_btn !== '' ) {
@@ -192,7 +198,7 @@ if ( ! function_exists( 'sc_fb_render' ) ) {
 
 		/* Back. */
 		echo '<div class="fw-fb__face fw-fb__back"><div class="fw-fb__content">';
-		if ( $back_icon !== '' ) { echo '<span class="fw-fb__icon" aria-hidden="true">' . $back_icon . '</span>'; } // phpcs:ignore
+		if ( $back_icon !== '' ) { echo '<span class="' . esc_attr( $fb_icon_span_class ) . '" aria-hidden="true">' . $back_icon . '</span>'; } // phpcs:ignore
 		if ( $back_title !== '' ) { echo '<' . $back_tag . ' class="fw-fb__title">' . esc_html( $back_title ) . '</' . $back_tag . '>'; }
 		if ( $back_text !== '' ) { echo '<div class="fw-fb__text">' . wp_kses_post( wpautop( $back_text ) ) . '</div>'; }
 		if ( $btn_lbl !== '' ) {

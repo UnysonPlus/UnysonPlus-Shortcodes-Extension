@@ -59,6 +59,9 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 			return '';
 		}
 
+		// Shortcode-level Icon Badge Preset — one `iconb-{slug}` styling EVERY item's icon.
+		$icon_badge_pre = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
+
 		$columns  = (int) sc_get( 'columns', $atts, 1 );
 		$columns  = max( 1, min( 3, $columns ) );
 		$dividers = sc_get( 'dividers', $atts, 'no' ) === 'yes';
@@ -149,10 +152,10 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 				$marker = '<span class="fw-fl__marker fw-fl__marker--num"' . $mstyle . '>' . (int) $i . '</span>';
 			} elseif ( $design === 'check_icon' ) {
 				$inner  = '<span class="fw-fl__ci-check">' . $check . '</span>';
-				if ( $has_icon ) { $inner .= '<span class="fw-fl__ci-icon">' . $icon . '</span>'; }
+				if ( $has_icon ) { $inner .= '<span class="fw-fl__ci-icon' . ( $icon_badge_pre !== '' ? ' ' . $icon_badge_pre : '' ) . '">' . $icon . '</span>'; }
 				$marker = '<span class="fw-fl__marker fw-fl__marker--dual"' . $mstyle . '>' . $inner . '</span>';
 			} elseif ( $has_icon ) {
-				$marker = '<span class="fw-fl__marker fw-fl__marker--icon fw-fl__marker--chip"' . $mstyle . '>' . $icon . '</span>';
+				$marker = '<span class="fw-fl__marker fw-fl__marker--icon fw-fl__marker--chip' . ( $icon_badge_pre !== '' ? ' ' . $icon_badge_pre : '' ) . '"' . $mstyle . '>' . $icon . '</span>';
 			} elseif ( $design === 'bullet' ) {
 				$marker = '<span class="fw-fl__marker fw-fl__marker--bullet"' . $mstyle . '></span>';
 			} elseif ( $design === 'none' ) {

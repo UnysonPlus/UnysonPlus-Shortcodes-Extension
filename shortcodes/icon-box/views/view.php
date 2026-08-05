@@ -155,6 +155,23 @@ if ( $has_badge ) {
     }
 }
 
+// Icon Badge PRESET (Theme Settings → Components → Icon Badges) — a reusable
+// `.iconb-{slug}` tile. When set it OVERRIDES the simple Icon Badge shape above:
+// the preset fully defines shape / fill / border / shadow AND the glyph's colour
+// + size (its CSS is emitted with !important, so it also wins over the per-icon
+// Icon Color / Icon Size). Self-contained (inline-flex centering), so it replaces
+// the simple-badge classes + inline style entirely rather than layering on them.
+$icon_badge_preset_att = ( isset( $atts['icon_badge_preset'] ) && is_string( $atts['icon_badge_preset'] )
+    && preg_match( '/^iconb-[a-z0-9_-]+$/i', $atts['icon_badge_preset'] ) )
+    ? sanitize_html_class( $atts['icon_badge_preset'] )
+    : '';
+unset( $atts['icon_badge_preset'] );
+
+if ( $icon_badge_preset_att !== '' ) {
+    $icon_badge_class = $icon_badge_preset_att;
+    $icon_badge_attr  = '';
+}
+
 /*
 |--------------------------------------------------------------------------
 | Wrapper attributes (uses shared helper for css_class / css_id / unique)

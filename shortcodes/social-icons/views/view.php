@@ -26,6 +26,10 @@ if ( ! $profiles ) {
 
 $size = ! empty( $atts['size'] ) ? $atts['size'] : 'md';
 
+// Optional Icon Badge preset — turns each social link into a shaped `.iconb-{slug}`
+// tile (the badge CSS targets this element and sizes its child glyph).
+$icon_badge_pre = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
+
 // Resolve the icon-v2 pack loader once; each profile enqueues only the pack its
 // own icon needs (in the loop below), so non-global packs (Linecons, Entypo, …)
 // load without pulling every pack onto the page.
@@ -61,7 +65,7 @@ $classes[] = 'sc-social--' . sanitize_html_class( $size );
 		$sr         = ! empty( $p['label'] ) ? $p['label'] : $link;
 		?>
 		<li class="sc-social__item">
-			<a class="sc-social__link" href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer">
+			<a class="<?php echo esc_attr( trim( 'sc-social__link ' . $icon_badge_pre ) ); ?>" href="<?php echo esc_url( $link ); ?>" target="_blank" rel="noopener noreferrer">
 				<?php echo $icon_html; // already escaped by sc_icon_render() ?>
 				<span class="screen-reader-text"><?php echo esc_html( $sr ); ?></span>
 			</a>

@@ -98,34 +98,11 @@ $options = [
                         );
                     } ),
 
-                    'icon_badge' => call_user_func( function () {
-                        $badge_img = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/icon-box/static/img/badge' );
-                        $variant   = function ( $file, $title ) use ( $badge_img ) {
-                            return array(
-                                'small' => array(
-                                    'src'    => $badge_img . '/' . $file,
-                                    'height' => 48,
-                                    'title'  => $title,
-                                ),
-                            );
-                        };
-                        return array(
-                            'type'    => 'image-picker',
-                            'label'   => __( 'Icon Badge', 'fw' ),
-                            'desc'    => __( 'A coloured background or outlined ring (a badge) around the icon. Pair with "Icon Badge Color" in the Styling tab to pick the colour.', 'fw' ),
-                            'help'    => __( 'Solid shapes fill the badge with the chosen colour and look best with a light-coloured icon; Outline shapes draw just a ring in that colour. Leave on None for a plain icon with no surrounding shape.', 'fw' ),
-                            'value'   => 'none',
-                            'choices' => array(
-                                'none'            => $variant( 'none.svg',            __( 'None', 'fw' ) ),
-                                'solid-square'    => $variant( 'solid-square.svg',    __( 'Solid Square', 'fw' ) ),
-                                'solid-rounded'   => $variant( 'solid-rounded.svg',   __( 'Solid Rounded', 'fw' ) ),
-                                'solid-circle'    => $variant( 'solid-circle.svg',    __( 'Solid Circle', 'fw' ) ),
-                                'outline-square'  => $variant( 'outline-square.svg',  __( 'Outline Square', 'fw' ) ),
-                                'outline-rounded' => $variant( 'outline-rounded.svg', __( 'Outline Rounded', 'fw' ) ),
-                                'outline-circle'  => $variant( 'outline-circle.svg',  __( 'Outline Circle', 'fw' ) ),
-                            ),
-                        );
-                    } ),
+                    // NOTE: the simple "Icon Badge" shape control was RETIRED from the UI
+                    // in favour of Icon Badge Presets (Styling → Icon Badge Preset). Its
+                    // saved value ('solid-circle' etc.) is still HONORED by the view for
+                    // pages built before the switch — see views/view.php ($allowed_badges).
+                    // Do not re-add the picker; new work uses presets.
 
                     'icon_align' => sc_alignment_field( array(
                         'label'   => __( 'Icon Alignment', 'fw' ),
@@ -231,11 +208,12 @@ $options = [
                         'value' => array( 'value' => '', 'unit' => 'px' ),
                         'units' => array( 'px', 'rem', 'em' ),
                     ),
-                    'icon_badge_color' => sc_color_field_compact( array(
-                        'label' => __( 'Icon Badge Color', 'fw' ),
-                        'kind'  => 'bg',
-                        'desc'  => __( 'Background colour for the Solid badge shapes, or border colour for the Outline badge shapes. Only applies when "Icon Badge" (Layout tab) is not None.', 'fw' ),
+                    'icon_badge_preset' => sc_icon_badge_preset_field( array(
+                        'desc' => __( 'Apply a reusable Icon Badge — a shaped tile (fill, border, corners, shadow) with its own icon colour + size and hover effects. Manage presets in Theme Settings → Components → Icon Badges.', 'fw' ),
                     ) ),
+                    // NOTE: "Icon Badge Color" was RETIRED from the UI alongside the simple
+                    // Icon Badge shape (both superseded by presets). The view still reads a
+                    // saved icon_badge_color for legacy pages; new work uses presets.
                 ],
             ],
             'group_spacings' => [

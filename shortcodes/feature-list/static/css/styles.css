@@ -2,7 +2,7 @@
  * Feature List — icon-led list (checklist / icons / numbered / bullets / badge).
  * ========================================================================== */
 .fw-fl {
-	--fl-marker: #4a90d9;
+	--fl-marker: var(--color-primary, #4a90d9);
 	--fl-text: inherit;
 	--fl-sub: #6b7280;
 	--fl-gap: .7rem;

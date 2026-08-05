@@ -2,7 +2,7 @@
  * Author Box — avatar + bio + socials (card / centered / banner / minimal).
  * ========================================================================== */
 .fw-ab {
-	--ab-accent: #4a90d9;
+	--ab-accent: var(--color-primary, #4a90d9);
 	--ab-card-bg: #ffffff;
 	--ab-name: inherit;
 	--ab-text: #5a6772;

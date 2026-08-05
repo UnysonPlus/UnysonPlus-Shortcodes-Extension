@@ -9,7 +9,7 @@
     --imgbox-media-w: 50%;
     --imgbox-ov-opacity: .6;
     --imgbox-ov-color: #11161d;
-    --imgbox-accent: #2563eb;
+    --imgbox-accent: var(--color-primary, #2563eb);
     --imgbox-radius: 6px;
     position: relative;
     box-sizing: border-box;

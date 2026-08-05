@@ -274,11 +274,21 @@ if ( ! empty( $atts['title'] ) ) {
             // No trailing space — the icon/title gap is the .heading-title__icon
             // margin-right (a literal space here would add a second, uneven gap).
             $title_icon = sc_icon_render( $atts['icon'], array( 'class' => 'heading-title__icon' ) );
+            // Icon Badge PRESET (Theme Settings → Components → Icon Badges) — a reusable
+            // `.iconb-{slug}` tile. The glyph has no dedicated wrapper here, so when a
+            // preset is set we wrap the rendered Title Icon in a span carrying the
+            // `iconb-{slug}` class (the badge CSS targets `.iconb-{slug} svg` / ` i`).
+            $icon_badge_preset_class = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
+            if ( $icon_badge_preset_class !== '' && $title_icon !== '' ) {
+                $title_icon = '<span class="' . esc_attr( $icon_badge_preset_class ) . '">' . $title_icon . '</span>';
+            }
         }
     }
 
     $ti_after   = ( ( $atts['title_icon_position'] ?? 'before' ) === 'after' );
-    $title_txt  = wp_kses_post( trim( (string) $atts['title'] ) );
+    // sc_kses_svg (not wp_kses_post) so a decorative inline <svg> in the title — a hand-drawn underline
+    // squiggle / highlight stroke — survives instead of being stripped (its <path> dropped).
+    $title_txt  = function_exists( 'sc_kses_svg' ) ? sc_kses_svg( trim( (string) $atts['title'] ) ) : wp_kses_post( trim( (string) $atts['title'] ) );
     $title_body = ( $ti_after && $title_icon !== '' ) ? ( $title_txt . $title_icon ) : ( $title_icon . $title_txt );
     if ( $title_icon !== '' ) { $title_classes[] = $ti_after ? 'heading-title--icon-after' : 'heading-title--icon-before'; }
     echo '<' . $hd_tag . ' class="' . esc_attr( implode( ' ', $title_classes ) ) . '"' . $title_style_attr . '>' . $title_body . '</' . $hd_tag . '>';

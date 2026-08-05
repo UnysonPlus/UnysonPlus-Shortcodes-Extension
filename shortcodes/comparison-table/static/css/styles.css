@@ -2,7 +2,7 @@
  * Comparison Table — feature matrix (bordered / striped / minimal).
  * ========================================================================== */
 .fw-ct {
-	--ct-accent: #4a90d9;
+	--ct-accent: var(--color-primary, #4a90d9);
 	--ct-head-bg: #ffffff;
 	--ct-head-text: inherit;
 	--ct-text: #374151;

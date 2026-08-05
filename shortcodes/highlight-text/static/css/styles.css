@@ -4,7 +4,7 @@
 .fw-hl {
 	--hl-text: inherit;
 	--hl-accent: #ffe066;
-	--hl-accent2: #4a90d9;
+	--hl-accent2: var(--color-primary, #4a90d9);
 	margin: 0;
 	color: var(--hl-text);
 }

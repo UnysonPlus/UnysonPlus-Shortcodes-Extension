@@ -215,6 +215,7 @@ $options = array(
 				'type'    => 'group',
 				'options' => array(
 					'box_style'    => sc_card_box_style_field( array( 'desc' => __( 'Apply a Box Preset to each feature item. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ) ) ),
+					'icon_badge_preset' => sc_icon_badge_preset_field( array( 'desc' => __( 'Apply a reusable Icon Badge — a shaped tile (fill, border, corners, shadow) with its own icon colour + size — to EVERY item\'s icon. Manage presets in Theme Settings → Components → Icon Badges.', 'fw' ) ) ),
 					'marker_color' => sc_color_field_compact( array( 'label' => __( 'Marker Color', 'fw' ), 'kind' => 'bg' ) ),
 					'marker_size'  => array(
 						'type'  => 'unit-input',

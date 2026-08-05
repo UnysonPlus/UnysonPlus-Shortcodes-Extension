@@ -255,7 +255,9 @@ if ( $mode === 'group' ) {
 			echo sc_avatar_face( $person, array_merge( $base_args, array( 'z' => $z ) ) );
 		}
 		if ( $counter_text !== '' ) {
-			$cz = ( $order === 'last-on-top' ) ? ( $total + 1 ) : 0;
+			// The counter always sits ON TOP of the stack so its "+N" text is never
+			// clipped by the neighbouring avatar (regardless of stack order).
+			$cz = $total + 1;
 			echo '<span class="fw-avatar fw-avatar__more" style="z-index:' . (int) $cz . ';">'
 				. '<span class="fw-avatar__more-text">' . esc_html( $counter_text ) . '</span></span>';
 		}

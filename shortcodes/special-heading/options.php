@@ -124,6 +124,9 @@ $options = [
                         'choices' => [ 'before' => __( 'Before text', 'fw' ), 'after' => __( 'After text', 'fw' ) ],
                         'value'   => 'before',
                     ],
+                    'icon_badge_preset' => sc_icon_badge_preset_field( array(
+                        'desc' => __( 'Apply a reusable Icon Badge — a shaped tile (fill, border, corners, shadow) with its own icon colour + size and hover effects — around the Title Icon. Manage presets in Theme Settings → Components → Icon Badges.', 'fw' ),
+                    ) ),
                 ],
             ],
         ],

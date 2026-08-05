@@ -2,7 +2,7 @@
  * Audio Player — custom controls (classic / card / minimal / playlist).
  * ========================================================================== */
 .fw-ap {
-	--ap-accent: #4a90d9;
+	--ap-accent: var(--color-primary, #4a90d9);
 	--ap-bg: #ffffff;
 	--ap-text: inherit;
 	--ap-muted: #6b7280;

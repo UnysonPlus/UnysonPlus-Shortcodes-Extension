@@ -5,4 +5,4 @@
 		0 0 0 max(2px, calc(var(--av-size) * 0.05)) #fff,
 		0 0 0 max(4px, calc(var(--av-size) * 0.10)) var(--av-ring);
 }
-.fw-avatar-sc.fw-avatar--ring { --av-ring: #4a90d9; }
+.fw-avatar-sc.fw-avatar--ring { --av-ring: var(--color-primary, #4a90d9); }

@@ -2,7 +2,7 @@
  * Modal / Popup — trigger + overlay (centered card / drawer / fullscreen).
  * The overlay is moved to <body> by JS so position:fixed never gets clipped.
  * ========================================================================== */
-.fw-mp { --mp-accent: #4a90d9; display: inline-block; }
+.fw-mp { --mp-accent: var(--color-primary, #4a90d9); display: inline-block; }
 .fw-mp--trig-text, .fw-mp--trig-icon, .fw-mp--trig-image { display: inline-block; }
 
 .fw-mp__trigger { font: inherit; cursor: pointer; border: 0; background: none; padding: 0; color: inherit; }
@@ -19,7 +19,7 @@
 	--mp-overlay: rgba(10, 11, 13, .6);
 	--mp-bg: #ffffff;
 	--mp-color: #222831;
-	--mp-accent: #4a90d9;
+	--mp-accent: var(--color-primary, #4a90d9);
 	position: fixed;
 	inset: 0;
 	z-index: 100000;

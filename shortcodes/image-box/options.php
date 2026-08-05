@@ -457,6 +457,7 @@ $options = [
                         'label' => __( 'Icon Color', 'fw' ),
                         'desc'  => __( 'Color applied to the icon (font icons only).', 'fw' ),
                     ) ),
+                    'icon_badge_preset' => sc_icon_badge_preset_field(),
                     'accent_color' => sc_color_field_compact( array(
                         'label' => __( 'Accent Color', 'fw' ),
                         'kind'  => 'bg',

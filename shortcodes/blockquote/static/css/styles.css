@@ -3,7 +3,7 @@
  * ========================================================================== */
 .fw-bq {
 	--bq-quote: inherit;
-	--bq-accent: #4a90d9;
+	--bq-accent: var(--color-primary, #4a90d9);
 	--bq-author: #6b7280;
 	--bq-bg: transparent;
 	margin: 0;

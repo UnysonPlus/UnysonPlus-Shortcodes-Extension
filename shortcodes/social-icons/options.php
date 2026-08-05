@@ -55,6 +55,9 @@ $options = [
 							'lg' => __( 'Large', 'fw' ),
 						],
 					],
+					'icon_badge_preset' => sc_icon_badge_preset_field( array(
+						'desc' => __( 'Turn each social icon into a shaped tile (circle / rounded / square / hexagon) — fill, border, corners, shadow, plus its own icon colour, size and hover effects. Manage presets in Theme Settings → Components → Icon Badges. Applies to the Manual list; the Theme Settings source is styled by the theme.', 'fw' ),
+					) ),
 				],
 			],
 		],

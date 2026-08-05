@@ -137,20 +137,28 @@
 	z-index: 20 !important;
 }
 
-/* "+N" counter chip — styled like an avatar. */
+/* "+N" counter chip — styled like an avatar, but able to GROW for multi-digit
+   counts (e.g. "+100", "500+"): a single "+5" stays a circle (min-width = height),
+   longer text expands it into a pill so nothing is clipped. */
 .fw-avatar-sc .fw-avatar__more {
 	background: var(--av-counter-bg);
 	color: var(--av-counter-fg);
 	font-weight: 600;
 	font-size: calc(var(--av-size) * 0.32);
+	width: auto;
+	min-width: var(--av-size);
+	padding: 0 calc(var(--av-size) * 0.16);
+	border-radius: 999px;                 /* stadium — a circle when text is short */
 }
+.fw-avatar-sc.fw-avatar--shape-square  .fw-avatar__more { border-radius: 0; }
+.fw-avatar-sc.fw-avatar--shape-rounded .fw-avatar__more { border-radius: 22% / 50%; }
 .fw-avatar-sc .fw-avatar__more-text {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	width: 100%;
 	height: 100%;
-	padding: 0 .15em;
+	white-space: nowrap;                  /* keep "+100" on one line */
 }
 
 /* -------------------------- empty (editor only) -------------------------- */

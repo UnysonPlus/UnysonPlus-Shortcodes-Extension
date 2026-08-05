@@ -11,6 +11,25 @@ wp_enqueue_style(
 	$ext->manifest->get_version()
 );
 
+// The Button Preset option renders each plan button as a themed .btn preset — pull the [button]
+// shortcode's base CSS so it renders correctly. Colours come from the theme's globally-output
+// Button presets (Theme Settings → Buttons); a no-op when no preset is used.
+wp_enqueue_style(
+	'fw-shortcode-button',
+	fw_min_uri( $ext->get_declared_URI( '/shortcodes/button/static/css/styles.css' ) ),
+	array(),
+	$ext->manifest->get_version()
+);
+
+// Monthly / Yearly billing toggle behavior (dependency-free; inert when no toggle is present).
+wp_enqueue_script(
+	'fw-shortcode-pricing-table',
+	$ext->get_declared_URI( '/shortcodes/pricing-table/static/js/scripts.js' ),
+	array(),
+	$ext->manifest->get_version(),
+	true
+);
+
 /* Per-design CSS gating (none ship; base covers all designs). */
 if ( ! function_exists( '_fw_pt_enqueue_design_css' ) ) :
 	function _fw_pt_enqueue_design_css( $data ) {

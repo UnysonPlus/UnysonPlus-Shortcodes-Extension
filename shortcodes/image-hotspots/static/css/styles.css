@@ -2,7 +2,7 @@
  * Image Hotspots — pins positioned over an image; each reveals a tooltip card.
  * ========================================================================== */
 .fw-hs {
-	--hs-pin: #4a90d9;
+	--hs-pin: var(--color-primary, #4a90d9);
 	--hs-pop-bg: #1f2530;
 	--hs-pop-color: #ffffff;
 	--hs-accent: #8ec3ff;

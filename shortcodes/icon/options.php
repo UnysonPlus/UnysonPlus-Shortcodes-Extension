@@ -61,6 +61,7 @@ $options = [
                         'value' => array( 'value' => '', 'unit' => 'px' ),
                         'units' => array( 'px', 'rem', 'em' ),
                     ),
+                    'icon_badge_preset' => sc_icon_badge_preset_field(),
                 ],
             ],
             'group_spacings' => [
