@@ -150,6 +150,11 @@ class FW_Extension_Shortcodes extends FW_Extension
 
 		// Admin settings page: enable/disable list + zip/GitHub install.
 		if ( is_admin() ) {
+			// Shortcodes Library — the browse-and-install-on-demand catalog. Its gallery
+			// renders as the "Library" tab on the settings page; this include provides the
+			// catalog fetch / install / uninstall / AJAX (add_action registers on load).
+			require_once dirname( __FILE__ ) . '/includes/library/installer.php';
+
 			require_once dirname( __FILE__ ) . '/includes/class-fw-shortcodes-settings-page.php';
 			new FW_Ext_Shortcodes_Settings_Page( $this );
 		}

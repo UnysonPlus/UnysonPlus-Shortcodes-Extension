@@ -169,4 +169,39 @@ $options = array(
 		),
 		'template'        => '<span class="section-style-preview-{{- id }}">{{- style_name }}</span>',
 	),
+
+	// --- Container Widths ---------------------------------------------------------------
+	// A library of reusable NAMED content-band widths, applied via a Section's "Container
+	// Width" dropdown (Layout tab). Sits below Section Styles because it's the other reusable
+	// per-section axis. The three defaults (Narrow/Medium/Wide = 768/896/1024px) match the old
+	// built-in presets, so existing sections render unchanged. The Site Converter gathers a
+	// source's distinct container widths and adds them here (reusing the standard names on a
+	// value match) so a whole converted site shares named widths instead of repeating a custom.
+	'container_width_presets' => array(
+		'label'           => __( 'Container Widths', 'fw' ),
+		'type'            => 'addable-box',
+		'width'           => 'full',
+		'value'           => function_exists( 'unysonplus_default_container_width_presets' ) ? unysonplus_default_container_width_presets() : array(),
+		'desc'            => __( 'Reusable content-band widths you pick on a Section (Layout → Container Width) to constrain its content narrower than the global width. Change a width here and every section using it updates. The three defaults (Narrow / Medium / Wide) match the built-ins.', 'fw' ),
+		'sortable'        => true,
+		'add-button-text' => __( 'Add Container Width', 'fw' ),
+		'box-options'     => array(
+			'id'         => array( 'type' => 'unique' ),
+			'width_name' => array(
+				'label' => __( 'Name', 'fw' ),
+				'type'  => 'text',
+				'value' => '',
+				'desc'  => __( 'Label shown in the Section → Container Width dropdown (e.g. <code>Content</code>, <code>Prose</code>).', 'fw' ),
+			),
+			'width'      => array(
+				'label' => __( 'Max Width', 'fw' ),
+				'type'  => 'unit-input',
+				'units' => array( 'px', 'rem', 'em', '%', 'vw' ),
+				'value' => array( 'value' => '1024', 'unit' => 'px' ),
+				'min'   => 0,
+				'desc'  => __( 'The content band\'s maximum width. The section background still spans full-width; only the centered content narrows.', 'fw' ),
+			),
+		),
+		'template'        => '<span class="cw-preset-preview-{{- id }}">{{- width_name }}</span>',
+	),
 );

@@ -53,6 +53,15 @@ to a Bootstrap `text-*` class with `sc_alignment_class()` (both in
 | `title_align` | `image-picker` (`''` / `left` / `center` / `right`) | `''` | Title alignment; `''` = inherit |
 | `subtitle_align` | `image-picker` (`''` / `left` / `center` / `right`) | `''` | Subtitle alignment; `''` = inherit |
 
+> **Container-level `text_align` vs. this master `alignment`.** The **section** and **column**
+> shortcodes now carry their own `text_align` image-picker (same `sc_alignment_field(inherit)`
+> helper, default `''`). Because `text-align` is an **inherited** CSS property, a container-level
+> `text_align:center` centers a whole mixed band (heading + paragraph + buttons) as one. This
+> heading's `alignment` **stays** — it's a per-heading override. Leave it on **Inherit (`''`)** to
+> let it cascade from the container; set it only when one heading must differ. The Site Converter
+> deliberately leaves `alignment` on Inherit for centered bands and centers via the container's
+> `text_align` instead.
+
 `group_layout`:
 
 | Att | Type | Default | Description |

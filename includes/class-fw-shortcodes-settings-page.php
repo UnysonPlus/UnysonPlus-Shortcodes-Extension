@@ -713,6 +713,25 @@ class FW_Ext_Shortcodes_Settings_Page {
 				),
 			)
 		);
+
+		// Shortcodes Library gallery (the "Library" tab) — loaded here so it rides the same
+		// settings page. Guarded on the installer being present.
+		if ( function_exists( 'upw_sc_lib_installer_payload' ) ) {
+			wp_enqueue_style(
+				'upw-shortcodes-library',
+				fw_min_uri( $this->extension->get_uri( '/static/css/shortcodes-library.css' ) ),
+				array(),
+				$version
+			);
+			wp_enqueue_script(
+				'upw-shortcodes-library',
+				fw_min_uri( $this->extension->get_uri( '/static/js/shortcodes-library.js' ) ),
+				array( 'jquery' ),
+				$version,
+				true
+			);
+			wp_localize_script( 'upw-shortcodes-library', 'upwShortcodesLibrary', upw_sc_lib_installer_payload() );
+		}
 	}
 
 	/* ---------------------------------------------------------------------- *
@@ -757,6 +776,9 @@ class FW_Ext_Shortcodes_Settings_Page {
 			<h2 class="nav-tab-wrapper fw-sc-nav-tabs" style="margin:.4em 0 1.4em">
 				<a href="#shortcodes" class="nav-tab nav-tab-active" data-tab="shortcodes"><?php esc_html_e( 'Shortcodes', 'fw' ); ?></a>
 				<a href="#designs" class="nav-tab" data-tab="designs"><?php esc_html_e( 'Design packs', 'fw' ); ?></a>
+				<?php if ( function_exists( 'upw_sc_lib_items' ) ) : ?>
+					<a href="#library" class="nav-tab" data-tab="library"><?php esc_html_e( 'Library', 'fw' ); ?></a>
+				<?php endif; ?>
 			</h2>
 
 			<div class="fw-sc-notice fw-sc-notice-hidden" id="fw-sc-notice"></div>
@@ -825,6 +847,12 @@ class FW_Ext_Shortcodes_Settings_Page {
 				<?php $this->render_designs_panel(); ?>
 			</div><!-- /.fw-sc-panel[designs] -->
 
+			<?php if ( function_exists( 'upw_sc_lib_items' ) ) : ?>
+			<div class="fw-sc-panel fw-sc-panel-hidden" data-panel="library">
+				<?php $this->render_library_panel(); ?>
+			</div><!-- /.fw-sc-panel[library] -->
+			<?php endif; ?>
+
 			<h2 class="fw-sc-section-title"><?php esc_html_e( 'Add a shortcode or design pack', 'fw' ); ?></h2>
 			<p class="description fw-sc-trust">
 				<?php esc_html_e( 'Shortcodes and design packs are executable PHP. Only install from sources you trust — the same level of trust as installing a plugin.', 'fw' ); ?>
@@ -845,6 +873,30 @@ class FW_Ext_Shortcodes_Settings_Page {
 					<button type="button" class="button button-primary" id="fw-sc-install-github"><?php esc_html_e( 'Download &amp; install', 'fw' ); ?></button>
 				</div>
 			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * The "Library" tab body: the Shortcodes Library gallery shell. The catalog grid +
+	 * install/remove buttons are filled by shortcodes-library.js (localized with the
+	 * installer payload in _action_enqueue). Downloaded shortcodes install into the theme's
+	 * framework-customizations and auto-register in the Page Builder.
+	 */
+	private function render_library_panel() {
+		?>
+		<div class="upw-scl">
+			<p class="description" style="margin:.2em 0 1em">
+				<?php esc_html_e( 'Browse optional shortcodes and install the ones you want. Each installs into your theme and appears in the Page Builder — the base plugin stays lean because you only add what you need.', 'fw' ); ?>
+			</p>
+			<div class="upw-scl__toolbar">
+				<input type="search" id="upw-scl-search" class="upw-scl__search" placeholder="<?php esc_attr_e( 'Search shortcodes…', 'fw' ); ?>" />
+				<select id="upw-scl-category" class="upw-scl__category"></select>
+				<button type="button" class="button upw-scl__refresh" data-act="refresh"><?php esc_html_e( 'Refresh catalog', 'fw' ); ?></button>
+			</div>
+			<div class="upw-scl__notice" id="upw-scl-notice" hidden></div>
+			<div class="upw-scl__grid" id="upw-scl-grid" aria-live="polite"></div>
+			<p class="upw-scl__empty" id="upw-scl-empty" hidden><?php esc_html_e( 'No shortcodes match your filter.', 'fw' ); ?></p>
 		</div>
 		<?php
 	}

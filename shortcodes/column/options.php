@@ -729,6 +729,23 @@ $options = array(
         // what the editor wants. Background + Margins/Paddings stay; child
         // shortcodes own their own typography.
         'options' => [
+            'group_text' => [
+                'type'    => 'group',
+                'options' => [
+                    // Text Alignment — the CSS `text-align` for ALL content in this column
+                    // (headings, paragraphs, buttons cascade from it). A DIFFERENT axis from
+                    // Content Alignment (Layout tab, flexbox positioning of the column's
+                    // children). Reuses the shared alignment image-picker (Default / Left /
+                    // Center / Right); Default ('') forces nothing so existing columns are
+                    // unchanged. Renders as a Bootstrap `text-*` class on the column wrapper.
+                    'text_align' => sc_alignment_field( array(
+                        'label'   => __( 'Text Alignment', 'fw' ),
+                        'inherit' => true,
+                        'desc'    => __( 'Sets the CSS text-align for ALL content in this column — headings, paragraphs and buttons inherit it together.', 'fw' ),
+                        'help'    => __( 'Leave on Default to follow the parent (nothing forced). This is a different axis from Content Alignment (Layout tab): that flex-aligns the column\'s child blocks, while this aligns the text INSIDE them — ideal for a mixed block (heading + paragraph + buttons) that should all read centered.', 'fw' ),
+                    ) ),
+                ],
+            ],
             'group_colors' => [
                 'type'    => 'group',
                 'options' => [

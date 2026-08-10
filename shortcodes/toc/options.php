@@ -292,12 +292,12 @@ $options = [
                 'type'    => 'group',
                 'options' => [
                     'title_size' => sc_font_size_field( array(
-                        'label' => __( 'Title Font Size', 'fw' ),
-                        'desc'  => __( 'Named size preset for the TOC title.', 'fw' ),
+                        'label' => __( 'Title Text Style', 'fw' ),
+                        'desc'  => __( 'A named Text Style preset for the TOC title.', 'fw' ),
                     ) ),
                     'items_size' => sc_font_size_field( array(
-                        'label' => __( 'Items Font Size', 'fw' ),
-                        'desc'  => __( 'Named size preset for the list links.', 'fw' ),
+                        'label' => __( 'Items Text Style', 'fw' ),
+                        'desc'  => __( 'A named Text Style preset for the list links.', 'fw' ),
                     ) ),
                 ],
             ],

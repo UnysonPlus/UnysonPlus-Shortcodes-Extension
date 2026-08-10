@@ -765,10 +765,12 @@ if ( ! function_exists( 'sc_alignment_field' ) ) :
 			return array( 'small' => array( 'src' => $base . '/' . $file, 'height' => 40, 'title' => $title ) );
 		};
 
+		// Every alignment control now offers Default / Left / Center / Right. The Default ('') swatch is
+		// ALWAYS present (it used to appear only when `inherit=>true`) — it forces no alignment and follows
+		// the theme/parent. `inherit=>true` additionally makes Default the PRE-SELECTED value; without it the
+		// caller's own `value` (e.g. 'left') stays pre-selected, so this is non-breaking for existing defaults.
 		$choices = array();
-		if ( $args['inherit'] ) {
-			$choices[''] = $swatch( 'inherit.svg', __( 'Inherit', 'fw' ) );
-		}
+		$choices[''] = $swatch( 'inherit.svg', __( 'Default', 'fw' ) );
 		$choices['left']   = $swatch( 'left.svg',   __( 'Left', 'fw' ) );
 		$choices['center'] = $swatch( 'center.svg', __( 'Center', 'fw' ) );
 		$choices['right']  = $swatch( 'right.svg',  __( 'Right', 'fw' ) );
@@ -2499,7 +2501,12 @@ if ( ! function_exists( 'sc_bg_pro_style' ) ) :
 		$images  = array();
 		$img_url = fw_akg( 'image/src/url', $bgv, '' );
 		if ( $img_url ) {
-			$images[] = 'url(' . esc_url( $img_url ) . ')';
+			// esc_url_raw (NOT esc_url) inside the CSS url(): this style string is esc_attr'd when it
+			// lands in the `style="…"` attribute, and esc_url's HTML-entity pass (`&` → `&#038;`) would
+			// then double-encode to `&amp;#038;` — mangling a query-string image URL (e.g. Unsplash
+			// `?w=1920&q=80`). esc_url_raw keeps a clean `&`, so the single attribute escape yields one
+			// correct `&amp;` that the browser decodes back to `&`.
+			$images[] = 'url(' . esc_url_raw( $img_url ) . ')';
 		}
 		$stops = fw_akg( 'gradient/data/stops', $bgv );
 		if ( is_array( $stops ) && count( $stops ) >= 2 && class_exists( 'FW_Option_Type_Gradient_V2' ) ) {

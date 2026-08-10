@@ -84,7 +84,13 @@ $items_per_slide = (int) $ts_dp( 'items_per_slide', 'items_per_slide', 1 );
 if ( $items_per_slide < 1 ) $items_per_slide = 1;
 
 /* Cross-design appearance (stay top-level — no path change). */
-$text_align      = sc_get( 'text_align', $atts, '' );
+/* Text Alignment now stores image-picker KEYS ('' / left / center / right) →
+   map to the Bootstrap text-* class. Legacy saves stored the class directly
+   ('text-center' / 'text-end'), so pass those through unchanged for back-compat. */
+$text_align_raw  = sc_get( 'text_align', $atts, '' );
+$text_align      = ( is_string( $text_align_raw ) && strpos( $text_align_raw, 'text-' ) === 0 )
+	? $text_align_raw
+	: sc_alignment_class( $text_align_raw );
 $container_cls   = sc_get( 'container_type', $atts, 'container' ); // '' = None → no wrapper, fills the parent (e.g. nested in a section)
 $avatar_shape    = sc_get( 'avatar_shape', $atts, 'rounded-circle' );
 $avatar_size     = sc_get( 'avatar_size', $atts, 'avatar-md' );

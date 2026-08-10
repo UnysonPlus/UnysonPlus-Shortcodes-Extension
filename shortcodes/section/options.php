@@ -183,13 +183,7 @@ $options = [
 								'desc'    => __( 'Constrain this section\'s content to a narrower band than the site-wide Container Width. "Inherit" uses the global width (General → Layout).', 'fw' ),
 								'help'    => __( 'Great for CTAs, prose, or forms that read better narrower than the full page container. The section background still spans as usual; only the centered content band narrows. "Custom" sets an exact max-width.', 'fw' ),
 								'type'    => 'select',
-								'choices' => [
-									'inherit' => __( 'Inherit (global width)', 'fw' ),
-									'narrow'  => __( 'Narrow (768px)', 'fw' ),
-									'medium'  => __( 'Medium (896px)', 'fw' ),
-									'wide'    => __( 'Wide (1024px)', 'fw' ),
-									'custom'  => __( 'Custom…', 'fw' ),
-								],
+								'choices' => function_exists( 'unysonplus_container_width_choices' ) ? unysonplus_container_width_choices() : array( 'inherit' => __( 'Inherit (global width)', 'fw' ), 'narrow' => __( 'Narrow (768px)', 'fw' ), 'medium' => __( 'Medium (896px)', 'fw' ), 'wide' => __( 'Wide (1024px)', 'fw' ), 'custom' => __( 'Custom', 'fw' ) ),
 							],
 						],
 						'choices'      => [
@@ -299,6 +293,23 @@ $options = [
 		'title'   => __( 'Styling', 'fw' ),
 		'type'    => 'tab',
 		'options' => [
+			'group_text' => [
+				'type'    => 'group',
+				'options' => [
+					// Text Alignment — the CSS `text-align` for ALL text inside this section
+					// (headings, paragraphs, buttons cascade from it). Distinct from Columns
+					// Horizontal Alignment (Layout tab), which positions the COLUMNS as flex items on
+					// the row's main axis. Reuses the shared alignment image-picker (Default /
+					// Left / Center / Right); Default ('') forces nothing so existing sections
+					// are unchanged. Renders as a Bootstrap `text-*` class on the section wrapper.
+					'text_align' => sc_alignment_field( array(
+						'label'   => __( 'Text Alignment', 'fw' ),
+						'inherit' => true,
+						'desc'    => __( 'Sets the CSS text-align for ALL content in this section — headings, paragraphs and buttons inherit it together.', 'fw' ),
+						'help'    => __( 'Leave on Default to follow the theme / parent (nothing forced). This is a different axis from "Columns Horizontal Alignment": that positions the columns as blocks, while this aligns the text INSIDE them. Handy for a mixed centered band (heading + paragraph + buttons).', 'fw' ),
+					) ),
+				],
+			],
 			'group_background' => [
 				'type'    => 'group',
 				'options' => [

@@ -148,6 +148,16 @@ if ( $rb ) { $section_extra_classes .= ' section--rev'; }
 if ( $rm !== $rb ) { $section_extra_classes .= $rm ? ' section--rev-md-on' : ' section--rev-md-off'; }
 if ( $rl !== $rm ) { $section_extra_classes .= $rl ? ' section--rev-lg-on' : ' section--rev-lg-off'; }
 
+// Text Alignment (id: text_align) — the CSS `text-align` for ALL content in this
+// section, applied as a Bootstrap `text-*` utility on the section wrapper. Inherited
+// property, so it cascades to every nested heading / paragraph / button. '' (Inherit)
+// emits nothing so sections saved before this option are unchanged. Different axis
+// from Columns Horizontal Alignment (which positions the columns as flex items).
+$text_align_class = function_exists( 'sc_alignment_class' ) ? sc_alignment_class( $atts['text_align'] ?? '' ) : '';
+if ( $text_align_class !== '' ) {
+	$section_extra_classes .= ' ' . $text_align_class;
+}
+
 $container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] )
 	? 'fw-container-fluid'
 	: 'fw-container';
@@ -159,7 +169,9 @@ $container_style = '';
 $cwv = isset( $atts['container_width'] ) ? $atts['container_width'] : '';
 if ( is_array( $cwv ) ) {
 	$cw_preset = isset( $cwv['preset'] ) ? (string) $cwv['preset'] : 'inherit';
-	$cw_map    = array( 'narrow' => '768px', 'medium' => '896px', 'wide' => '1024px' );
+	// Named-width map from the Container Widths preset library (Components -> Section Styles -> Container
+	// Widths); defaults reproduce narrow/medium/wide so pre-existing sections resolve unchanged.
+	$cw_map    = function_exists( 'unysonplus_container_width_map' ) ? unysonplus_container_width_map() : array( 'narrow' => '768px', 'medium' => '896px', 'wide' => '1024px' );
 	$cw_max    = '';
 	if ( $cw_preset === 'custom' ) {
 		$cuv  = ( isset( $cwv['custom']['custom_width'] ) && is_array( $cwv['custom']['custom_width'] ) ) ? $cwv['custom']['custom_width'] : array();

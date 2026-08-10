@@ -525,12 +525,12 @@ $options = [
                             'spacious' => __( 'Spacious', 'fw' ),
                         ],
                     ],
-                    'text_align' => [
-                        'label'   => __( 'Card Text Alignment', 'fw' ),
-                        'type'    => 'select',
-                        'value'   => 'left',
-                        'choices' => [ 'left' => __( 'Left', 'fw' ), 'center' => __( 'Center', 'fw' ), 'right' => __( 'Right', 'fw' ) ],
-                    ],
+                    // Card Text Alignment — shared alignment image-picker. Keeps 'left'
+                    // preselected and adds a Default ('') swatch; values stay left/center/right.
+                    'text_align' => sc_alignment_field( array(
+                        'label' => __( 'Card Text Alignment', 'fw' ),
+                        'value' => 'left',
+                    ) ),
                     'mobile_layout_override' => [
                         'label'   => __( 'Mobile Card Style Override', 'fw' ),
                         'desc'    => __( 'Switch card style on mobile (≤ 782px) regardless of desktop choice.', 'fw' ),

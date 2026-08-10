@@ -67,6 +67,7 @@ Wrapped in `group_layout` (flattens on save).
 | `column_halign` | `responsive` → `image-picker` | `{ base:'default', md:'', lg:'' }` | Columns Horizontal Alignment: `default` / `center` / `right` / `between` / `around` / `evenly`, per device (blank device inherits smaller) |
 | `column_valign` | `image-picker` | `stretch` | Columns Vertical Alignment: `stretch` (Default / Stretched) / `top` / `center` / `bottom`. Most visible with a Min Height set. The renderer also tolerates the old key `content_valign` as a fallback |
 | `reverse_columns` | `responsive` → `switch` (`no`/`yes`) | `{ base:'no', md:'', lg:'' }` | Column Order — reverse per device. Legacy scalar `all` / `tablet` / `mobile` migrates in the view |
+| `text_align` | `image-picker` (`sc_alignment_field`, `inherit`) | `''` (Inherit) | **Text Alignment** — the CSS `text-align` for ALL content in the section (`''`/`left`/`center`/`right`). Renders a Bootstrap `text-*` class (`sc_alignment_class`) on the `<section>` wrapper; `''` emits nothing (inherit, so existing sections are unchanged — additive, **no migration**). **Inherited property**, so it cascades to every nested heading/paragraph/button — a DIFFERENT axis from `column_halign` (which positions the columns as flex items). The Site Converter sets this to `center` for a centered source band (`Stitch::section_center` → `n_section`) |
 
 ### Tab: Styling
 

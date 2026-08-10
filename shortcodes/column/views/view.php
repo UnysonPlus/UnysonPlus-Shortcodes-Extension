@@ -333,6 +333,17 @@ if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $
 // Position + Z-Index now come from the shared Advanced-tab control (element_position),
 // applied to this column's outer $attr as an inline style by sc_build_wrapper_attr().
 
+// Text Alignment (id: text_align) — the CSS `text-align` for ALL content in this
+// column, emitted as a Bootstrap `text-*` utility on the OUTER column wrapper. Because
+// text-align is INHERITED, it cascades to every nested block (heading / paragraph /
+// button), including an inner styling card — so it lands on the outer column rather
+// than the optional inner div. '' (Inherit) emits nothing, so columns saved before this
+// option render unchanged. A DIFFERENT axis from Content Alignment (flexbox positioning).
+$text_align_class = function_exists( 'sc_alignment_class' ) ? sc_alignment_class( isset( $atts['text_align'] ) ? $atts['text_align'] : '' ) : '';
+if ( $text_align_class !== '' ) {
+    $outer_extra[] = $text_align_class;
+}
+
 if ( ! empty( $outer_extra ) ) {
     $attr['class'] = trim( $attr['class'] . ' ' . implode( ' ', $outer_extra ) );
 }

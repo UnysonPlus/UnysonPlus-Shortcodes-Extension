@@ -442,16 +442,15 @@ $options = [
                         ],
                         'desc' => __('Outer width wrapper.', 'fw'),
                     ],
-                    'text_align' => [
-                        'label' => __('Text Align', 'fw'),
-                        'type'  => 'select',
-                        'choices' => [
-                            ''            => __('Left', 'fw'),
-                            'text-center' => __('Center', 'fw'),
-                            'text-end'    => __('Right', 'fw'),
-                        ],
-                        'desc' => __('Alignment of text content (where the design honours it).', 'fw'),
-                    ],
+                    // Text Alignment — shared alignment image-picker (Default / Left / Center /
+                    // Right). Stores KEYS ('' / left / center / right); the view maps them to
+                    // Bootstrap text-* classes via sc_alignment_class(). Was a plain select that
+                    // stored the class ('text-center'/'text-end') directly — now normalised on read.
+                    'text_align' => sc_alignment_field( array(
+                        'label' => __( 'Text Alignment', 'fw' ),
+                        'value' => '',
+                        'desc'  => __( 'Alignment of text content (where the design honours it).', 'fw' ),
+                    ) ),
                     'avatar_shape' => [
                         'label' => __('Avatar Shape', 'fw'),
                         'type'  => 'select',

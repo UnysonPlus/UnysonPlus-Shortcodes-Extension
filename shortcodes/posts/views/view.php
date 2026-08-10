@@ -812,9 +812,13 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
             'posts--cols-t-' . (int) $cols_t,
             'posts--cols-m-' . (int) $cols_m,
             'posts--ratio-' . sanitize_html_class( sc_get( 'image_ratio', $atts, 'ratio-16-9' ) ),
-            'posts--align-' . sanitize_html_class( $text_align ),
             'posts--meta-pos-' . sanitize_html_class( sc_get( 'cat_position', $atts, 'above-title' ) ),
         ];
+        // Card Text Alignment — the shared alignment picker can now store '' (Default);
+        // only emit the modifier for a real left/center/right value (no dangling class).
+        if ( '' !== $text_align ) {
+            $wrapper_classes[] = 'posts--align-' . sanitize_html_class( $text_align );
+        }
         if ( $equal_height )                         $wrapper_classes[] = 'posts--equal-height';
         if ( $featured_tx !== 'none' )               $wrapper_classes[] = 'posts--featured-' . sanitize_html_class( $featured_tx );
         if ( $live_filters )                         $wrapper_classes[] = 'posts--has-filters posts--filters-' . sanitize_html_class( $filters_pos );

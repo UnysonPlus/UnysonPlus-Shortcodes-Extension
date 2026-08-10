@@ -65,11 +65,30 @@ $options = [
                         'desc'  => __('Write the heading title content', 'fw'),
                         'help'  => __('You can wrap part of the text in inline HTML — e.g. an &lt;em&gt; or a coloured &lt;span&gt; — to emphasise a word.', 'fw'),
                     ],
+                    // A MINIMAL wp-editor — a variation of the standard wp-editor option type (no new type):
+                    // FW_WP_Editor_Manager already forwards media_buttons / tinymce / quicktags / wpautop to
+                    // wp_editor(), so restricting the toolbar to inline formatting (bold / italic / link) is
+                    // just config. `wpautop => false` keeps the value a single inline line (the view already
+                    // wraps it in <p class="heading-subtitle"> and wp_kses_post's it — block <p> here would
+                    // nest invalidly). NB the `teeny` shortcut is stripped by the manager, so the minimal look
+                    // comes from the tinymce toolbar list, not teeny. Legacy plain-text subtitles still load.
                     'subtitle' => [
-                        'type'  => 'text',
-                        'label' => __('Subtitle', 'fw'),
-                        'desc'  => __('Write the heading subtitle content', 'fw'),
-                        'help'  => __('A short supporting line under the title — keep it to a sentence or two. For longer copy use a Text Block instead.', 'fw'),
+                        'type'          => 'wp-editor',
+                        'label'         => __('Subtitle', 'fw'),
+                        'desc'          => __('Write the heading subtitle content', 'fw'),
+                        'help'          => __('A short supporting line under the title — keep it to a sentence or two, with light formatting (bold / italic / link). For longer copy use a Text Block instead.', 'fw'),
+                        'size'          => 'small',
+                        'editor_height' => 90,
+                        'media_buttons' => false, // no "Add Media"
+                        'wpautop'       => false, // single inline line — no auto <p> wrapping
+                        'shortcodes'    => false, // no shortcode inserter
+                        'quicktags'     => false, // no raw-HTML "Text" tab
+                        'reinit'        => true,  // re-init cleanly each time the modal opens
+                        'tinymce'       => array( // restrict the visual toolbar to inline formatting only
+                            'toolbar1' => 'bold,italic,link,unlink,undo,redo',
+                            'toolbar2' => '', 'toolbar3' => '', 'toolbar4' => '',
+                        ),
+                        'value'         => '',
                     ],
                     'heading' => [
                         'type'    => 'select',
@@ -136,35 +155,6 @@ $options = [
         'title'   => __( 'Layout', 'fw' ),
         'type'    => 'tab',
         'options' => [
-            'group_alignment' => [
-                'type'    => 'group',
-                'options' => [
-                    'alignment' => sc_alignment_field( array(
-                        'label'   => __( 'Alignment', 'fw' ),
-                        'inherit' => true,
-                        'desc'    => __( 'Master horizontal alignment for the whole heading. Each element below can override it.', 'fw' ),
-                        'help'    => __( 'Leave on Inherit to follow the theme / parent alignment (nothing is forced). Pick Left, Center or Right to set the overline, title and subtitle together. Use the per-element controls below only when one line should differ.', 'fw' ),
-                    ) ),
-                    'overline_align' => sc_alignment_field( array(
-                        'label'   => __( 'Overline Alignment', 'fw' ),
-                        'inherit' => true,
-                        'desc'    => __( 'Inherit follows the master Alignment above.', 'fw' ),
-                        'help'    => __( 'The dashed "Inherit" swatch keeps this line in step with the master Alignment; pick Left, Center or Right to override just the overline.', 'fw' ),
-                    ) ),
-                    'title_align' => sc_alignment_field( array(
-                        'label'   => __( 'Title Alignment', 'fw' ),
-                        'inherit' => true,
-                        'desc'    => __( 'Inherit follows the master Alignment above.', 'fw' ),
-                        'help'    => __( 'The dashed "Inherit" swatch keeps this line in step with the master Alignment; pick Left, Center or Right to override just the title.', 'fw' ),
-                    ) ),
-                    'subtitle_align' => sc_alignment_field( array(
-                        'label'   => __( 'Subtitle Alignment', 'fw' ),
-                        'inherit' => true,
-                        'desc'    => __( 'Inherit follows the master Alignment above.', 'fw' ),
-                        'help'    => __( 'The dashed "Inherit" swatch keeps this line in step with the master Alignment; pick Left, Center or Right to override just the subtitle.', 'fw' ),
-                    ) ),
-                ],
-            ],
             'group_layout' => [
                 'type'    => 'group',
                 'options' => [
@@ -248,6 +238,35 @@ $options = [
         // cover both visible text elements. font_size_preset is skipped too:
         // the title's size comes from the Title Tag (h1–h6) on the Content tab.
         'options' => [
+            'group_alignment' => [
+                'type'    => 'group',
+                'options' => [
+                    'alignment' => sc_alignment_field( array(
+                        'label'   => __( 'Alignment', 'fw' ),
+                        'inherit' => true,
+                        'desc'    => __( 'Master horizontal alignment for the whole heading. Each element below can override it.', 'fw' ),
+                        'help'    => __( 'Leave on Default to follow the theme / parent alignment (nothing is forced). Pick Left, Center or Right to set the overline, title and subtitle together. Use the per-element controls below only when one line should differ.', 'fw' ),
+                    ) ),
+                    'overline_align' => sc_alignment_field( array(
+                        'label'   => __( 'Overline Alignment', 'fw' ),
+                        'inherit' => true,
+                        'desc'    => __( 'Default follows the master Alignment above.', 'fw' ),
+                        'help'    => __( 'The dashed "Default" swatch keeps this line in step with the master Alignment; pick Left, Center or Right to override just the overline.', 'fw' ),
+                    ) ),
+                    'title_align' => sc_alignment_field( array(
+                        'label'   => __( 'Title Alignment', 'fw' ),
+                        'inherit' => true,
+                        'desc'    => __( 'Default follows the master Alignment above.', 'fw' ),
+                        'help'    => __( 'The dashed "Default" swatch keeps this line in step with the master Alignment; pick Left, Center or Right to override just the title.', 'fw' ),
+                    ) ),
+                    'subtitle_align' => sc_alignment_field( array(
+                        'label'   => __( 'Subtitle Alignment', 'fw' ),
+                        'inherit' => true,
+                        'desc'    => __( 'Default follows the master Alignment above.', 'fw' ),
+                        'help'    => __( 'The dashed "Default" swatch keeps this line in step with the master Alignment; pick Left, Center or Right to override just the subtitle.', 'fw' ),
+                    ) ),
+                ],
+            ],
             'group_typography' => [
                 'type'    => 'group',
                 'options' => [
@@ -277,8 +296,8 @@ $options = [
                         'min'   => 0,
                     ],
                     'subtitle_size' => sc_font_size_field( array(
-                        'label' => __( 'Subtitle Font Size', 'fw' ),
-                        'desc'  => __( 'Named size preset applied to the subtitle only.', 'fw' ),
+                        'label' => __( 'Subtitle Text Style', 'fw' ),
+                        'desc'  => __( 'A named Text Style preset applied to the subtitle only.', 'fw' ),
                     ) ),
                     'subtitle_max_width' => [
                         'type'  => 'unit-input',
