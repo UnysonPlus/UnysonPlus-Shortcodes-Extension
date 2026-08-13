@@ -124,19 +124,37 @@ $divider_fields = [
 		'value'        => 'no',
 	],
 ];
-$divider_shapes = [
-	'none'     => __( 'None', 'fw' ),
-	'tilt'     => __( 'Tilt', 'fw' ),
-	'curve'    => __( 'Curve', 'fw' ),
-	'wave'     => __( 'Wave', 'fw' ),
-	'triangle' => __( 'Triangle', 'fw' ),
-];
-$divider_reveal = [
-	'tilt'     => $divider_fields,
-	'curve'    => $divider_fields,
-	'wave'     => $divider_fields,
-	'triangle' => $divider_fields,
-];
+// Shapes come from the Shape Dividers preset library (Theme Settings → Components → Shape
+// Dividers), so user-added SVG edges appear here automatically. The built-in four
+// (tilt/curve/wave/triangle) keep their slugs, so existing sections resolve unchanged. Falls
+// back to the built-in slugs if the library getter is unavailable (keeps saves valid).
+$divider_shapes = function_exists( 'unysonplus_shape_divider_select_choices' )
+	? unysonplus_shape_divider_select_choices()
+	: [
+		'none'     => __( 'None', 'fw' ),
+		'tilt'     => __( 'Tilt', 'fw' ),
+		'curve'    => __( 'Curve', 'fw' ),
+		'wave'     => __( 'Wave', 'fw' ),
+		'triangle' => __( 'Triangle', 'fw' ),
+	];
+// Every shape but "None" reveals the Color / Height / Flip sub-fields.
+$divider_reveal = [];
+foreach ( array_keys( $divider_shapes ) as $divider_slug ) {
+	if ( $divider_slug === 'none' ) { continue; }
+	$divider_reveal[ $divider_slug ] = $divider_fields;
+}
+// Visual popover picker: SVG silhouette thumbnails per shape (the 'none' tile is hidden by the
+// image-picker in popover mode). Same keys as the reveal map above, so picking a shape reveals
+// its Color / Height / Flip inside the popover panel. Thumbnails are oriented per placement —
+// the Top picker previews the shape rotated 180° (exactly how the section draws a top divider),
+// the Bottom picker the as-authored bottom edge — so each picker is WYSIWYG. Bare None fallback.
+// Each picker sets its own tile height (76px), independently — no shared/global value.
+$divider_ip_top = function_exists( 'unysonplus_shape_divider_imagepicker_choices' )
+	? unysonplus_shape_divider_imagepicker_choices( 'top', 38 )
+	: [ 'none' => [ 'label' => __( 'None', 'fw' ) ] ];
+$divider_ip_bottom = function_exists( 'unysonplus_shape_divider_imagepicker_choices' )
+	? unysonplus_shape_divider_imagepicker_choices( 'bottom', 38 )
+	: [ 'none' => [ 'label' => __( 'None', 'fw' ) ] ];
 
 $options = [
 	'tab_layout' => [
@@ -293,23 +311,6 @@ $options = [
 		'title'   => __( 'Styling', 'fw' ),
 		'type'    => 'tab',
 		'options' => [
-			'group_text' => [
-				'type'    => 'group',
-				'options' => [
-					// Text Alignment — the CSS `text-align` for ALL text inside this section
-					// (headings, paragraphs, buttons cascade from it). Distinct from Columns
-					// Horizontal Alignment (Layout tab), which positions the COLUMNS as flex items on
-					// the row's main axis. Reuses the shared alignment image-picker (Default /
-					// Left / Center / Right); Default ('') forces nothing so existing sections
-					// are unchanged. Renders as a Bootstrap `text-*` class on the section wrapper.
-					'text_align' => sc_alignment_field( array(
-						'label'   => __( 'Text Alignment', 'fw' ),
-						'inherit' => true,
-						'desc'    => __( 'Sets the CSS text-align for ALL content in this section — headings, paragraphs and buttons inherit it together.', 'fw' ),
-						'help'    => __( 'Leave on Default to follow the theme / parent (nothing forced). This is a different axis from "Columns Horizontal Alignment": that positions the columns as blocks, while this aligns the text INSIDE them. Handy for a mixed centered band (heading + paragraph + buttons).', 'fw' ),
-					) ),
-				],
-			],
 			'group_background' => [
 				'type'    => 'group',
 				'options' => [
@@ -331,7 +332,7 @@ $options = [
 							'pattern' => [
 								'type'    => 'image-picker',
 								'label'   => false,
-								'choices' => function_exists( 'unysonplus_pattern_imagepicker_choices' ) ? unysonplus_pattern_imagepicker_choices() : [ 'none' => [ 'label' => __( 'None', 'fw' ) ] ],
+								'choices' => function_exists( 'unysonplus_pattern_imagepicker_choices' ) ? unysonplus_pattern_imagepicker_choices( 76 ) : [ 'none' => [ 'label' => __( 'None', 'fw' ) ] ],
 							],
 						],
 						'choices'      => [],
@@ -344,15 +345,15 @@ $options = [
 				'options' => [
 					'divider_top' => [
 						'type'         => 'multi-picker',
-						'label'        => false,
-						'desc'         => false,
+						'label'        => __( 'Top Shape Divider', 'fw' ),
+						'desc'         => __( 'A shaped SVG edge at the TOP of the section. Pick a shape, then set its Color / Height / Flip in the same panel. Add / edit shapes in Theme Settings → Components → Shape Dividers.', 'fw' ),
+						'popover'      => true,
 						'value'        => [ 'shape' => 'none' ],
 						'picker'       => [
 							'shape' => [
-								'type'    => 'select',
-								'label'   => __( 'Top Shape Divider', 'fw' ),
-								'desc'    => __( 'A shaped SVG edge at the TOP of the section — pick a shape and its Color / Height / Flip appear.', 'fw' ),
-								'choices' => $divider_shapes,
+								'type'    => 'image-picker',
+								'label'   => false,
+								'choices' => $divider_ip_top,
 							],
 						],
 						'choices'      => $divider_reveal,
@@ -360,20 +361,37 @@ $options = [
 					],
 					'divider_bottom' => [
 						'type'         => 'multi-picker',
-						'label'        => false,
-						'desc'         => false,
+						'label'        => __( 'Bottom Shape Divider', 'fw' ),
+						'desc'         => __( 'A shaped SVG edge at the BOTTOM of the section — an independent pick from the Top (they can differ). Pick a shape, then set its Color / Height / Flip in the same panel.', 'fw' ),
+						'popover'      => true,
 						'value'        => [ 'shape' => 'none' ],
 						'picker'       => [
 							'shape' => [
-								'type'    => 'select',
-								'label'   => __( 'Bottom Shape Divider', 'fw' ),
-								'desc'    => __( 'A shaped SVG edge at the BOTTOM of the section.', 'fw' ),
-								'choices' => $divider_shapes,
+								'type'    => 'image-picker',
+								'label'   => false,
+								'choices' => $divider_ip_bottom,
 							],
 						],
 						'choices'      => $divider_reveal,
 						'show_borders' => false,
 					],
+				],
+			],
+			'group_text' => [
+				'type'    => 'group',
+				'options' => [
+					// Text Alignment — the CSS `text-align` for ALL text inside this section
+					// (headings, paragraphs, buttons cascade from it). Distinct from Columns
+					// Horizontal Alignment (Layout tab), which positions the COLUMNS as flex items on
+					// the row's main axis. Reuses the shared alignment image-picker (Default /
+					// Left / Center / Right); Default ('') forces nothing so existing sections
+					// are unchanged. Renders as a Bootstrap `text-*` class on the section wrapper.
+					'text_align' => sc_alignment_field( array(
+						'label'   => __( 'Text Alignment', 'fw' ),
+						'inherit' => true,
+						'desc'    => __( 'Sets the CSS text-align for ALL content in this section — headings, paragraphs and buttons inherit it together.', 'fw' ),
+						'help'    => __( 'Leave on Default to follow the theme / parent (nothing forced). This is a different axis from "Columns Horizontal Alignment": that positions the columns as blocks, while this aligns the text INSIDE them. Handy for a mixed centered band (heading + paragraph + buttons).', 'fw' ),
+					) ),
 				],
 			],
 			'group_spacings' => [

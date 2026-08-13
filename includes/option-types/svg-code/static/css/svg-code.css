@@ -1,6 +1,11 @@
 /* `svg-code` option type — backend UI. */
 .fw-svg-code { position: relative; }
-.fw-svg-code-head { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+/* Slim toolbar attached to the top of the field: hint on the left, Upload button on the
+   right (same balance as the icon Custom tab), so the button is never stranded after a wide
+   empty band and stays visible even before any SVG exists. */
+.fw-svg-code-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.fw-svg-code-hint { color: #6b7280; font-size: 12px; line-height: 1.4; }
+.fw-svg-code-upload { flex: none; }
 .fw-svg-code-file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .fw-svg-code-input {
 	width: 100%;

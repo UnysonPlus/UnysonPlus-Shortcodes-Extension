@@ -6,7 +6,7 @@
 	// Backbone.Events object, so listenTo would make Backbone's stopListening()
 	// call fwEvents.off() when a column is removed — that throws
 	// (Object.keys(undefined)) and aborts the delete (deleted columns reappear,
-	// qtips stick, controls die). A plain registry never touches fwEvents.off.
+	// tooltips stick, controls die). A plain registry never touches fwEvents.off.
 	// Dead views (detached from the DOM) are pruned lazily.
 	var fwDeviceColumnViews = [];
 	fwe.on('fw:builder:device-preview', function () {

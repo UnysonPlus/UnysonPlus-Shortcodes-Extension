@@ -73,6 +73,67 @@ function sc_element_scope_class( $atts ) {
 }
 endif;
 
+if ( ! function_exists( 'sc_section_dynamic_css' ) ) :
+/**
+ * Per-instance Section styling that would otherwise be written as INLINE style="…" on the markup —
+ * the section's Min Height and Container Width — resolved to a scoped CSS rule targeting the element's
+ * `.u{hash}` scope class, so it rides the per-page dynamic CSS FILE (dynamic-css.php) instead of the
+ * HTML. Both the front-end view (to decide whether to add the scope class) and the CSS aggregator (to
+ * emit the rule) call this, so they stay byte-identical. Presets AND custom values both route here —
+ * nothing about section sizing lands inline anymore.
+ *
+ *   Min Height    → `.u{hash}{min-height:<preset-vh | custom value>}`
+ *   Container Width → `.u{hash} .fw-container{max-width:calc(<w> + 2*gutter)}`  (beats the grid's
+ *                     `body .fw-container` at 0,2,0 vs 0,1,1, the reason this used to need inline)
+ *
+ * @param array  $atts  section shortcode atts (expects min_height / container_width / unique_id)
+ * @param string $scope the element scope class (sc_element_scope_class), without the leading dot
+ * @return string CSS (no <style> tag), or '' when the section sets neither.
+ */
+function sc_section_dynamic_css( $atts, $scope ) {
+	$scope = trim( (string) $scope );
+	if ( $scope === '' || ! is_array( $atts ) ) { return ''; }
+	$css = '';
+
+	// --- Min Height: a FIXED-ENUM viewport preset (40/60/80/100vh) is a PREDEFINED utility class
+	// (`.section--minh-*` in the section stylesheet, added by the view) — NOT emitted here. Only a
+	// CUSTOM {value,unit} (an arbitrary height with no predefined class) routes to the per-page file. ---
+	$mh  = isset( $atts['min_height'] ) ? $atts['min_height'] : '';
+	$mhv = '';
+	if ( is_array( $mh ) && isset( $mh['preset'] ) && $mh['preset'] === 'custom' ) {
+		$uv = ( isset( $mh['custom']['custom_height'] ) && is_array( $mh['custom']['custom_height'] ) ) ? $mh['custom']['custom_height'] : array();
+		$n  = isset( $uv['value'] ) ? trim( (string) $uv['value'] ) : '';
+		$u  = isset( $uv['unit'] ) ? preg_replace( '/[^a-z%]/', '', (string) $uv['unit'] ) : 'px';
+		if ( $n !== '' && is_numeric( $n ) ) { $mhv = $n . $u; }
+	} elseif ( is_string( $mh ) && $mh !== '' && $mh !== 'auto' && ! preg_match( '/^(40|60|80|100)vh$/', $mh ) ) {
+		$mhv = trim( $mh ); // legacy plain-string CUSTOM value (a preset-vh string uses the class instead)
+	}
+	if ( $mhv !== '' && preg_match( '/^-?\d*\.?\d+(px|rem|em|vh|vw|svh|dvh|%)$/', $mhv ) ) {
+		$css .= '.' . $scope . '{min-height:' . $mhv . ';}';
+	}
+
+	// --- Container Width: only a CUSTOM (arbitrary) width routes here. Named LIBRARY presets are
+	// generated ONCE as reusable `.section--cw-{slug}` classes in presets-{hash}.css (css-tokens.php)
+	// and added to the section by the view — so they're not duplicated per-instance in every page file. ---
+	$cwv = isset( $atts['container_width'] ) ? $atts['container_width'] : '';
+	if ( is_array( $cwv ) && isset( $cwv['preset'] ) && $cwv['preset'] === 'custom' ) {
+		$cuv = ( isset( $cwv['custom']['custom_width'] ) && is_array( $cwv['custom']['custom_width'] ) ) ? $cwv['custom']['custom_width'] : array();
+		$cn  = isset( $cuv['value'] ) ? trim( (string) $cuv['value'] ) : '';
+		$cu  = isset( $cuv['unit'] ) ? preg_replace( '/[^a-z%]/', '', (string) $cuv['unit'] ) : 'px';
+		if ( $cn !== '' && is_numeric( $cn ) ) {
+			$max = $cn . $cu;
+			if ( preg_match( '/^\d*\.?\d+(px|rem|em|%|vw)$/', $max ) ) {
+				$css .= '.' . $scope . ' .fw-container{max-width:calc(' . $max . ' + 2 * var(--container-gutter, clamp(1.25rem, 3vw, 2rem)));margin-left:auto;margin-right:auto;}';
+			}
+		}
+	}
+
+	// NOTE: Columns Vertical Alignment (top/center/bottom/stretch) is a FIXED ENUM → predefined
+	// `.section--valign-*` utility classes in the section stylesheet (added by the view), not routed here.
+	return $css;
+}
+endif;
+
 /**
  * Build the inline CSS for the shared "Position" control (Advanced tab → element_position, a
  * multi-picker). Emits position + offsets + z-index ONLY for a positioned value; offsets and

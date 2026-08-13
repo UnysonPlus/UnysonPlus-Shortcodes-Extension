@@ -75,6 +75,10 @@ if ( ! empty( $__vattr ) ) {
 // --- Min height + content vertical alignment (hero-style full-screen sections). ---
 // Min Height — hybrid multi-picker: a viewport preset (e.g. "40vh") or a Custom
 // unit-input ({value, unit}). Tolerates the legacy plain-string value too.
+// A FIXED-ENUM viewport preset (40/60/80/100vh) renders as a PREDEFINED utility class
+// `.section--minh-{40|60|80|100}` (styles.css) — reusable, no per-instance CSS. Only a Custom
+// height (an arbitrary value with no predefined class) rides the per-page dynamic file
+// (sc_section_dynamic_css). $min_height is also resolved as a plain string to drive the valign logic.
 $min_height = '';
 $mh = isset( $atts['min_height'] ) ? $atts['min_height'] : '';
 if ( is_array( $mh ) ) {
@@ -85,10 +89,14 @@ if ( is_array( $mh ) ) {
 		$unit = isset( $uv['unit'] ) ? (string) $uv['unit'] : 'px';
 		if ( $num !== '' ) { $min_height = $num . $unit; }
 	} elseif ( $preset !== '' && $preset !== 'auto' ) {
-		$min_height = $preset; // e.g. "40vh" ('auto' means no min-height)
+		$min_height = $preset; // e.g. "80vh" ('auto' means no min-height)
 	}
 } elseif ( is_string( $mh ) && $mh !== 'auto' ) {
 	$min_height = trim( $mh ); // legacy: min_height saved as a plain string
+}
+// Predefined class for the fixed-enum viewport presets.
+if ( preg_match( '/^(40|60|80|100)vh$/', $min_height, $mh_pm ) ) {
+	$section_extra_classes .= ' section--minh-' . $mh_pm[1];
 }
 
 // Columns Vertical Alignment (id: column_valign; the now-renamed old key
@@ -97,19 +105,18 @@ if ( is_array( $mh ) ) {
 $valign = isset( $atts['column_valign'] )
 	? (string) $atts['column_valign']
 	: ( isset( $atts['content_valign'] ) ? (string) $atts['content_valign'] : '' );
-if ( $min_height !== '' ) {
-	$section_style .= 'min-height:' . esc_attr( $min_height ) . ';';
-}
+// NOTE: the actual `min-height` is emitted to the per-page dynamic CSS FILE (sc_section_dynamic_css
+// → dynamic-css.php), scoped to this section's `.u{hash}`, NOT as an inline style here. $min_height
+// is still resolved above only to drive the vertical-alignment logic below.
+// Columns Vertical Alignment is a FIXED ENUM → PREDEFINED `.section--valign-*` utility classes
+// (styles.css). Stretch grows the container/row to fill the section (needs a Min Height); center/bottom
+// make the section a flex column and position the content block; top/'' sit at the top naturally.
 if ( $valign === 'stretch' ) {
-	// Default / Stretched — the columns fill the section height. Only meaningful with a Min
-	// Height; the .section--valign-stretch rules grow the container + row to fill the section.
 	if ( $min_height !== '' ) { $section_extra_classes .= ' section--valign-stretch'; }
-} elseif ( $min_height !== '' || $valign === 'center' || $valign === 'bottom' ) {
-	// Top (also the fallback for a legacy/empty value) / Center / Bottom — position the
-	// content-height columns block within the taller section.
-	$valign_map = array( 'center' => 'center', 'bottom' => 'flex-end' );
-	$justify    = isset( $valign_map[ $valign ] ) ? $valign_map[ $valign ] : 'flex-start';
-	$section_style .= 'display:flex;flex-direction:column;justify-content:' . $justify . ';';
+} elseif ( $valign === 'center' ) {
+	$section_extra_classes .= ' section--valign-center';
+} elseif ( $valign === 'bottom' ) {
+	$section_extra_classes .= ' section--valign-bottom';
 }
 
 // Columns Horizontal Alignment (id: column_halign) — now a per-device value:
@@ -162,33 +169,17 @@ $container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] )
 	? 'fw-container-fluid'
 	: 'fw-container';
 
-// Container Width — constrain this section's content band to a narrower max-width than the
-// global Container Width. Multi-picker: a preset ('narrow'/'medium'/'wide') or 'custom'
-// (unit-input). 'inherit'/'auto' = no override. Applied inline (centered) on the container.
+// Container Width — a NAMED library preset (narrow / medium / wide / your own) renders as a reusable
+// `.section--cw-{slug}` class, generated ONCE in presets-{hash}.css by css-tokens.php (shared + cached).
+// Only a CUSTOM (arbitrary) width routes to the per-page dynamic file (sc_section_dynamic_css); `inherit`
+// uses the global Container Width. No inline style either way.
 $container_style = '';
 $cwv = isset( $atts['container_width'] ) ? $atts['container_width'] : '';
 if ( is_array( $cwv ) ) {
 	$cw_preset = isset( $cwv['preset'] ) ? (string) $cwv['preset'] : 'inherit';
-	// Named-width map from the Container Widths preset library (Components -> Section Styles -> Container
-	// Widths); defaults reproduce narrow/medium/wide so pre-existing sections resolve unchanged.
-	$cw_map    = function_exists( 'unysonplus_container_width_map' ) ? unysonplus_container_width_map() : array( 'narrow' => '768px', 'medium' => '896px', 'wide' => '1024px' );
-	$cw_max    = '';
-	if ( $cw_preset === 'custom' ) {
-		$cuv  = ( isset( $cwv['custom']['custom_width'] ) && is_array( $cwv['custom']['custom_width'] ) ) ? $cwv['custom']['custom_width'] : array();
-		$cnum = isset( $cuv['value'] ) ? trim( (string) $cuv['value'] ) : '';
-		$cun  = isset( $cuv['unit'] ) ? preg_replace( '/[^a-z%]/', '', (string) $cuv['unit'] ) : 'px';
-		if ( $cnum !== '' && is_numeric( $cnum ) ) { $cw_max = $cnum . $cun; }
-	} elseif ( isset( $cw_map[ $cw_preset ] ) ) {
-		$cw_max = $cw_map[ $cw_preset ];
-	}
-	if ( $cw_max !== '' ) {
-		// Content-width model (matches the global Container Width decision): the value the user
-		// sets IS the content width, with the gutter living OUTSIDE it. Because .fw-container
-		// carries the gutter as border-box padding, we add 2*gutter to the max-width so the
-		// content ends up exactly $cw_max. This reproduces a source's `max-w-* px-*` (gutter
-		// inside a capped box) identically at every viewport — content caps at the value, and
-		// the gutter only bites once the viewport is narrower than value + 2*gutter.
-		$container_style = 'max-width:calc(' . $cw_max . ' + 2 * var(--container-gutter, clamp(1.25rem, 3vw, 2rem)));margin-left:auto;margin-right:auto;';
+	if ( $cw_preset !== '' && $cw_preset !== 'inherit' && $cw_preset !== 'custom' ) {
+		$cw_slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', $cw_preset );
+		if ( $cw_slug !== '' ) { $section_extra_classes .= ' section--cw-' . $cw_slug; }
 	}
 }
 
@@ -199,6 +190,9 @@ if ( is_array( $cwv ) ) {
 $has_inner_containers = ! empty( $atts['has_inner_containers'] );
 
 // --- Shape Dividers (top / bottom) — an SVG-shaped edge at the section's top and/or bottom. ---
+// Geometry now comes from the Shape Dividers preset library (unysonplus_shape_divider_path);
+// this hardcoded map is only the fallback for when that resolver is unavailable (keeps the
+// built-in four working even without the shortcodes preset library loaded).
 $divider_paths = array(
 	'tilt'     => 'M1200 120L0 16.48 0 0 1200 0 1200 120z',
 	'curve'    => 'M600 112.77C268.63 112.77 0 65.52 0 7.23V120h1200V7.23c0 58.29-268.63 105.54-600 105.54z',
@@ -220,7 +214,19 @@ $divider_color = function ( $cval ) {
 $divider_html = function ( $dv, $placement ) use ( $divider_paths, $divider_color ) {
 	if ( ! is_array( $dv ) ) { return ''; }
 	$shape = isset( $dv['shape'] ) ? (string) $dv['shape'] : 'none';
-	if ( ! isset( $divider_paths[ $shape ] ) ) { return ''; }
+	if ( $shape === '' || $shape === 'none' ) { return ''; }
+	// Resolve the shape's FULL markup from the preset library (every <g>/<path>, so multi-layer
+	// + opacity dividers survive; fills are already normalised to currentColor). User-added
+	// shapes included. Fall back to the built-in single-path map if the resolver isn't available.
+	if ( function_exists( 'unysonplus_shape_divider_markup' ) ) {
+		$geo     = unysonplus_shape_divider_markup( $shape );
+		$inner   = $geo['inner'];
+		$viewbox = $geo['viewBox'];
+	} else {
+		$inner   = isset( $divider_paths[ $shape ] ) ? '<path d="' . esc_attr( $divider_paths[ $shape ] ) . '" fill="currentColor"/>' : '';
+		$viewbox = '0 0 1200 120';
+	}
+	if ( trim( $inner ) === '' ) { return ''; }
 	$sub   = ( isset( $dv[ $shape ] ) && is_array( $dv[ $shape ] ) ) ? $dv[ $shape ] : array();
 	$color = $divider_color( isset( $sub['color'] ) ? $sub['color'] : array() );
 	$h     = '100px';
@@ -230,11 +236,13 @@ $divider_html = function ( $dv, $placement ) use ( $divider_paths, $divider_colo
 		if ( $num !== '' && is_numeric( $num ) ) { $h = $num . $unit; }
 	}
 	$flip = ( isset( $sub['flip'] ) && $sub['flip'] === 'yes' );
-	// Top divider = the shape rotated 180° so it reads at the top edge; flip mirrors it.
-	$tf    = ( $placement === 'top' ? 'rotate(180deg)' : '' ) . ( $flip ? ' scaleX(-1)' : '' );
-	$style = 'height:' . $h . ';' . ( trim( $tf ) !== '' ? 'transform:' . trim( $tf ) . ';' : '' );
+	// Shapes are stored top-oriented (shapedividers.com standard); a BOTTOM divider rotates 180°
+	// so the solid edge sits at the section's bottom. Flip mirrors it horizontally.
+	$tf    = ( $placement === 'bottom' ? 'rotate(180deg)' : '' ) . ( $flip ? ' scaleX(-1)' : '' );
+	// Colour drives every layer via `color` (each path fills with currentColor); opacities layer on top.
+	$style = 'height:' . $h . ';color:' . $color . ';' . ( trim( $tf ) !== '' ? 'transform:' . trim( $tf ) . ';' : '' );
 	return '<div class="sc-shape-divider sc-shape-divider--' . esc_attr( $placement ) . '" style="' . esc_attr( $style ) . '" aria-hidden="true">'
-		. '<svg viewBox="0 0 1200 120" preserveAspectRatio="none" style="fill:' . esc_attr( $color ) . '"><path d="' . esc_attr( $divider_paths[ $shape ] ) . '"></path></svg>'
+		. '<svg viewBox="' . esc_attr( $viewbox ) . '" preserveAspectRatio="none" fill="currentColor">' . $inner . '</svg>'
 		. '</div>';
 };
 $divider_top_html    = $divider_html( isset( $atts['divider_top'] ) ? $atts['divider_top'] : array(), 'top' );
@@ -257,6 +265,18 @@ if ( $pat_id !== '' && function_exists( 'unysonplus_pattern_render_layer' ) ) {
 }
 
 $attr = sc_build_wrapper_attr( $atts );
+
+// Min Height / Container Width / vertical-align flex now ride the per-page dynamic CSS file
+// (sc_section_dynamic_css → dynamic-css.php) scoped to this section's `.u{hash}`. Ensure that scope
+// class is on the wrapper so those rules have a target even when the section carries no user Custom
+// CSS (sc_build_wrapper_attr only adds it when custom_css is set). De-duped against the existing class.
+if ( function_exists( 'sc_element_scope_class' ) && function_exists( 'sc_section_dynamic_css' ) ) {
+	$sec_scope = sc_element_scope_class( $atts );
+	if ( $sec_scope !== '' && sc_section_dynamic_css( $atts, $sec_scope ) !== ''
+		&& strpos( ' ' . ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' ', ' ' . $sec_scope . ' ' ) === false ) {
+		$section_extra_classes .= ' ' . $sec_scope;
+	}
+}
 
 if ( ! empty( $section_style ) ) {
 	$existing_style = ! empty( $attr['style'] ) ? rtrim( $attr['style'], '; ' ) . '; ' : '';

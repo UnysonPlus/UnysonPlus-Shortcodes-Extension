@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version']     = '1.13.10';
+$manifest['version']     = '1.13.29';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,17 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.13.17 - Shape Dividers are now a reusable preset library. Theme Settings -> Components ->
+ *          Shape Dividers is a new addable-box (each shape authored with the `svg-code` field —
+ *          paste an <svg> or upload a .svg read client-side) that seeds the four built-ins
+ *          (Tilt / Curve / Wave / Triangle) and lets users add their own SVG edges. The Section's
+ *          Top / Bottom Shape Divider are now visual popover image-pickers whose thumbnails are
+ *          oriented per placement (the Top picker previews the shape rotated 180 degrees, exactly
+ *          as it renders), with Color / Height / Flip set per section in the same panel. Existing
+ *          sections keep their saved shape — the built-ins reuse the old tilt/curve/wave/triangle
+ *          slugs, so the render resolves unchanged. Geometry lives in the preset; colour stays
+ *          per-instance (one shape serves many sections in different colours).
+ *
  * 1.12.94 - Tabs shortcode — the remaining robustness follow-ups. Deep-link (open a tab from the URL
  *          #hash and update the hash as tabs switch, so a tab is shareable/bookmarkable) and Remember
  *          Last Tab (localStorage) — both use the element's CSS ID for stable ids that survive reloads.

@@ -3267,8 +3267,15 @@ endif;
  * elements) with no special uploader.
  * -------------------------------------------------------------------------- */
 if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
+	// A trusted, already-sanitised SVG import (e.g. the Site Converter sideloading a source's icon SVGs)
+	// may run without an admin user. `fw_sc_svg_upload_allowed` lets such a flow lift ONLY the admin gate
+	// for the duration of its own call; the sanitiser below still runs, so safety is unchanged.
+	function sc_svg_upload_allowed() {
+		return current_user_can( 'manage_options' ) || (bool) apply_filters( 'fw_sc_svg_upload_allowed', false );
+	}
+
 	function sc_svg_upload_mimes( $mimes ) {
-		if ( current_user_can( 'manage_options' ) ) {
+		if ( sc_svg_upload_allowed() ) {
 			$mimes['svg'] = 'image/svg+xml';
 		}
 		return $mimes;
@@ -3276,7 +3283,7 @@ if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
 	add_filter( 'upload_mimes', 'sc_svg_upload_mimes' );
 
 	function sc_svg_check_filetype( $data, $file, $filename, $mimes ) {
-		if ( preg_match( '/\.svg$/i', (string) $filename ) && current_user_can( 'manage_options' ) ) {
+		if ( preg_match( '/\.svg$/i', (string) $filename ) && sc_svg_upload_allowed() ) {
 			$data['ext']  = 'svg';
 			$data['type'] = 'image/svg+xml';
 		}
@@ -3288,7 +3295,7 @@ if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
 		if ( empty( $file['name'] ) || ! preg_match( '/\.svg$/i', (string) $file['name'] ) ) {
 			return $file;
 		}
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! sc_svg_upload_allowed() ) {
 			$file['error'] = __( 'SVG uploads are limited to administrators.', 'fw' );
 			return $file;
 		}

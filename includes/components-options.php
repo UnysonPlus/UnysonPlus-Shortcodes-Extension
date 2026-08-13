@@ -70,6 +70,7 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 			'tab_borders'    => $tab( __( 'Box Presets', 'fw' ), upw_ts_get_options( 'components-box', array( 'color_choices' => $color_choices ) ) ),
 			'tab_tables'     => $tab( __( 'Tables', 'fw' ), upw_ts_get_options( 'components-table', array( 'color_choices' => $color_choices ) ) ),
 			'tab_patterns'   => $tab( __( 'Background Patterns', 'fw' ), upw_ts_get_options( 'components-patterns' ) ),
+			'tab_shape_dividers' => $tab( __( 'Shape Dividers', 'fw' ), upw_ts_get_options( 'components-shape-dividers' ) ),
 			'tab_image_styles' => $tab( __( 'Image Styles', 'fw' ), upw_ts_get_options( 'components-image-styles', array( 'color_choices' => $color_choices ) ) ),
 			'tab_sections'   => $tab( __( 'Section Styles', 'fw' ), upw_ts_get_options( 'components-section-styles', array( 'color_choices' => $color_choices ) ) ),
 			'tab_element_designs' => $tab( __( 'Element Designs', 'fw' ), upw_ts_get_options( 'components-element-designs' ) ),

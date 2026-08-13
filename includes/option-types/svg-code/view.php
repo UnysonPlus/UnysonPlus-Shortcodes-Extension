@@ -18,6 +18,7 @@ $ph     = ! empty( $option['placeholder'] ) ? $option['placeholder'] : '<svg vie
 ?>
 <div class="fw-svg-code">
 	<div class="fw-svg-code-head">
+		<span class="fw-svg-code-hint"><?php echo esc_html( __( 'Paste inline <svg> or upload a .svg file', 'fw' ) ); ?></span>
 		<button type="button" class="button button-secondary fw-svg-code-upload"><?php echo esc_html( __( 'Upload SVG file', 'fw' ) ); ?></button>
 		<input type="file" accept=".svg,image/svg+xml" class="fw-svg-code-file" tabindex="-1" />
 	</div>

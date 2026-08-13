@@ -124,6 +124,24 @@
 	flex: 1 1 auto;
 }
 
+/* Columns Vertical Alignment = Center / Bottom. The section becomes a flex column and the content
+   block (.fw-container) is positioned within a taller (Min Height) section. Harmless without a
+   Min Height. 'Top' needs no rule (content sits at the top of the block naturally). */
+.section--valign-center,
+.section--valign-bottom {
+	display: flex;
+	flex-direction: column;
+}
+.section--valign-center { justify-content: center; }
+.section--valign-bottom { justify-content: flex-end; }
+
+/* Min Height = fixed-enum viewport presets (Layout → Min Height). PREDEFINED utility classes so a
+   preset never needs a per-instance rule; a Custom height routes to the per-page dynamic file instead. */
+.section--minh-40  { min-height: 40vh; }
+.section--minh-60  { min-height: 60vh; }
+.section--minh-80  { min-height: 80vh; }
+.section--minh-100 { min-height: 100vh; }
+
 /* Column Order = reverse. Where columns sit side by side, row-reverse swaps them;
    where they stack full-width on phones, column-reverse flips the stack (e.g. image
    above text). Three levels: all screens / tablet & mobile (<992px) / mobile (<768px). */
