@@ -19,6 +19,10 @@
 		if (el.__bacReady) { return; }
 		el.__bacReady = true;
 
+		// The window this element actually lives in — differs from the script's
+		// own `window` when the instance is inside the block editor's canvas iframe.
+		var view = (el.ownerDocument && el.ownerDocument.defaultView) || window;
+
 		var media = el.querySelector('.fw-bac__media') || el;
 		var vertical = el.getAttribute('data-orientation') === 'vertical';
 		var mode = el.getAttribute('data-interaction') || 'drag';
@@ -82,17 +86,22 @@
 				moveFromEvent(e);
 				e.preventDefault();
 			});
-			window.addEventListener('pointermove', function (e) { if (dragging) { moveFromEvent(e); } });
-			window.addEventListener('pointerup', function () {
+			// Bind the drag-tracking listeners to the element's OWN window, not the
+			// script's. In the block editor the instance lives inside the canvas
+			// iframe, and pointer events there never reach the outer window — so a
+			// `window.addEventListener` here would leave the handle undraggable.
+			// On the front end view === window, so this is a no-op.
+			view.addEventListener('pointermove', function (e) { if (dragging) { moveFromEvent(e); } });
+			view.addEventListener('pointerup', function () {
 				if (!dragging) { return; }
 				dragging = false;
 				el.classList.remove('is-dragging');
 			});
 			// Touch fallback for browsers without Pointer Events.
-			if (!('PointerEvent' in window)) {
+			if (!('PointerEvent' in view)) {
 				surface.addEventListener('touchstart', function (e) { dragging = true; markInteracted(); el.classList.add('is-dragging'); moveFromEvent(e); }, { passive: true });
-				window.addEventListener('touchmove', function (e) { if (dragging) { moveFromEvent(e); } }, { passive: true });
-				window.addEventListener('touchend', function () { dragging = false; el.classList.remove('is-dragging'); });
+				view.addEventListener('touchmove', function (e) { if (dragging) { moveFromEvent(e); } }, { passive: true });
+				view.addEventListener('touchend', function () { dragging = false; el.classList.remove('is-dragging'); });
 			}
 		}
 
@@ -231,10 +240,18 @@
 		host.addEventListener('touchend', armOff);
 	}
 
-	function init() {
-		var nodes = document.querySelectorAll('[data-bac]');
+	/**
+	 * @param {Document|Element} [root] Where to look for instances. Defaults to
+	 *        the current document. The block editor passes the CANVAS IFRAME's
+	 *        document: from WordPress 6.3 the editor canvas is a real iframe, so
+	 *        instances rendered there are invisible to this script's own
+	 *        `document`. Front-end behaviour is unchanged.
+	 */
+	function init(root) {
+		var scope = (root && typeof root.querySelectorAll === 'function') ? root : document;
+		var nodes = scope.querySelectorAll('[data-bac]');
 		Array.prototype.forEach.call(nodes, initOne);
-		var spots = document.querySelectorAll('[data-bac-spot]');
+		var spots = scope.querySelectorAll('[data-bac-spot]');
 		Array.prototype.forEach.call(spots, initSpot);
 	}
 
@@ -243,4 +260,16 @@
 	} else {
 		init();
 	}
+
+	/**
+	 * Re-init hook for surfaces that inject markup AFTER page load — currently the
+	 * Gutenberg block editor, whose ServerSideRender preview arrives over REST long
+	 * after DOMContentLoaded has fired.
+	 *
+	 * init() is idempotent (initOne/initSpot bail on an already-initialised node),
+	 * so calling this repeatedly is safe and cheap. Front-end behaviour is
+	 * unchanged: nothing calls the registry on a normal page load.
+	 */
+	window.fwShortcodeInit = window.fwShortcodeInit || [];
+	window.fwShortcodeInit.push(init);
 })();
