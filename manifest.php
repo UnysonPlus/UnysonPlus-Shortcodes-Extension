@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.13.35';
+$manifest['version'] = '1.13.36';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 

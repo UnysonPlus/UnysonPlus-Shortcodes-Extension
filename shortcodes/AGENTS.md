@@ -366,6 +366,31 @@ If steps 1–8 all pass, the shortcode is wired correctly.
    per-shortcode `AGENTS.md`. AI-generated page-builder JSON (the export /
    import format) must produce `atts` that match this schema. Stale docs →
    AI generates invalid atts → server rejects on import.
+6. **Don't add a big `multi-picker` without `lazy_choices`** — every options
+   modal renders EVERY tab up front, so a picker with many choices makes the
+   whole element expensive to open, for every user, forever. A `multi-picker`
+   renders each choice's sub-options; with 40+ choices that alone can be
+   hundreds of KB. Set `'lazy_choices' => true` on any picker with roughly
+   **10+ choices** that carry sub-options — unselected choices then ship their
+   schema and render on demand. It is safe because `_get_value_from_input()`
+   saves only the selected choice; the full argument and the "never defer a
+   whole field" caveat are in
+   `framework/includes/option-types/AUTHORING.md` →
+   *"Don't render what the save path won't read"*.
+
+   **Measure before you ship a new element.** A healthy modal is **~2 MB /
+   ~130 ms**:
+
+   ```php
+   $sc = fw_ext( 'shortcodes' )->get_shortcode( '<your_tag>' );
+   $v  = fw_get_variables_from_file( $sc->locate_path( '/options.php' ), array( 'options' => array() ) );
+   $t = microtime( true );
+   $html = fw()->backend->render_options( $v['options'], array() );
+   printf( "%.1f ms  %.1f KB\n", ( microtime( true ) - $t ) * 1000, strlen( $html ) / 1024 );
+   ```
+
+   Run per-tab to find the offender. This is how the Animations tab was found
+   at 6,261 KB / 840 ms — and cut to 1,679 KB / 60 ms.
 
 ## Reference implementation
 

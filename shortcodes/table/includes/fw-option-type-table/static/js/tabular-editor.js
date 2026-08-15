@@ -777,11 +777,67 @@
 
 	// --- purpose toggle (tabular <-> pricing) ----------------------------
 
+	/**
+	 * Fetch the legacy pricing editor, which view.php defers unless "pricing" is
+	 * the active purpose (it is ~11 MB of markup that the save path ignores for a
+	 * tabular table — see the note in view.php).
+	 *
+	 * Registers on fw.lazyChoices so the options modal waits for this before
+	 * serializing: switching to pricing and hitting Save immediately would
+	 * otherwise submit a form with no pricing inputs, and the legacy parser would
+	 * read an empty table.
+	 *
+	 * @param {jQuery} $pane The .fw-table-editor-pricing element.
+	 */
+	function loadPricingEditor( $pane ) {
+		if ( ! $pane.length || ! $pane.attr( 'data-pricing-lazy' ) ) { return; }
+
+		// Claim it before the request so a double-toggle cannot fetch twice.
+		$pane.removeAttr( 'data-pricing-lazy' ).addClass( 'is-loading' );
+
+		var gate = ( window.fw && fw.lazyChoices ) || null;
+
+		if ( gate ) { gate.pending++; }
+
+		$.ajax( {
+			url: ajaxurl,
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				action: 'fw_table_render_pricing_editor',
+				_nonce: ( typeof _fw_backend_options_localized !== 'undefined'
+					? _fw_backend_options_localized.nonce : '' ),
+				attr_id: $pane.attr( 'data-attr-id' ),
+				attr_name: $pane.attr( 'data-attr-name' ),
+				value: $pane.attr( 'data-value' ) || '{}'
+			}
+		} ).done( function ( response ) {
+			if ( ! response || ! response.success ) { return; }
+
+			$pane.html( response.data.html );
+
+			fwEvents.trigger( 'fw:options:init', { $elements: $pane } );
+		} ).fail( function ( xhr, status, error ) {
+			// Restore the marker so a later switch can retry rather than leaving
+			// the pane permanently empty.
+			$pane.attr( 'data-pricing-lazy', '1' );
+			window.console && console.error( '[table] pricing editor render failed', status, error );
+		} ).always( function () {
+			if ( gate ) { gate.pending--; }
+			$pane.removeClass( 'is-loading' );
+		} );
+	}
+
 	function applyPurpose( $root ) {
 		var p = $root.find( '.fw-table-purpose-bar select' ).val() || 'tabular';
 		$root.attr( 'data-table-purpose', p );
 		$root.children( '.fw-table-editor-tabular' ).toggleClass( 'fw-table-editor-active', p !== 'pricing' );
-		$root.children( '.fw-table-editor-pricing' ).toggleClass( 'fw-table-editor-active', p === 'pricing' );
+
+		var $pricing = $root.children( '.fw-table-editor-pricing' );
+
+		$pricing.toggleClass( 'fw-table-editor-active', p === 'pricing' );
+
+		if ( p === 'pricing' ) { loadPricingEditor( $pricing ); }
 	}
 
 	$( document ).on( 'change', '.fw-option-type-table .fw-table-purpose-bar select', function () {

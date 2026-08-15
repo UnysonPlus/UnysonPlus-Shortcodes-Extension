@@ -53,12 +53,38 @@ $declared_path = fw_ext( 'shortcodes' )->get_shortcode( 'table' )->get_declared_
 		) ); ?>
 	</div>
 
-	<?php /* Legacy pricing editor */ ?>
-	<div class="fw-table-editor fw-table-editor-pricing<?php echo 'pricing' === $purpose ? ' fw-table-editor-active' : '' ?>">
-		<?php echo fw_render_view( $declared_path . 'pricing-editor.php', array(
-			'option' => $option,
-			'data'   => $data,
-		) ); ?>
+	<?php
+	/**
+	 * Legacy pricing editor — rendered ONLY when it is the active purpose.
+	 *
+	 * It renders a full option set per cell, per row type: ~11 MB for a default
+	 * table, which made this element 8x heavier than any other. For a tabular
+	 * table that markup is not merely hidden, it is unreadable — the save path
+	 * (FW_Option_Type_Table::_get_value_from_input) returns get_value_from_json()
+	 * unless the purpose is "pricing", so those inputs are never collected.
+	 *
+	 * When it is not the active purpose we emit an empty shell instead. Switching
+	 * the purpose select fetches it (tabular-editor.js → the
+	 * fw_table_render_pricing_editor action), which rebuilds the whole schema
+	 * server-side — so nothing but the option's identity and current value has to
+	 * be carried in the page.
+	 */
+	$pricing_active = 'pricing' === $purpose;
+	?>
+	<div class="fw-table-editor fw-table-editor-pricing<?php echo $pricing_active ? ' fw-table-editor-active' : '' ?>"
+		<?php if ( ! $pricing_active ) : ?>
+			data-pricing-lazy="1"
+			data-attr-id="<?php echo esc_attr( $option['attr']['id'] ) ?>"
+			data-attr-name="<?php echo esc_attr( $option['attr']['name'] ) ?>"
+			data-value="<?php echo esc_attr( wp_json_encode( $data['value'] ) ) ?>"
+		<?php endif; ?>
+	>
+		<?php if ( $pricing_active ) {
+			echo fw_render_view( $declared_path . 'pricing-editor.php', array(
+				'option' => $option,
+				'data'   => $data,
+			) );
+		} ?>
 	</div>
 
 </div>

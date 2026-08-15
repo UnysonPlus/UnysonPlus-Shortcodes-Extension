@@ -178,7 +178,13 @@ class FW_Option_Type_Table extends FW_Option_Type
 		) );
 	}
 
-	protected function replace_with_defaults( &$option ) {
+	/**
+	 * Rebuild header/row/columns/content options from this type's defaults.
+	 *
+	 * Public so the on-demand pricing-editor renderer can produce markup identical
+	 * to the eager path (widening visibility only — nothing else changed).
+	 */
+	public function replace_with_defaults( &$option ) {
 		$defaults                                           = $this->_get_defaults();
 		$option['header_options']                           = $defaults['header_options'];
 		$option['row_options']                              = $defaults['row_options'];
@@ -657,6 +663,83 @@ class FW_Option_Type_Table extends FW_Option_Type
 		return 'full';
 	}
 
+	/**
+	 * Render the legacy pricing editor on demand.
+	 *
+	 * The pricing editor renders a full option set per cell, per row type — ~11 MB
+	 * for a default table. It used to render on EVERY table modal even though the
+	 * default purpose is "tabular", where it is hidden by CSS and, more to the
+	 * point, ignored entirely by the save path (_get_value_from_input() returns
+	 * get_value_from_json() unless the purpose is "pricing"). So it was ~11 MB of
+	 * markup that could never be read.
+	 *
+	 * view.php now defers it, and this renders it when the user actually switches
+	 * to the pricing purpose. Nothing extra is shipped to make that possible: the
+	 * whole schema (content_options / row_options / columns_options, ~600 KB) is
+	 * rebuilt here by replace_with_defaults(), because the element only ever
+	 * declares type/label/desc/help on its table option. Only the id, the input
+	 * name and the current value come from the client.
+	 *
+	 * @internal
+	 */
+	public static function _action_ajax_render_pricing_editor() {
+		check_ajax_referer( 'fw_backend_options', '_nonce' );
+
+		if ( ! current_user_can( apply_filters( 'fw_backend_options_ajax_capability', 'edit_posts' ) ) ) {
+			wp_send_json_error( array( 'message' => __( 'You are not allowed to do this.', 'fw' ) ), 403 );
+		}
+
+		$shortcodes = fw_ext( 'shortcodes' );
+		$shortcode  = $shortcodes ? $shortcodes->get_shortcode( 'table' ) : null;
+
+		if ( ! $shortcode ) {
+			wp_send_json_error( array( 'message' => 'Table shortcode unavailable' ) );
+		}
+
+		$attr_id   = isset( $_POST['attr_id'] ) ? sanitize_text_field( wp_unslash( $_POST['attr_id'] ) ) : '';
+		$attr_name = isset( $_POST['attr_name'] ) ? wp_unslash( $_POST['attr_name'] ) : '';
+
+		if ( '' === $attr_id || '' === $attr_name ) {
+			wp_send_json_error( array( 'message' => 'Missing option identity' ) );
+		}
+
+		$value = isset( $_POST['value'] ) ? json_decode( wp_unslash( $_POST['value'] ), true ) : array();
+		$value = is_array( $value ) ? $value : array();
+
+		/** @var FW_Option_Type_Table $type */
+		$type = fw()->backend->option_type( 'table' );
+
+		$option = array(
+			'type' => 'table',
+			'attr' => array( 'id' => $attr_id, 'name' => $attr_name ),
+		);
+
+		$option = array_merge( $type->get_defaults(), $option );
+
+		// Rebuilds header/row/columns/content options from the type's defaults —
+		// the same call _render() makes, so the markup is identical to the eager path.
+		$type->replace_with_defaults( $option );
+
+		if ( empty( $value ) ) {
+			$value = $option['value'];
+		}
+
+		$html = fw_render_view(
+			$shortcode->get_declared_path() . '/includes/fw-option-type-table/views/pricing-editor.php',
+			array(
+				'option' => $option,
+				'data'   => array( 'value' => $value ),
+			)
+		);
+
+		wp_send_json_success( array( 'html' => $html ) );
+	}
+
 }
 
 FW_Option_Type::register( 'FW_Option_Type_Table' );
+
+add_action(
+	'wp_ajax_fw_table_render_pricing_editor',
+	array( 'FW_Option_Type_Table', '_action_ajax_render_pricing_editor' )
+);
