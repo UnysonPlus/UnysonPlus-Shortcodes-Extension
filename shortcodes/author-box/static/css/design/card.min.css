@@ -1,0 +1,1 @@
+.fw-ab--design-banner,.fw-ab--design-card{background:var(--ab-card-bg);border-radius:.8rem;box-shadow:0 6px 22px rgba(0,0,0,.07);padding:1.5rem}@media (max-width:576px){.fw-ab--design-banner,.fw-ab--design-card{align-items:center;flex-direction:column;text-align:center}.fw-ab--design-banner .fw-ab__footer,.fw-ab--design-card .fw-ab__footer{justify-content:center}}

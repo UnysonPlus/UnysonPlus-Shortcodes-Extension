@@ -1,0 +1,1 @@
+.fw-bq--design-markquote{background:var(--bq-bg);padding:2.5rem 0 .5rem 1rem;position:relative}.fw-bq--design-markquote .fw-bq__mark{color:var(--bq-accent);font-size:6rem;left:-.2rem;line-height:1;opacity:.18;position:absolute;top:-.2rem;z-index:0}.fw-bq--design-markquote .fw-bq__quote{position:relative;z-index:1}.fw-bq--design-markquote .fw-bq__text{font-size:1.45rem}

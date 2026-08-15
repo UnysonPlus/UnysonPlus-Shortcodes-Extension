@@ -10,40 +10,56 @@ $options = [
 			'group_content' => [
 				'type'    => 'group',
 				'options' => [
+					// Source is a multi-picker: the "Profiles" list is only revealed
+					// when the picker is set to "Manual list" (Theme Settings needs
+					// no per-element config). Value nests as source/mode (the picker)
+					// and source/manual/profiles (the revealed list).
 					'source' => [
-						'label'   => __( 'Source', 'fw' ),
-						'type'    => 'select',
-						'value'   => 'theme_settings',
+						'type'   => 'multi-picker',
+						'label'  => false,
+						'desc'   => false,
+						'picker' => [
+							'mode' => [
+								'label'   => __( 'Source', 'fw' ),
+								'type'    => 'select',
+								'value'   => 'theme_settings',
+								'choices' => [
+									'theme_settings' => __( 'Theme Settings (Social Profiles)', 'fw' ),
+									'manual'         => __( 'Manual list', 'fw' ),
+								],
+								'desc'    => __( 'Theme Settings reuses the profiles configured in the theme. Manual lets you define links here.', 'fw' ),
+							],
+						],
 						'choices' => [
-							'theme_settings' => __( 'Theme Settings (Social Profiles)', 'fw' ),
-							'manual'         => __( 'Manual list', 'fw' ),
+							'theme_settings' => [],
+							'manual'         => [
+								'profiles' => [
+									'label'       => __( 'Profiles', 'fw' ),
+									'type'        => 'addable-box',
+									'value'       => [],
+									'box-options' => [
+										'icon' => [
+											'label'        => __( 'Icon', 'fw' ),
+											'type'         => 'icon',
+											'preview_size' => 'small',
+											'modal_size'   => 'medium',
+										],
+										'link' => [
+											'label' => __( 'URL', 'fw' ),
+											'type'  => 'text',
+											'value' => '',
+										],
+										'label' => [
+											'label' => __( 'Accessible Label', 'fw' ),
+											'type'  => 'text',
+											'value' => '',
+											'desc'  => __( 'Screen-reader text, e.g. "Facebook".', 'fw' ),
+										],
+									],
+								],
+							],
 						],
-						'desc'    => __( 'Theme Settings reuses the profiles configured in the theme. Manual lets you define links here.', 'fw' ),
-					],
-					'profiles' => [
-						'label'       => __( 'Profiles', 'fw' ),
-						'type'        => 'addable-box',
-						'value'       => [],
-						'desc'        => __( 'Used only when Source is "Manual list".', 'fw' ),
-						'box-options' => [
-							'icon' => [
-								'label'        => __( 'Icon', 'fw' ),
-								'type'         => 'icon',
-								'preview_size' => 'small',
-								'modal_size'   => 'medium',
-							],
-							'link' => [
-								'label' => __( 'URL', 'fw' ),
-								'type'  => 'text',
-								'value' => '',
-							],
-							'label' => [
-								'label' => __( 'Accessible Label', 'fw' ),
-								'type'  => 'text',
-								'value' => '',
-								'desc'  => __( 'Screen-reader text, e.g. "Facebook".', 'fw' ),
-							],
-						],
+						'show_borders' => false,
 					],
 					'size' => [
 						'label'   => __( 'Icon Size', 'fw' ),

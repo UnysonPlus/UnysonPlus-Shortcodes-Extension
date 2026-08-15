@@ -65,7 +65,7 @@
 
 		// Filter as you type.
 		$search.on('input', function () {
-			var q = $.trim(this.value).toLowerCase();
+			var q = ( this.value || '' ).trim().toLowerCase();
 			$palette.find('.upw-easing-tile').each(function () {
 				this.style.display = (!q || this.getAttribute('data-search').indexOf(q) > -1) ? '' : 'none';
 			});

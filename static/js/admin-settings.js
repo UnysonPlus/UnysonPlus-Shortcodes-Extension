@@ -131,7 +131,7 @@
 	}
 
 	function installGithub( confirmReplace ) {
-		var url = $.trim( $( '#fw-sc-github' ).val() );
+		var url = ( $( '#fw-sc-github' ).val() || '' ).trim();
 		if ( ! url ) {
 			notify( i18n.enterUrl, true );
 			return;

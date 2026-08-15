@@ -1,0 +1,1 @@
+.fw-fl--design-badge .fw-fl__marker--icon{background:color-mix(in srgb,var(--fl-marker) 14%,#fff);border-radius:.55rem;height:2.2em;width:2.2em}@supports not (background:color-mix(in srgb,red 10%,white)){.fw-fl--design-badge .fw-fl__marker--icon{background:rgba(74,144,217,.12)}}.fw-fl--design-badge .fw-fl__item{align-items:center}

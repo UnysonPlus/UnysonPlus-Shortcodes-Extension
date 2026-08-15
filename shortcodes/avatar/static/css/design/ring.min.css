@@ -1,0 +1,1 @@
+.fw-avatar-sc.fw-avatar--ring .fw-avatar{box-shadow:0 0 0 max(2px,calc(var(--av-size)*.05)) #fff,0 0 0 max(4px,calc(var(--av-size)*.1)) var(--av-ring)}.fw-avatar-sc.fw-avatar--ring{--av-ring:var(--color-primary,#4a90d9)}

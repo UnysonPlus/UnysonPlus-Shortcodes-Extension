@@ -1,0 +1,1 @@
+.fw-hl{--hl-text:inherit;--hl-accent:#ffe066;--hl-accent2:var(--color-primary,#4a90d9);color:var(--hl-text);margin:0}.fw-hl__empty{color:#6c757d;font-style:italic}@media (prefers-reduced-motion:reduce){.fw-hl__text{transition:none}}.fw-hl__prefix,.fw-hl__suffix{color:var(--hl-text)}

@@ -3243,14 +3243,90 @@ if ( ! function_exists( 'sc_icon_svg_library_markup' ) ) :
 	 * Filterable so extra libraries can be provided. Returns '' if unknown.
 	 */
 	function sc_icon_svg_library_markup( $id ) {
+		$id     = (string) $id;
 		$markup = '';
+
 		if ( function_exists( 'fw_icon_svg_pack_markup' ) ) {
-			$markup = fw_icon_svg_pack_markup( (string) $id );
-		} elseif ( strpos( (string) $id, 'lucide/' ) === 0 && function_exists( 'fw_icon_lucide_markup' ) ) {
+			$markup = fw_icon_svg_pack_markup( $id );
+		} elseif ( strpos( $id, 'lucide/' ) === 0 && function_exists( 'fw_icon_lucide_markup' ) ) {
 			// Fallback if only the legacy Lucide resolver is present.
 			$markup = fw_icon_lucide_markup( $id );
 		}
+
+		if ( $markup === '' ) {
+			$markup = sc_icon_svg_library_fallback( $id );
+		}
+
+		if ( $markup === '' && defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			/**
+			 * An unresolvable id renders NOTHING, silently — the icon just
+			 * isn't there, with no error anywhere. That made a real bug
+			 * (Lucide dropping its brand icons) invisible on the front end,
+			 * so surface it while debugging.
+			 */
+			trigger_error(
+				sprintf( 'sc_icon_svg_library_markup(): unknown SVG library icon "%s".', esc_html( $id ) ),
+				E_USER_NOTICE
+			);
+		}
+
 		return (string) apply_filters( 'sc_icon_svg_library_markup', $markup, $id );
+	}
+endif;
+
+if ( ! function_exists( 'sc_icon_svg_library_fallback' ) ) :
+	/**
+	 * Heal library ids that no longer resolve.
+	 *
+	 * WHY: icon ids are PERSISTED in the database (theme Social Profiles, every
+	 * icon option on every page), so when an upstream library drops an icon the
+	 * stored value silently renders nothing on sites that are already live —
+	 * editing every one by hand is not a fix.
+	 *
+	 * The case that prompted this: Lucide removed its brand/social icons, so
+	 * 'lucide/twitter' and 'lucide/github' (used by social profiles) went blank.
+	 * Tabler still ships them as 'tabler/brand-<name>', and Tabler is bundled,
+	 * so a generic pack-hop recovers the whole family at once — no per-icon
+	 * list to maintain as more brands come and go.
+	 *
+	 * @return string markup, or '' if nothing equivalent exists
+	 */
+	function sc_icon_svg_library_fallback( $id ) {
+		if ( ! function_exists( 'fw_icon_svg_pack_markup' ) ) {
+			return '';
+		}
+
+		$slash = strpos( $id, '/' );
+		if ( $slash === false ) { return ''; }
+
+		$name = substr( $id, $slash + 1 );
+		if ( $name === '' ) { return ''; }
+
+		$candidates = array();
+
+		if ( strpos( $id, 'lucide/' ) === 0 ) {
+			// Brand glyphs live under Tabler's 'brand-' prefix.
+			$candidates[] = 'tabler/brand-' . $name;
+			$candidates[] = 'tabler/' . $name;
+		} elseif ( strpos( $id, 'tabler/' ) === 0 ) {
+			$candidates[] = 'lucide/' . preg_replace( '/^brand-/', '', $name );
+		}
+
+		/**
+		 * Let themes/extensions add their own recovery ids for an icon id.
+		 * Return an array of '<pack>/<name>' candidates, tried in order.
+		 */
+		$candidates = (array) apply_filters( 'sc_icon_svg_library_fallback_ids', $candidates, $id );
+
+		foreach ( $candidates as $candidate ) {
+			$markup = fw_icon_svg_pack_markup( (string) $candidate );
+
+			if ( $markup !== '' ) {
+				return $markup;
+			}
+		}
+
+		return '';
 	}
 endif;
 

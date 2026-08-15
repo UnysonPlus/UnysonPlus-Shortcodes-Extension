@@ -10,7 +10,12 @@
  * the list defined in the shortcode.
  */
 
-$source = ! empty( $atts['source'] ) ? $atts['source'] : 'theme_settings';
+// `source` is a multi-picker: the mode lives at source/mode. Fall back to a
+// legacy flat string value ($atts['source'] === 'manual') for old instances.
+$source = fw_akg( 'source/mode', $atts, '' );
+if ( $source === '' ) {
+	$source = ( ! empty( $atts['source'] ) && is_string( $atts['source'] ) ) ? $atts['source'] : 'theme_settings';
+}
 
 if ( $source === 'theme_settings' ) {
 	if ( function_exists( 'unysonplus_render_social_icons' ) ) {
@@ -19,8 +24,13 @@ if ( $source === 'theme_settings' ) {
 	return;
 }
 
-$profiles = ( ! empty( $atts['profiles'] ) && is_array( $atts['profiles'] ) ) ? $atts['profiles'] : array();
-if ( ! $profiles ) {
+// Profiles now live under the multi-picker's "manual" choice
+// (source/manual/profiles); fall back to the legacy flat `profiles` key.
+$profiles = fw_akg( 'source/manual/profiles', $atts, array() );
+if ( ! $profiles && ! empty( $atts['profiles'] ) && is_array( $atts['profiles'] ) ) {
+	$profiles = $atts['profiles'];
+}
+if ( ! is_array( $profiles ) || ! $profiles ) {
 	return;
 }
 
