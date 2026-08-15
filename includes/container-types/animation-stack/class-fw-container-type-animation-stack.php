@@ -126,12 +126,24 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 				$is_multi = ! empty( $meta['multi'] );
 				$base     = isset( $meta['multi_base'] ) ? (string) $meta['multi_base'] : $fid;
 
-				// Always render the card's options in FULL. The builder's OptionsModal collects values
-				// from the fields present when it opens, so a lazily-injected field would never be saved
-				// (that reset newly-added animations to "none" on save). The saved-value bloat that used
-				// to OOM the builder is fixed at the source instead — in multi-picker::_get_value_from_input,
-				// which now stores only the selected choice's sub-values.
-				$body = fw()->backend->render_options( array( $fid => $field ), $values, $data )
+				// The CARD is always rendered in full — never lazily injected. The modal derives a
+				// missing field's default, so deferring a whole card resets its animation to "none"
+				// on save (this was tried, and reverted, once already).
+				//
+				// What IS deferred is one level down: `lazy_choices` tells multi-picker to ship each
+				// UNSELECTED choice's schema instead of its rendered HTML, and to render it on demand
+				// when the choice is picked. That is safe where deferring the card was not, because
+				// multi-picker::_get_value_from_input persists only the SELECTED choice's sub-values —
+				// the deferred markup could never have been saved. The picker itself is untouched, so
+				// the card's own value is always in the form.
+				//
+				// This is where the win is: the Animations tab measured ~5 MB / ~840 ms per element
+				// modal, ~95% of it markup for unselected choices (the Entrance picker alone renders a
+				// settings block for all ~56 Animate.css effects).
+				$lazy_field = $field;
+				$lazy_field['lazy_choices'] = true;
+
+				$body = fw()->backend->render_options( array( $fid => $lazy_field ), $values, $data )
 					. ( isset( $attached[ $fid ] ) ? '<div class="upw-anim-card-extra">' . $attached[ $fid ] . '</div>' : '' );
 
 				$cards .= '<div class="upw-anim-card' . ( $active ? '' : ' is-hidden' ) . '"'
