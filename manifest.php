@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.13.39';
+$manifest['version'] = '1.13.40';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,15 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.13.40 - REMOVED: the "Post Carousel" content element ([post_carousel], added in
+ *          1.6.93). It was retired from the plugin some time ago but the deletion
+ *          never reached the published extension repository — the copy-to-clone
+ *          release workflow copies files and never deletes them — so anyone
+ *          installing or updating the Shortcodes extension kept receiving a
+ *          shortcode that no longer exists upstream. The repo now matches the
+ *          product. Sites still using [post_carousel] will render nothing for it;
+ *          the Carousel and Posts elements cover the same ground.
+ *
  * 1.13.17 - Shape Dividers are now a reusable preset library. Theme Settings -> Components ->
  *          Shape Dividers is a new addable-box (each shape authored with the `svg-code` field —
  *          paste an <svg> or upload a .svg read client-side) that seeds the four built-ins
