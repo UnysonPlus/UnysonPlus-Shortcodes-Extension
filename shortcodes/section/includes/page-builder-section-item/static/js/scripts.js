@@ -32,7 +32,7 @@
 				};
 
 				fwEvents.trigger(event, eventData
-					? _.extend(eventData, data)
+					? Object.assign(eventData, data)
 					: data
 				);
 			},
@@ -87,8 +87,8 @@
 				}
 				if (reverse) { this.$el.addClass('section--rev'); }
 			},
-			template: _.template(
-				'<div class="pb-item-type-column pb-item custom-section">' +
+			template: fw.template(
+								'<div class="pb-item-type-column pb-item custom-section">' +
 				/**/'<div class="panel fw-row">' +
 				/**//**/'<div class="panel-left fw-col-xs-6">' +
 				/**//**//**//**/'<div class="column-title"><%= title %></div>' +
@@ -116,9 +116,8 @@
 
 					if (titleTemplate && this.model.get('atts')) {
 						try {
-							title = _.template(
+							title = fw.template(
 								jQuery.trim(titleTemplate),
-								undefined,
 								{
 									evaluate: /\{\{([\s\S]+?)\}\}/g,
 									interpolate: /\{\{=([\s\S]+?)\}\}/g,
@@ -131,10 +130,10 @@
 						} catch (e) {
 							console.error('$cfg["page_builder"]["title_template"]', e.message);
 
-							title = _.template('<%= title %>')({title: title});
+							title = fw.template('<%= title %>')({title: title});
 						}
 					} else {
-						title = _.template('<%= title %>')({title: title});
+						title = fw.template('<%= title %>')({title: title});
 					}
 				}
 
@@ -215,7 +214,7 @@
 			lazyInitModal: function () {
 				this.lazyInitModal = function (){};
 
-				if (_.isEmpty(this.initOptions.modalOptions)) {
+				if (fw.isEmpty(this.initOptions.modalOptions)) {
 					return;
 				}
 
@@ -388,14 +387,14 @@
 	 * load — the options modal renders the raw saved atts.
 	 */
 	function migrateSectionAtts (atts) {
-		if (!_.isObject(atts)) {
+		if (!fw.isObject(atts)) {
 			return atts;
 		}
 
 		// min_height: legacy scalar ('', '40vh', '600px', …) → multi-picker shape
 		// { preset, custom:{ custom_height:{value,unit} } }. Arrays pass through.
-		if (_.has(atts, 'min_height') && !_.isObject(atts.min_height)) {
-			atts = _.clone(atts);
+		if (Object.prototype.hasOwnProperty.call(atts, 'min_height') && !fw.isObject(atts.min_height)) {
+			atts = fw.clone(atts);
 			atts.min_height = migrateMinHeight(atts.min_height);
 		}
 
@@ -403,8 +402,8 @@
 		// { pattern: <id|'none'> }. Objects pass through. Without this, a section saved
 		// with the old select value throws an illegal-string-offset in the multi-picker's
 		// PHP _render (blank "error:" modal).
-		if (_.has(atts, 'background_pattern') && !_.isObject(atts.background_pattern)) {
-			atts = _.clone(atts);
+		if (Object.prototype.hasOwnProperty.call(atts, 'background_pattern') && !fw.isObject(atts.background_pattern)) {
+			atts = fw.clone(atts);
 			atts.background_pattern = migrateBackgroundPattern(atts.background_pattern);
 		}
 

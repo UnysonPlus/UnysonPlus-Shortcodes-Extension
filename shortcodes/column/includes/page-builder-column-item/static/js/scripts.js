@@ -38,7 +38,7 @@
 					builder: builder
 				};
 
-				fwEvents.trigger(event, eventData ? _.extend(eventData, data) : data);
+				fwEvents.trigger(event, eventData ? Object.assign(eventData, data) : data);
 			},
 			getEventName = function(itemModel, event) {
 				return 'fw:builder-type:{builder-type}:item-type:{item-type}:'
@@ -75,7 +75,7 @@
 					modelAttribute: 'width'
 				});
 			},
-			template: _.template(
+			template: fw.template(
 				'<div class="pb-item-type-column pb-item <% if (hasOptions) { print(' + '"has-options"' + ')} %>">' +
 				/**/'<div class="panel fw-row">' +
 				/**//**/'<div class="panel-left fw-col-xs-6">' +
@@ -243,7 +243,9 @@
 							var fracMap = { '1':'1/12','2':'1/6','3':'1/4','4':'1/3','5':'5/12','6':'1/2','7':'7/12','8':'2/3','9':'3/4','10':'5/6','11':'11/12','12':'1/1','15':'1/5 (20%)','25':'2/5 (40%)','35':'3/5 (60%)','45':'4/5 (80%)' };
 							$cur.text(w === 'auto' ? 'Auto' : (fracMap[w] || (w + '/12')));
 						} else {
-							var nw = _.findWhere(this.widthChangerView.widths, { id: this.model.get('width') });
+							// NB: hoist the value — inside the callback `this` is not the view.
+							var curWidth = this.model.get('width');
+							var nw = this.widthChangerView.widths.filter(function (o) { return o['id'] === curWidth; })[0];
 							if (nw) { $cur.text(nw.title); }
 						}
 					}
@@ -349,7 +351,7 @@
 			lazyInitModal: function () {
 				this.lazyInitModal = function (){};
 
-				if (_.isEmpty(this.initOptions.modalOptions)) {
+				if (fw.isEmpty(this.initOptions.modalOptions)) {
 					return;
 				}
 
@@ -524,7 +526,7 @@
 				this.defaultInitialize();
 			},
 			allowIncomingType: function(type) {
-				var allow = _.indexOf(this.restrictedTypes, type) === -1;
+				var allow = this.restrictedTypes.indexOf(type) === -1;
 
 				// Never let a section-like item land inside a column. Each section's
 				// own allowDestinationType already blocks this, but mirroring it here

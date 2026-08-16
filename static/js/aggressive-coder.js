@@ -29,10 +29,12 @@ fw.shortcodesAggressiveCoder = (function ($) {
 		var encoded = {},
 			array_keys = {};
 
-		_.each(atts, function (value, key) {
+		// atts is an OBJECT — _.each yields (value, key).
+		Object.keys(atts).forEach(function (key) {
+			var value = atts[key];
 			key = str_replace('-', '_', key);
 
-			if (_.isObject(value)) {
+			if (fw.isObject(value)) {
 				value = JSON.stringify(value);
 				array_keys[key] = key;
 			}
@@ -40,7 +42,7 @@ fw.shortcodesAggressiveCoder = (function ($) {
 			encoded[key] = encode_value(value);
 		});
 
-		if (! _.isEmpty(array_keys)) {
+		if (! fw.isEmpty(array_keys)) {
 			encoded['_array_keys'] = encode_value(
 				JSON.stringify(array_keys)
 			);
@@ -64,7 +66,7 @@ fw.shortcodesAggressiveCoder = (function ($) {
 			return atts;
 		}
 
-		atts = _.omit(atts, '_fw_coder');
+		atts = Object.assign({}, atts); delete atts['_fw_coder'];
 
 		var array_keys = {};
 
@@ -76,12 +78,13 @@ fw.shortcodesAggressiveCoder = (function ($) {
 				return {};
 			}
 
-			atts = _.omit(atts, '_array_keys');
+			atts = Object.assign({}, atts); delete atts['_array_keys'];
 		}
 
 		var decoded = {};
 
-		_.each(atts, function (value, key) {
+		Object.keys(atts).forEach(function (key) {
+			var value = atts[key];
 			try {
 				decoded[key] = array_keys[key]
 					? JSON.parse(decode_value(value))

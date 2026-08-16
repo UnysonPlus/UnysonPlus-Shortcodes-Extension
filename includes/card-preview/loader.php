@@ -57,7 +57,7 @@ if ( ! function_exists( '_sc_card_preview_enqueue' ) ) :
 		$ver  = $ext->manifest->get_version();
 
 		wp_enqueue_style( 'sc-card-preview', $base . '/card-preview.css', array(), $ver );
-		wp_enqueue_script( 'sc-card-preview', $base . '/card-preview.js', array( 'jquery', 'underscore' ), $ver, true );
+		wp_enqueue_script( 'sc-card-preview', $base . '/card-preview.js', array( 'jquery' ), $ver, true );
 	}
 	// Late priority so the options runtime (fw-backend-options) is already enqueued.
 	add_action( 'admin_enqueue_scripts', '_sc_card_preview_enqueue', 100 );

@@ -39,7 +39,7 @@ class Page_Builder_Section_Item extends Page_Builder_Item
 		wp_enqueue_script(
 			$this->get_builder_type() . '_item_type_' . $this->get_type(),
 			$shortcode_instance->locate_URI('/includes/page-builder-section-item/static/js/scripts.js'),
-			array('fw-events', 'underscore'),
+			array('fw-events'),
 			fw()->theme->manifest->get_version(),
 			true
 		);

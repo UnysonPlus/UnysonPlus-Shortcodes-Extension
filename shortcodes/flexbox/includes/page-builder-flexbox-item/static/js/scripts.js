@@ -26,7 +26,7 @@
 				};
 
 				fwEvents.trigger(event, eventData
-					? _.extend(eventData, data)
+					? Object.assign(eventData, data)
 					: data
 				);
 			},
@@ -41,7 +41,7 @@
 		// snapped to Bootstrap 1/12 columns and bound to the flexbox's atts.width
 		// (none = Auto/full). A custom percentage is set via the modal (Styling),
 		// not here. < Auto · 1/12 … 12/12 >.
-		var FlexboxWidthChanger = Backbone.View.extend({
+		var FlexboxWidthChanger = fw.View.extend({
 			tagName: 'div',
 			className: 'fx-width-changer fw-builder-item-width-changer',
 			// Ordered NARROW -> WIDE so the stepper reads left-to-right and Auto (full
@@ -57,8 +57,8 @@
 				{ id: '10', title: '5/6' },  { id: '11', title: '11/12' },
 				{ id: 'none', title: 'Auto' }
 			],
-			template: _.template(
-				'<a href="#" class="decrease-width dashicons dashicons-arrow-left-alt2" onclick="return false;" data-hover-tip="Narrower"></a>' +
+			template: fw.template(
+								'<a href="#" class="decrease-width dashicons dashicons-arrow-left-alt2" onclick="return false;" data-hover-tip="Narrower"></a>' +
 				' <span class="current-width fw-wp-link-color"><%- title %></span> ' +
 				'<a href="#" class="increase-width dashicons dashicons-arrow-right-alt2" onclick="return false;" data-hover-tip="Wider"></a>'
 			),
@@ -89,20 +89,20 @@
 			currentId: function () {
 				var p = this.preset();
 				if (p === 'custom') { return 'none'; } // no custom slot in the stepper; step from the wide end
-				return _.findWhere(this.widths, { id: p }) ? p : 'none';
+				return this.widths.filter(function (o) { return o['id'] === p; })[0] ? p : 'none';
 			},
 			setId: function (id) {
 				// Stepping always sets a non-custom preset on the BASE layer (so it
 				// overrides a Custom %); keeps any md/lg overrides intact.
-				var a = _.extend({}, this.model.get('atts') || {});
+				var a = Object.assign({}, this.model.get('atts') || {});
 				var w = (a.width && typeof a.width === 'object') ? a.width : {};
 				var isResp = typeof w.base !== 'undefined';
-				var base = _.extend({}, isResp
+				var base = Object.assign({}, isResp
 					? ((w.base && typeof w.base === 'object') ? w.base : {})
 					: ((typeof w.preset !== 'undefined') ? w : {}));
 				if (String(base.preset) !== String(id)) {
 					base.preset = id;
-					var nw = isResp ? _.extend({}, w) : {};
+					var nw = isResp ? Object.assign({}, w) : {};
 					nw.base = base;
 					if (typeof nw.md === 'undefined') { nw.md = { preset: 'none' }; }
 					if (typeof nw.lg === 'undefined') { nw.lg = { preset: 'none' }; }
@@ -116,14 +116,16 @@
 					var wc = (this.widthObj().custom || {}).width_custom || {};
 					title = (String(wc.value || '').trim() !== '') ? (String(wc.value).trim() + (wc.unit || '%')) : 'Custom';
 				} else {
-					title = (_.findWhere(this.widths, { id: this.currentId() }) || this.widths[0]).title;
+					// NB: hoist the value — inside the callback `this` is not the view.
+					var curId = this.currentId();
+					title = (this.widths.filter(function (o) { return o['id'] === curId; })[0] || this.widths[0]).title;
 				}
 				this.$el.html(this.template({ title: title }));
 				return this;
 			},
 			step: function (delta) {
-				var ids = _.pluck(this.widths, 'id');
-				var i = _.indexOf(ids, this.currentId());
+				var ids = this.widths.map(function (o) { return o['id']; });
+				var i = ids.indexOf(this.currentId());
 				if (i === -1) { i = 0; }
 				i = Math.max(0, Math.min(ids.length - 1, i + delta));
 				this.setId(ids[i]);
@@ -142,7 +144,7 @@
 				// Bootstrap-snapped width stepper for this flexbox (atts.width).
 				this.widthChangerView = new FlexboxWidthChanger({ model: this.model });
 			},
-			template: _.template(
+			template: fw.template(
 				'<div class="pb-item-type-column pb-item custom-section custom-flexbox">' +
 				/**/'<div class="panel fw-row">' +
 				/**//**/'<div class="panel-left fw-col-xs-6">' +
@@ -172,9 +174,8 @@
 
 					if (titleTemplate && this.model.get('atts')) {
 						try {
-							title = _.template(
+							title = fw.template(
 								jQuery.trim(titleTemplate),
-								undefined,
 								{
 									evaluate: /\{\{([\s\S]+?)\}\}/g,
 									interpolate: /\{\{=([\s\S]+?)\}\}/g,
@@ -187,10 +188,10 @@
 						} catch (e) {
 							console.error('$cfg["page_builder"]["title_template"]', e.message);
 
-							title = _.template('<%= title %>')({title: title});
+							title = fw.template('<%= title %>')({title: title});
 						}
 					} else {
-						title = _.template('<%= title %>')({title: title});
+						title = fw.template('<%= title %>')({title: title});
 					}
 				}
 
@@ -311,7 +312,7 @@
 			lazyInitModal: function () {
 				this.lazyInitModal = function (){};
 
-				if (_.isEmpty(this.initOptions.modalOptions)) {
+				if (fw.isEmpty(this.initOptions.modalOptions)) {
 					return;
 				}
 
@@ -321,7 +322,7 @@
 				// Idempotent: skips values already in the new shape; collapses layers
 				// that equal the one below them so the DOM stays clean.
 				(function (self) {
-					var a = _.extend({}, self.model.get('atts') || {});
+					var a = Object.assign({}, self.model.get('atts') || {});
 					var changed = false;
 					var isObj = function (v) { return v && typeof v === 'object'; };
 					var collapse = function (base, mid, top) {
@@ -499,7 +500,7 @@
 				if (opts && opts.$thumb) {
 					var fxTag = opts.$thumb.find('.item-data').attr('data-fxtag');
 					if (fxTag) {
-						this.set('atts', _.extend({}, this.get('atts') || {}, { html_tag: fxTag }));
+						this.set('atts', Object.assign({}, this.get('atts') || {}, { html_tag: fxTag }));
 					}
 				}
 

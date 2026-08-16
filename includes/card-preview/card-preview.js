@@ -61,8 +61,8 @@
 
 	function chipEl( key ) {
 		var kind  = SLOT_KIND[ key ] || 'other';
-		var label = _.has( SLOT_LABEL, key ) ? SLOT_LABEL[ key ] : String( key );
-		return '<span class="upwc-cp-slot upwc-cp-slot--' + kind + '">' + _.escape( label ) + '</span>';
+		var label = Object.prototype.hasOwnProperty.call(SLOT_LABEL, key) ? SLOT_LABEL[ key ] : String( key );
+		return '<span class="upwc-cp-slot upwc-cp-slot--' + kind + '">' + fw.escapeHtml( label ) + '</span>';
 	}
 	function slotChip( key ) {
 		// Composite "molecule" slots render as a mini-group so the preview mirrors the real card:
@@ -78,20 +78,20 @@
 	}
 
 	function rowHtml( row ) {
-		var slots = ( row && _.isArray( row.slots ) ) ? row.slots : [];
+		var slots = ( row && Array.isArray( row.slots ) ) ? row.slots : [];
 		var dir   = ( row && row.direction === 'stack' ) ? 'stack' : 'inline';
 		var just  = ( row && row.justify ) ? String( row.justify ) : 'start';
 		var align = ( row && row.align ) ? String( row.align ) : 'center';
-		var chips = slots.length ? _.map( slots, slotChip ).join( '' ) : '<span class="upwc-cp-emptyrow">empty row</span>';
+		var chips = slots.length ? slots.map( slotChip ).join( '' ) : '<span class="upwc-cp-emptyrow">empty row</span>';
 		return '<div class="upwc-cp-row upwc-cp-dir-' + dir + ' upwc-cp-just-' + just + ' upwc-cp-align-' + align + '">' + chips + '</div>';
 	}
 
 	function render( $mount, rows ) {
-		if ( ! _.isArray( rows ) || ! rows.length ) {
+		if ( ! Array.isArray( rows ) || ! rows.length ) {
 			$mount.html( '<div class="upwc-cp-card"><div class="upwc-cp-emptycard">Add a row to see the card.</div></div>' );
 			return;
 		}
-		$mount.html( '<div class="upwc-cp-card">' + _.map( rows, rowHtml ).join( '' ) + '</div>' );
+		$mount.html( '<div class="upwc-cp-card">' + rows.map( rowHtml ).join( '' ) + '</div>' );
 	}
 
 	// Read the rows straight from the addable-popup items (each `.item` input holds
@@ -131,7 +131,7 @@
 
 		$mount.data( 'upwcWired', true );
 
-		var rerender = _.debounce( function () { render( $mount, readRows( $wrapper ) ); }, 80 );
+		var rerender = fw.debounce( function () { render( $mount, readRows( $wrapper ) ); }, 80 );
 		rerender();
 
 		$wrapper.closest( '.fw-modal, .fw-backend-options, form' ).on( 'change', rerender );

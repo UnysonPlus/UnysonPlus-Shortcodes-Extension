@@ -17,7 +17,7 @@
 				};
 
 				fwEvents.trigger(event, eventData
-					? _.extend(eventData, data)
+					? Object.assign(eventData, data)
 					: data
 				);
 			},
@@ -35,8 +35,8 @@
 				this.initOptions = options;
 				this.initOptions.templateData = this.initOptions.templateData || {};
 			},
-			template: _.template(
-				'<div class="pb-item-type-column pb-item custom-section custom-container">' +
+			template: fw.template(
+								'<div class="pb-item-type-column pb-item custom-section custom-container">' +
 				/**/'<div class="panel fw-row">' +
 				/**//**/'<div class="panel-left fw-col-xs-6">' +
 				/**//**//**//**/'<div class="column-title"><%= title %></div>' +
@@ -64,9 +64,8 @@
 
 					if (titleTemplate && this.model.get('atts')) {
 						try {
-							title = _.template(
+							title = fw.template(
 								jQuery.trim(titleTemplate),
-								undefined,
 								{
 									evaluate: /\{\{([\s\S]+?)\}\}/g,
 									interpolate: /\{\{=([\s\S]+?)\}\}/g,
@@ -79,10 +78,10 @@
 						} catch (e) {
 							console.error('$cfg["page_builder"]["title_template"]', e.message);
 
-							title = _.template('<%= title %>')({title: title});
+							title = fw.template('<%= title %>')({title: title});
 						}
 					} else {
-						title = _.template('<%= title %>')({title: title});
+						title = fw.template('<%= title %>')({title: title});
 					}
 				}
 
@@ -111,7 +110,7 @@
 			lazyInitModal: function () {
 				this.lazyInitModal = function (){};
 
-				if (_.isEmpty(this.initOptions.modalOptions)) {
+				if (fw.isEmpty(this.initOptions.modalOptions)) {
 					return;
 				}
 
@@ -279,11 +278,11 @@
 	// Normalise legacy container atts to current value-shapes (mirrors the section item's
 	// migrateSectionAtts). Currently: background_pattern scalar id → multi-picker { pattern }.
 	function migrateContainerAtts (atts) {
-		if (!_.isObject(atts)) {
+		if (!fw.isObject(atts)) {
 			return atts;
 		}
-		if (_.has(atts, 'background_pattern') && !_.isObject(atts.background_pattern)) {
-			atts = _.clone(atts);
+		if (Object.prototype.hasOwnProperty.call(atts, 'background_pattern') && !fw.isObject(atts.background_pattern)) {
+			atts = fw.clone(atts);
 			var v = atts.background_pattern;
 			v = (v === null || typeof v === 'undefined') ? '' : String(v);
 			atts.background_pattern = {pattern: (v === '' ? 'none' : v)};

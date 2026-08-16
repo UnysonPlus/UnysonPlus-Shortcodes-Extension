@@ -16,7 +16,7 @@
 	var L   = CFG.l10n || {};
 
 	function notify( msg, type ) {
-		if ( window.fw && _.isFunction( window.fw.notify ) ) { window.fw.notify( msg, type || 'success' ); }
+		if ( window.fw && typeof window.fw.notify === 'function' ) { window.fw.notify( msg, type || 'success' ); }
 		else { window.alert( msg ); }
 	}
 
@@ -28,21 +28,23 @@
 
 	// --- Merge a design's values into the element + refresh the open modal. ---
 	function applyValues( atts, modal, item ) {
-		if ( ! _.isObject( atts ) ) { return; }
-		var cur    = _.clone( item.get( 'atts' ) || {} );
-		var merged = _.clone( cur );
-		_.each( atts, function ( val, key ) {
+		if ( ! fw.isObject( atts ) ) { return; }
+		var cur    = fw.clone( item.get( 'atts' ) || {} );
+		var merged = fw.clone( cur );
+		// atts is an OBJECT — _.each yields (value, key).
+		Object.keys( atts ).forEach( function ( key ) {
+			var val = atts[ key ];
 			if ( key === 'unique_id' ) { return; }          // never overwrite the instance id
-			if ( _.has( cur, key ) ) { merged[ key ] = val; } // whitelist to this element's known options
+			if ( Object.prototype.hasOwnProperty.call(cur, key) ) { merged[ key ] = val; } // whitelist to this element's known options
 		} );
 		item.set( 'atts', merged );
-		if ( modal && _.isFunction( modal.set ) ) { modal.set( 'values', _.clone( merged ), { silent: true } ); }
+		if ( modal && typeof modal.set === 'function' ) { modal.set( 'values', fw.clone( merged ), { silent: true } ); }
 		notify( L.applied || 'Design applied.' );
 	}
 
 	// --- Export the element's current values as a design envelope (download). ---
 	function exportDesign( item, shortcode ) {
-		var atts = _.clone( item.get( 'atts' ) || {} );
+		var atts = fw.clone( item.get( 'atts' ) || {} );
 		delete atts.unique_id;        // don't bake the instance id into a shareable design
 		delete atts.sc_design_panel;  // the Presets-tab html option carries no real value
 		var name = window.prompt( L.namePrompt || 'Name this design:', '' ) || '';
@@ -64,7 +66,7 @@
 	// --- Build the tile grid for a shortcode's designs. ---
 	function renderGrid( $grid, designs ) {
 		var html = '';
-		_.each( designs, function ( d ) {
+		designs.forEach( function ( d ) {
 			var thumb = d.thumb
 				? '<span class="sc-design-tile__thumb" style="background-image:url(\'' + esc( d.thumb ) + '\')"></span>'
 				: '<span class="sc-design-tile__thumb sc-design-tile__thumb--none"></span>';
@@ -106,7 +108,7 @@
 			$panel.on( 'click', '.sc-design-tile', function ( e ) {
 				e.preventDefault();
 				var id = $( this ).attr( 'data-design-id' );
-				var d  = _.findWhere( designs, { id: id } );
+				var d  = designs.filter(function (o) { return o['id'] === id; })[0];
 				if ( d ) { applyValues( d.atts, modal, item ); }
 			} );
 			// Export current.

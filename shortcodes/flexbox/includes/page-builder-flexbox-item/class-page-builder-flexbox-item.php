@@ -53,7 +53,9 @@ class Page_Builder_Flexbox_Item extends Page_Builder_Item
 		wp_enqueue_script(
 			$this->get_builder_type() . '_item_type_' . $this->get_type(),
 			$shortcode_instance->locate_URI('/includes/page-builder-flexbox-item/static/js/scripts.js'),
-			array('fw-events', 'underscore'),
+			// 'fw' added: FlexboxWidthChanger extends fw.View as of shortcodes
+			// 1.13.41 (was Backbone.View, which it never declared).
+			array('fw', 'fw-events'),
 			fw_ext('shortcodes')->manifest->get_version(),
 			true
 		);

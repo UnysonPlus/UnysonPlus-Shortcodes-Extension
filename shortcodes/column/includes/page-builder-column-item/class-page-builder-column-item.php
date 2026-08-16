@@ -42,7 +42,7 @@ class Page_Builder_Column_Item extends Page_Builder_Item {
 		wp_enqueue_script(
 			$this->get_builder_type() . '_item_type_' . $this->get_type(),
 			fw_min_uri($column_shortcode->get_uri( '/includes/page-builder-column-item/static/js/scripts.js' )),
-			array( 'fw-events', 'underscore' ),
+			array( 'fw-events' ),
 			$version,
 			true
 		);

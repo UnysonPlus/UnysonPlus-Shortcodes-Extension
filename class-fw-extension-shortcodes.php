@@ -431,7 +431,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 			fw_min_uri(fw_ext('shortcodes')->get_uri('/static/js/aggressive-coder.js')),
 			// 'underscore' declared explicitly — aggressive-coder.js uses _.*
 			// and no longer inherits it through the 'fw' handle.
-			array('fw', 'underscore'),
+			array('fw'),
 			fw_ext('shortcodes')->manifest->get('version'),
 			true
 		);

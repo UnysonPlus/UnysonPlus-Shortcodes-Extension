@@ -107,7 +107,7 @@ if ( ! function_exists( '_sc_design_enqueue_builder' ) ) :
 		wp_enqueue_script(
 			'sc-design-manager',
 			$base . '/design-manager.js',
-			array( 'jquery', 'fw-events', 'underscore' ),
+			array( 'jquery', 'fw-events' ),
 			$ver,
 			true
 		);
