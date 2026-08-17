@@ -26,6 +26,16 @@ class FW_Shortcode_Newsletter extends FW_Shortcode {
 	public function _ajax_subscribe() {
 		check_ajax_referer( 'fw_newsletter', 'nonce' );
 
+		/**
+		 * The strictest limit in the framework, because this is the only public
+		 * endpoint that makes the SITE do work on the open internet: every
+		 * successful call sends mail through wp_mail(). The nonce above proves the
+		 * request came from a page we rendered — not that it is the first of five
+		 * thousand. Five signups per ten minutes from one address is far beyond
+		 * anything a real visitor does, and well short of anything useful to a bot.
+		 */
+		fw_rate_limit_ajax( 'newsletter_subscribe', 5, 600 );
+
 		// Honeypot — a filled hidden field means a bot. Pretend success.
 		if ( ! empty( $_POST['fw_hp'] ) ) {
 			wp_send_json_success( array( 'message' => __( 'Thanks!', 'fw' ) ) );

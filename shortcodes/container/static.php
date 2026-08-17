@@ -21,6 +21,6 @@ wp_enqueue_style(
 );
 
 // Background-pro colour / gradient / image layers render inline (no extra assets). Video
-// backgrounds reuse the parent Section's formstone scripts + the global
-// `$('.background-video').background()` init, which are always present because a Container
-// only ever renders inside a Section — so no video enqueue is duplicated here.
+// backgrounds reuse the parent Section's `background.init.js` (the vanilla replacement for
+// the old Formstone stack), which is always present because a Container only ever renders
+// inside a Section — so no video enqueue is duplicated here.

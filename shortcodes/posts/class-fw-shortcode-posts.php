@@ -120,6 +120,9 @@ class FW_Shortcode_Posts extends FW_Shortcode {
 	public function _ajax_loadmore() {
 		check_ajax_referer( 'fw_sc_posts', 'nonce' );
 
+		// Pagination click. Each call is a WP_Query; the ceiling only bites a script.
+		fw_rate_limit_ajax( 'sc_posts_loadmore', 60, 60 );
+
 		$data = $this->_load_instance();
 		if ( ! $data ) {
 			wp_die(); // empty response → JS stops appending gracefully
@@ -145,6 +148,10 @@ class FW_Shortcode_Posts extends FW_Shortcode {
 	 */
 	public function _ajax_filter() {
 		check_ajax_referer( 'fw_sc_posts', 'nonce' );
+
+		// Filtering is more click-happy than load-more (a visitor may toggle several
+		// terms quickly), so it gets more headroom for the same underlying cost.
+		fw_rate_limit_ajax( 'sc_posts_filter', 90, 60 );
 
 		$data = $this->_load_instance();
 		if ( ! $data ) {

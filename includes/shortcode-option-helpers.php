@@ -108,15 +108,15 @@ if(! function_exists( 'sc_option_color_select' )) :
 		$color_palette = array(
 			''  =>'Default');
 		$theme_colors = sc_option_color_palette();
-		//$color_palette[''] = __( 'Default' , 'lastimosa');
+		//$color_palette[''] = __( 'Default' , 'fw' );
 		foreach($theme_colors as $key => $value) {
-			$color_palette[sanitize_title_with_dashes( $color ) . '-'.sanitize_title_with_dashes( $key )] = __( $key , 'lastimosa');
+			$color_palette[sanitize_title_with_dashes( $color ) . '-'.sanitize_title_with_dashes( $key )] = __( $key , 'fw' );
 		}
 		return array(
-			'label'   => __( '', 'lastimosa' ),
+			'label'   => __( '', 'fw' ),
 			'type'    => 'select',
 			'value'   => '',
-			'desc'		=> sprintf( __( '%s color. Add or modify the color palettes by clicking <a href="%s" target="_blank">here</a>.', 'lastimosa' ), $label,
+			'desc'		=> sprintf( __( '%s color. Add or modify the color palettes by clicking <a href="%s" target="_blank">here</a>.', 'fw' ), $label,
 					admin_url( 'themes.php?page=fw-settings#fw-options-tab-tab_colors')
 			),
 			'choices' => $color_palette,
@@ -132,8 +132,8 @@ if(! function_exists('sc_option_color_picker')) :
 	function sc_option_color_picker($label = NULL, $default = '#ffffff', $desc = NULL) {
 		$option = array(
 			'type' => 'predefined-colors-color-picker',
-			'label' => __($label, 'lastimosa'),
-			'desc'	=> __($desc, 'lastimosa'),
+			'label' => __($label, 'fw' ),
+			'desc'	=> __($desc, 'fw' ),
 			'value' => array(
 				'predefined' => '', // you can set default value
 				'custom' => $default // or default value for picker
@@ -148,7 +148,7 @@ if(! function_exists('sc_option_color_picker')) :
 					'picker' => 'color-picker', // color-picker|rgba-color-picker
 				),
 			),
-			'help'  => __('Set your predefined color swatches in <a href="'.admin_url().'themes.php?page=fw-settings#fw-options-tab-tab_colors" target="_blank">here</a>', 'lastimosa')
+			'help'  => __('Set your predefined color swatches in <a href="'.admin_url().'themes.php?page=fw-settings#fw-options-tab-tab_colors" target="_blank">here</a>', 'fw' )
 		);
 		return $option;
 	}
@@ -339,8 +339,8 @@ if( ! function_exists('sc_option_text_transform')) :
 	function sc_option_text_transform($label=NULL,$desc=NULL) {
 		return array(
 			'type'    => 'select',
-			'label'   => __($label, 'lastimosa'),
-			'desc'		=> __($desc, 'lastimosa'),
+			'label'   => __($label, 'fw' ),
+			'desc'		=> __($desc, 'fw' ),
 			'value'   => '',
 			'choices' => array(
 				''  => 'none',
@@ -360,8 +360,8 @@ if( ! function_exists('sc_option_css_tag')) :
 	function sc_option_css_tag( $label=NULL, $desc=NULL, $default='h2' ) {
 		return array(
 			'type'    => 'select',
-			'label'   => __( $label, 'lastimosa' ),
-			'desc'		=> __( $desc, 'lastimosa' ),
+			'label'   => __( $label, 'fw' ),
+			'desc'		=> __( $desc, 'fw' ),
 			'value'   => $default,
 			'choices' => array(
 				'h1' => 'H1',
@@ -390,7 +390,7 @@ if( ! function_exists('sc_option_bg_atts')):
 			'desc'          => false,
 			'inner-options' => array(
 				'image'    => array(
-					'label'   => __( $name.' Background', 'lastimosa' ),
+					'label'   => __( $name.' Background', 'fw' ),
 					'type'    => 'background-image',
 					'value'   => 'none',
 					'choices' => array(
@@ -452,52 +452,52 @@ if( ! function_exists('sc_option_bg_atts')):
 				),
 				'color' => sc_option_color_picker('','', 'Background color'),
 				'position' => array(
-					'label' => __( '', 'lastimosa' ),
-					'desc'  => __( 'Image position', 'lastimosa' ),
+					'label' => __( '', 'fw' ),
+					'desc'  => __( 'Image position', 'fw' ),
 					'type'  => 'select',
 					'value' => 'top center',
 					'choices' => array(
-						'top left' 			=> __( 'Top Left', 'lastimosa' ),
-						'top center' 		=> __( 'Top Center', 'lastimosa' ),
-						'top right' 		=> __( 'Top Right', 'lastimosa' ),
-						'center left' 	=> __( 'Center Left', 'lastimosa' ),
-						'center center' => __( 'Center Center', 'lastimosa' ),
-						'center right' 	=> __( 'Center Right', 'lastimosa' ),
-						'bottom left' 	=> __( 'Bottom Left', 'lastimosa' ),
-						'bottom center' => __( 'Bottom Center', 'lastimosa' ),
-						'bottom right' 	=> __( 'Bottom Right', 'lastimosa' ),
+						'top left' 			=> __( 'Top Left', 'fw' ),
+						'top center' 		=> __( 'Top Center', 'fw' ),
+						'top right' 		=> __( 'Top Right', 'fw' ),
+						'center left' 	=> __( 'Center Left', 'fw' ),
+						'center center' => __( 'Center Center', 'fw' ),
+						'center right' 	=> __( 'Center Right', 'fw' ),
+						'bottom left' 	=> __( 'Bottom Left', 'fw' ),
+						'bottom center' => __( 'Bottom Center', 'fw' ),
+						'bottom right' 	=> __( 'Bottom Right', 'fw' ),
 					)
 				),
 				'repeat' => array(
-					'label' => __( '', 'lastimosa' ),
-					'desc'  => __( 'Image repeat', 'lastimosa' ),
+					'label' => __( '', 'fw' ),
+					'desc'  => __( 'Image repeat', 'fw' ),
 					'type'  => 'select',
 					/*'attr'  => array( 'class' => '' ),*/
 					'value' => 'repeat',
 					'choices' => array(
-						'no-repeat' => __( 'Display Once (No-Repeat)', 'lastimosa' ),
-						'repeat' 		=> __( 'Full Tile (Repeat XY Axis)', 'lastimosa' ),
-						'repeat-x' 	=> __( 'Horizontal Tile (Repeat X Axis)', 'lastimosa' ),
-						'repeat-y' 	=> __( 'Vertical Tile (Repeat Y Axis)', 'lastimosa' ),
+						'no-repeat' => __( 'Display Once (No-Repeat)', 'fw' ),
+						'repeat' 		=> __( 'Full Tile (Repeat XY Axis)', 'fw' ),
+						'repeat-x' 	=> __( 'Horizontal Tile (Repeat X Axis)', 'fw' ),
+						'repeat-y' 	=> __( 'Vertical Tile (Repeat Y Axis)', 'fw' ),
 					)
 				),
 				'attachment' => array(
-					'label' => __( '', 'lastimosa' ),
-					'desc'  => __( 'Image attachment', 'lastimosa' ),
+					'label' => __( '', 'fw' ),
+					'desc'  => __( 'Image attachment', 'fw' ),
 					'type'  => 'select',
 					'value' => 'scroll',
 					'choices' => array(
-						'scroll' => __( 'Scroll', 'lastimosa' ),
-						'fixed' => __( 'Fixed', 'lastimosa' ),
+						'scroll' => __( 'Scroll', 'fw' ),
+						'fixed' => __( 'Fixed', 'fw' ),
 					),
 					'help'	=> __( '<p><strong>scroll</strong> - The background scrolls along with the page. This is default</p>
 									<p><strong>fixed</strong> - The background is fixed with regard to the viewport.</p>
-									', 'lastimosa'),
+									', 'fw' ),
 				),
 				'size' => array(
 					'type' 	=> 'multi-inline',
-					'label' => __('', 'lastimosa'),
-					'desc'  => __( 'Image size', 'lastimosa' ),
+					'label' => __('', 'fw' ),
+					'desc'  => __( 'Image size', 'fw' ),
 					'value' => array(
 						'selected' 	 	=> 'auto',	
 						'custom'		=> '',
@@ -507,18 +507,18 @@ if( ! function_exists('sc_option_bg_atts')):
 								<p><strong>contain</strong> - Scale the image to the largest size such that both its width and its height can fit inside the content area.</p>
 								<p><strong>custom</strong> - Counts for the width and height of the background image. i.e.:<br />
 								400px - it counts for the width, and the height is set to auto.<br />
-								300px 100px - the first sets the background image\'s width and the second sets the height. </p>', 'lastimosa' ),
+								300px 100px - the first sets the background image\'s width and the second sets the height. </p>', 'fw' ),
 					'fw_multi_options' => array(
 						'selected' => array(
-							'label' => __( '', 'lastimosa' ),
-							'desc'  => __( '', 'lastimosa' ),
+							'label' => __( '', 'fw' ),
+							'desc'  => __( '', 'fw' ),
 							'title' => false,
 							'type'  => 'select',
 							'choices' => array(
-								'auto' => __( 'Auto', 'lastimosa' ),
-								'cover' => __( 'Cover', 'lastimosa' ),
-								'contain' => __( 'Contain', 'lastimosa' ),
-								'custom' => __( 'Custom Value', 'lastimosa' ),
+								'auto' => __( 'Auto', 'fw' ),
+								'cover' => __( 'Cover', 'fw' ),
+								'contain' => __( 'Contain', 'fw' ),
+								'custom' => __( 'Custom Value', 'fw' ),
 							)
 						),
 						'custom' => array(
@@ -534,16 +534,16 @@ if( ! function_exists('sc_option_bg_atts')):
 					'picker' => array(
 						'selected' => array(
 							'type'  => 'switch',
-							'label' => __( 'Overlay', 'lastimosa' ),
-							'desc'  => __( 'Enable background overlay?', 'lastimosa' ),
+							'label' => __( 'Overlay', 'fw' ),
+							'desc'  => __( 'Enable background overlay?', 'fw' ),
 							'value' => 'no',
 							'right-choice' => array(
 								'value' => 'yes',
-								'label' => __('Yes', 'lastimosa'),
+								'label' => __('Yes', 'fw' ),
 							),
 							'left-choice' => array(
 								'value' => 'no',
-								'label' => __('No', 'lastimosa'),
+								'label' => __('No', 'fw' ),
 							),
 						),
 					),
@@ -552,19 +552,19 @@ if( ! function_exists('sc_option_bg_atts')):
 							'color' => sc_option_color_picker('','', 'Color 1'),
 							'gradient' => sc_option_color_picker('','', 'Color 2. Select second color to enable gradient.'),
 							'direction' => array(
-								'label' => __( '', 'lastimosa' ),
-								'desc'  => __( 'Gradient direction.', 'lastimosa' ),
+								'label' => __( '', 'fw' ),
+								'desc'  => __( 'Gradient direction.', 'fw' ),
 								'type'  => 'select',
 								'value' => 'bottom',
 								'choices' => array(
-									'bottom' 		=> __( 'Top to bottom', 'lastimosa' ),
-									'top' 			=> __( 'Bottom to top', 'lastimosa' ),
-									'right' 		=> __( 'Left to right', 'lastimosa' ),
-									'left' 			=> __( 'Right to left', 'lastimosa' ),
-									'top left' 		=> __( 'Top to left', 'lastimosa' ),
-									'top right' 	=> __( 'Top to right', 'lastimosa' ),
-									'bottom left' 	=> __( 'Bottom to left', 'lastimosa' ),
-									'bottom right' 	=> __( 'Bottom to right', 'lastimosa' ),
+									'bottom' 		=> __( 'Top to bottom', 'fw' ),
+									'top' 			=> __( 'Bottom to top', 'fw' ),
+									'right' 		=> __( 'Left to right', 'fw' ),
+									'left' 			=> __( 'Right to left', 'fw' ),
+									'top left' 		=> __( 'Top to left', 'fw' ),
+									'top right' 	=> __( 'Top to right', 'fw' ),
+									'bottom left' 	=> __( 'Bottom to left', 'fw' ),
+									'bottom right' 	=> __( 'Bottom to right', 'fw' ),
 								),
 							),
 							'opacity' => array(
@@ -575,8 +575,8 @@ if( ! function_exists('sc_option_bg_atts')):
 									'max' => 1,
 									'step' => .1,
 								),
-								'label' => __( '', 'lastimosa' ),
-								'desc'  => __( 'Select the overlay color opacity in %', 'lastimosa' ),
+								'label' => __( '', 'fw' ),
+								'desc'  => __( 'Select the overlay color opacity in %', 'fw' ),
 							)
 						),
 					),
@@ -598,99 +598,99 @@ if(! function_exists('sc_option_link')) :
 			'desc'         => false,
 			'picker'       => array(
 				'selected' => array(
-					'label'   => __( 'Link', 'lastimosa' ),
-					'desc'  => __( 'Select your link source.', 'lastimosa' ),
+					'label'   => __( 'Link', 'fw' ),
+					'desc'  => __( 'Select your link source.', 'fw' ),
 					'type'    => 'select',
 					'choices' => array(
-						'manual'=> __( 'Manual', 'lastimosa' ),
-						'page' 	=> __( 'Page', 'lastimosa' ),
-						'post' 	=> __( 'Blog Post', 'lastimosa' ),
-						'media' => __( 'Media', 'lastimosa' ),
+						'manual'=> __( 'Manual', 'fw' ),
+						'page' 	=> __( 'Page', 'fw' ),
+						'post' 	=> __( 'Blog Post', 'fw' ),
+						'media' => __( 'Media', 'fw' ),
 					),
 				)
 			),
 			'choices'      => array(
 				'manual'  => array(
 					'href'   => array(
-						'label' => __( '', 'lastimosa' ),
+						'label' => __( '', 'fw' ),
 						'type'  => 'text',
 						'value' => '',
-						'desc'  => __( 'Enter the URL. Leave Manual Link empty to disable.', 'lastimosa' )
+						'desc'  => __( 'Enter the URL. Leave Manual Link empty to disable.', 'fw' )
 					),
 					'target'      => array(
-						'label'   => __( '', 'lastimosa' ),
+						'label'   => __( '', 'fw' ),
 						'type'    => 'select',
 						'value'   => '_self',
-						'desc'    => __( 'Target attribute. How the link will be opened.','lastimosa' ),
+						'desc'    => __( 'Target attribute. How the link will be opened.','fw' ),
 						'choices' => array(
-							'_self'  	=> __( 'Open link in same window', 'lastimosa' ),
-							'_blank'  	=> __( 'Open link in new window', 'lastimosa' ),
-							//'lightbox' 	=> __( 'Open link inside a lightbox', 'lastimosa' ),
-							//'modal' 	=> __( 'Open link inside bootstrap modal', 'lastimosa' ),
+							'_self'  	=> __( 'Open link in same window', 'fw' ),
+							'_blank'  	=> __( 'Open link in new window', 'fw' ),
+							//'lightbox' 	=> __( 'Open link inside a lightbox', 'fw' ),
+							//'modal' 	=> __( 'Open link inside bootstrap modal', 'fw' ),
 						),
 					),
 				),
 				'page' => array(
 					'href'      => array(
 						'type'  => 'multi-select',
-						'label' => __( '', 'lastimosa' ),
-						'desc'  => __( 'Enter the title of the page.', 'lastimosa' ),
+						'label' => __( '', 'fw' ),
+						'desc'  => __( 'Enter the title of the page.', 'fw' ),
 						'population' => 'posts',
 						'source'=> 'page',
 						'limit' => 1,
 					),
 					'target'      => array(
-						'label'   => __( '', 'lastimosa' ),
+						'label'   => __( '', 'fw' ),
 						'type'    => 'select',
 						'value'   => '_self',
-						'desc'    => __( 'Target attribute. How the link will be opened.','lastimosa' ),
+						'desc'    => __( 'Target attribute. How the link will be opened.','fw' ),
 						'choices' => array(
-							'_self'  	=> __( 'Open link in same window', 'lastimosa' ),
-							'_blank'  	=> __( 'Open link in new window', 'lastimosa' ),
-							//'lightbox' 	=> __( 'Open link inside a lightbox', 'lastimosa' ),
-							//'modal' 	=> __( 'Open link inside bootstrap modal', 'lastimosa' ),
+							'_self'  	=> __( 'Open link in same window', 'fw' ),
+							'_blank'  	=> __( 'Open link in new window', 'fw' ),
+							//'lightbox' 	=> __( 'Open link inside a lightbox', 'fw' ),
+							//'modal' 	=> __( 'Open link inside bootstrap modal', 'fw' ),
 						),
 					),
 				),
 				'post' => array(
 					'href'      => array(
 						'type'       => 'multi-select',
-						'label'      => __( '', 'lastimosa' ),
-						'desc'  => __( 'Enter the title of the post.', 'lastimosa' ),
+						'label'      => __( '', 'fw' ),
+						'desc'  => __( 'Enter the title of the post.', 'fw' ),
 						'population' => 'posts',
 						'source'     => 'post',
 						'limit' => 1,
 					),
 					'target'      => array(
-						'label'   => __( '', 'lastimosa' ),
+						'label'   => __( '', 'fw' ),
 						'type'    => 'select',
 						'value'   => '_self',
-						'desc'    => __( 'Target attribute. How the link will be opened.','lastimosa' ),
+						'desc'    => __( 'Target attribute. How the link will be opened.','fw' ),
 						'choices' => array(
-							'_self'  	=> __( 'Open link in same window', 'lastimosa' ),
-							'_blank'  	=> __( 'Open link in new window', 'lastimosa' ),
-							//'lightbox' 	=> __( 'Open link inside a lightbox', 'lastimosa' ),
-							//'modal' 	=> __( 'Open link inside bootstrap modal', 'lastimosa' ),
+							'_self'  	=> __( 'Open link in same window', 'fw' ),
+							'_blank'  	=> __( 'Open link in new window', 'fw' ),
+							//'lightbox' 	=> __( 'Open link inside a lightbox', 'fw' ),
+							//'modal' 	=> __( 'Open link inside bootstrap modal', 'fw' ),
 						),
 					),
 				),
 				'media' => array(
 					'href'                    => array(
-						'label'       => __( '', 'lastimosa' ),
-						'desc'        => __( 'Upload your media file or select from Media Library.', 'lastimosa' ),
+						'label'       => __( '', 'fw' ),
+						'desc'        => __( 'Upload your media file or select from Media Library.', 'fw' ),
 						'type'        => 'upload',
 						'images_only' => false,
 					),
 					'target'      => array(
-						'label'   => __( '', 'lastimosa' ),
+						'label'   => __( '', 'fw' ),
 						'type'    => 'select',
 						'value'   => '_self',
-						'desc'    => __( 'Target attribute. How the link will be opened.','lastimosa' ),
+						'desc'    => __( 'Target attribute. How the link will be opened.','fw' ),
 						'choices' => array(
-							'_self'  	=> __( 'Open link in same window', 'lastimosa' ),
-							'_blank'  	=> __( 'Open link in new window', 'lastimosa' ),
-							//'lightbox' 	=> __( 'Open link inside a lightbox', 'lastimosa' ),
-							//'modal' 	=> __( 'Open link inside bootstrap modal', 'lastimosa' ),
+							'_self'  	=> __( 'Open link in same window', 'fw' ),
+							'_blank'  	=> __( 'Open link in new window', 'fw' ),
+							//'lightbox' 	=> __( 'Open link inside a lightbox', 'fw' ),
+							//'modal' 	=> __( 'Open link inside bootstrap modal', 'fw' ),
 						),
 					),
 				),
@@ -708,65 +708,65 @@ if(! function_exists('sc_option_float')) :
 	function sc_option_float( $label = 'Alignment', $desc = 'Floats an element to the left or right, or disable floating, based on the current viewport size.' ) {
 		return array(
 			'type'    => 'multiple',
-			'label'   => __( $label, 'lastimosa' ),
-			'desc'		=> __( $desc, 'lastimosa' ),
+			'label'   => __( $label, 'fw' ),
+			'desc'		=> __( $desc, 'fw' ),
 			'value' => '',
 			'choices' => array(
-				'' 						=> __('None', 'lastimosa'),
+				'' 						=> __('None', 'fw' ),
 				array(
 					'attr'    	=> array(
-						'label'         => __( 'For All Devices ( Default )', 'lastimosa' ),
+						'label'         => __( 'For All Devices ( Default )', 'fw' ),
 						//'data-whatever' => 'some data',
 					),
 					'choices' => array(
-						'float-left' 		=> __( 'Float left', 'lastimosa' ),
-						'float-right' 	=> __( 'Float right', 'lastimosa' ),
-						'mx-auto d-block'	=> __( 'Centered', 'lastimosa' ),
-						'float-none' 		=> __( 'Don\'t float', 'lastimosa' ),
+						'float-left' 		=> __( 'Float left', 'fw' ),
+						'float-right' 	=> __( 'Float right', 'fw' ),
+						'mx-auto d-block'	=> __( 'Centered', 'fw' ),
+						'float-none' 		=> __( 'Don\'t float', 'fw' ),
 					),
 				),
 				array(
 					'attr'    	=> array(
-						'label'         => __( 'Small devices (landscape phones, 576px and up)', 'lastimosa' ),
+						'label'         => __( 'Small devices (landscape phones, 576px and up)', 'fw' ),
 					),
 					'choices' => array(
-						'float-sm-left' 	=> __( 'Float left', 'lastimosa' ),
-						'float-sm-right' 	=> __( 'Float right', 'lastimosa' ),
-						'mx-sm-auto d-block' 			=> __( 'Centered', 'lastimosa' ),
-						'float-sm-none' 	=> __( 'Don\'t float', 'lastimosa' ),
+						'float-sm-left' 	=> __( 'Float left', 'fw' ),
+						'float-sm-right' 	=> __( 'Float right', 'fw' ),
+						'mx-sm-auto d-block' 			=> __( 'Centered', 'fw' ),
+						'float-sm-none' 	=> __( 'Don\'t float', 'fw' ),
 					),
 				),
 				array(
 					'attr'    	=> array(
-						'label'         => __( 'Medium devices (tablets, 768px and up)', 'lastimosa' ),
+						'label'         => __( 'Medium devices (tablets, 768px and up)', 'fw' ),
 					),
 					'choices' => array(
-						'float-md-left' 	=> __( 'Float left', 'lastimosa' ),
-						'float-md-right' 	=> __( 'Float right', 'lastimosa' ),
-						'mx-md-auto d-block' => __( 'Centered', 'lastimosa' ),
-						'float-md-none' 	=> __( 'Don\'t float', 'lastimosa' ),
+						'float-md-left' 	=> __( 'Float left', 'fw' ),
+						'float-md-right' 	=> __( 'Float right', 'fw' ),
+						'mx-md-auto d-block' => __( 'Centered', 'fw' ),
+						'float-md-none' 	=> __( 'Don\'t float', 'fw' ),
 					),
 				),
 				array(
 					'attr'    	=> array(
-						'label'         => __( 'Large devices (desktops, 992px and up)', 'lastimosa' ),
+						'label'         => __( 'Large devices (desktops, 992px and up)', 'fw' ),
 					),
 					'choices' => array(
-						'float-lg-left' 	=> __( 'Float left', 'lastimosa' ),
-						'float-lg-right' 	=> __( 'Float right', 'lastimosa' ),
-						'mx-lg-auto d-block' 			=> __( 'Centered', 'lastimosa' ),
-						'float-lg-none' 	=> __( 'Don\'t float', 'lastimosa' ),
+						'float-lg-left' 	=> __( 'Float left', 'fw' ),
+						'float-lg-right' 	=> __( 'Float right', 'fw' ),
+						'mx-lg-auto d-block' 			=> __( 'Centered', 'fw' ),
+						'float-lg-none' 	=> __( 'Don\'t float', 'fw' ),
 					),
 				),
 				array(
 					'attr'    	=> array(
-						'label'         => __( 'Extra large devices (large desktops, 1200px and up)', 'lastimosa' ),
+						'label'         => __( 'Extra large devices (large desktops, 1200px and up)', 'fw' ),
 					),
 					'choices' => array(
-						'float-xl-left' 	=> __( 'Float left', 'lastimosa' ),
-						'float-xl-right' 	=> __( 'Float right', 'lastimosa' ),
-						'mx-xl-auto d-block' 			=> __( 'Centered', 'lastimosa' ),
-						'float-xl-none' 	=> __( 'Don\'t float', 'lastimosa' ),
+						'float-xl-left' 	=> __( 'Float left', 'fw' ),
+						'float-xl-right' 	=> __( 'Float right', 'fw' ),
+						'mx-xl-auto d-block' 			=> __( 'Centered', 'fw' ),
+						'float-xl-none' 	=> __( 'Don\'t float', 'fw' ),
 					),
 				),
 			),
@@ -782,40 +782,40 @@ if(! function_exists('sc_option_hover_2d')) :
 	function sc_option_hover_2d() {
 		return array(
 			'type'    => 'select',
-			'label'   => __( '2d Transition', 'lastimosa' ),
-			'desc'		=> __( '', 'lastimosa' ),
+			'label'   => __( '2d Transition', 'fw' ),
+			'desc'		=> __( '', 'fw' ),
 			'value' => '',
 			'choices' => array(
-				'' 				=> __( 'None', 'lastimosa'),
-				'hvr-grow' 				=> __( 'Grow', 'lastimosa' ),
-				'hvr-shrink' 			=> __( 'Shrink', 'lastimosa' ),
-				'hvr-pulse' 			=> __( 'Pulse', 'lastimosa' ),
-				'hvr-pulse-grow' 	=> __( 'Pulse Grow', 'lastimosa' ),
-				'hvr-pulse-shrink'=> __( 'Pulse Shrink', 'lastimosa' ),
-				'hvr-push' 				=> __( 'Push', 'lastimosa' ),
-				'hvr-pop' 				=> __( 'Pop', 'lastimosa' ),
-				'hvr-bounce-in' 	=> __( 'Bounce In', 'lastimosa' ),
-				'hvr-bounce-out' 	=> __( 'Bounce Out', 'lastimosa' ),
-				'hvr-rotate' 			=> __( 'Rotate', 'lastimosa' ),
-				'hvr-grow-rotate' => __( 'Grow Rotate', 'lastimosa' ),
-				'hvr-float' 			=> __( 'Float', 'lastimosa' ),
-				'hvr-sink' 				=> __( 'Sink', 'lastimosa' ),
-				'hvr-bob' 				=> __( 'Bob', 'lastimosa' ),
-				'hvr-hang' 				=> __( 'Hang', 'lastimosa' ),
-				'hvr-skew' 				=> __( 'Skew', 'lastimosa' ),
-				'hvr-skew-forward' 	=> __( 'Skew Forward', 'lastimosa' ),
-				'hvr-skew-backward' => __( 'Skew Backward', 'lastimosa' ),
-				'hvr-wobble-horizontal' => __( 'Wobble Horizontal', 'lastimosa' ),
-				'hvr-wobble-vertical' 	=> __( 'Wobble Vertical', 'lastimosa' ),
-				'hvr-wobble-to-bottom-right'=> __( 'Wobble To Bottom Right', 'lastimosa' ),
-				'hvr-wobble-to-top-right' 	=> __( 'Wobble To Top Right', 'lastimosa' ),
-				'hvr-wobble-top' 	=> __( 'Wobble Top', 'lastimosa' ),
-				'hvr-wobble-bottom' => __( 'Wobble Bottom', 'lastimosa' ),
-				'hvr-wobble-skew' => __( 'Wobble Skew', 'lastimosa' ),
-				'hvr-buzz' 				=> __( 'Buzz', 'lastimosa' ),
-				'hvr-buzz-out' 		=> __( 'Buzz Out', 'lastimosa' ),
-				'hvr-forward' 		=> __( 'Forward', 'lastimosa' ),
-				'hvr-backward' 		=> __( 'Backward', 'lastimosa' ),
+				'' 				=> __( 'None', 'fw' ),
+				'hvr-grow' 				=> __( 'Grow', 'fw' ),
+				'hvr-shrink' 			=> __( 'Shrink', 'fw' ),
+				'hvr-pulse' 			=> __( 'Pulse', 'fw' ),
+				'hvr-pulse-grow' 	=> __( 'Pulse Grow', 'fw' ),
+				'hvr-pulse-shrink'=> __( 'Pulse Shrink', 'fw' ),
+				'hvr-push' 				=> __( 'Push', 'fw' ),
+				'hvr-pop' 				=> __( 'Pop', 'fw' ),
+				'hvr-bounce-in' 	=> __( 'Bounce In', 'fw' ),
+				'hvr-bounce-out' 	=> __( 'Bounce Out', 'fw' ),
+				'hvr-rotate' 			=> __( 'Rotate', 'fw' ),
+				'hvr-grow-rotate' => __( 'Grow Rotate', 'fw' ),
+				'hvr-float' 			=> __( 'Float', 'fw' ),
+				'hvr-sink' 				=> __( 'Sink', 'fw' ),
+				'hvr-bob' 				=> __( 'Bob', 'fw' ),
+				'hvr-hang' 				=> __( 'Hang', 'fw' ),
+				'hvr-skew' 				=> __( 'Skew', 'fw' ),
+				'hvr-skew-forward' 	=> __( 'Skew Forward', 'fw' ),
+				'hvr-skew-backward' => __( 'Skew Backward', 'fw' ),
+				'hvr-wobble-horizontal' => __( 'Wobble Horizontal', 'fw' ),
+				'hvr-wobble-vertical' 	=> __( 'Wobble Vertical', 'fw' ),
+				'hvr-wobble-to-bottom-right'=> __( 'Wobble To Bottom Right', 'fw' ),
+				'hvr-wobble-to-top-right' 	=> __( 'Wobble To Top Right', 'fw' ),
+				'hvr-wobble-top' 	=> __( 'Wobble Top', 'fw' ),
+				'hvr-wobble-bottom' => __( 'Wobble Bottom', 'fw' ),
+				'hvr-wobble-skew' => __( 'Wobble Skew', 'fw' ),
+				'hvr-buzz' 				=> __( 'Buzz', 'fw' ),
+				'hvr-buzz-out' 		=> __( 'Buzz Out', 'fw' ),
+				'hvr-forward' 		=> __( 'Forward', 'fw' ),
+				'hvr-backward' 		=> __( 'Backward', 'fw' ),
 			),
 		);
 	}
@@ -829,29 +829,29 @@ if(! function_exists('sc_option_hover_background')) :
 	function sc_option_hover_background() {
 		return array(
 			'type'    => 'select',
-			'label'   => __( 'Background Transition', 'lastimosa' ),
-			'desc'		=> __( '', 'lastimosa' ),
+			'label'   => __( 'Background Transition', 'fw' ),
+			'desc'		=> __( '', 'fw' ),
 			'value' => '',
 			'choices' => array(
-				'' 				=> __( 'None', 'lastimosa'),
-				'hvr-fade' => __( 'Fade', 'lastimosa' ),
-				'hvr-back-pulse' => __( 'Back Pulse', 'lastimosa' ),
-				'hvr-sweep-to-right' => __( 'Sweep To Right', 'lastimosa' ),
-				'hvr-sweep-to-left' => __( 'Sweep To Left', 'lastimosa' ),
-				'hvr-sweep-to-bottom' => __( 'Sweep To Bottom', 'lastimosa' ),
-				'hvr-sweep-to-top' => __( 'Sweep To Top', 'lastimosa' ),
-				'hvr-bounce-to-right' => __( 'Bounce To Right', 'lastimosa' ),
-				'hvr-bounce-to-left' => __( 'Bounce To Left', 'lastimosa' ),
-				'hvr-bounce-to-bottom' => __( 'Bounce To Bottom', 'lastimosa' ),
-				'hvr-bounce-to-top' => __( 'Bounce To Top', 'lastimosa' ),
-				'hvr-radial-out' => __( 'Radial Out', 'lastimosa' ),
-				'hvr-radial-in' => __( 'Radial In', 'lastimosa' ),
-				'hvr-rectangle-in' => __( 'Rectangle In', 'lastimosa' ),
-				'hvr-rectangle-out' => __( 'Rectangle Out', 'lastimosa' ),
-				'hvr-shutter-in-horizontal' => __( 'Shutter In Horizontal', 'lastimosa' ),
-				'hvr-shutter-out-horizontal' => __( 'Shutter Out Horizontal', 'lastimosa' ),
-				'hvr-shutter-in-vertical' => __( 'Shutter In Vertical', 'lastimosa' ),
-				'hvr-shutter-out-vertical' => __( 'Shutter Out Vertical', 'lastimosa' ),
+				'' 				=> __( 'None', 'fw' ),
+				'hvr-fade' => __( 'Fade', 'fw' ),
+				'hvr-back-pulse' => __( 'Back Pulse', 'fw' ),
+				'hvr-sweep-to-right' => __( 'Sweep To Right', 'fw' ),
+				'hvr-sweep-to-left' => __( 'Sweep To Left', 'fw' ),
+				'hvr-sweep-to-bottom' => __( 'Sweep To Bottom', 'fw' ),
+				'hvr-sweep-to-top' => __( 'Sweep To Top', 'fw' ),
+				'hvr-bounce-to-right' => __( 'Bounce To Right', 'fw' ),
+				'hvr-bounce-to-left' => __( 'Bounce To Left', 'fw' ),
+				'hvr-bounce-to-bottom' => __( 'Bounce To Bottom', 'fw' ),
+				'hvr-bounce-to-top' => __( 'Bounce To Top', 'fw' ),
+				'hvr-radial-out' => __( 'Radial Out', 'fw' ),
+				'hvr-radial-in' => __( 'Radial In', 'fw' ),
+				'hvr-rectangle-in' => __( 'Rectangle In', 'fw' ),
+				'hvr-rectangle-out' => __( 'Rectangle Out', 'fw' ),
+				'hvr-shutter-in-horizontal' => __( 'Shutter In Horizontal', 'fw' ),
+				'hvr-shutter-out-horizontal' => __( 'Shutter Out Horizontal', 'fw' ),
+				'hvr-shutter-in-vertical' => __( 'Shutter In Vertical', 'fw' ),
+				'hvr-shutter-out-vertical' => __( 'Shutter Out Vertical', 'fw' ),
 			),
 		);
 	}
@@ -865,28 +865,28 @@ if(! function_exists('sc_option_hover_border')) :
 	function sc_option_hover_border() {
 		return array(
 			'type'    => 'select',
-			'label'   => __( 'Border Transition', 'lastimosa' ),
-			'desc'		=> __( '', 'lastimosa' ),
+			'label'   => __( 'Border Transition', 'fw' ),
+			'desc'		=> __( '', 'fw' ),
 			'value' => '',
 			'choices' => array(
-				'' 				=> __( 'None', 'lastimosa'),
-				'hvr-border-fade' => __( 'Border Fade', 'lastimosa' ),
-				'hvr-hollow' => __( 'Hollow', 'lastimosa' ),
-				'hvr-trim' => __( 'Trim', 'lastimosa' ),
-				'hvr-ripple-out' => __( 'Ripple Out', 'lastimosa' ),
-				'hvr-ripple-in' => __( 'Ripple In', 'lastimosa' ),
-				'hvr-outline-out' => __( 'Outline Out', 'lastimosa' ),
-				'hvr-outline-in' => __( 'Outline In', 'lastimosa' ),
-				'hvr-round-corners' => __( 'Round Corners', 'lastimosa' ),
-				'hvr-underline-from-left' => __( 'Underline From Left', 'lastimosa' ),
-				'hvr-underline-from-center' => __( 'Underline From Center', 'lastimosa' ),
-				'hvr-underline-from-right' => __( 'Underline From Right', 'lastimosa' ),
-				'hvr-reveal' => __( 'Reveal', 'lastimosa' ),
-				'hvr-underline-reveal' => __( 'Underline Reveal', 'lastimosa' ),
-				'hvr-overline-reveal' => __( 'Overline Reveal', 'lastimosa' ),
-				'hvr-overline-from-left' => __( 'Overline From Left', 'lastimosa' ),
-				'hvr-overline-from-center' => __( 'Overline From Center', 'lastimosa' ),
-				'hvr-overline-from-right' => __( 'Overline From Right', 'lastimosa' ),
+				'' 				=> __( 'None', 'fw' ),
+				'hvr-border-fade' => __( 'Border Fade', 'fw' ),
+				'hvr-hollow' => __( 'Hollow', 'fw' ),
+				'hvr-trim' => __( 'Trim', 'fw' ),
+				'hvr-ripple-out' => __( 'Ripple Out', 'fw' ),
+				'hvr-ripple-in' => __( 'Ripple In', 'fw' ),
+				'hvr-outline-out' => __( 'Outline Out', 'fw' ),
+				'hvr-outline-in' => __( 'Outline In', 'fw' ),
+				'hvr-round-corners' => __( 'Round Corners', 'fw' ),
+				'hvr-underline-from-left' => __( 'Underline From Left', 'fw' ),
+				'hvr-underline-from-center' => __( 'Underline From Center', 'fw' ),
+				'hvr-underline-from-right' => __( 'Underline From Right', 'fw' ),
+				'hvr-reveal' => __( 'Reveal', 'fw' ),
+				'hvr-underline-reveal' => __( 'Underline Reveal', 'fw' ),
+				'hvr-overline-reveal' => __( 'Overline Reveal', 'fw' ),
+				'hvr-overline-from-left' => __( 'Overline From Left', 'fw' ),
+				'hvr-overline-from-center' => __( 'Overline From Center', 'fw' ),
+				'hvr-overline-from-right' => __( 'Overline From Right', 'fw' ),
 			),
 		);
 	}
@@ -900,18 +900,18 @@ if(! function_exists('sc_option_hover_shadow')) :
 	function sc_option_hover_shadow() {
 		return array(
 			'type'    => 'select',
-			'label'   => __( 'Shadow and Glow Transition', 'lastimosa' ),
-			'desc'		=> __( '', 'lastimosa' ),
+			'label'   => __( 'Shadow and Glow Transition', 'fw' ),
+			'desc'		=> __( '', 'fw' ),
 			'value' => '',
 			'choices' => array(
-				'' 				=> __( 'None', 'lastimosa'),
-				'hvr-shadow' => __( 'Shadow', 'lastimosa' ),
-				'hvr-grow-shadow' => __( 'Grow Shadow', 'lastimosa' ),
-				'hvr-float-shadow' => __( 'Float Shadow', 'lastimosa' ),
-				'hvr-glow' => __( 'Glow', 'lastimosa' ),
-				'hvr-shadow-radial' => __( 'Shadow Radial', 'lastimosa' ),
-				'hvr-box-shadow-outset' => __( 'Box Shadow Outset', 'lastimosa' ),
-				'hvr-box-shadow-inset' => __( 'Box Shadow Inset', 'lastimosa' ),
+				'' 				=> __( 'None', 'fw' ),
+				'hvr-shadow' => __( 'Shadow', 'fw' ),
+				'hvr-grow-shadow' => __( 'Grow Shadow', 'fw' ),
+				'hvr-float-shadow' => __( 'Float Shadow', 'fw' ),
+				'hvr-glow' => __( 'Glow', 'fw' ),
+				'hvr-shadow-radial' => __( 'Shadow Radial', 'fw' ),
+				'hvr-box-shadow-outset' => __( 'Box Shadow Outset', 'fw' ),
+				'hvr-box-shadow-inset' => __( 'Box Shadow Inset', 'fw' ),
 			),
 		);
 	}
@@ -925,19 +925,19 @@ if(! function_exists('sc_option_hover_speech_bubbles')) :
 	function sc_option_hover_speech_bubbles() {
 		return array(
 			'type'    => 'select',
-			'label'   => __( 'Speech Bubbles', 'lastimosa' ),
-			'desc'		=> __( '', 'lastimosa' ),
+			'label'   => __( 'Speech Bubbles', 'fw' ),
+			'desc'		=> __( '', 'fw' ),
 			'value' => '',
 			'choices' => array(
-				'' 				=> __( 'None', 'lastimosa'),
-				'hvr-bubble-top' => __( 'Bubble Top', 'lastimosa' ),
-				'hvr-bubble-right' => __( 'Bubble Right', 'lastimosa' ),
-				'hvr-bubble-bottom' => __( 'Bubble Bottom', 'lastimosa' ),
-				'hvr-bubble-left' => __( 'Bubble Left', 'lastimosa' ),
-				'hvr-bubble-float-top' => __( 'Bubble Float Top', 'lastimosa' ),
-				'hvr-bubble-float-right' => __( 'Bubble Float Right', 'lastimosa' ),
-				'hvr-bubble-float-bottom' => __( 'Bubble Float Bottom', 'lastimosa' ),
-				'hvr-bubble-float-left' => __( 'Bubble Float Left', 'lastimosa' ),
+				'' 				=> __( 'None', 'fw' ),
+				'hvr-bubble-top' => __( 'Bubble Top', 'fw' ),
+				'hvr-bubble-right' => __( 'Bubble Right', 'fw' ),
+				'hvr-bubble-bottom' => __( 'Bubble Bottom', 'fw' ),
+				'hvr-bubble-left' => __( 'Bubble Left', 'fw' ),
+				'hvr-bubble-float-top' => __( 'Bubble Float Top', 'fw' ),
+				'hvr-bubble-float-right' => __( 'Bubble Float Right', 'fw' ),
+				'hvr-bubble-float-bottom' => __( 'Bubble Float Bottom', 'fw' ),
+				'hvr-bubble-float-left' => __( 'Bubble Float Left', 'fw' ),
 			),
 		);
 	}
@@ -951,15 +951,15 @@ if(! function_exists('sc_option_hover_curls')) :
 	function sc_option_hover_curls() {
 		return array(
 			'type'    => 'select',
-			'label'   => __( 'Curls', 'lastimosa' ),
-			'desc'		=> __( '', 'lastimosa' ),
+			'label'   => __( 'Curls', 'fw' ),
+			'desc'		=> __( '', 'fw' ),
 			'value' => '',
 			'choices' => array(
-				'' 				=> __( 'None', 'lastimosa'),
-				'hvr-curl-top-left' => __( 'Curl Top Left', 'lastimosa' ),
-				'hvr-curl-top-right' => __( 'Curl Top Right', 'lastimosa' ),
-				'hvr-curl-bottom-right' => __( 'Curl Bottom Right', 'lastimosa' ),
-				'hvr-curl-bottom-left' => __( 'Curl Bottom Left', 'lastimosa' ),
+				'' 				=> __( 'None', 'fw' ),
+				'hvr-curl-top-left' => __( 'Curl Top Left', 'fw' ),
+				'hvr-curl-top-right' => __( 'Curl Top Right', 'fw' ),
+				'hvr-curl-bottom-right' => __( 'Curl Bottom Right', 'fw' ),
+				'hvr-curl-bottom-left' => __( 'Curl Bottom Left', 'fw' ),
 			),
 		);
 	}
@@ -973,8 +973,8 @@ if( ! function_exists('sc_option_alignment') ) :
 			'type'    => 'group',
 			'options' => array(
 				'alignment' =>	array(
-					'label' => __( 'Alignment', 'lastimosa' ),
-					'desc'  => __( 'Image alignment', 'lastimosa'),
+					'label' => __( 'Alignment', 'fw' ),
+					'desc'  => __( 'Image alignment', 'fw' ),
 					'type'  => 'image-picker',
 					'value' => '',
 					'choices' => array(
@@ -982,28 +982,28 @@ if( ! function_exists('sc_option_alignment') ) :
 							'small' => array(
 								'height' => 50,
 								'src' => $uri .'/images/image-picker/align-none.png',
-								'title' => __( 'None','lastimosa' )
+								'title' => __( 'None','fw' )
 							),
 						),
 						'float-left' => array(
 							'small' => array(
 								'height' => 50,
 								'src' => $uri .'/images/image-picker/align-left.png',
-								'title' => __( 'Left','lastimosa' )
+								'title' => __( 'Left','fw' )
 							),
 						),
 						'mx-auto d-block' => array(
 							'small' => array(
 								'height' => 50,
 								'src' => $uri .'/images/image-picker/align-center.png',
-								'title' => __( 'Center','lastimosa' )
+								'title' => __( 'Center','fw' )
 							),
 						),
 						'float-right' => array(
 							'small' => array(
 								'height' => 50,
 								'src' => $uri .'/images/image-picker/align-right.png',
-								'title' => __( 'Right','lastimosa' )
+								'title' => __( 'Right','fw' )
 							),
 						),
 					),
@@ -1012,16 +1012,16 @@ if( ! function_exists('sc_option_alignment') ) :
 					'type' => 'popup',
 					'value' => array(
 					),
-					'label' 		=> __('', 'lastimosa'),
-					'desc'  		=> __( '', 'lastimosa' ),
-					'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
-					'button' 		=> __('Responsive Breakpoints', 'lastimosa'),
-					'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
+					'label' 		=> __('', 'fw' ),
+					'desc'  		=> __( '', 'fw' ),
+					'popup-title' => __('Responsive Breakpoints', 'fw' ),
+					'button' 		=> __('Responsive Breakpoints', 'fw' ),
+					'popup-title' => __('Responsive Breakpoints', 'fw' ),
 					'size' 			=> 'small', // small, medium, large
 					'popup-options' => array(
 						'sm' =>	array(
-							'label' => __( 'Small', 'lastimosa' ),
-							'desc'  => __( 'Small devices (landscape phones, 576px and up)', 'lastimosa' ),
+							'label' => __( 'Small', 'fw' ),
+							'desc'  => __( 'Small devices (landscape phones, 576px and up)', 'fw' ),
 							'type'  => 'image-picker',
 							'value' => '',
 							'choices' => array(
@@ -1029,42 +1029,42 @@ if( ! function_exists('sc_option_alignment') ) :
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-default.png',
-										'title' => __( 'Default','lastimosa' )
+										'title' => __( 'Default','fw' )
 									),
 								),
 								'float-sm-none' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-none.png',
-										'title' => __( 'None','lastimosa' )
+										'title' => __( 'None','fw' )
 									),
 								),
 								'float-sm-left' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-left.png',
-										'title' => __( 'Left','lastimosa' )
+										'title' => __( 'Left','fw' )
 									),
 								),
 								'mx-sm-auto d-block' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-center.png',
-										'title' => __( 'Center','lastimosa' )
+										'title' => __( 'Center','fw' )
 									),
 								),
 								'float-sm-right' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-right.png',
-										'title' => __( 'Right','lastimosa' )
+										'title' => __( 'Right','fw' )
 									),
 								),
 							),
 						),
 						'md' =>	array(
-							'label' => __( 'Medium', 'lastimosa' ),
-							'desc'  => __( 'Medium devices (tablets, 768px and up)', 'lastimosa' ),
+							'label' => __( 'Medium', 'fw' ),
+							'desc'  => __( 'Medium devices (tablets, 768px and up)', 'fw' ),
 							'type'  => 'image-picker',
 							'value' => '',
 							'choices' => array(
@@ -1072,42 +1072,42 @@ if( ! function_exists('sc_option_alignment') ) :
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-default.png',
-										'title' => __( 'Default','lastimosa' )
+										'title' => __( 'Default','fw' )
 									),
 								),
 								'float-md-none' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-none.png',
-										'title' => __( 'None','lastimosa' )
+										'title' => __( 'None','fw' )
 									),
 								),
 								'float-md-left' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-left.png',
-										'title' => __( 'Left','lastimosa' )
+										'title' => __( 'Left','fw' )
 									),
 								),
 								'mx-md-auto d-block' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-center.png',
-										'title' => __( 'Center','lastimosa' )
+										'title' => __( 'Center','fw' )
 									),
 								),
 								'float-md-right' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-right.png',
-										'title' => __( 'Right','lastimosa' )
+										'title' => __( 'Right','fw' )
 									),
 								),
 							),
 						),
 						'lg' =>	array(
-							'label' => __( 'Large', 'lastimosa' ),
-							'desc'  => __( 'Large devices (desktops, 992px and up)', 'lastimosa' ),
+							'label' => __( 'Large', 'fw' ),
+							'desc'  => __( 'Large devices (desktops, 992px and up)', 'fw' ),
 							'type'  => 'image-picker',
 							'value' => '',
 							'choices' => array(
@@ -1115,42 +1115,42 @@ if( ! function_exists('sc_option_alignment') ) :
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-default.png',
-										'title' => __( 'Default','lastimosa' )
+										'title' => __( 'Default','fw' )
 									),
 								),
 								'float-lg-none' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-none.png',
-										'title' => __( 'None','lastimosa' )
+										'title' => __( 'None','fw' )
 									),
 								),
 								'float-lg-left' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-left.png',
-										'title' => __( 'Left','lastimosa' )
+										'title' => __( 'Left','fw' )
 									),
 								),
 								'mx-lg-auto d-block' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-center.png',
-										'title' => __( 'Center','lastimosa' )
+										'title' => __( 'Center','fw' )
 									),
 								),
 								'float-lg-right' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-right.png',
-										'title' => __( 'Right','lastimosa' )
+										'title' => __( 'Right','fw' )
 									),
 								),
 							),
 						),
 						'xl' =>	array(
-							'label' => __( 'Extra Large', 'lastimosa' ),
-							'desc'  => __( 'Extra large devices (large desktops, 1200px and up)', 'lastimosa' ),
+							'label' => __( 'Extra Large', 'fw' ),
+							'desc'  => __( 'Extra large devices (large desktops, 1200px and up)', 'fw' ),
 							'type'  => 'image-picker',
 							'value' => '',
 							'choices' => array(
@@ -1158,35 +1158,35 @@ if( ! function_exists('sc_option_alignment') ) :
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-default.png',
-										'title' => __( 'Default','lastimosa' )
+										'title' => __( 'Default','fw' )
 									),
 								),
 								'float-xl-none' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-none.png',
-										'title' => __( 'None','lastimosa' )
+										'title' => __( 'None','fw' )
 									),
 								),
 								'float-xl-left' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-left.png',
-										'title' => __( 'Left','lastimosa' )
+										'title' => __( 'Left','fw' )
 									),
 								),
 								'mx-xl-auto d-block' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-center.png',
-										'title' => __( 'Center','lastimosa' )
+										'title' => __( 'Center','fw' )
 									),
 								),
 								'float-xl-right' => array(
 									'small' => array(
 										'height' => 50,
 										'src' => $uri .'/images/image-picker/align-right.png',
-										'title' => __( 'Right','lastimosa' )
+										'title' => __( 'Right','fw' )
 									),
 								),
 							),
@@ -1206,8 +1206,8 @@ if(! function_exists('sc_option_text_alignment')) :
 	function sc_option_text_alignment() {
 		return array(
 			'type'    => 'select',
-			'label'   => __('Text Alignment', 'lastimosa'),
-			'desc'		=> __('', 'lastimosa'),
+			'label'   => __('Text Alignment', 'fw' ),
+			'desc'		=> __('', 'fw' ),
 			'choices' => array(
 				'' 				=> 'Default',
 				'text-left' 	=> 'Left aligned text',
@@ -1248,226 +1248,226 @@ if(! function_exists('sc_option_animate')) :
 	function sc_option_animate() {
 		return array(
 			'animation'   => array(
-				'label'   => __( 'Animation', 'lastimosa' ),
+				'label'   => __( 'Animation', 'fw' ),
 				'type'    => 'select',
 				'value'   => '',
-				'desc'    => __( 'Select animation.','lastimosa' ),
+				'desc'    => __( 'Select animation.','fw' ),
 				'choices' => array(
-					'' => __( 'None', 'lastimosa' ),				
+					'' => __( 'None', 'fw' ),				
 					array(
 						'attr'    => array(
-							'label'         => __( 'Attention Seekers', 'lastimosa' ),
+							'label'         => __( 'Attention Seekers', 'fw' ),
 						),
 						'choices' => array(
-							'bounce' => __( 'bounce', 'lastimosa' ),
-							'flash' => __( 'flash', 'lastimosa' ),
-							'pulse' => __( 'pulse', 'lastimosa' ),
-							'rubberBand' => __( 'rubberBand', 'lastimosa' ),
-							'shake' => __( 'shake', 'lastimosa' ),
-							'swing' => __( 'swing', 'lastimosa' ),
-							'tada' => __( 'tada', 'lastimosa' ),
-							'wobble' => __( 'wobble', 'lastimosa' ),
-							'jello' => __( 'jello', 'lastimosa' ),
+							'bounce' => __( 'bounce', 'fw' ),
+							'flash' => __( 'flash', 'fw' ),
+							'pulse' => __( 'pulse', 'fw' ),
+							'rubberBand' => __( 'rubberBand', 'fw' ),
+							'shake' => __( 'shake', 'fw' ),
+							'swing' => __( 'swing', 'fw' ),
+							'tada' => __( 'tada', 'fw' ),
+							'wobble' => __( 'wobble', 'fw' ),
+							'jello' => __( 'jello', 'fw' ),
 						),
 					),	
 					array(
 						'attr'    => array(
-							'label'         => __( 'Bouncing Entrances', 'lastimosa' ),
+							'label'         => __( 'Bouncing Entrances', 'fw' ),
 						),
 						'choices' => array(
-							'bounceIn' => __( 'bounceIn', 'lastimosa' ),
-							'bounceInDown' => __( 'bounceInDown', 'lastimosa' ),
-							'bounceInLeft' => __( 'bounceInLeft', 'lastimosa' ),
-							'bounceInRight' => __( 'bounceInRight', 'lastimosa' ),
-							'bounceInUp' => __( 'bounceInUp', 'lastimosa' ),
-						),
-					),	
-				/*	array(
-						'attr'    => array(
-							'label'         => __( 'Bouncing Exits', 'lastimosa' ),
-						),
-						'choices' => array(
-							'bounceOut' => __( 'bounceOut', 'lastimosa' ),
-							'bounceOutDown' => __( 'bounceOutDown', 'lastimosa' ),
-							'bounceOutLeft' => __( 'bounceOutLeft', 'lastimosa' ),
-							'bounceOutRight' => __( 'bounceOutRight', 'lastimosa' ),
-							'bounceOutUp' => __( 'bounceOutUp', 'lastimosa' ),
-						),
-					),	*/
-					array(
-						'attr'    => array(
-							'label'         => __( 'Fading Entrances', 'lastimosa' ),
-						),
-						'choices' => array(
-							'fadeIn' => __( 'fadeIn', 'lastimosa' ),
-							'fadeInDown' => __( 'fadeInDown', 'lastimosa' ),
-							'fadeInDownBig' => __( 'fadeInDownBig', 'lastimosa' ),
-							'fadeInLeft' => __( 'fadeInLeft', 'lastimosa' ),
-							'fadeInLeftBig' => __( 'fadeInLeftBig', 'lastimosa' ),
-							'fadeInRight' => __( 'fadeInRight', 'lastimosa' ),
-							'fadeInRightBig' => __( 'fadeInRightBig', 'lastimosa' ),
-							'fadeInUp' => __( 'fadeInUp', 'lastimosa' ),
-							'fadeInUpBig' => __( 'fadeInUpBig', 'lastimosa' ),
+							'bounceIn' => __( 'bounceIn', 'fw' ),
+							'bounceInDown' => __( 'bounceInDown', 'fw' ),
+							'bounceInLeft' => __( 'bounceInLeft', 'fw' ),
+							'bounceInRight' => __( 'bounceInRight', 'fw' ),
+							'bounceInUp' => __( 'bounceInUp', 'fw' ),
 						),
 					),	
 				/*	array(
 						'attr'    => array(
-							'label'         => __( 'Fading Exits', 'lastimosa' ),
+							'label'         => __( 'Bouncing Exits', 'fw' ),
 						),
 						'choices' => array(
-							'fadeOut' => __( 'fadeOut', 'lastimosa' ),
-							'fadeOutDown' => __( 'fadeOutDown', 'lastimosa' ),
-							'fadeOutDownBig' => __( 'fadeOutDownBig', 'lastimosa' ),
-							'fadeOutLeft' => __( 'fadeOutLeft', 'lastimosa' ),
-							'fadeOutLeftBig' => __( 'fadeOutLeftBig', 'lastimosa' ),
-							'fadeOutRight' => __( 'fadeOutRight', 'lastimosa' ),
-							'fadeOutRightBig' => __( 'fadeOutRightBig', 'lastimosa' ),
-							'fadeOutUp' => __( 'fadeOutUp', 'lastimosa' ),
-							'fadeOutUpBig' => __( 'fadeOutUpBig', 'lastimosa' ),
+							'bounceOut' => __( 'bounceOut', 'fw' ),
+							'bounceOutDown' => __( 'bounceOutDown', 'fw' ),
+							'bounceOutLeft' => __( 'bounceOutLeft', 'fw' ),
+							'bounceOutRight' => __( 'bounceOutRight', 'fw' ),
+							'bounceOutUp' => __( 'bounceOutUp', 'fw' ),
 						),
 					),	*/
 					array(
 						'attr'    => array(
-							'label'         => __( 'Flippers', 'lastimosa' ),
+							'label'         => __( 'Fading Entrances', 'fw' ),
 						),
 						'choices' => array(
-							'flip' => __( 'flip', 'lastimosa' ),
-							'flipInX' => __( 'flipInX', 'lastimosa' ),
-							'flipInY' => __( 'flipInY', 'lastimosa' ),
-							'flipOutX' => __( 'flipOutX', 'lastimosa' ),
-							'flipOutY' => __( 'flipOutY', 'lastimosa' ),
+							'fadeIn' => __( 'fadeIn', 'fw' ),
+							'fadeInDown' => __( 'fadeInDown', 'fw' ),
+							'fadeInDownBig' => __( 'fadeInDownBig', 'fw' ),
+							'fadeInLeft' => __( 'fadeInLeft', 'fw' ),
+							'fadeInLeftBig' => __( 'fadeInLeftBig', 'fw' ),
+							'fadeInRight' => __( 'fadeInRight', 'fw' ),
+							'fadeInRightBig' => __( 'fadeInRightBig', 'fw' ),
+							'fadeInUp' => __( 'fadeInUp', 'fw' ),
+							'fadeInUpBig' => __( 'fadeInUpBig', 'fw' ),
+						),
+					),	
+				/*	array(
+						'attr'    => array(
+							'label'         => __( 'Fading Exits', 'fw' ),
+						),
+						'choices' => array(
+							'fadeOut' => __( 'fadeOut', 'fw' ),
+							'fadeOutDown' => __( 'fadeOutDown', 'fw' ),
+							'fadeOutDownBig' => __( 'fadeOutDownBig', 'fw' ),
+							'fadeOutLeft' => __( 'fadeOutLeft', 'fw' ),
+							'fadeOutLeftBig' => __( 'fadeOutLeftBig', 'fw' ),
+							'fadeOutRight' => __( 'fadeOutRight', 'fw' ),
+							'fadeOutRightBig' => __( 'fadeOutRightBig', 'fw' ),
+							'fadeOutUp' => __( 'fadeOutUp', 'fw' ),
+							'fadeOutUpBig' => __( 'fadeOutUpBig', 'fw' ),
+						),
+					),	*/
+					array(
+						'attr'    => array(
+							'label'         => __( 'Flippers', 'fw' ),
+						),
+						'choices' => array(
+							'flip' => __( 'flip', 'fw' ),
+							'flipInX' => __( 'flipInX', 'fw' ),
+							'flipInY' => __( 'flipInY', 'fw' ),
+							'flipOutX' => __( 'flipOutX', 'fw' ),
+							'flipOutY' => __( 'flipOutY', 'fw' ),
 						),
 					),	
 					array(
 						'attr'    => array(
-							'label'         => __( 'Lightspeed', 'lastimosa' ),
+							'label'         => __( 'Lightspeed', 'fw' ),
 						),
 						'choices' => array(
-							'lightSpeedIn' => __( 'lightSpeedIn', 'lastimosa' ),
-							'lightSpeedOut' => __( 'lightSpeedOut', 'lastimosa' ),
+							'lightSpeedIn' => __( 'lightSpeedIn', 'fw' ),
+							'lightSpeedOut' => __( 'lightSpeedOut', 'fw' ),
 						),
 					),	
 					array(
 						'attr'    => array(
-							'label'         => __( 'Rotating Entrances', 'lastimosa' ),
+							'label'         => __( 'Rotating Entrances', 'fw' ),
 						),
 						'choices' => array(
-							'rotateIn' => __( 'rotateIn', 'lastimosa' ),
-							'rotateInDownLeft' => __( 'rotateInDownLeft', 'lastimosa' ),
-							'rotateInDownRight' => __( 'rotateInDownRight', 'lastimosa' ),
-							'rotateInUpLeft' => __( 'rotateInUpLeft', 'lastimosa' ),
-							'rotateInUpRight' => __( 'rotateInUpRight', 'lastimosa' ),
+							'rotateIn' => __( 'rotateIn', 'fw' ),
+							'rotateInDownLeft' => __( 'rotateInDownLeft', 'fw' ),
+							'rotateInDownRight' => __( 'rotateInDownRight', 'fw' ),
+							'rotateInUpLeft' => __( 'rotateInUpLeft', 'fw' ),
+							'rotateInUpRight' => __( 'rotateInUpRight', 'fw' ),
 						),
 					),	
 			/*		array(
 						'attr'    => array(
-							'label'         => __( 'Rotating Exits', 'lastimosa' ),
+							'label'         => __( 'Rotating Exits', 'fw' ),
 						),
 						'choices' => array(
-							'rotateOut' => __( 'rotateOut', 'lastimosa' ),
-							'rotateOutDownLeft' => __( 'rotateOutDownLeft', 'lastimosa' ),
-							'rotateOutDownRight' => __( 'rotateOutDownRight', 'lastimosa' ),
-							'rotateOutUpLeft' => __( 'rotateOutUpLeft', 'lastimosa' ),
-							'rotateOutUpRight' => __( 'rotateOutUpRight', 'lastimosa' ),
+							'rotateOut' => __( 'rotateOut', 'fw' ),
+							'rotateOutDownLeft' => __( 'rotateOutDownLeft', 'fw' ),
+							'rotateOutDownRight' => __( 'rotateOutDownRight', 'fw' ),
+							'rotateOutUpLeft' => __( 'rotateOutUpLeft', 'fw' ),
+							'rotateOutUpRight' => __( 'rotateOutUpRight', 'fw' ),
 						),
 					),	*/
 					array(
 						'attr'    => array(
-							'label'         => __( 'Sliding Entrances', 'lastimosa' ),
+							'label'         => __( 'Sliding Entrances', 'fw' ),
 						),
 						'choices' => array(
-							'slideInUp' => __( 'slideInUp', 'lastimosa' ),
-							'slideInDown' => __( 'slideInDown', 'lastimosa' ),
-							'slideInLeft' => __( 'slideInLeft', 'lastimosa' ),
-							'slideInRight' => __( 'slideInRight', 'lastimosa' ),
+							'slideInUp' => __( 'slideInUp', 'fw' ),
+							'slideInDown' => __( 'slideInDown', 'fw' ),
+							'slideInLeft' => __( 'slideInLeft', 'fw' ),
+							'slideInRight' => __( 'slideInRight', 'fw' ),
 						),
 					),	
 			/*		array(
 						'attr'    => array(
-							'label'         => __( 'Sliding Exits', 'lastimosa' ),
+							'label'         => __( 'Sliding Exits', 'fw' ),
 						),
 						'choices' => array(
-							'slideOutUp' => __( 'slideOutUp', 'lastimosa' ),
-							'slideOutDown' => __( 'slideOutDown', 'lastimosa' ),
-							'slideOutLeft' => __( 'slideOutLeft', 'lastimosa' ),
-							'slideOutRight' => __( 'slideOutRight', 'lastimosa' ),
+							'slideOutUp' => __( 'slideOutUp', 'fw' ),
+							'slideOutDown' => __( 'slideOutDown', 'fw' ),
+							'slideOutLeft' => __( 'slideOutLeft', 'fw' ),
+							'slideOutRight' => __( 'slideOutRight', 'fw' ),
 						),
 					),	*/
 					array(
 						'attr'    => array(
-							'label'         => __( 'Zoom Entrances', 'lastimosa' ),
+							'label'         => __( 'Zoom Entrances', 'fw' ),
 						),
 						'choices' => array(
-							'zoomIn' => __( 'zoomIn', 'lastimosa' ),
-							'zoomInDown' => __( 'zoomInDown', 'lastimosa' ),
-							'zoomInLeft' => __( 'zoomInLeft', 'lastimosa' ),
-							'zoomInRight' => __( 'zoomInRight', 'lastimosa' ),
-							'zoomInUp' => __( 'zoomInUp', 'lastimosa' ),
+							'zoomIn' => __( 'zoomIn', 'fw' ),
+							'zoomInDown' => __( 'zoomInDown', 'fw' ),
+							'zoomInLeft' => __( 'zoomInLeft', 'fw' ),
+							'zoomInRight' => __( 'zoomInRight', 'fw' ),
+							'zoomInUp' => __( 'zoomInUp', 'fw' ),
 						),
 					),	
 			/*		array(
 						'attr'    => array(
-							'label'         => __( 'Zoom Exits', 'lastimosa' ),
+							'label'         => __( 'Zoom Exits', 'fw' ),
 						),
 						'choices' => array(
-							'zoomOut' => __( 'zoomOut', 'lastimosa' ),
-							'zoomOutDown' => __( 'zoomOutDown', 'lastimosa' ),
-							'zoomOutLeft' => __( 'zoomOutLeft', 'lastimosa' ),
-							'zoomOutRight' => __( 'zoomOutRight', 'lastimosa' ),
-							'zoomOutUp' => __( 'zoomOutUp', 'lastimosa' ),
+							'zoomOut' => __( 'zoomOut', 'fw' ),
+							'zoomOutDown' => __( 'zoomOutDown', 'fw' ),
+							'zoomOutLeft' => __( 'zoomOutLeft', 'fw' ),
+							'zoomOutRight' => __( 'zoomOutRight', 'fw' ),
+							'zoomOutUp' => __( 'zoomOutUp', 'fw' ),
 						),
 					),	*/
 					array(
 						'attr'    => array(
-							'label'         => __( 'Specials', 'lastimosa' ),
+							'label'         => __( 'Specials', 'fw' ),
 						),
 						'choices' => array(
-							'hinge' => __( 'hinge', 'lastimosa' ),
-							'rollIn' => __( 'rollIn', 'lastimosa' ),
-							'rollOut' => __( 'rollOut', 'lastimosa' ),
+							'hinge' => __( 'hinge', 'fw' ),
+							'rollIn' => __( 'rollIn', 'fw' ),
+							'rollOut' => __( 'rollOut', 'fw' ),
 						),
 					),						
 				),
 			),
 			'duration'                => array(
-				'label' => __( 'Duration', 'lastimosa' ),
+				'label' => __( 'Duration', 'fw' ),
 				'type'  => 'short-text',
 				'value' => NULL,
-				'desc'  => __( 'Change the animation duration. ',	'lastimosa' ),
+				'desc'  => __( 'Change the animation duration. ',	'fw' ),
 				'help'  => sprintf( "%s<br />%s",
-					__( 'E.g.: <b>2s</b> for 2 seconds.', 'lastimosa' ),
-					__( 'Leave blank to disable.', 'lastimosa' )
+					__( 'E.g.: <b>2s</b> for 2 seconds.', 'fw' ),
+					__( 'Leave blank to disable.', 'fw' )
 				),
 			),
 			'delay'                => array(
-				'label' => __( 'Delay', 'lastimosa' ),
+				'label' => __( 'Delay', 'fw' ),
 				'type'  => 'short-text',
 				'value' => NULL,
-				'desc'  => __( 'The delay before the animation starts. ',	'lastimosa' ),
+				'desc'  => __( 'The delay before the animation starts. ',	'fw' ),
 				'help'  => sprintf( "%s<br />%s",
-					__( 'E.g.: <b>5s</b> for 5 seconds.', 'lastimosa' ),
-					__( 'Leave blank to disable.', 'lastimosa' )
+					__( 'E.g.: <b>5s</b> for 5 seconds.', 'fw' ),
+					__( 'Leave blank to disable.', 'fw' )
 				),
 			),
 			'offset'                => array(
-				'label' => __( 'Offset', 'lastimosa' ),
+				'label' => __( 'Offset', 'fw' ),
 				'type'  => 'short-text',
 				'value' => '',
-				'desc'  => __( 'The distance to start the animation (related to the browser bottom).',	'lastimosa' ),
+				'desc'  => __( 'The distance to start the animation (related to the browser bottom).',	'fw' ),
 				'help'  => sprintf( "%s<br />%s",
-					__( 'E.g.: <b>10</b> for 10px.', 'lastimosa' ),
-					__( 'Leave blank to disable.', 'lastimosa' )
+					__( 'E.g.: <b>10</b> for 10px.', 'fw' ),
+					__( 'Leave blank to disable.', 'fw' )
 				),
 			),
 			'iteration' => array(
-				'label' => __( 'Iteration', 'lastimosa' ),
+				'label' => __( 'Iteration', 'fw' ),
 				'type'  => 'short-text',
 				'value' => NULL,
-				'desc'  => __( 'Number of times the animation is repeated.','lastimosa' ),
+				'desc'  => __( 'Number of times the animation is repeated.','fw' ),
 				'help'  => sprintf( "%s<br />%s<br />%s",
-					__( 'E.g.: <b>10</b> for 10 times.', 'lastimosa' ),
-					__( 'Type <b>infinite</b> for infinite loop.', 'lastimosa' ),
-					__( 'Leave blank to disable.', 'lastimosa' )
+					__( 'E.g.: <b>10</b> for 10 times.', 'fw' ),
+					__( 'Type <b>infinite</b> for infinite loop.', 'fw' ),
+					__( 'Leave blank to disable.', 'fw' )
 				),
 			),
 		);
@@ -1481,17 +1481,17 @@ if(! function_exists('sc_option_visibility')) :
 	 */
 	function sc_option_visibility() {
 		$user_choices = array(
-			'' => __( 'Visible for all', 'lastimosa' ),
-			'logged-in' => __( 'Visible for Logged in user', 'lastimosa' ),
-			'logged-out' => __( 'Visible for Logged out user', 'lastimosa' ),
+			'' => __( 'Visible for all', 'fw' ),
+			'logged-in' => __( 'Visible for Logged in user', 'fw' ),
+			'logged-out' => __( 'Visible for Logged out user', 'fw' ),
 		);
 
 		$wp_roles = wp_roles();
 		$roles = $wp_roles->get_names();
 		foreach($roles as $key => $role) {
-			$user_choices['visible-'.$key] = __( 'Visible for '.$role.' user', 'lastimosa' );
+			$user_choices['visible-'.$key] = __( 'Visible for '.$role.' user', 'fw' );
 		}
-		$user_choices['hidden'] = __( 'Hidden', 'lastimosa' );
+		$user_choices['hidden'] = __( 'Hidden', 'fw' );
 
 		return array(
 			'label'         => false,
@@ -1500,36 +1500,36 @@ if(! function_exists('sc_option_visibility')) :
 			'desc'          => false,
 			'inner-options' => array(
 				'responsive' => array(
-					'label'   => __( 'Visibility', 'lastimosa' ),
+					'label'   => __( 'Visibility', 'fw' ),
 					'type'    => 'select-multiple',
 					'value'   => '',
-					'desc'    => __( 'Device\'s Responsiveness Visibility.','lastimosa' ),
+					'desc'    => __( 'Device\'s Responsiveness Visibility.','fw' ),
 					'choices' => array(
-						'd-none' 								=> __( 'Hidden on all devices', 'lastimosa' ),
-						'd-none d-sm-block' 		=> __( 'Hidden only on Extra Small devices. (x < 577px)', 'lastimosa' ),
-						'd-sm-none d-md-block' 	=> __( 'Hidden only on Small devices. (576px > x < 768px)', 'lastimosa' ),
-						'd-md-none d-lg-block' 	=> __( 'Hidden only on Medium devices. (767px > x < 993px)', 'lastimosa' ),
-						'd-lg-none d-xl-block' 	=> __( 'Hidden only on Large devices. (992px > x < 1201px)', 'lastimosa' ),
-						'd-xl-none' 						=> __( 'Hidden only on Extra Large devices. (x > 1200px)', 'lastimosa' ),
-						''														=> __( 'Visible on all devices', 'lastimosa' ),
-						'd-block d-sm-none' 					=> __( 'Visible only on Extra Small devices. (x < 577px)', 'lastimosa' ),
-						'd-none d-sm-block d-md-none'	=> __( 'Visible only on Small devices. (576px > x < 768px)', 'lastimosa' ),
-						'd-none d-md-block d-lg-none'	=> __( 'Visible only on Medium devices. (767px > x < 993px)', 'lastimosa' ),
-						'd-none d-lg-block d-xl-none'	=> __( 'Visible only on Large devices. (992px > x < 1201px)', 'lastimosa' ),
-						'd-none d-xl-block' 					=> __( 'Visible only on Extra Large devices. (x > 1200px)', 'lastimosa' ),
+						'd-none' 								=> __( 'Hidden on all devices', 'fw' ),
+						'd-none d-sm-block' 		=> __( 'Hidden only on Extra Small devices. (x < 577px)', 'fw' ),
+						'd-sm-none d-md-block' 	=> __( 'Hidden only on Small devices. (576px > x < 768px)', 'fw' ),
+						'd-md-none d-lg-block' 	=> __( 'Hidden only on Medium devices. (767px > x < 993px)', 'fw' ),
+						'd-lg-none d-xl-block' 	=> __( 'Hidden only on Large devices. (992px > x < 1201px)', 'fw' ),
+						'd-xl-none' 						=> __( 'Hidden only on Extra Large devices. (x > 1200px)', 'fw' ),
+						''														=> __( 'Visible on all devices', 'fw' ),
+						'd-block d-sm-none' 					=> __( 'Visible only on Extra Small devices. (x < 577px)', 'fw' ),
+						'd-none d-sm-block d-md-none'	=> __( 'Visible only on Small devices. (576px > x < 768px)', 'fw' ),
+						'd-none d-md-block d-lg-none'	=> __( 'Visible only on Medium devices. (767px > x < 993px)', 'fw' ),
+						'd-none d-lg-block d-xl-none'	=> __( 'Visible only on Large devices. (992px > x < 1201px)', 'fw' ),
+						'd-none d-xl-block' 					=> __( 'Visible only on Extra Large devices. (x > 1200px)', 'fw' ),
 					),
 					'help' 	=> sprintf( "%s",
-						__( 'Ctrl + Click to select multiple choices.','lastimosa' )
+						__( 'Ctrl + Click to select multiple choices.','fw' )
 					),
 				),
 				'user' => array(
-					'label'   => __( '', 'lastimosa' ),
+					'label'   => __( '', 'fw' ),
 					'type'    => 'select-multiple',
 					'value'   => '',
-					'desc'    => __( 'User Visibility','lastimosa' ),
+					'desc'    => __( 'User Visibility','fw' ),
 					'choices' => $user_choices,
 					'help' 	=> sprintf( "%s",
-						__( 'Ctrl + Click to select multiple choices.','lastimosa' )
+						__( 'Ctrl + Click to select multiple choices.','fw' )
 					),
 				),
 			),
@@ -1642,14 +1642,14 @@ if(!function_exists('sc_option_spacing')) :
 			),
 			'picker'       => array(
 				'selected' => array(
-					'label'   => __( 'Spacing', 'lastimosa' ),
+					'label'   => __( 'Spacing', 'fw' ),
 					'type'    => 'select',
 					'choices' => array(
-						'bootstrap' => __( 'Bootstrap margins and paddings (Recommended)', 'lastimosa' ),
-						'custom' 		=> __( 'Custom margins and paddings', 'lastimosa' )
+						'bootstrap' => __( 'Bootstrap margins and paddings (Recommended)', 'fw' ),
+						'custom' 		=> __( 'Custom margins and paddings', 'fw' )
 					),
-					'desc'    => __( 'Select spacing method.', 'lastimosa' ),
-					'help'    => __( 'Using custom method will add new CSS classes for each element.', 'lastimosa' ),
+					'desc'    => __( 'Select spacing method.', 'fw' ),
+					'help'    => __( 'Using custom method will add new CSS classes for each element.', 'fw' ),
 				)
 			),
 			'choices'      => array(
@@ -1659,11 +1659,11 @@ if(!function_exists('sc_option_spacing')) :
 						'type' => 'popup',
 						'value' => array(
 						),
-						'label' 		=> __('', 'lastimosa'),
-						'desc'  		=> __( '', 'lastimosa' ),
-						'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
-						'button' 		=> __('Responsive Breakpoints', 'lastimosa'),
-						'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
+						'label' 		=> __('', 'fw' ),
+						'desc'  		=> __( '', 'fw' ),
+						'popup-title' => __('Responsive Breakpoints', 'fw' ),
+						'button' 		=> __('Responsive Breakpoints', 'fw' ),
+						'popup-title' => __('Responsive Breakpoints', 'fw' ),
 						'size' 			=> 'medium', // small, medium, large
 						'popup-options' => array(
 							'sm'		=> sc_option_bs_spacing( 'sm' ),
@@ -1680,11 +1680,11 @@ if(!function_exists('sc_option_spacing')) :
 						'type' => 'popup',
 						'value' => array(
 						),
-						'label' 		=> __('', 'lastimosa'),
-						'desc'  		=> __( '', 'lastimosa' ),
-						'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
-						'button' 		=> __('Responsive Breakpoints', 'lastimosa'),
-						'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
+						'label' 		=> __('', 'fw' ),
+						'desc'  		=> __( '', 'fw' ),
+						'popup-title' => __('Responsive Breakpoints', 'fw' ),
+						'button' 		=> __('Responsive Breakpoints', 'fw' ),
+						'popup-title' => __('Responsive Breakpoints', 'fw' ),
 						'size' 			=> 'medium', // small, medium, large
 						'popup-options' => array(
 							'msm'		=> sc_option_box( 'Phones', 'Margin for small devices (landscape phones, <strong>576px</strong> and up)' ),
@@ -1728,8 +1728,8 @@ if(!function_exists('sc_option_bs_spacing')) :
 		}
 		return array(
 			'type'      => 'multi-select',
-			'label'     => __( $breakpointlabel, 'lastimosa' ),
-			'desc'      => __( $breakpointdesc,	'lastimosa' ),
+			'label'     => __( $breakpointlabel, 'fw' ),
+			'desc'      => __( $breakpointdesc,	'fw' ),
 			//'value'			=> array( 'py-4' ),
 			'population'=> 'array',
 			'choices'   => sc_option_bs_spacing_choices( $breakpoint ),
@@ -1786,8 +1786,8 @@ if(!function_exists('sc_option_bs_margin')) :
 		}
 		return array(
 			'type'      => 'multi-select',
-			'label'     => __( $breakpointlabel, 'lastimosa' ),
-			'desc'      => __( $breakpointdesc,	'lastimosa' ),
+			'label'     => __( $breakpointlabel, 'fw' ),
+			'desc'      => __( $breakpointdesc,	'fw' ),
 			//'value'			=> array( 'py-4' ),
 			'population'=> 'array',
 			'choices'   => sc_option_bs_margin_choices( $breakpoint ),
@@ -1843,13 +1843,13 @@ if(!function_exists('sc_option_bs_spacing_size_choices')) :
 		}
 		if( !empty($breakpoint) )		$breakpoint = '-' . $breakpoint;
 		return array(
-			$property . $sides . $breakpoint . '-0' 	=> __( $propertytext . $sidestext . ' - none ' . ' (' . ($spacer * 0) . 'px)', 'lastimosa' ),
-			$property . $sides . $breakpoint . '-1' 	=> __( $propertytext . $sidestext . ' - extra small ' . ' (' . ($spacer * .25) . 'px)', 'lastimosa' ),
-			$property . $sides . $breakpoint . '-2' 	=> __( $propertytext . $sidestext . ' - small ' . ' (' . ($spacer * .5) . 'px)', 'lastimosa' ),
-			$property . $sides . $breakpoint . '-3' 	=> __( $propertytext . $sidestext . ' - medium ' . ' (' . $spacer . 'px)', 'lastimosa' ),
-			$property . $sides . $breakpoint . '-4' 	=> __( $propertytext . $sidestext . ' - large ' . ' (' . ($spacer * 1.5) . 'px)', 'lastimosa' ),
-			$property . $sides . $breakpoint . '-5' 	=> __( $propertytext . $sidestext . ' - extra large ' . ' (' . ($spacer * 3) . 'px)', 'lastimosa' ),
-			$property . $sides . $breakpoint . '-auto' 	=> __( $propertytext . $sidestext . ' - auto ', 'lastimosa' ),
+			$property . $sides . $breakpoint . '-0' 	=> __( $propertytext . $sidestext . ' - none ' . ' (' . ($spacer * 0) . 'px)', 'fw' ),
+			$property . $sides . $breakpoint . '-1' 	=> __( $propertytext . $sidestext . ' - extra small ' . ' (' . ($spacer * .25) . 'px)', 'fw' ),
+			$property . $sides . $breakpoint . '-2' 	=> __( $propertytext . $sidestext . ' - small ' . ' (' . ($spacer * .5) . 'px)', 'fw' ),
+			$property . $sides . $breakpoint . '-3' 	=> __( $propertytext . $sidestext . ' - medium ' . ' (' . $spacer . 'px)', 'fw' ),
+			$property . $sides . $breakpoint . '-4' 	=> __( $propertytext . $sidestext . ' - large ' . ' (' . ($spacer * 1.5) . 'px)', 'fw' ),
+			$property . $sides . $breakpoint . '-5' 	=> __( $propertytext . $sidestext . ' - extra large ' . ' (' . ($spacer * 3) . 'px)', 'fw' ),
+			$property . $sides . $breakpoint . '-auto' 	=> __( $propertytext . $sidestext . ' - auto ', 'fw' ),
 		);
 	}
 endif;
@@ -1870,14 +1870,14 @@ if(!function_exists('sc_option_margin')) :
 			),
 			'picker'       => array(
 				'selected' => array(
-					'label'   => __( 'Spacing', 'lastimosa' ),
+					'label'   => __( 'Spacing', 'fw' ),
 					'type'    => 'select',
 					'choices' => array(
-						'bootstrap' => __( 'Bootstrap margins (Recommended)', 'lastimosa' ),
-						'custom' 		=> __( 'Custom margins', 'lastimosa' )
+						'bootstrap' => __( 'Bootstrap margins (Recommended)', 'fw' ),
+						'custom' 		=> __( 'Custom margins', 'fw' )
 					),
-					'desc'    => __( 'Select spacing method.', 'lastimosa' ),
-					'help'    => __( 'Using custom method will add new CSS classes for each element.', 'lastimosa' ),
+					'desc'    => __( 'Select spacing method.', 'fw' ),
+					'help'    => __( 'Using custom method will add new CSS classes for each element.', 'fw' ),
 				)
 			),
 			'choices'      => array(
@@ -1887,11 +1887,11 @@ if(!function_exists('sc_option_margin')) :
 						'type' => 'popup',
 						'value' => array(
 						),
-						'label' 		=> __('', 'lastimosa'),
-						'desc'  		=> __( '', 'lastimosa' ),
-						'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
-						'button' 		=> __('Responsive Breakpoints', 'lastimosa'),
-						'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
+						'label' 		=> __('', 'fw' ),
+						'desc'  		=> __( '', 'fw' ),
+						'popup-title' => __('Responsive Breakpoints', 'fw' ),
+						'button' 		=> __('Responsive Breakpoints', 'fw' ),
+						'popup-title' => __('Responsive Breakpoints', 'fw' ),
 						'size' 			=> 'medium', // small, medium, large
 						'popup-options' => array(
 							'sm'		=> sc_option_bs_margin( 'sm' ),
@@ -1907,11 +1907,11 @@ if(!function_exists('sc_option_margin')) :
 						'type' => 'popup',
 						'value' => array(
 						),
-						'label' 		=> __('', 'lastimosa'),
-						'desc'  		=> __( '', 'lastimosa' ),
-						'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
-						'button' 		=> __('Responsive Breakpoints', 'lastimosa'),
-						'popup-title' => __('Responsive Breakpoints', 'lastimosa'),
+						'label' 		=> __('', 'fw' ),
+						'desc'  		=> __( '', 'fw' ),
+						'popup-title' => __('Responsive Breakpoints', 'fw' ),
+						'button' 		=> __('Responsive Breakpoints', 'fw' ),
+						'popup-title' => __('Responsive Breakpoints', 'fw' ),
 						'size' 			=> 'medium', // small, medium, large
 						'popup-options' => array(
 							'msm'		=> sc_option_box( 'Phones', 'Margin for small devices (landscape phones, <strong>576px</strong> and up)' ),
@@ -1936,31 +1936,31 @@ if(!function_exists('sc_option_box')) :
 	function sc_option_box($label, $desc=NULL, $top=NULL, $right=NULL, $bottom=NULL, $left=NULL) {
 		return array(
 			'type' 	=> 'multi-inline',
-			'label' => __($label, 'lastimosa'),
-			'desc' 	=> __($desc, 'lastimosa'),
+			'label' => __($label, 'fw' ),
+			'desc' 	=> __($desc, 'fw' ),
 			'value' => array(
 				'top' 	 	=> $top,
 				'right'  	=> $right,
 				'bottom' 	=> $bottom,
 				'left' 	 	=> $left,	
 			),
-			'help'      => __( 'Input values in pixels. i.e.: 60',	'lastimosa' ),
+			'help'      => __( 'Input values in pixels. i.e.: 60',	'fw' ),
 			'fw_multi_options' => array(
 				'top' => array(
 					'type' 	=>'short-text',
-					'title' => __('Top', 'lastimosa'),
+					'title' => __('Top', 'fw' ),
 				),
 				'right' => array(
 					'type' 	=>'short-text',
-					'title' => __('Right', 'lastimosa'),
+					'title' => __('Right', 'fw' ),
 				),
 				'bottom' => array(
 					'type' 	=>'short-text',
-					'title' => __('Bottom', 'lastimosa'),
+					'title' => __('Bottom', 'fw' ),
 				),
 				'left' => array(
 					'type' 	=>'short-text',
-					'title' => __('Left', 'lastimosa'),
+					'title' => __('Left', 'fw' ),
 				),
 			)
 		);
@@ -1975,8 +1975,8 @@ if(!function_exists('sc_option_box_border')) :
 	function sc_option_box_border($label,$top='',$right='',$bottom='',$left='') {
 		return array(
 			'type' => 'checkboxes',
-			'label' => __($label, 'lastimosa'),
-			//'desc' => __('', 'lastimosa'),
+			'label' => __($label, 'fw' ),
+			//'desc' => __('', 'fw' ),
 			'value' => array(
 				'top' 	=>$top,
 				'right' =>$right,
@@ -1984,10 +1984,10 @@ if(!function_exists('sc_option_box_border')) :
 				'left' 	=>$left,	
 			),
 			'choices' => array(
-				'top' 	=> __('Top', 'lastimosa'),
-				'right' => __('Right', 'lastimosa'),
-				'bottom'=> __('Bottom', 'lastimosa'),
-				'left' 	=> __('Left', 'lastimosa'),
+				'top' 	=> __('Top', 'fw' ),
+				'right' => __('Right', 'fw' ),
+				'bottom'=> __('Bottom', 'fw' ),
+				'left' 	=> __('Left', 'fw' ),
 			),
 			'inline' => true,
 			'attr'  => array( 'class' => 'border-options'),
@@ -2041,7 +2041,7 @@ if(!function_exists('sc_option_box_border_radius')) :
 	function sc_option_box_border_radius($label) {
 		return array(
 			'type'    => 'select',
-			'label'   => __('', 'lastimosa'),
+			'label'   => __('', 'fw' ),
 			'desc'   	=> $label,
 			'value'   => '',
 			'choices' => array(
@@ -2089,7 +2089,7 @@ if(! function_exists('sc_option_class')) :
 */
 function sc_option_class() {
 	return array(
-		'label'   => __('CSS Class', 'lastimosa'),
+		'label'   => __('CSS Class', 'fw' ),
 		'desc'    => false,
 		'type'    => 'text'
 	);

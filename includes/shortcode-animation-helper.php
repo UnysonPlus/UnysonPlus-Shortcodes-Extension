@@ -37,6 +37,43 @@ require_once __DIR__ . '/shortcode-easing-helper.php';
 if ( ! function_exists( 'sc_get_animation_fields' ) ) :
 function sc_get_animation_fields() {
 
+    /**
+     * Memoized — this is the single most expensive thing the plugin builds per request.
+     *
+     * The result is deterministic within a request: the function takes no arguments,
+     * and every one of its 88 call sites calls it bare. What it returns, though, is
+     * large — the Animations tab for ~26 engine modules, each contributing option
+     * groups whose image-picker choices carry inline SVG tile markup, then expanded
+     * into multiple instance slots for multi-instance modules.
+     *
+     * Every shortcode's options.php that offers an Animations tab calls this while
+     * being loaded. Measured on a plain front-end page render (is_admin() false, no
+     * options UI on screen anywhere): the `sc_animation_fields` filter ran ELEVEN
+     * times and allocated 15.9 MB — which was the whole of the Animation Engine's
+     * ~16 MB front-end footprint, and roughly half the plugin's total.
+     *
+     * A static cache collapses that to one build. Behaviour is identical: same array,
+     * same filters, same order — callers previously received eleven equal copies.
+     *
+     * NOTE for future work: building this on the front end AT ALL is the real waste —
+     * an options schema exists to render an admin UI. Loading shortcode options.php
+     * lazily would remove the remaining build too. This cache is the safe part of
+     * that fix and is worth keeping either way.
+     */
+    /**
+     * Keyed by blog id, not a single slot. The Effects control filters this list
+     * against Theme Settings ("hide a disabled module's options"), and Theme
+     * Settings are per-site — so on multisite a switch_to_blog() between two calls
+     * must not serve the first site's field set to the second.
+     */
+    static $cache = array();
+
+    $cache_key = is_multisite() ? get_current_blog_id() : 0;
+
+    if ( isset( $cache[ $cache_key ] ) ) {
+        return $cache[ $cache_key ];
+    }
+
     // Unyson select optgroup syntax: a numerically-indexed element with
     // 'attr' => ['label' => …] and a nested 'choices' map. See
     // unysonplus-theme/framework-customizations/theme/options/demo.php:152-175
@@ -407,7 +444,7 @@ function sc_get_animation_fields() {
      * (animation / interaction / physics / gsap_motion / …) — zero value migration. The container
      * type is registered on fw_container_types_init (below), which fires before any options render.
      */
-    return [
+    return $cache[ $cache_key ] = [
         'animation_stack' => [
             'type'    => 'animation-stack',
             'label'   => false,

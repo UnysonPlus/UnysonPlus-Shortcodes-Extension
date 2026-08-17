@@ -644,16 +644,21 @@ class FW_Ext_Shortcodes_Settings_Page {
 			if ( function_exists( 'unysonplus_components_settings_options' ) ) {
 				fw()->backend->enqueue_options_static( unysonplus_components_settings_options() );
 			}
+			// 'fw' for the same reason as the settings page below: component-presets.js
+			// calls fw.confirm() for the two Reset actions, and that dialog's CSS is
+			// in the 'fw' style handle. enqueue_options_static() above happens to pull
+			// it in today via fw-backend-options — declaring it makes the page's own
+			// confirm dialogs independent of that side effect.
 			wp_enqueue_style(
 				'fw-ext-component-presets',
 				fw_min_uri($this->extension->get_uri( '/static/css/component-presets.css' )),
-				array(),
+				array( 'fw' ),
 				$this->extension->manifest->get( 'version' )
 			);
 			wp_enqueue_script(
 				'fw-ext-component-presets',
 				fw_min_uri($this->extension->get_uri( '/static/js/component-presets.js' )),
-				array( 'jquery' ),
+				array( 'jquery', 'fw' ),
 				$this->extension->manifest->get( 'version' ),
 				true
 			);
@@ -666,10 +671,26 @@ class FW_Ext_Shortcodes_Settings_Page {
 
 		$version = $this->extension->manifest->get( 'version' );
 
+		/**
+		 * 'fw' is a dependency of BOTH the style and the script, and the style is
+		 * the part that actually matters here.
+		 *
+		 * admin-settings.js calls fw.confirm() to guard the destructive Delete
+		 * action. fw.confirm builds a styled dialog whose CSS lives in the 'fw'
+		 * STYLE handle (framework/static/css/fw.css). The script happened to be
+		 * present on this page already, so fw.confirm ran — but with no fw.css the
+		 * dialog rendered as unstyled text in normal document flow at the bottom of
+		 * the page instead of a modal, leaving the delete un-confirmable.
+		 *
+		 * Declaring it as a dependency (rather than calling wp_enqueue_style('fw')
+		 * here) is deliberate: WP_Dependencies resolves dependencies at PRINT time,
+		 * so this is correct regardless of whether backend.php has registered the
+		 * handle yet when this method runs.
+		 */
 		wp_enqueue_style(
 			'fw-ext-shortcodes-admin-settings',
 			fw_min_uri($this->extension->get_uri( '/static/css/admin-settings.css' )),
-			array(),
+			array( 'fw' ),
 			$version
 		);
 
@@ -677,7 +698,7 @@ class FW_Ext_Shortcodes_Settings_Page {
 		wp_enqueue_script(
 			'fw-ext-shortcodes-admin-settings',
 			fw_min_uri($this->extension->get_uri( '/static/js/admin-settings.js' )),
-			array( 'jquery', 'postbox' ),
+			array( 'jquery', 'postbox', 'fw' ),
 			$version,
 			true
 		);
