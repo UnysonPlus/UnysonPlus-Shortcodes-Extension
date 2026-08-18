@@ -24,7 +24,11 @@
 $atts['unique_id_prefix'] = 'ct-';
 
 $is_fluid        = ! empty( $atts['is_fullwidth'] );
-$container_class = $is_fluid ? 'fw-container-fluid' : 'fw-container';
+// `fw-container-el` marks a Container ELEMENT (this shortcode, incl. a section's
+// synthesized default container) so its rows can use row-gap instead of .fw-row's
+// negative vertical-gutter margin — which escapes the (padding-less) container and
+// makes STACKED containers overlap. Scoped so normal sections are unaffected.
+$container_class = ( $is_fluid ? 'fw-container-fluid' : 'fw-container' ) . ' fw-container-el';
 
 $extra_classes = '';
 $box_style     = '';

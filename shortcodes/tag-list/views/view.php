@@ -31,7 +31,9 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 			$items[] = array( 'label' => $label, 'url' => $url );
 		}
 		if ( empty( $items ) ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			// fw_is_editor_context() rather than is_admin()/DOING_AJAX: a Gutenberg
+			// block preview renders over REST, which neither of those detects.
+			if ( function_exists( 'fw_is_editor_context' ) ? fw_is_editor_context() : ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) ) {
 				return '<div class="fw-taglist__empty">' . esc_html__( 'Add at least one item (one per line).', 'fw' ) . '</div>';
 			}
 			return '';

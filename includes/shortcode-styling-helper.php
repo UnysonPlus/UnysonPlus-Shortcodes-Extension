@@ -670,6 +670,13 @@ if ( ! function_exists( 'sc_color_to_css' ) ) :
 	 */
 	function sc_color_to_css( $value, $fallback = '', $as_hex = false ) {
 		if ( is_string( $value ) ) {
+			if ( $value === '' ) {
+				return $fallback;
+			}
+			// A legacy plain-string value still lands in inline-style CSS, so it gets the SAME character
+			// allow-list as the custom-hex branch below — esc_attr won't neutralise `;:{}` that could
+			// inject extra CSS declarations.
+			$value = preg_replace( '/[^A-Za-z0-9#\(\),.%\s]/', '', $value );
 			return $value !== '' ? $value : $fallback;
 		}
 		if ( ! is_array( $value ) ) {

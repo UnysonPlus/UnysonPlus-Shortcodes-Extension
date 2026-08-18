@@ -50,7 +50,9 @@ if ( ! function_exists( 'sc_vp_render' ) ) {
 		list( $vtype, $vsrc ) = sc_vp_parse( sc_get( 'video_url', $atts, '' ) );
 
 		if ( $poster_url === '' && $vsrc === '' ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			// fw_is_editor_context() rather than is_admin()/DOING_AJAX: a Gutenberg
+			// block preview renders over REST, which neither of those detects.
+			if ( function_exists( 'fw_is_editor_context' ) ? fw_is_editor_context() : ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) ) {
 				return '<div class="fw-vp__empty">' . esc_html__( 'Add a poster image and a video URL.', 'fw' ) . '</div>';
 			}
 			return '';

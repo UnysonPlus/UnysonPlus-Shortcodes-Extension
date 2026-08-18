@@ -26,7 +26,9 @@ if ( ! function_exists( 'sc_bq_render' ) ) {
 
 		$quote = trim( (string) sc_get( 'quote', $atts, '' ) );
 		if ( $quote === '' ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			// fw_is_editor_context() rather than is_admin()/DOING_AJAX: a Gutenberg
+			// block preview renders over REST, which neither of those detects.
+			if ( function_exists( 'fw_is_editor_context' ) ? fw_is_editor_context() : ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) ) {
 				return '<div class="fw-bq__empty">' . esc_html__( 'Add a quote.', 'fw' ) . '</div>';
 			}
 			return '';
