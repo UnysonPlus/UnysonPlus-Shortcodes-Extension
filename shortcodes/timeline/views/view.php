@@ -46,7 +46,7 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 
 		$items = sc_get( 'items', $atts, array() );
 		if ( ! is_array( $items ) || empty( $items ) ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-tl__empty">' . esc_html__( 'Add at least one milestone.', 'fw' ) . '</div>';
 			}
 			return '';

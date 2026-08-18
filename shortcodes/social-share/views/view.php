@@ -31,7 +31,7 @@ if ( ! function_exists( 'sc_ss_render' ) ) {
 		// Keep only known networks, preserve the saved order.
 		$selected = array_values( array_filter( $selected, function ( $k ) use ( $catalog ) { return isset( $catalog[ $k ] ); } ) );
 		if ( empty( $selected ) ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-ss__empty">' . esc_html__( 'Pick at least one network.', 'fw' ) . '</div>';
 			}
 			return '';

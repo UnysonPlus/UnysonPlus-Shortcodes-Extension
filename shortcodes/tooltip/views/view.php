@@ -51,7 +51,7 @@ if ( ! function_exists( 'sc_tt_render' ) ) {
 		$body  = trim( (string) sc_get( 'tip_content', $atts, '' ) );
 
 		if ( $body === '' && $title === '' ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-tt__empty">' . esc_html__( 'Add tooltip content.', 'fw' ) . '</div>';
 			}
 			return '';

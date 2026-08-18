@@ -22,7 +22,7 @@ if ( ! function_exists( 'sc_hl_render' ) ) {
 
 		$text = trim( (string) sc_get( 'text', $atts, '' ) );
 		if ( $text === '' ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-hl__empty">' . esc_html__( 'Add some text.', 'fw' ) . '</div>';
 			}
 			return '';

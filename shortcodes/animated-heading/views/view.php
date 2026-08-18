@@ -26,7 +26,7 @@ if ( ! function_exists( 'sc_ah_render' ) ) {
 		$words  = array_values( array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', $raw ) ), 'strlen' ) );
 
 		if ( empty( $words ) && $before === '' && $after === '' ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-ah__empty">' . esc_html__( 'Add some rotating words.', 'fw' ) . '</div>';
 			}
 			return '';

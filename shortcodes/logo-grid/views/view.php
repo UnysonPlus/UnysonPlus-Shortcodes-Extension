@@ -75,7 +75,7 @@ if ( ! function_exists( 'sc_lg_render' ) ) {
 		} ) );
 
 		if ( empty( $logos ) ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-lg__empty">' . esc_html__( 'Add at least one logo.', 'fw' ) . '</div>';
 			}
 			return '';

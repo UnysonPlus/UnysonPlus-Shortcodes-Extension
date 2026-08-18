@@ -43,7 +43,7 @@ if ( ! function_exists( 'sc_ct_render' ) ) {
 		if ( ! is_array( $rows ) ) { $rows = array(); }
 
 		if ( empty( $columns ) ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-ct__empty">' . esc_html__( 'Add at least one column and one row.', 'fw' ) . '</div>';
 			}
 			return '';
