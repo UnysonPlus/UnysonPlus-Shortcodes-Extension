@@ -67,7 +67,7 @@ if ( ! function_exists( 'sc_fb_render' ) ) {
 		if ( ! in_array( $back_tag, $title_tags, true ) ) { $back_tag = 'h3'; }
 
 		if ( $front_title === '' && $front_text === '' && $back_title === '' && $back_text === '' && $icon === '' && $back_icon === '' ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-fb__empty">' . esc_html__( 'Add front / back content to the Flip Box.', 'fw' ) . '</div>';
 			}
 			return '';

@@ -13,6 +13,10 @@ $atts['unique_id_prefix'] = 'pm-';
 
 $key = isset( $atts['meta_key'] ) ? trim( (string) $atts['meta_key'] ) : '';
 if ( $key === '' ) {
+	// Editor-only note; a visitor still gets nothing at all.
+	if ( fw_is_editor_context() ) {
+		echo sc_editor_notice( __( 'Enter the custom field name to display.', 'fw' ) );
+	}
 	return;
 }
 
@@ -21,6 +25,9 @@ if ( ! $post_id ) {
 	$post_id = (int) get_queried_object_id();
 }
 if ( ! $post_id ) {
+	if ( fw_is_editor_context() ) {
+		echo sc_editor_notice( __( 'No post to read the field from — this element belongs in a post or a template.', 'fw' ) );
+	}
 	return;
 }
 

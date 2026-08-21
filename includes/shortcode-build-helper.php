@@ -272,3 +272,31 @@ function sc_build_wrapper_attr( $atts ) {
 
     return apply_filters( 'sc_build_wrapper_attr', $attr, $atts );
 }
+
+if ( ! function_exists( 'sc_editor_notice' ) ) :
+	/**
+	 * An editor-only "nothing to render yet" note.
+	 *
+	 * Most elements say what is missing when they have nothing to show. That
+	 * matters more in a Gutenberg block than it ever did in the page builder: a
+	 * dynamic block that renders an empty string produces "Block rendered as
+	 * empty", which is exactly what a BROKEN block looks like. The user cannot
+	 * tell "you have not chosen an image yet" from "this is not working".
+	 *
+	 * The styling is INLINE rather than a class, because several of the elements
+	 * that need this ship no stylesheet of their own — a `.fw-sc__empty` rule
+	 * would have nowhere to live for them, and a message that looks unstyled in
+	 * some blocks and styled in others is its own small confusion.
+	 *
+	 * Callers are responsible for the editor check; this helper only builds the
+	 * markup, so a caller can decide to show it in other contexts too.
+	 *
+	 * @param string $text The message. Escaped here — pass plain text.
+	 * @return string HTML.
+	 */
+	function sc_editor_notice( $text ) {
+		return '<div class="fw-sc__empty" style="color:#646970;font-style:italic;padding:12px 0;">'
+			. esc_html( $text )
+			. '</div>';
+	}
+endif;

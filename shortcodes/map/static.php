@@ -27,8 +27,15 @@ wp_enqueue_script(
 // Serve Leaflet's default marker icons from the plugin instead of a third-party CDN, so OSM markers
 // never render as broken images when the CDN is blocked/unreachable (or a page CSP disallows it).
 // scripts.js reads this base; it falls back to the unpkg CDN if the variable is somehow absent.
-wp_localize_script(
+//
+// wp_add_inline_script(), NOT wp_localize_script(): localize's $l10n parameter must be an ARRAY.
+// Passing it a bare string still emitted a usable `var`, but WordPress 5.7+ answers it with a
+// _doing_it_wrong() notice — which on a WP_DEBUG site prints into the page, and printed into the
+// Gutenberg block preview's markup. Same global, same contract, no notice.
+wp_add_inline_script(
 	'fw-shortcode-map-script',
-	'fwMapIconBase',
-	$shortcodes_extension->get_uri('/shortcodes/map/static/img/')
+	'var fwMapIconBase = ' . wp_json_encode(
+		$shortcodes_extension->get_uri('/shortcodes/map/static/img/')
+	) . ';',
+	'before'
 );

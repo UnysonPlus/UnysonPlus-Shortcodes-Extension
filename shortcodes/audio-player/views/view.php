@@ -42,7 +42,7 @@ if ( ! function_exists( 'sc_ap_render' ) ) {
 		}
 
 		if ( empty( $tracks ) ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-ap__empty">' . esc_html__( 'Add at least one track with an audio file or URL.', 'fw' ) . '</div>';
 			}
 			return '';

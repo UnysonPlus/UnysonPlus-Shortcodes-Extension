@@ -245,7 +245,7 @@ if ( $mode === 'group' ) {
 
 	$group_style = '--av-overlap:' . $overlap . ';';
 	if ( empty( $people ) ) {
-		if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+		if ( fw_is_editor_context() ) {
 			echo '<div class="fw-avatar-empty">' . esc_html__( 'Add at least one person to the avatar group.', 'fw' ) . '</div>';
 		}
 	} else {

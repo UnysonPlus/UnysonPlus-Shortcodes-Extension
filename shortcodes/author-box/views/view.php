@@ -52,7 +52,7 @@ if ( ! function_exists( 'sc_ab_render' ) ) {
 		if ( $avatar_url === '' && $user ) { $avatar_url = get_avatar_url( $uid, array( 'size' => $avatar_size * 2 ) ); }
 
 		if ( $name === '' && $bio === '' && $avatar_url === '' ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-ab__empty">' . esc_html__( 'No author found — pick a user or use Custom.', 'fw' ) . '</div>';
 			}
 			return '';

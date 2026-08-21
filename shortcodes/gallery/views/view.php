@@ -186,7 +186,7 @@ if ( $container_type === 'container' ) {
 
 /* Nothing to render — bail (but keep an editor-friendly note in the builder). */
 if ( empty( $items ) ) {
-	if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+	if ( fw_is_editor_context() ) {
 		echo '<div ' . fw_attr_to_html( $attr ) . '><div class="fw-gallery__empty">'
 			. esc_html__( 'No images added yet.', 'fw' ) . '</div></div>';
 	}

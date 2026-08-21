@@ -26,7 +26,7 @@ if ( ! function_exists( 'sc_lottie_render' ) ) {
 		}
 
 		if ( $src === '' ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-lottie__empty">' . esc_html__( 'Add a Lottie .json URL or upload a file.', 'fw' ) . '</div>';
 			}
 			return '';

@@ -19,7 +19,7 @@ if ( ! function_exists( 'sc_stt_render' ) ) {
 		$show_btn  = sc_get( 'show_button', $atts, 'yes' ) === 'yes';
 		$show_prog = sc_get( 'show_progress', $atts, 'no' ) === 'yes';
 		if ( ! $show_btn && ! $show_prog ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-stt__empty">' . esc_html__( 'Enable the button and/or the progress bar.', 'fw' ) . '</div>';
 			}
 			return '';

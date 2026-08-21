@@ -30,7 +30,14 @@ if ( $source === 'self_hosted' ) {
 	if ( $mp4 === '' && $webm === '' && ! empty( $self_v['video_url'] ) ) {
 		$mp4 = trim( (string) $self_v['video_url'] ); // external file URL fallback
 	}
-	if ( $mp4 === '' && $webm === '' ) { return; } // nothing to play
+	if ( $mp4 === '' && $webm === '' ) {
+		// Editor-only note; a visitor still gets nothing. See media-image for why
+		// silence is the wrong answer inside a block preview.
+		if ( fw_is_editor_context() ) {
+			echo sc_editor_notice( __( 'Choose a video file, or paste a file URL.', 'fw' ) );
+		}
+		return; // nothing to play
+	}
 
 	$poster      = $upload_url( $self_v['poster'] ?? null );
 	$autoplay    = $sw( $self_v['autoplay'] ?? 'no' );
@@ -63,11 +70,24 @@ if ( $source === 'self_hosted' ) {
 } else {
 	/* --- Embed (WordPress oEmbed) --- */
 	$url = ! empty( $embed_v['url'] ) ? trim( (string) $embed_v['url'] ) : $legacy;
-	if ( $url === '' ) { return; }
+	if ( $url === '' ) {
+		if ( fw_is_editor_context() ) {
+			echo sc_editor_notice( __( 'Paste a video URL — YouTube, Vimeo or another oEmbed provider.', 'fw' ) );
+		}
+		return;
+	}
 
 	global $wp_embed;
 	$embed = $wp_embed->run_shortcode( '[embed]' . $url . '[/embed]' );
-	if ( $embed === '' || $embed === $url ) { return; } // oEmbed couldn't resolve it
+	if ( $embed === '' || $embed === $url ) {
+		// A URL that oEmbed cannot resolve is a DIFFERENT failure from an empty one,
+		// and worth saying so: the address is usually a watch-page variant, a private
+		// video, or a provider WordPress does not support.
+		if ( fw_is_editor_context() ) {
+			echo sc_editor_notice( __( 'That URL could not be embedded. Check it is a public video from a supported provider.', 'fw' ) );
+		}
+		return; // oEmbed couldn't resolve it
+	}
 
 	// Privacy: route YouTube through youtube-nocookie.com.
 	if ( $sw( $embed_v['youtube_nocookie'] ?? 'no' ) ) {

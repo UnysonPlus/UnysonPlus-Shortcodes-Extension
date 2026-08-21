@@ -54,7 +54,7 @@ if ( ! function_exists( 'sc_hs_render' ) ) {
 		if ( ! is_array( $hotspots ) ) { $hotspots = array(); }
 
 		if ( $img_url === '' ) {
-			if ( is_admin() || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+			if ( fw_is_editor_context() ) {
 				return '<div class="fw-hs__empty">' . esc_html__( 'Add an image.', 'fw' ) . '</div>';
 			}
 			return '';

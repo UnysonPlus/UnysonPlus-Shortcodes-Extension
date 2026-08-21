@@ -6,8 +6,12 @@
  * @var array $atts
  */
 
-// Skip if no image
+// Skip if no image. The editor gets a note instead of silence — see the identical
+// branch below for why; this is simply the earlier of the two ways to have none.
 if ( empty( $atts['image'] ) ) {
+	if ( fw_is_editor_context() ) {
+		echo sc_editor_notice( __( 'Choose an image.', 'fw' ) );
+	}
 	return;
 }
 
@@ -16,6 +20,13 @@ $attachment_id = ! empty( $atts['image']['attachment_id'] ) ? $atts['image']['at
 // Image source: attachment ID (enables responsive srcset + exact-crop) or URL.
 $image_url = ! empty( $atts['image']['url'] ) ? $atts['image']['url'] : '';
 if ( empty( $image_url ) && empty( $attachment_id ) ) {
+	// Say so in an editor; render nothing at all to a visitor. Without the message
+	// a Gutenberg preview shows "Block rendered as empty", which is what a BROKEN
+	// block looks like — the user cannot tell "you have not picked an image yet"
+	// from "this is not working".
+	if ( fw_is_editor_context() ) {
+		echo sc_editor_notice( __( 'Choose an image.', 'fw' ) );
+	}
 	return;
 }
 

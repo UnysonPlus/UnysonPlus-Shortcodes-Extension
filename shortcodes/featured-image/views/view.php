@@ -17,6 +17,12 @@ if ( ! $post_id ) {
 }
 $thumb_id = $post_id ? (int) get_post_thumbnail_id( $post_id ) : 0;
 if ( ! $thumb_id ) {
+	// Editor-only note. This element renders whatever THIS post has set, so on a
+	// draft with no featured image there is legitimately nothing — and silence
+	// there is indistinguishable from a broken block in a Gutenberg preview.
+	if ( fw_is_editor_context() ) {
+		echo sc_editor_notice( __( 'This post has no featured image set yet.', 'fw' ) );
+	}
 	return;
 }
 

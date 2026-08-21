@@ -16,12 +16,28 @@ $menu_args = array();
 if ( $source === 'menu' ) {
 	$menu_id = isset( $atts['menu_source']['menu']['menu_id'] ) ? $atts['menu_source']['menu']['menu_id'] : '';
 	if ( $menu_id === '' || ! wp_get_nav_menu_object( $menu_id ) ) {
+		if ( fw_is_editor_context() ) {
+			echo sc_editor_notice(
+				'' === $menu_id
+					? __( 'Choose a menu.', 'fw' )
+					: __( 'That menu no longer exists.', 'fw' )
+			);
+		}
 		return;
 	}
 	$menu_args['menu'] = $menu_id;
 } else {
 	$loc = isset( $atts['menu_source']['location']['menu_location'] ) ? $atts['menu_source']['location']['menu_location'] : '';
 	if ( $loc === '' || ! has_nav_menu( $loc ) ) {
+		// The second case is the one worth naming: a location with no menu assigned
+		// is a theme setting, not something to fix on this block.
+		if ( fw_is_editor_context() ) {
+			echo sc_editor_notice(
+				'' === $loc
+					? __( 'Choose a menu location.', 'fw' )
+					: __( 'No menu is assigned to that location — assign one under Appearance → Menus.', 'fw' )
+			);
+		}
 		return;
 	}
 	$menu_args['theme_location'] = $loc;

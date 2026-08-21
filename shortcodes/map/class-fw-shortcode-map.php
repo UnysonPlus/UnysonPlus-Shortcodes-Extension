@@ -121,6 +121,21 @@ class FW_Shortcode_Map extends FW_Shortcode {
 		$this->load_data();
 		$provider = $atts['data_provider']['population_method'];
 		if (!isset($this->data[$provider])) {
+			/*
+			 * An HTML comment is right for a visitor — nothing visible, but traceable
+			 * in view-source. It is the wrong answer inside a Gutenberg preview, where
+			 * a block that emits only a comment renders as "Block rendered as empty":
+			 * indistinguishable from a broken block, for what is usually just an
+			 * unconfigured one.
+			 */
+			if ( function_exists( 'fw_is_editor_context' ) && fw_is_editor_context() && function_exists( 'sc_editor_notice' ) ) {
+				return sc_editor_notice(
+					'' === (string) $provider
+						? __( 'Choose where the map markers come from.', 'fw' )
+						: sprintf( __( 'Unknown location provider "%s".', 'fw' ), $provider )
+				);
+			}
+
 			return '<!-- WARNING: '
 			       . sprintf(__('Unknown location provider "%s" specified for map shortcode', 'fw'), $provider)
 			       . ' -->';

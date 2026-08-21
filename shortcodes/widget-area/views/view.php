@@ -6,6 +6,15 @@
  */
 
 if ( empty( $atts['sidebar'] ) || ! is_active_sidebar( $atts['sidebar'] ) ) {
+    // A sidebar with no widgets in it is "inactive", which is the common case here
+    // and looks identical to a broken block without a word of explanation.
+    if ( fw_is_editor_context() ) {
+        echo sc_editor_notice(
+            empty( $atts['sidebar'] )
+                ? __( 'Choose a widget area.', 'fw' )
+                : __( 'That widget area is empty — add widgets to it under Appearance → Widgets.', 'fw' )
+        );
+    }
     return;
 }
 
