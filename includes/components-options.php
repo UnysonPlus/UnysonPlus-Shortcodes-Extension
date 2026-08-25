@@ -44,6 +44,7 @@ if ( ! function_exists( 'unysonplus_components_color_choices' ) ) :
 endif;
 
 if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
+	/** Builds the Components theme-settings options tree (color and gap defaults) for the settings page. */
 	function unysonplus_components_settings_options() {
 		$color_choices = unysonplus_components_color_choices();
 
@@ -61,6 +62,7 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 		// Each library lives in its own file in theme-settings/ (named like the
 		// theme's own option files). The color presets feed the button / box / table
 		// color pickers; the gap-choices closure feeds the spacing selects.
+		/** Filters the Components settings tab definitions (Color Presets, Text Styles, Spacing, Buttons) for the theme settings UI. */
 		return apply_filters( 'unysonplus_components_settings_options', array(
 			'tab_colors'     => $tab( __( 'Color Presets', 'fw' ), upw_ts_get_options( 'components-color' ) ),
 			'tab_typography' => $tab( __( 'Text Styles', 'fw' ), upw_ts_get_options( 'components-typography' ) ),

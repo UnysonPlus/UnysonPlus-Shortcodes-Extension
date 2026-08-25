@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_ss_render' ) ) {
+	/** Renders the Social Share shortcode from its atts, resolving the design, selected networks, and share URL/title. */
 	function sc_ss_render( $atts ) {
 		$catalog  = require __DIR__ . '/parts/networks.php';
 		$registry = require __DIR__ . '/parts/registry.php';

@@ -15,6 +15,7 @@ $atts['unique_id_prefix'] = 'tb-';
 // glyph that doesn't map to a preset class). No JavaScript. Bails gracefully (no cap) if the content
 // doesn't start with plain text.
 if ( ! function_exists( 'sc_text_block_dropcap_wrap' ) ) {
+    /** Wraps the first N letters of the HTML in a drop-cap span, honoring leading tags and entities, with no JavaScript. */
     function sc_text_block_dropcap_wrap( $html, $chars, $cap_style ) {
         $chars      = max( 1, min( 10, (int) $chars ) );
         $style_attr = ( $cap_style !== '' ) ? ' style="' . esc_attr( $cap_style ) . '"' : '';

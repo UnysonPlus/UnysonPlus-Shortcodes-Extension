@@ -41,6 +41,7 @@ if ( ! function_exists( 'fw_design_lib_dir' ) ) :
 	function fw_design_lib_dir( $shortcode ) {
 		$shortcode = sanitize_key( $shortcode );
 		$paths     = fw_upw_uploads_dir( 'designs' ); // uploads/unysonplus/designs
+		/** Filters the server path to a shortcode's designs folder under uploads/unysonplus/designs. */
 		return apply_filters( 'fw_design_lib_dir', trailingslashit( $paths['path'] ) . $shortcode, $shortcode );
 	}
 endif;
@@ -50,6 +51,7 @@ if ( ! function_exists( 'fw_design_lib_url' ) ) :
 	function fw_design_lib_url( $shortcode ) {
 		$shortcode = sanitize_key( $shortcode );
 		$paths     = fw_upw_uploads_dir( 'designs' );
+		/** Filters the public URL of a shortcode's designs folder used for design thumbnails. */
 		return apply_filters( 'fw_design_lib_url', trailingslashit( $paths['url'] ) . $shortcode, $shortcode );
 	}
 endif;
@@ -60,6 +62,7 @@ if ( ! function_exists( 'fw_design_lib_enabled' ) ) :
 		if ( function_exists( 'sc_design_enabled_shortcodes' ) ) {
 			return (array) sc_design_enabled_shortcodes();
 		}
+		/** Filters the fallback list of shortcodes allowed to carry design library presets when the primary resolver is unavailable. */
 		return apply_filters( 'unysonplus_design_enabled_shortcodes', array( 'image_box' ) );
 	}
 endif;
@@ -326,7 +329,9 @@ endif;
  * -------------------------------------------------------------------------- */
 
 if ( ! function_exists( 'fw_design_lib_catalog_url' ) ) :
+	/** Returns the filterable remote URL of the design library's catalog.json in UnysonPlus-Library. */
 	function fw_design_lib_catalog_url() {
+		/** Filters the remote URL of the design library's catalog.json in the UnysonPlus-Library repo used for Browse Library. */
 		return apply_filters(
 			'fw_design_lib_catalog_url',
 			'https://raw.githubusercontent.com/UnysonPlus/UnysonPlus-Library/master/designs/catalog.json'

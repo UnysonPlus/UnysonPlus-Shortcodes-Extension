@@ -94,6 +94,7 @@ if ( ! function_exists( 'sc_section_background_use' ) ) {
 }
 
 if ( ! function_exists( 'sc_section_background_flag' ) ) {
+	/** Returns whether any Section background fill was used on the current page. */
 	function sc_section_background_flag() {
 		return ! empty( $GLOBALS['_sc_bg_fill_used'] );
 	}
@@ -115,6 +116,8 @@ if ( ! function_exists( 'sc_section_background_used_effects' ) ) {
 
 if ( ! function_exists( 'sc_section_background_effects' ) ) {
 	/**
+	 * Returns the filterable registry of custom Section-Background effects, cached per request.
+	 *
 	 * The registry of custom Section-Background effects. A child theme / plugin adds
 	 * its own from `functions.php` via the `sc_section_background_effects` filter:
 	 *
@@ -141,6 +144,7 @@ if ( ! function_exists( 'sc_section_background_effects' ) ) {
 	function sc_section_background_effects() {
 		static $cache = null;
 		if ( $cache === null ) {
+			/** Filters the registry of available section background effects, letting extensions register additional effect definitions. */
 			$cache = apply_filters( 'sc_section_background_effects', array() );
 			$cache = is_array( $cache ) ? $cache : array();
 		}

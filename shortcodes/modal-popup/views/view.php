@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_mp_icon' ) ) {
+	/** Renders a modal-popup picked icon via the central icon renderer, falling back to inline font/upload markup. */
 	function sc_mp_icon( $picked ) {
 		// Central icon renderer (single source of truth). aria_hidden => false
 		// preserves this element's original decorative-icon markup.
@@ -35,6 +36,7 @@ if ( ! function_exists( 'sc_mp_icon' ) ) {
 }
 
 if ( ! function_exists( 'sc_mp_render' ) ) {
+	/** Renders the modal-popup shortcode, resolving its design and the trigger button/image and modal content. */
 	function sc_mp_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'center' );

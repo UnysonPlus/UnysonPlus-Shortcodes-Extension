@@ -296,6 +296,7 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 		return array( $link, $new_tab ? ' target="_blank" rel="noopener noreferrer"' : '' );
 	}
 
+	/** Renders a single gallery tile, wiring click action, captions, hover zoom, and box/image styling. */
 	function sc_gallery_render_tile( $item, $args = array() ) {
 		$a = array_merge( array(
 			'click_action'   => 'lightbox',

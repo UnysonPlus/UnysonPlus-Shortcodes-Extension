@@ -19,6 +19,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_pt_icon' ) ) {
+	/** Renders a picked icon (via the central icon renderer, or icon-font/upload fallback) for the pricing table. */
 	function sc_pt_icon( $picked ) {
 		// Central icon renderer (single source of truth). aria_hidden => false
 		// preserves this element's original decorative-icon markup.
@@ -39,6 +40,7 @@ if ( ! function_exists( 'sc_pt_icon' ) ) {
 }
 
 if ( ! function_exists( 'sc_pt_render' ) ) {
+	/** Renders the Pricing Table shortcode from its atts, resolving the design skin, plans, columns, and featured emphasis. */
 	function sc_pt_render( $atts ) {
 		// Resolve against the merged registry (built-in skins + installed skin packs)
 		// so a pack key is accepted; fall back to the local registry whitelist.
@@ -140,12 +142,15 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 		foreach ( $fstyle as $fs ) { $classes[] = 'fw-pt--feat-' . $fs; }
 		$classes[] = 'fw-pt--btn-' . $btn_style;
 		if ( $align_cls ) { $classes[] = 'fw-pt--' . $align_cls; }
+		if ( sc_get( 'feature_dividers', $atts, 'yes' ) === 'no' ) { $classes[] = 'fw-pt--no-dividers'; }
 		if ( $billing_active ) {
 			$classes[] = 'fw-pt--has-billing';
 			if ( $billing_default === 'yearly' ) { $classes[] = 'is-yearly'; }
 		}
 
 		$atts['base_class']       = 'pricing-table';
+		// Per-item Hover (Hover Target = Each item): stamp each plan so only the hovered one reacts.
+		$hov = function_exists( 'sc_hover_item_markup' ) ? sc_hover_item_markup( $atts ) : array( 'class' => '', 'attr' => '' );
 		$atts['unique_id_prefix'] = 'pt-';
 		$atts['css_class']        = trim( implode( ' ', $classes ) . ' ' . ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) );
 		$attr = sc_build_wrapper_attr( $atts );
@@ -191,7 +196,7 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 			$btn_url  = isset( $p['button_url'] ) ? trim( (string) $p['button_url'] ) : '';
 			$btn_tgt  = ( isset( $p['button_target'] ) && $p['button_target'] === '_blank' ) ? '_blank' : '_self';
 
-			echo '<div class="fw-pt__plan' . ( $__boxp !== '' ? ' ' . $__boxp : '' ) . ( $featured ? ' is-featured' : '' ) . '">';
+			echo '<div class="fw-pt__plan' . ( $__boxp !== '' ? ' ' . $__boxp : '' ) . ( $featured ? ' is-featured' : '' ) . esc_attr( $hov['class'] ) . '"' . $hov['attr'] . '>';
 			// Top-center badge (the 'badge' emphasis) on the featured plan — uses the
 			// plan's Ribbon text, or "Most Popular" if none. Falls back to the classic
 			// corner ribbon otherwise.

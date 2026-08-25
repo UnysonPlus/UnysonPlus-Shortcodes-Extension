@@ -65,6 +65,7 @@ if ( ! function_exists( 'fw_admin_safe_custom_css' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_ts_custom_css' ) ) :
+	/** Returns the site-wide custom CSS from Theme Settings, sanitized, or an empty string. */
 	function upw_ts_custom_css() {
 		$css = trim( (string) upw_ts_setting( 'misc_custom_css', 'custom_css', '' ) );
 		return $css === '' ? '' : fw_admin_safe_custom_css( wp_strip_all_tags( $css ) );
@@ -224,6 +225,7 @@ add_action( 'wp_default_scripts', function ( $scripts ) {
 /* ===================== Maintenance Mode ===================== */
 
 if ( ! function_exists( 'upw_ts_maintenance_user_is_allowed' ) ) :
+	/** Returns whether the current logged-in user has a role allowed to bypass maintenance mode. */
 	function upw_ts_maintenance_user_is_allowed() {
 		if ( ! is_user_logged_in() ) {
 			return false;
@@ -350,6 +352,7 @@ if ( ! function_exists( 'upw_ts_image_size_crop_map' ) ) :
 endif;
 
 if ( ! function_exists( 'upw_ts_register_image_sizes' ) ) :
+	/** Registers custom image sizes defined in Theme Settings via add_image_size, skipping reserved or invalid entries. */
 	function upw_ts_register_image_sizes() {
 		if ( ! function_exists( 'fw_get_db_settings_option' ) ) { return; }
 		$sizes = fw_get_db_settings_option( 'theme_image_sizes' );

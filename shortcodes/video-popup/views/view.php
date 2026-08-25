@@ -30,6 +30,7 @@ if ( ! function_exists( 'sc_vp_parse' ) ) {
 }
 
 if ( ! function_exists( 'sc_vp_render' ) ) {
+	/** Renders the video-popup shortcode, resolving the design, poster image, and parsed video source. */
 	function sc_vp_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'classic' );

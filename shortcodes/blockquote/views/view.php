@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_bq_render' ) ) {
+	/** Renders the blockquote shortcode markup for the resolved design. */
 	function sc_bq_render( $atts ) {
 		if ( function_exists( 'fw_sc_design_resolve' ) ) {
 			$design = fw_sc_design_resolve( 'blockquote', $atts, 'classic' );

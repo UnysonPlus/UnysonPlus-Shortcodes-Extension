@@ -22,6 +22,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 
 /* Derive 1–2 uppercase initials from a name (or an explicit override). */
 if ( ! function_exists( 'sc_avatar_initials' ) ) {
+	/** Derives 1-2 uppercase initials from a name, or from an explicit override. */
 	function sc_avatar_initials( $name, $override = '' ) {
 		$override = trim( (string) $override );
 		if ( $override !== '' ) {
@@ -41,6 +42,7 @@ if ( ! function_exists( 'sc_avatar_initials' ) ) {
 /* Stable per-name color pair for the Auto initials background. Same name →
    same color on every render (crc32 of the name indexes a fixed palette). */
 if ( ! function_exists( 'sc_avatar_auto_color' ) ) {
+	/** Returns a stable background/foreground color pair for a seed name via a crc32-indexed palette. */
 	function sc_avatar_auto_color( $seed ) {
 		$palette = array(
 			array( '#4a90d9', '#fff' ), array( '#7c4dff', '#fff' ), array( '#00b295', '#fff' ),
@@ -58,6 +60,7 @@ if ( ! function_exists( 'sc_avatar_auto_color' ) ) {
    hex wins; otherwise a known preset slug (bg-primary, text-danger, …) maps to
    its hex so the Style tab works whether the user picks a preset or a hex. */
 if ( ! function_exists( 'sc_avatar_css_color' ) ) {
+	/** Resolves a compact color-picker value (custom hex or preset slug) to a concrete CSS color string. */
 	function sc_avatar_css_color( $raw ) {
 		static $preset = array(
 			'primary' => '#0d6efd', 'secondary' => '#6c757d', 'success' => '#198754',
@@ -81,6 +84,7 @@ if ( ! function_exists( 'sc_avatar_css_color' ) ) {
 
 /* Build one .fw-avatar face (image or initials, + optional status dot, + link). */
 if ( ! function_exists( 'sc_avatar_face' ) ) {
+	/** Builds one avatar face element (image or initials, optional status dot and link). */
 	function sc_avatar_face( $person, $args ) {
 		$size        = (int) $args['size'];
 		$show_status = ! empty( $args['show_status'] );

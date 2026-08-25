@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_nl_render' ) ) {
+	/** Renders the newsletter shortcode, resolving its design and the title, fields, button, and consent text. */
 	function sc_nl_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'inline' );

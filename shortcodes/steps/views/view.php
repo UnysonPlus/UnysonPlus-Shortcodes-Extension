@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_steps_icon' ) ) {
+	/** Renders a picked icon (via the central icon renderer, or icon-font/upload fallback) for a step. */
 	function sc_steps_icon( $picked ) {
 		// Central icon renderer (single source of truth). aria_hidden => false
 		// preserves this element's original decorative-icon markup.
@@ -35,6 +36,7 @@ if ( ! function_exists( 'sc_steps_icon' ) ) {
 }
 
 if ( ! function_exists( 'sc_steps_render' ) ) {
+	/** Renders the Steps shortcode from its atts, resolving the design and the list of steps. */
 	function sc_steps_render( $atts ) {
 		if ( function_exists( 'fw_sc_design_resolve' ) ) {
 			$design = fw_sc_design_resolve( 'steps', $atts, 'horizontal' );
@@ -93,6 +95,15 @@ if ( ! function_exists( 'sc_steps_render' ) ) {
 		// Shortcode-level Icon Badge Preset — one `iconb-{slug}` styling EVERY step icon.
 		$icon_badge_pre = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
 
+		// Box Style preset (.boxp-{slug}) applied to EVERY step card — the card fill / border / corners /
+		// shadow + hover. Most visible on the Cards design; harmless on the line designs.
+		$box_style = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : '';
+
+		// Card Rows — the step BODY layout (icon / number / title / description order + inline/stacked +
+		// alignment). Read once; when set, each step's body renders through the shared row renderer. The
+		// marker chip + connector spine stay outside the rows (owned by Design + Marker).
+		$card_rows = function_exists( 'sc_card_rows_value' ) ? sc_card_rows_value( $atts, 'card_rows' ) : array();
+
 		ob_start();
 		echo '<ol ' . fw_attr_to_html( $attr ) . '>';
 		$i = 0;
@@ -103,7 +114,7 @@ if ( ! function_exists( 'sc_steps_render' ) ) {
 			$num   = isset( $s['number'] ) && trim( (string) $s['number'] ) !== '' ? trim( (string) $s['number'] ) : (string) $i;
 			$icon  = sc_steps_icon( isset( $s['icon'] ) ? $s['icon'] : null );
 
-			echo '<li class="fw-steps__item">';
+			echo '<li class="fw-steps__item' . ( $box_style !== '' ? ' ' . esc_attr( $box_style ) : '' ) . '">';
 			echo '<div class="fw-steps__connector" aria-hidden="true"></div>';
 			if ( $marker !== 'none' ) {
 				echo '<div class="fw-steps__marker">';
@@ -114,12 +125,25 @@ if ( ! function_exists( 'sc_steps_render' ) ) {
 				}
 				echo '</div>';
 			}
+			// Body slot markup (single source of truth for both the Card-Rows and the default renderer).
+			$title_html   = $title !== '' ? '<' . $title_tag . ' class="fw-steps__title">' . esc_html( $title ) . '</' . $title_tag . '>' : '';
+			$content_html = $desc !== '' ? '<div class="fw-steps__text">' . do_shortcode( wpautop( $desc ) ) . '</div>' : '';
+
 			echo '<div class="fw-steps__body">';
-			if ( $title !== '' ) {
-				echo '<' . $title_tag . ' class="fw-steps__title">' . esc_html( $title ) . '</' . $title_tag . '>';
-			}
-			if ( $desc !== '' ) {
-				echo '<div class="fw-steps__text">' . do_shortcode( wpautop( $desc ) ) . '</div>';
+			if ( ! empty( $card_rows ) && function_exists( 'sc_card_rows_render' ) ) {
+				// Card Rows govern the body: icon / number can also appear inline here (independent of the
+				// spine marker), letting a step read as e.g. [number · title] then [description].
+				$slot_map = array();
+				if ( $title_html !== '' )   { $slot_map['title']   = $title_html; }
+				if ( $content_html !== '' ) { $slot_map['content'] = $content_html; }
+				$slot_map['number'] = '<span class="fw-steps__num-inline">' . esc_html( $num ) . '</span>';
+				// The icon renders as a BADGE (accent fill + marker shape + size) so a step's icon reads the same
+				// whether it's on the marker spine or placed in a Card Row — the row is the single source of truth.
+				if ( $icon !== '' )         { $slot_map['icon'] = '<span class="fw-steps__icon-badge' . ( $icon_badge_pre !== '' ? ' ' . $icon_badge_pre : '' ) . '"><span class="fw-steps__icon">' . $icon . '</span></span>'; }
+				$body_inner = sc_card_rows_render( $card_rows, $slot_map, 'steps-card' );
+				echo $body_inner !== '' ? $body_inner : ( $title_html . $content_html );
+			} else {
+				echo $title_html . $content_html;
 			}
 			echo '</div>'; // body
 			echo '</li>';

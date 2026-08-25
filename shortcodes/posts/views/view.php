@@ -30,6 +30,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_dp' ) ) {
+    /** Reads a posts att by new nested path, falling back to the legacy flat key then a default. */
     function sc_posts_dp( $atts, $new_path, $old_flat, $default = '' ) {
         if ( function_exists( 'fw_akg' ) ) {
             $v = fw_akg( $new_path, $atts, null );
@@ -47,6 +48,7 @@ if ( ! function_exists( 'sc_posts_dp' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_gap_size' ) ) {
+    /** Resolves a posts gap value to a CSS size from a Gap Scale preset slug or a legacy px value. */
     function sc_posts_gap_size( $val ) {
         if ( $val === '' || $val === null ) {
             return '';
@@ -81,6 +83,7 @@ if ( ! function_exists( 'sc_posts_gap_size' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_card_registry' ) ) {
+    /** Returns the memoized posts card-design registry loaded from the parts registry file. */
     function sc_posts_card_registry() {
         static $registry = null;
         if ( $registry === null ) {
@@ -100,6 +103,7 @@ if ( ! function_exists( 'sc_posts_card_registry' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_normalize_atts' ) ) {
+    /** Resolves picker-moved options (design/card/pagination/readmore groups) back to flat att keys and derives responsive column counts. */
     function sc_posts_normalize_atts( $atts ) {
         /* Layout mode (was `layout_mode` → now `design/mode`). */
         $mode = sc_get( 'design/mode', $atts, sc_get( 'layout_mode', $atts, 'grid' ) );
@@ -170,6 +174,7 @@ if ( ! function_exists( 'sc_posts_normalize_atts' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_locate_part' ) ) {
+    /** Resolves a card template part by slug, preferring child theme then parent theme then the bundled view. */
     function sc_posts_locate_part( $slug ) {
         $rel = '/extensions/shortcodes/shortcodes/posts/views/parts/card-' . sanitize_file_name( $slug ) . '.php';
 
@@ -191,6 +196,7 @@ if ( ! function_exists( 'sc_posts_locate_part' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_build_query_args' ) ) {
+    /** Builds the WP_Query args for the posts shortcode from its atts and the current page number. */
     function sc_posts_build_query_args( $atts, $paged = 1 ) {
 
         $post_type = sc_get( 'post_type', $atts, 'post' );
@@ -294,6 +300,7 @@ if ( ! function_exists( 'sc_posts_build_query_args' ) ) {
         }
         // 'pin_top' and 'ignore' are handled at render time / via ignore_sticky_posts already set.
 
+        /** Filters the WP_Query args built by the posts shortcode before the query runs, letting code adjust which posts are fetched. */
         return apply_filters( 'sc_posts_query_args', $args, $atts );
     }
 }
@@ -304,6 +311,7 @@ if ( ! function_exists( 'sc_posts_build_query_args' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_meta' ) ) {
+    /** Renders a post's meta bar (date, author, comments, reading time) in the chosen layout and separator style. */
     function sc_posts_render_meta( $atts, $post_id ) {
         $items   = (array) sc_get( 'meta_items', $atts, [ 'date' => true, 'author' => true ] );
         $layout  = sc_get( 'meta_layout', $atts, 'inline-dot' );
@@ -398,6 +406,7 @@ if ( ! function_exists( 'sc_posts_slug_enabled' ) ) {
 }
 
 if ( ! function_exists( 'sc_posts_render_cats' ) ) {
+    /** Renders category/taxonomy chip links for a post, honoring the block toggle, taxonomy, and max-count options. */
     function sc_posts_render_cats( $atts, $post_id ) {
         // Honour the "Categories / taxonomy chips" toggle in the block list for
         // EVERY placement — including the image-overlay positions, whose card
@@ -429,6 +438,7 @@ if ( ! function_exists( 'sc_posts_render_cats' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_image' ) ) {
+    /** Renders a post's featured image (or fallback) as a permalink anchor with ratio, image-style preset, and optional category overlay. */
     function sc_posts_render_image( $atts, $post_id, $cat_overlay_html = '' ) {
         $size  = sc_get( 'image_size', $atts, 'medium_large' );
         $ratio = sc_get( 'image_ratio', $atts, 'ratio-16-9' );
@@ -478,6 +488,7 @@ if ( ! function_exists( 'sc_posts_render_image' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_excerpt' ) ) {
+    /** Renders a post's excerpt from the chosen source, trimmed to the configured word length and suffix. */
     function sc_posts_render_excerpt( $atts, $post_id ) {
         $source = sc_get( 'excerpt_source', $atts, 'auto' );
         $length = max( 1, (int) sc_get( 'excerpt_length', $atts, 25 ) );
@@ -504,6 +515,7 @@ if ( ! function_exists( 'sc_posts_render_excerpt' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_readmore' ) ) {
+    /** Renders a post's read-more link in the chosen style with a visually-hidden title for accessible, crawlable link text. */
     function sc_posts_render_readmore( $atts, $post_id ) {
         $style = sc_get( 'readmore_style', $atts, 'text-link' );
         $text  = (string) sc_get( 'readmore_text', $atts, __( 'Read more', 'fw' ) );
@@ -550,6 +562,7 @@ if ( ! function_exists( 'sc_posts_render_readmore' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_title' ) ) {
+    /** Renders a post's title as a permalink-linked heading using the configured tag. */
     function sc_posts_render_title( $atts, $post_id ) {
         $tag = sc_get( 'title_tag', $atts, 'h3' );
         if ( ! in_array( $tag, [ 'h2', 'h3', 'h4', 'h5', 'div' ], true ) ) $tag = 'h3';
@@ -568,6 +581,7 @@ if ( ! function_exists( 'sc_posts_render_title' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_block' ) ) {
+    /** Renders a single card block by slug (image, cats, title, meta, excerpt, readmore). */
     function sc_posts_render_block( $slug, $atts, $post_id, $cat_overlay_html = '' ) {
         switch ( $slug ) {
             case 'image':    return sc_posts_render_image( $atts, $post_id, $cat_overlay_html );
@@ -590,6 +604,7 @@ if ( ! function_exists( 'sc_posts_render_block' ) ) {
 | card style owns image position. Falls back to a flat stack of ordered blocks.
 */
 if ( ! function_exists( 'sc_posts_render_body_rows' ) ) {
+    /** Renders a card's body blocks grouped into the designed Card Rows, excluding the image, with a flat-stack fallback. */
     function sc_posts_render_body_rows( $atts, $post_id, $exclude = [ 'image' ] ) {
         // Pre-build each body block's HTML (skip empties so blank rows collapse).
         $slot_map = [];
@@ -623,6 +638,7 @@ if ( ! function_exists( 'sc_posts_render_body_rows' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_get_ordered_slugs' ) ) {
+    /** Returns the ordered, enabled card-block slugs (from the Card Rows designer, else element_order, else defaults), minus any excluded ones. */
     function sc_posts_get_ordered_slugs( $atts, $exclude = [] ) {
         // Prefer the Card Rows designer: flatten its rows (in order) → block slugs. A
         // block is "visible" when it's in a row; its order is the row order. Falls back
@@ -681,6 +697,7 @@ if ( ! function_exists( 'sc_posts_get_ordered_slugs' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_card' ) ) {
+    /** Renders one post card by including the template part mapped to the given card style. */
     function sc_posts_render_card( $atts, $post_id, $card_style, $index = 0 ) {
         $registry = sc_posts_card_registry();
         $part = isset( $registry[ $card_style ]['part'] ) ? $registry[ $card_style ]['part'] : 'standard';
@@ -709,6 +726,7 @@ if ( ! function_exists( 'sc_posts_render_card' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_cards' ) ) {
+    /** Renders the inner card markup for a list of posts, applying first-post, alternate, and featured treatments. */
     function sc_posts_render_cards( $atts, $posts_list, $start_index = 0 ) {
         if ( empty( $posts_list ) ) return '';
         $card_style  = sc_get( 'card_style', $atts, 'standard' );
@@ -770,6 +788,7 @@ if ( ! function_exists( 'sc_posts_render_cards' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render' ) ) {
+    /** Renders the full Posts shortcode markup from its atts (query, layout, cards, pagination, filters, slider). */
     function sc_posts_render( $atts ) {
 
         /* Resolve picker-moved options back to flat keys so all reads below work. */
@@ -1013,6 +1032,7 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_pagination' ) ) {
+    /** Renders numbered pagination links for the query within an aligned nav wrapper. */
     function sc_posts_render_pagination( $query, $align ) {
         $big   = 999999999;
         $links = paginate_links( [
@@ -1034,6 +1054,7 @@ if ( ! function_exists( 'sc_posts_render_pagination' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_posts_render_filter_bar' ) ) {
+    /** Renders the AJAX category filter bar of buttons for the chosen taxonomy's terms. */
     function sc_posts_render_filter_bar( $atts ) {
         $tax = sc_get( 'cat_taxonomy', $atts, 'category' );
         if ( $tax === '' ) return '';

@@ -75,6 +75,8 @@ endif;
 
 if ( ! function_exists( 'sc_section_dynamic_css' ) ) :
 /**
+ * Builds per-page CSS for a section's custom min-height and container-width values (named presets use utility classes instead).
+ *
  * Per-instance Section styling that would otherwise be written as INLINE style="…" on the markup —
  * the section's Min Height and Container Width — resolved to a scoped CSS rule targeting the element's
  * `.u{hash}` scope class, so it rides the per-page dynamic CSS FILE (dynamic-css.php) instead of the
@@ -186,6 +188,7 @@ function sc_position_style( $atts ) {
 }
 endif;
 
+/** Builds the outer wrapper attributes (base class, unique id, extra attrs) for a shortcode. */
 function sc_build_wrapper_attr( $atts ) {
 
     $base_class       = ! empty( $atts['base_class'] ) ? $atts['base_class'] : '';
@@ -270,11 +273,14 @@ function sc_build_wrapper_attr( $atts ) {
         $attr['class'] = esc_attr( implode( ' ', $classes ) );
     }
 
+    /** Filters the assembled HTML attribute array for a shortcode wrapper element before it is rendered. */
     return apply_filters( 'sc_build_wrapper_attr', $attr, $atts );
 }
 
 if ( ! function_exists( 'sc_editor_notice' ) ) :
 	/**
+	 * Returns an italic editor-only placeholder notice div wrapping the escaped text.
+	 *
 	 * An editor-only "nothing to render yet" note.
 	 *
 	 * Most elements say what is missing when they have nothing to show. That

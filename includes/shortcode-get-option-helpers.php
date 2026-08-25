@@ -309,6 +309,7 @@ function sc_eval_display_conditions( $atts ) {
         }
     }
 
+    /** Filters the boolean visibility decision for a builder element, letting code override whether it renders based on its display-condition atts. */
     return (bool) apply_filters( 'fw_sc_display_conditions', $show, $atts );
 }
 endif;

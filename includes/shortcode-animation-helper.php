@@ -230,6 +230,27 @@ function sc_get_animation_fields() {
             'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
             'right-choice' => [ 'value' => 'yes', 'label' => __( 'On',  'fw' ) ],
         ],
+        // When the element is a COLLECTION (a gallery, posts grid, logo grid, the 3D gallery, …), play
+        // the entrance on each ITEM in turn instead of the whole block at once — the cards cascade in.
+        // Auto-detected: has no effect on a single, non-collection element. On by default.
+        'sequence' => [
+            'type'         => 'switch',
+            'label'        => __( 'Sequence Items', 'fw' ),
+            'desc'         => __( 'For galleries / grids / the 3D gallery: cascade the entrance across the items (one after another) instead of animating them all together. Ignored on single elements.', 'fw' ),
+            'value'        => 'yes',
+            'left-choice'  => [ 'value' => 'no',  'label' => __( 'Together', 'fw' ) ],
+            'right-choice' => [ 'value' => 'yes', 'label' => __( 'One by one', 'fw' ) ],
+        ],
+        'sequence_stagger' => [
+            'type'         => 'number',
+            'label'        => __( 'Stagger (ms)', 'fw' ),
+            'desc'         => __( 'Delay between each item when Sequence Items is on. Higher = a slower cascade.', 'fw' ),
+            'value'        => 90,
+            'min'          => 0,
+            'max'          => 600,
+            'step'         => 10,
+            'numeric_type' => 'integer',
+        ],
         // Easing — the `easing-picker` type renders only a LIGHT trigger here (thumbnail + name),
         // so it is safe inside this panel even though it is duplicated onto all ~56 effect reveals;
         // the 41-tile grid is a single SHARED palette built client-side (see the option type). Lives
@@ -416,6 +437,8 @@ function sc_get_animation_fields() {
     }
 
     /**
+     * Filters the shortcode animation option fields, letting the Animation Engine append Scroll Motion and Hover field groups when active.
+     *
      * Scroll Motion (GSAP) and Hover Interactions are provided by the Animation Engine
      * extension, which appends its field groups here via this filter — so they appear
      * only when the engine is active. Core ships just the Animate.css Entrance block
@@ -600,6 +623,16 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
         $attr['data-sc-anim-replay'] = '1';
     }
 
+    // Per-item sequencing (collections only): carry the user's choice + stagger so the collection
+    // wrapper filter / the 3D-gallery view can cascade the entrance across the items.
+    $seq = ( ! isset( $settings['sequence'] ) || $settings['sequence'] !== 'no' );
+    if ( ! $seq ) {
+        $attr['data-sc-anim-seq'] = 'no';
+    } else {
+        $seq_ms = isset( $settings['sequence_stagger'] ) ? max( 0, min( 600, (int) $settings['sequence_stagger'] ) ) : 90;
+        $attr['data-sc-anim-stagger'] = esc_attr( (string) $seq_ms );
+    }
+
     // CSS custom properties — Animate.css v4 reads these natively.
     $css_vars = [];
     if ( $delay > 0 )                                          $css_vars[] = '--animate-delay: '    . rtrim( rtrim( number_format( $delay, 2, '.', '' ),    '0' ), '.' ) . 's';
@@ -646,6 +679,7 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
  */
 if ( ! function_exists( 'sc_anim_collection_items' ) ) :
     function sc_anim_collection_items() {
+        /** Filters the broad registry mapping collection element base classes to their item selectors for scroll-animation cascades. */
         return apply_filters( 'sc_anim_collection_items', array(
             'fw-gallery'    => '.fw-gallery__item',
             'posts'         => '.posts__card',
@@ -669,9 +703,40 @@ endif;
  */
 if ( ! function_exists( 'sc_hover_collection_items' ) ) :
     function sc_hover_collection_items() {
+        // Only collections whose view actually STAMPS the per-card hover attrs belong here (the module
+        // skips the wrapper for these, so an unstamped one would lose hover entirely). Multi-template
+        // collections (posts, testimonials) are intentionally NOT here yet — each of their card/design
+        // variants must stamp the item first.
+        /** Filters the narrower registry mapping collection element base classes to their item selectors for per-card hover interactions. */
         return apply_filters( 'sc_hover_collection_items', array(
-            'fw-gallery' => '.fw-gallery__item',
+            'fw-gallery'    => '.fw-gallery__item',
+            'logo-grid'     => '.fw-lg__item',
+            'feature-list'  => '.fw-fl__item',
+            'pricing-table' => '.fw-pt__plan',
         ) );
+    }
+endif;
+
+/**
+ * Per-item hover markup pieces for a collection view. Returns array( 'class' => ' sc-hover ...',
+ * 'attr' => ' data-hover="..." ...' ) to splice onto each item element — honouring the "Hover Target"
+ * scope (empty strings when scope is "Whole element", no hover, or the engine is inactive). Keeps every
+ * collection view's stamping identical to the Gallery reference.
+ *
+ * @param array $atts
+ * @return array{class:string,attr:string}
+ */
+if ( ! function_exists( 'sc_hover_item_markup' ) ) :
+    function sc_hover_item_markup( $atts ) {
+        $none = array( 'class' => '', 'attr' => '' );
+        if ( ! function_exists( 'upw_hover_collection_item_attr' ) ) { return $none; }
+        if ( function_exists( 'upw_hover_scope' ) && upw_hover_scope( $atts ) !== 'each' ) { return $none; }
+        $hi = upw_hover_collection_item_attr( $atts );
+        if ( empty( $hi ) ) { return $none; }
+        $cls = '';
+        if ( isset( $hi['class'] ) ) { $cls = ' ' . trim( (string) $hi['class'] ); unset( $hi['class'] ); }
+        $attr = ( ! empty( $hi ) && function_exists( 'fw_attr_to_html' ) ) ? ' ' . fw_attr_to_html( $hi ) : '';
+        return array( 'class' => $cls, 'attr' => $attr );
     }
 endif;
 
@@ -696,10 +761,16 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     if ( ! isset( $map[ $base ] ) || $map[ $base ] === '' ) {
         return $attr; // not a registered collection
     }
+    if ( isset( $attr['data-sc-anim-seq'] ) && $attr['data-sc-anim-seq'] === 'no' ) {
+        return $attr; // user chose "Together" — animate the whole block, no per-item cascade
+    }
     $attr['data-sc-anim-children'] = esc_attr( $map[ $base ] );
-    // Delay between each item, in ms. Filterable so a theme/element can tune the feel.
-    $stagger = (int) apply_filters( 'sc_anim_stagger_ms', 90, $base, $atts );
-    $attr['data-sc-anim-stagger'] = esc_attr( (string) max( 0, $stagger ) );
+    // Stagger: honour the element's own Stagger (ms) if the entrance emitted one; else the filterable default.
+    if ( ! isset( $attr['data-sc-anim-stagger'] ) ) {
+        /** Filters the default per-item stagger delay in milliseconds for a collection's animation cascade, keyed by base class and atts. */
+        $stagger = (int) apply_filters( 'sc_anim_stagger_ms', 90, $base, $atts );
+        $attr['data-sc-anim-stagger'] = esc_attr( (string) max( 0, $stagger ) );
+    }
     return $attr;
 }, 21, 2 );
 

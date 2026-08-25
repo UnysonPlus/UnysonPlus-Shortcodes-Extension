@@ -132,6 +132,14 @@ $options = [
                         'help'  => __( 'Keep this on (recommended) when using a side layout, so narrow phone screens do not squash the icon and text into a cramped row. Turn it off only if you have deliberately designed the inline layout to hold up on mobile.', 'fw' ),
                         'value' => true,
                     ],
+
+                    'full_height' => [
+                        'type'  => 'switch',
+                        'label' => __( 'Full Height', 'fw' ),
+                        'desc'  => __( 'Fill the full height of the column so side-by-side boxes in a grid line up to the same height. On by default — consistent card heights are what a grid almost always wants.', 'fw' ),
+                        'help'  => __( 'On by default. For card-style boxes (with a Box Style / background) sitting in a multi-column grid where the content lengths differ, this stretches the boxes to match the tallest one instead of ending raggedly. It relies on the row keeping the Column\'s default "Stretched" vertical alignment, and has no visible effect on a single box or a box with no background — so it is safe to leave on. Turn it off only for the rare box you deliberately want at its natural content height.', 'fw' ),
+                        'value' => true,
+                    ],
                 ],
             ],
         ],

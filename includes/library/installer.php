@@ -19,6 +19,7 @@ if ( ! defined( 'UPW_SC_LIB_CATALOG_FAIL_TTL' ) ) { define( 'UPW_SC_LIB_CATALOG_
 
 /** Remote catalog URL (filterable so a dev can point at a local copy for testing). */
 function upw_sc_lib_catalog_url() {
+	/** Filters the remote shortcode-library catalog URL, letting a developer point at a local copy. */
 	return apply_filters(
 		'upw_sc_lib_catalog_url',
 		'https://raw.githubusercontent.com/UnysonPlus/UnysonPlus-Library/master/shortcodes/catalog.json'
@@ -28,6 +29,7 @@ function upw_sc_lib_catalog_url() {
 /** Install target: the ACTIVE theme's shortcodes customization tree (loader auto-registers here). */
 function upw_sc_lib_install_dir() {
 	$dir = get_stylesheet_directory() . '/framework-customizations/extensions/shortcodes/shortcodes';
+	/** Filters the directory library shortcodes install into (the active theme's shortcodes customization tree). */
 	return apply_filters( 'upw_sc_lib_install_dir', $dir );
 }
 
@@ -250,6 +252,7 @@ function upw_sc_lib_installer_payload() {
 }
 
 add_action( 'wp_ajax_upw_sc_lib_manage', 'upw_sc_lib_ajax_manage' );
+/** AJAX handler to install, uninstall, or refresh shortcode-library items, returning the updated item/installed lists. */
 function upw_sc_lib_ajax_manage() {
 	if ( ! current_user_can( 'manage_options' ) ) { wp_send_json_error( array( 'message' => __( 'Not allowed.', 'fw' ) ), 403 ); }
 	check_ajax_referer( 'upw_sc_lib_manage', 'nonce' );

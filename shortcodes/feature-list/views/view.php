@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_fl_icon' ) ) {
+	/** Renders a feature-list picked icon via the central icon renderer, falling back to inline font/upload markup. */
 	function sc_fl_icon( $picked ) {
 		// Central icon renderer (single source of truth). aria_hidden => false
 		// preserves this element's original decorative-icon markup.
@@ -35,6 +36,7 @@ if ( ! function_exists( 'sc_fl_icon' ) ) {
 }
 
 if ( ! function_exists( 'sc_fl_render' ) ) {
+	/** Renders the feature-list shortcode, resolving its design and folding legacy icon/badge designs into the new model. */
 	function sc_fl_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'check' );
@@ -109,6 +111,8 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 		if ( $zebra )    { $classes[] = 'fw-fl--zebra'; }
 
 		$atts['base_class']       = 'feature-list';
+		// Per-item Hover (Hover Target = Each item): stamp each row so only the hovered one reacts.
+		$hov = function_exists( 'sc_hover_item_markup' ) ? sc_hover_item_markup( $atts ) : array( 'class' => '', 'attr' => '' );
 		$atts['unique_id_prefix'] = 'fl-';
 		$atts['css_class']        = trim( implode( ' ', $classes ) . ' ' . ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) );
 		$attr = sc_build_wrapper_attr( $atts );
@@ -167,7 +171,7 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 			$body  = '<span class="fw-fl__text">' . esc_html( $text ) . '</span>';
 			if ( $sub !== '' ) { $body .= '<span class="fw-fl__sub">' . esc_html( $sub ) . '</span>'; }
 
-			echo '<li class="fw-fl__item' . ( $__boxp !== '' ? ' ' . $__boxp : '' ) . ( $sub !== '' ? ' fw-fl__item--has-sub' : '' ) . ( $state === 'off' ? ' is-off' : '' ) . '">';
+			echo '<li class="fw-fl__item' . ( $__boxp !== '' ? ' ' . $__boxp : '' ) . ( $sub !== '' ? ' fw-fl__item--has-sub' : '' ) . ( $state === 'off' ? ' is-off' : '' ) . esc_attr( $hov['class'] ) . '"' . $hov['attr'] . '>';
 			echo $marker; // phpcs:ignore
 			if ( $lu !== '' ) {
 				echo '<a class="fw-fl__body" href="' . esc_url( $lu ) . '"' . ( $lt === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : '' ) . '>' . $body . '</a>';

@@ -276,6 +276,14 @@ $options = array(
 						'value'   => 'center',
 						'desc'    => __( 'Alignment of the plan content.', 'fw' ),
 					) ),
+					'feature_dividers' => array(
+						'type'         => 'switch',
+						'label'        => __( 'Feature Divider Lines', 'fw' ),
+						'desc'         => __( 'Show a thin divider line between each feature. Turn off for a clean, spacing-only list (matches most modern designs).', 'fw' ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+						'value'        => 'yes',
+					),
 					'product_schema' => array(
 						'type'         => 'switch',
 						'label'        => __( 'Product Schema (JSON-LD)', 'fw' ),

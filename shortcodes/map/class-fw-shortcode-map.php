@@ -18,6 +18,7 @@ class FW_Shortcode_Map extends FW_Shortcode {
 	private function load_data()
 	{
 		if (empty($this->data)) {
+			/** Filters the registered map location providers, letting code add or modify map data sources and their callbacks/options. */
 			$this->data = apply_filters('fw_shortcode_map_provider', array(
 				'custom' => array(
 					'callback'   => array($this, '_callback_get_custom_locations'),

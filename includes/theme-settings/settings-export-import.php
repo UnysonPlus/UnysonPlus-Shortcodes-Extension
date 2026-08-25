@@ -20,7 +20,9 @@ if ( ! is_admin() ) {
 }
 
 if ( ! function_exists( 'unysonplus_settings_io_exclude_keys' ) ) :
+	/** Returns the filterable list of operational setting keys excluded from a design export/import. */
 	function unysonplus_settings_io_exclude_keys() {
+		/** Filters the operational setting keys excluded from a Theme Settings design export/import. */
 		return (array) apply_filters( 'unysonplus_settings_io_exclude_keys', array(
 			'misc_analytics',       // GA4 / GTM / Meta Pixel / Clarity ids
 			'misc_performance',     // per-site performance toggles
@@ -32,6 +34,7 @@ if ( ! function_exists( 'unysonplus_settings_io_exclude_keys' ) ) :
 endif;
 
 if ( ! function_exists( 'unysonplus_settings_io_strip_media' ) ) :
+	/** Recursively strips media/attachment values from a settings array so exports carry no uploaded images. */
 	function unysonplus_settings_io_strip_media( $value ) {
 		if ( is_array( $value ) ) {
 			if ( array_key_exists( 'attachment_id', $value ) ) {
@@ -46,12 +49,14 @@ if ( ! function_exists( 'unysonplus_settings_io_strip_media' ) ) :
 endif;
 
 if ( ! function_exists( 'unysonplus_settings_io_can' ) ) :
+	/** Returns whether the current user may export or import theme settings. */
 	function unysonplus_settings_io_can() {
 		return current_user_can( 'manage_options' );
 	}
 endif;
 
 if ( ! function_exists( 'unysonplus_settings_io_page_slug' ) ) :
+	/** Returns the Theme Settings admin page slug. */
 	function unysonplus_settings_io_page_slug() {
 		if ( function_exists( 'fw' ) && fw()->backend && method_exists( fw()->backend, '_get_settings_page_slug' ) ) {
 			return (string) fw()->backend->_get_settings_page_slug();
@@ -61,12 +66,14 @@ if ( ! function_exists( 'unysonplus_settings_io_page_slug' ) ) :
 endif;
 
 if ( ! function_exists( 'unysonplus_settings_io_page_url' ) ) :
+	/** Returns the admin URL of the Theme Settings page. */
 	function unysonplus_settings_io_page_url() {
 		return admin_url( 'themes.php?page=' . unysonplus_settings_io_page_slug() );
 	}
 endif;
 
 if ( ! function_exists( 'unysonplus_settings_io_theme_meta' ) ) :
+	/** Returns the active theme's id and version for the export envelope. */
 	function unysonplus_settings_io_theme_meta() {
 		if ( function_exists( 'fw' ) && fw()->theme && fw()->theme->manifest ) {
 			return array( (string) fw()->theme->manifest->get_id(), (string) fw()->theme->manifest->get_version() );
@@ -76,6 +83,7 @@ if ( ! function_exists( 'unysonplus_settings_io_theme_meta' ) ) :
 endif;
 
 if ( ! function_exists( 'unysonplus_settings_io_redirect' ) ) :
+	/** Redirects back to the Theme Settings page with the given result code, then exits. */
 	function unysonplus_settings_io_redirect( $code ) {
 		wp_safe_redirect( add_query_arg( 'unysonplus_io', rawurlencode( $code ), unysonplus_settings_io_page_url() ) );
 		exit;
@@ -84,6 +92,7 @@ endif;
 
 /* ----- Export (admin-post.php?action=unysonplus_export_theme_settings) ----- */
 if ( ! function_exists( 'unysonplus_settings_io_export' ) ) :
+	/** Handles the theme-settings export request, emitting a JSON design envelope as a file download. */
 	function unysonplus_settings_io_export() {
 		if ( ! unysonplus_settings_io_can() ) {
 			wp_die( esc_html__( 'You are not allowed to export theme settings.', 'fw' ) );
@@ -131,6 +140,7 @@ add_action( 'admin_post_unysonplus_export_theme_settings', 'unysonplus_settings_
 
 /* ----- Import (admin-post.php?action=unysonplus_import_theme_settings) ----- */
 if ( ! function_exists( 'unysonplus_settings_io_import' ) ) :
+	/** Handles the theme-settings import request, validating the uploaded design file and merging its values. */
 	function unysonplus_settings_io_import() {
 		if ( ! unysonplus_settings_io_can() ) {
 			wp_die( esc_html__( 'You are not allowed to import theme settings.', 'fw' ) );
@@ -190,6 +200,7 @@ if ( ! function_exists( 'unysonplus_settings_io_import' ) ) :
 
 		fw_set_db_settings_option( null, $merged );
 
+		/** Fires after Theme Settings are saved from an import, passing the previous and merged values so listeners can react to the change. */
 		do_action( 'fw_settings_form_saved', $current, $merged );
 
 		list( $theme_id ) = unysonplus_settings_io_theme_meta();
@@ -202,6 +213,7 @@ add_action( 'admin_post_unysonplus_import_theme_settings', 'unysonplus_settings_
 
 /* ----- Result notice after an import redirect ----- */
 if ( ! function_exists( 'unysonplus_settings_io_result_notice' ) ) :
+	/** Prints the admin notice reflecting the outcome of a theme-settings import redirect. */
 	function unysonplus_settings_io_result_notice() {
 		if ( ! unysonplus_settings_io_can() ) {
 			return;
@@ -236,6 +248,7 @@ add_action( 'admin_notices', 'unysonplus_settings_io_result_notice' );
 
 /* ----- The Export / Import control (html-full field in the Misc tab) ----- */
 if ( ! function_exists( 'unysonplus_settings_io_misc_field_html' ) ) :
+	/** Renders the Export/Import design control (buttons plus file picker) for the Misc settings tab. */
 	function unysonplus_settings_io_misc_field_html() {
 		$export_url   = wp_nonce_url(
 			admin_url( 'admin-post.php?action=unysonplus_export_theme_settings' ),

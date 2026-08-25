@@ -38,6 +38,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_imgbox_registry' ) ) {
+    /** Returns the memoized image-box design registry loaded from the parts registry file. */
     function sc_imgbox_registry() {
         static $registry = null;
         if ( $registry === null ) {
@@ -51,6 +52,7 @@ if ( ! function_exists( 'sc_imgbox_registry' ) ) {
 }
 
 if ( ! function_exists( 'sc_imgbox_locate_part' ) ) {
+    /** Returns the file path to an image-box design part template for a sanitized part slug. */
     function sc_imgbox_locate_part( $part ) {
         $part = preg_replace( '/[^a-z0-9_-]/', '', (string) $part );
         return __DIR__ . '/parts/box-' . $part . '.php';
@@ -67,6 +69,7 @@ if ( ! function_exists( 'sc_imgbox_locate_part' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_imgbox_sanitize_svg' ) ) {
+    /** Sanitizes a custom mask SVG, keeping only the svg fragment and stripping scripts and event handlers. */
     function sc_imgbox_sanitize_svg( $svg ) {
         $svg = (string) $svg;
         if ( strlen( $svg ) > 30000 || stripos( $svg, '<svg' ) === false ) {
@@ -84,6 +87,7 @@ if ( ! function_exists( 'sc_imgbox_sanitize_svg' ) ) {
     }
 }
 if ( ! function_exists( 'sc_imgbox_sanitize_clip' ) ) {
+    /** Sanitizes an image-box custom clip-path value, rejecting url()/expression/js and disallowed characters. */
     function sc_imgbox_sanitize_clip( $clip ) {
         $clip = trim( (string) $clip );
         if ( $clip === '' || strlen( $clip ) > 2000 ) {
@@ -107,6 +111,7 @@ if ( ! function_exists( 'sc_imgbox_sanitize_clip' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_imgbox_icon_markup' ) ) {
+    /** Renders an image-box icon, preferring the picked icon then a legacy custom emoji/SVG icon. */
     function sc_imgbox_icon_markup( $custom_icon, $picked_icon ) {
         // Picked icon (font / svg / emoji / upload) via the central renderer;
         // named wrapper classes stay on the element. Only return when non-empty
@@ -146,6 +151,7 @@ if ( ! function_exists( 'sc_imgbox_icon_markup' ) ) {
 |--------------------------------------------------------------------------
 */
 if ( ! function_exists( 'sc_imgbox_render' ) ) {
+    /** Renders the image-box shortcode, resolving its design family and variations to a part template and content. */
     function sc_imgbox_render( $atts ) {
 
         $registry = sc_imgbox_registry();

@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_ap_render' ) ) {
+	/** Renders the audio-player shortcode for the resolved design and track list. */
 	function sc_ap_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'classic' );

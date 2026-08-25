@@ -967,6 +967,7 @@ endif;
 
 
 if( ! function_exists('sc_option_alignment') ) :
+	/** Returns an image-picker option group for choosing image alignment (none, float-left, and others). */
 	function sc_option_alignment() {
 		$uri = get_template_directory_uri();
 		return array(

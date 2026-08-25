@@ -32,6 +32,12 @@
 .fw-fl__marker svg { width: var(--fl-marker-size, 1.25em); height: var(--fl-marker-size, 1.25em); fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .fw-fl__marker img { width: var(--fl-marker-size, 1.25em); height: var(--fl-marker-size, 1.25em); object-fit: contain; }
 .fw-fl__marker i { font-size: var(--fl-marker-size, 1.25em); line-height: 1; }
+/* Center the icon on the item's vertical axis. Icons render as an inline <svg>/
+   <img> inside a wrapper <span>, which baseline-aligns and rides high next to the
+   text; a flex wrapper + block glyph drop the baseline gap so it sits centered. */
+.fw-fl__marker > span { display: inline-flex; align-items: center; justify-content: center; }
+.fw-fl__marker svg,
+.fw-fl__marker img { display: block; }
 
 /* Checkmark + icon — the "both" marker (a check followed by the item's icon). */
 .fw-fl__marker--dual { gap: .35em; }

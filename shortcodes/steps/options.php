@@ -128,6 +128,46 @@ $options = array(
 		),
 	),
 
+	/* ============================ CARD ============================ *
+	 * The step CARD layout (Card Rows slot designer, shared with posts /
+	 * testimonials / wc_products) + the card SKIN (Box Preset). Card Rows
+	 * governs the step BODY interior (icon / number / title / description
+	 * order + inline/stacked + alignment); the marker + connector SPINE is
+	 * owned by the Design + Marker options, so the flow layouts stay intact. */
+	'tab_card' => array(
+		'title'   => __( 'Card', 'fw' ),
+		'type'    => 'tab',
+		'options' => array(
+			'group_card' => array(
+				'type'    => 'group',
+				'options' => array(
+					'card_preview' => array(
+						'type'  => 'html-full',
+						'label' => false,
+						'html'  => function_exists( 'sc_card_preview_mount_html' ) ? sc_card_preview_mount_html() : '',
+					),
+					'card_rows' => sc_card_rows_field( array(
+						'label' => __( 'Card Rows', 'fw' ),
+						'desc'  => __( 'The step body layout — add / drag rows and pick each row\'s slots (Icon, Number, Title, Description) with inline/stacked + alignment. A slot shows only when it\'s in a row and has content. The Marker chip + connector line are controlled by the Design & Marker options above, so they stay on the flow spine.', 'fw' ),
+						'slots' => array(
+							'icon'    => __( 'Icon', 'fw' ),
+							'number'  => __( 'Number', 'fw' ),
+							'title'   => __( 'Title', 'fw' ),
+							'content' => __( 'Description', 'fw' ),
+						),
+						'value' => array(
+							array( 'slots' => array( 'title' ),   'direction' => 'stack', 'justify' => 'start', 'align' => 'start' ),
+							array( 'slots' => array( 'content' ), 'direction' => 'stack', 'justify' => 'start', 'align' => 'start' ),
+						),
+					) ),
+					'box_style' => sc_card_box_style_field( array(
+						'desc' => __( 'Apply a reusable Box Preset (border, corners, shadow, fill + hover) to each step card. Most visible on the Cards design, where every step is its own box. Manage presets in Theme Settings → Components → Box Presets.', 'fw' ),
+					) ),
+				),
+			),
+		),
+	),
+
 	/* ========================== STYLING ========================== */
 	'tab_styling' => array(
 		'title'   => __( 'Styling', 'fw' ),

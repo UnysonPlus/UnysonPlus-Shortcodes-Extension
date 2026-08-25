@@ -158,6 +158,7 @@ if ( ! function_exists( 'fw_sc_designs' ) ) :
 			}
 		}
 
+		/** Filters the merged registry of available designs discovered for a shortcode tag, letting code add, remove, or alter design entries. */
 		return apply_filters( 'fw_sc_designs', $out, $tag );
 	}
 endif;
@@ -171,6 +172,7 @@ if ( ! function_exists( 'fw_sc_design_pack_enabled' ) ) :
 		$map = get_option( 'fw_sc_design_packs_disabled', array() );
 		$disabled = ( is_array( $map ) && isset( $map[ $tag ] ) && is_array( $map[ $tag ] ) ) ? $map[ $tag ] : array();
 		$enabled  = ! in_array( $key, $disabled, true );
+		/** Filters whether an installed design pack (for a shortcode tag/key) is enabled, letting code override the per-shortcode disabled toggle. */
 		return (bool) apply_filters( 'fw_sc_design_pack_enabled', $enabled, $tag, $key );
 	}
 endif;

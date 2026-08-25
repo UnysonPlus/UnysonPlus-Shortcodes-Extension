@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_hl_render' ) ) {
+	/** Renders the highlight-text shortcode, resolving its effect, tag, alignment, and text content. */
 	function sc_hl_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$fx       = sc_get( 'fx', $atts, 'marker' );

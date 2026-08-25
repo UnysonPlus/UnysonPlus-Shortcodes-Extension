@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_lottie_render' ) ) {
+	/** Renders the lottie shortcode, resolving the animation source from an uploaded file or URL. */
 	function sc_lottie_render( $atts ) {
 		$source = sc_get( 'source', $atts, 'url' );
 		$src    = '';

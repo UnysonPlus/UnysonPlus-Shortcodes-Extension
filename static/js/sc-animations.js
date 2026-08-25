@@ -56,6 +56,18 @@
         el.addEventListener('animationend', onEnd);
     }
 
+    // Play a one-shot entrance, then STRIP the animate classes once it ends (keeping the element
+    // visible). A finished entrance otherwise leaves animation-name: <effect> set on the element
+    // forever, which a Hover Interaction that uses CSS animation would re-trigger on mouse-out — the
+    // card would "enter" again every hover. Looping entrances (animate__infinite) must keep their
+    // classes, so they are left alone.
+    function playAndClear(el) {
+        play(el);
+        if (/(^|\s)animate__infinite(\s|$)/.test(el.getAttribute('data-sc-anim') || '')) { return; }
+        var onEnd = function () { el.removeEventListener('animationend', onEnd); reset(el, false); };
+        el.addEventListener('animationend', onEnd);
+    }
+
     var observer = ('IntersectionObserver' in window) ? new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
             if (!entry.isIntersecting) return;
@@ -70,14 +82,15 @@
                 return;
             }
 
-            play(el);
             if (el.getAttribute('data-sc-anim-replay') === '1') {
+                play(el);
                 var onEnd = function () {
                     el.removeEventListener('animationend', onEnd);
                     reset(el, true);
                 };
                 el.addEventListener('animationend', onEnd);
             } else {
+                playAndClear(el); // strip classes on end so a later hover can't re-trigger the entrance
                 observer.unobserve(el);
             }
         });
@@ -126,7 +139,7 @@
         el.classList.remove('sc-anim-pending');
         el.removeAttribute('data-sc-anim');
 
-        var playAll  = function () { list.forEach(function (k) { interactive ? playReplayable(k) : play(k); }); };
+        var playAll  = function () { list.forEach(function (k) { interactive ? playReplayable(k) : ( replay ? play(k) : playAndClear(k) ); }); };
         var resetAll = function () { list.forEach(function (k) { reset(k, true); }); };
 
         if (has('load')) { playAll(); }
@@ -160,6 +173,10 @@
     // carry several — e.g. "view click" reveals on scroll and replays on click.
     function bind(el) {
         if (el.__scAnimBound) { return; }
+        // Deferred wrapper (e.g. a 3D-gallery design whose items are built by JS after load): skip it
+        // now and let the design's runtime call upwScAnimBind(el) once the items exist. Not marked
+        // bound, so that later call re-enters here.
+        if (el.hasAttribute('data-sc-anim-defer')) { return; }
         el.__scAnimBound = true;
 
         // Collection wrapper → distribute the entrance to its items (staggered).
@@ -195,6 +212,10 @@
     function scan(root) {
         (root || document).querySelectorAll('[data-sc-anim]').forEach(bind);
     }
+
+    // Bind a single wrapper on demand — used by runtime-built collections (3D gallery) that carry
+    // data-sc-anim-defer until their items exist. The caller removes the defer attr first.
+    window.upwScAnimBind = function (el) { if (el) { bind(el); } };
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () { scan(); });

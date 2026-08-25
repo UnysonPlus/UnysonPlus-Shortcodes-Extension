@@ -89,6 +89,7 @@ if ( ! function_exists( 'sc_theme_settings_url' ) ) :
 		if ( isset( $map[ $context ] ) ) {
 			$url .= '#fw-options-tab-' . $map[ $context ];
 		}
+		/** Filters the admin URL (with tab anchor) pointing to the theme's settings page for a given context. */
 		return apply_filters( 'sc_theme_settings_url', $url, $context );
 	}
 endif;
@@ -107,6 +108,7 @@ if ( ! function_exists( 'sc_theme_provides_settings_ui' ) ) :
 	function sc_theme_provides_settings_ui() {
 		static $result = null;
 		if ( $result === null ) {
+			/** Filters whether the active theme ships the Unyson+ Theme Settings UI, so third-party themes can declare their own support. */
 			$result = (bool) apply_filters(
 				'sc_theme_provides_settings_ui',
 				'unysonplus-theme' === get_template()
@@ -363,6 +365,7 @@ if ( ! function_exists( 'sc_extract_styling_atts' ) ) :
 		);
 	}
 
+	/** Extracts the given styling keys from atts, returning their collected classes and inline styles. */
 	function sc_extract_styling_atts( &$atts, array $keys ) {
 		$out = array( 'classes' => array(), 'styles' => array() );
 		if ( ! is_array( $atts ) ) { return $out; }
@@ -451,6 +454,8 @@ endif;
 
 if ( ! function_exists( 'sc_extract_spacing_classes' ) ) :
 	/**
+	 * Removes the spacing atts and returns their flattened, sanitized margin/padding class names.
+	 *
 	 * Mirror of `sc_extract_styling_classes()` but for the nested `spacing` att
 	 * produced by the composite `spacing` option type. Pull the spacing att out
 	 * of $atts, flatten it into class-safe strings, and UNSET $atts['spacing']
@@ -520,6 +525,8 @@ endif;
 
 if ( ! function_exists( 'sc_color_field_compact' ) ) :
 	/**
+	 * Builds a compact preset+custom color-picker option field for a shortcode Styling tab.
+	 *
 	 * Drop-in replacement for {@see sc_color_field()} that returns the
 	 * `predefined-colors-color-picker-compact` option type instead of a
 	 * plain <select>. Same call signature, same `kind` ('text' | 'bg')
@@ -595,6 +602,8 @@ endif;
 
 if ( ! function_exists( 'sc_normalize_color_value' ) ) :
 	/**
+	 * Normalizes a color option value into class/style parts, with the preset winning when both are set.
+	 *
 	 * Resolve a Styling-tab color value (text_color / bg_color / any
 	 * inner-element color picked via sc_color_field*) to a class + style
 	 * pair the consuming view can emit verbatim.
@@ -651,6 +660,8 @@ endif;
 
 if ( ! function_exists( 'sc_color_to_css' ) ) :
 	/**
+	 * Resolves a color-field value (preset var, custom hex, or legacy string) to a CSS color token.
+	 *
 	 * Resolve a preset-or-custom color value (from sc_color_field_compact) to a
 	 * single CSS color STRING — for consumers that need a value (a CSS custom
 	 * property, an inline `color:`/`background:`, a JS/canvas color), not a class.
@@ -884,6 +895,8 @@ endif;
 
 if ( ! function_exists( 'sc_section_align_fields' ) ) :
 	/**
+	 * Returns the column horizontal/vertical align and reverse-columns option definitions, with SVG thumbnails, worded for the given host noun.
+	 *
 	 * The shared "columns alignment" option fields — Columns Horizontal Alignment
 	 * (`column_halign`), Columns Vertical Alignment (`column_valign`) and Column
 	 * Order / reverse (`reverse_columns`) — with their baked-in image-picker glyphs.
@@ -1034,6 +1047,7 @@ endif;
  * -------------------------------------------------------------------------- */
 
 if ( ! function_exists( 'sc_get_color_select_choices' ) ) :
+	/** Builds select choices from the color presets, keyed by kind-slug, for a color-picker field. */
 	function sc_get_color_select_choices( $kind = 'text' ) {
 		$out = array( '' => __( 'Default', 'fw' ) );
 		if ( ! function_exists( 'unysonplus_get_color_presets' ) ) { return $out; }
@@ -1121,7 +1135,9 @@ if ( ! function_exists( 'sc_get_gap_select_choices' ) ) :
 			$slug = strtolower( sc_sanitize_class( $entry['name'] ) );
 			if ( $slug === '' ) { continue; }
 			$size  = isset( $entry['size'] ) ? $entry['size'] : '';
-			$label = $entry['name'] . ( $size !== '' ? ' (' . $size . ')' : '' );
+			// An arbitrary-value name (e.g. `[40px]`) already IS the value — don't append a redundant `(40px)`.
+			$is_arb = ( isset( $entry['name'][0] ) && $entry['name'][0] === '[' );
+			$label  = $entry['name'] . ( ( $size !== '' && ! $is_arb ) ? ' (' . $size . ')' : '' );
 			$out[ $slug ] = $label;
 		}
 		return $out;
@@ -1739,6 +1755,7 @@ if ( ! function_exists( 'sc_get_table_preset_choices' ) ) :
 endif;
 
 if ( ! function_exists( 'sc_get_font_size_preset_choices' ) ) :
+	/** Builds select choices from font-size/text-style presets that set any typographic property. */
 	function sc_get_font_size_preset_choices() {
 		$out = array( '' => __( 'Default', 'fw' ) );
 		if ( ! function_exists( 'unysonplus_get_font_size_presets' ) ) { return $out; }
@@ -1858,6 +1875,7 @@ if ( ! function_exists( 'sc_needs_wrapper' ) ) :
 			return true;
 		}
 
+		/** Filters whether a shortcode's styling atts require a wrapper element, defaulting to false so custom atts can force one. */
 		return apply_filters( 'sc_needs_wrapper', false, $atts );
 	}
 endif;
@@ -2463,6 +2481,7 @@ if ( ! function_exists( 'sc_remove_styling_options' ) ) :
 endif;
 
 if ( ! function_exists( 'sc_filter_styling_options' ) ) :
+	/** Filters shortcode options, stripping the styling layer when styling presets are disabled. */
 	function sc_filter_styling_options( $options, $tag = '' ) {
 		// Styling on → no change. Off → strip the styling layer.
 		if ( function_exists( 'unysonplus_styling_presets_enabled' ) && ! unysonplus_styling_presets_enabled() ) {
@@ -2620,6 +2639,8 @@ endif;
 
 if ( ! function_exists( 'sc_migrate_atts' ) ) :
 	/**
+	 * Migrates shortcode atts in place by running per-att callbacks according to each spec's condition.
+	 *
 	 * Reusable atts-migration runner.
 	 *
 	 * Each option's *value transform* is necessarily option-specific (a tiny
@@ -2737,6 +2758,7 @@ if ( ! function_exists( 'sc_icon_join_classes' ) ) :
 endif;
 
 if ( ! function_exists( 'sc_icon_render' ) ) :
+	/** Renders an icon value (font, SVG, emoji, or upload) into markup, the central single-source icon renderer. */
 	function sc_icon_render( $value, $args = array() ) {
 		$args = array_merge( array(
 			'class'       => '',
@@ -3277,12 +3299,15 @@ if ( ! function_exists( 'sc_icon_svg_library_markup' ) ) :
 			);
 		}
 
+		/** Filters the resolved SVG markup for a built-in library icon id, letting code override or patch an icon's glyph. */
 		return (string) apply_filters( 'sc_icon_svg_library_markup', $markup, $id );
 	}
 endif;
 
 if ( ! function_exists( 'sc_icon_svg_library_fallback' ) ) :
 	/**
+	 * Returns equivalent icon-pack SVG markup for an unavailable icon id, hopping brand glyphs across packs.
+	 *
 	 * Heal library ids that no longer resolve.
 	 *
 	 * WHY: icon ids are PERSISTED in the database (theme Social Profiles, every
@@ -3353,10 +3378,13 @@ if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
 	// A trusted, already-sanitised SVG import (e.g. the Site Converter sideloading a source's icon SVGs)
 	// may run without an admin user. `fw_sc_svg_upload_allowed` lets such a flow lift ONLY the admin gate
 	// for the duration of its own call; the sanitiser below still runs, so safety is unchanged.
+	/** Returns whether the current context may upload SVGs (manage_options capability or the filter override). */
 	function sc_svg_upload_allowed() {
+		/** Filters whether the current context may upload SVGs, letting a trusted flow lift the manage_options gate without an admin user. */
 		return current_user_can( 'manage_options' ) || (bool) apply_filters( 'fw_sc_svg_upload_allowed', false );
 	}
 
+	/** Adds the SVG MIME type to the allowed upload types when SVG uploads are permitted for the current context. */
 	function sc_svg_upload_mimes( $mimes ) {
 		if ( sc_svg_upload_allowed() ) {
 			$mimes['svg'] = 'image/svg+xml';
@@ -3365,6 +3393,7 @@ if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
 	}
 	add_filter( 'upload_mimes', 'sc_svg_upload_mimes' );
 
+	/** Filters WordPress filetype detection to accept .svg as image/svg+xml when SVG uploads are allowed. */
 	function sc_svg_check_filetype( $data, $file, $filename, $mimes ) {
 		if ( preg_match( '/\.svg$/i', (string) $filename ) && sc_svg_upload_allowed() ) {
 			$data['ext']  = 'svg';
@@ -3374,6 +3403,7 @@ if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
 	}
 	add_filter( 'wp_check_filetype_and_ext', 'sc_svg_check_filetype', 10, 4 );
 
+	/** Prefilters SVG uploads to enforce admin permission and sanitize the file, rejecting anything that fails. */
 	function sc_svg_sanitize_upload( $file ) {
 		if ( empty( $file['name'] ) || ! preg_match( '/\.svg$/i', (string) $file['name'] ) ) {
 			return $file;
@@ -3509,6 +3539,7 @@ endif;
 if ( ! function_exists( 'sc_rating_star_paths' ) ) :
 	/** Symbol key => { vb: viewBox, d: filled path }. Filterable to add shapes. */
 	function sc_rating_star_paths() {
+		/** Filters the map of rating symbol shapes (star, heart, circle) with their viewBox and SVG path, to add or replace symbols. */
 		return apply_filters( 'sc_rating_star_paths', array(
 			'star'   => array( 'vb' => '0 0 24 25', 'd' => 'M12.864 3.37a.952.952 0 0 0-1.728 0L8.675 8.676l-5.836.688a.95.95 0 0 0-.792.646.94.94 0 0 0 .258.987l4.315 3.966-1.145 5.729a.94.94 0 0 0 .373.95c.3.216.7.24 1.024.06L12 18.847l5.128 2.854a.96.96 0 0 0 1.023-.06.94.94 0 0 0 .375-.95l-1.146-5.73 4.315-3.965a.94.94 0 0 0 .258-.987.95.95 0 0 0-.792-.646l-5.836-.688z' ),
 			'heart'  => array( 'vb' => '0 0 24 24', 'd' => 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z' ),
@@ -3562,6 +3593,7 @@ if ( ! function_exists( 'sc_rating_stars' ) ) :
 		}
 		if ( empty( $printed_sym[ $symbol ] ) ) {
 			$printed_sym[ $symbol ] = true;
+			/** Filters the inner SVG markup for a rating symbol, allowing a full path/markup override per symbol before the sprite is built. */
 			$custom = apply_filters( 'sc_rating_star_svg', '', $symbol, $a ); // full path/markup override
 			$inner  = $custom !== '' ? $custom : '<path fill="currentColor" fill-rule="evenodd" clip-rule="evenodd" d="' . esc_attr( $def['d'] ) . '"/>';
 			$once  .= '<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">'

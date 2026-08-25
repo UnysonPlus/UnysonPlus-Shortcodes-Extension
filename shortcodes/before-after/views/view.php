@@ -33,6 +33,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_bac_registry' ) ) {
+	/** Returns the cached before-after design registry array. */
 	function sc_bac_registry() {
 		static $registry = null;
 		if ( $registry === null ) {
@@ -86,6 +87,7 @@ if ( ! function_exists( 'sc_bac_color_var' ) ) {
 }
 
 if ( ! function_exists( 'sc_bac_render' ) ) {
+	/** Renders the before-after shortcode, dispatching to the comparison or spotlight type. */
 	function sc_bac_render( $atts ) {
 		/* --- Type + the two images (shared) ------------------------------- */
 		$type = sc_get( 'type/type', $atts, 'comparison' );
@@ -126,6 +128,7 @@ if ( ! function_exists( 'sc_bac_render' ) ) {
 }
 
 if ( ! function_exists( 'sc_bac_render_comparison' ) ) {
+	/** Renders the before-after comparison (slider) variant markup for the given images and design. */
 	function sc_bac_render_comparison( $atts, $before, $after, $b_alt, $a_alt, $ratio, $rounded, $max_width, $as_bg = false ) {
 		$registry = sc_bac_registry();
 
@@ -250,6 +253,7 @@ if ( ! function_exists( 'sc_bac_render_comparison' ) ) {
 }
 
 if ( ! function_exists( 'sc_bac_render_spotlight' ) ) {
+	/** Renders the before-after spotlight (reveal) variant markup for the given images and design. */
 	function sc_bac_render_spotlight( $atts, $before, $after, $b_alt, $a_alt, $ratio, $rounded, $max_width, $as_bg = false ) {
 		$radius   = (int) sc_get( 'type/spotlight/spotlight_radius', $atts, 240 );
 		$radius   = max( 40, min( 900, $radius ) );

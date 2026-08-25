@@ -54,6 +54,7 @@ class FW_Shortcode_Newsletter extends FW_Shortcode {
 		 * `fw_newsletter_subscribe_result` filter to surface a failure to the user.
 		 */
 		do_action( 'fw_newsletter_subscribe', $email, $name, $list );
+		/** Filters the newsletter subscription result; return a WP_Error to surface a failure message to the user. */
 		$result = apply_filters( 'fw_newsletter_subscribe_result', true, $email, $name, $list );
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
@@ -61,8 +62,10 @@ class FW_Shortcode_Newsletter extends FW_Shortcode {
 
 		// Notify the site (uses the Mailer extension's SMTP through wp_mail).
 		// `fw_newsletter_handled` lets an integration suppress this email.
+		/** Filters whether a newsletter signup has already been handled by an integration, allowing the built-in admin notification email to be suppressed. */
 		$handled = apply_filters( 'fw_newsletter_handled', false, $email, $name, $list );
 		if ( ! $handled ) {
+			/** Filters the recipient email address for the newsletter-signup notification (default the site admin email). */
 			$to = apply_filters( 'fw_newsletter_recipient', get_option( 'admin_email' ), $email, $list );
 			if ( ! is_email( $to ) ) { $to = get_option( 'admin_email' ); }
 			$source  = isset( $_POST['source'] ) ? esc_url_raw( wp_unslash( $_POST['source'] ) ) : '';

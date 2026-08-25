@@ -13,6 +13,7 @@
  * sites see no change until they curate.
  */
 if ( ! function_exists( 'unysonplus_icons_settings_options' ) ) :
+	/** Builds the Icons theme-settings options tree (Library/Browse/Upload installer sub-tabs). */
 	function unysonplus_icons_settings_options() {
 		// Canonical settings-tab layout (mirrors blog-settings.php etc.):
 		//   container tab (Icons, from the loader) -> box -> sub-tabs -> box -> fields.
@@ -72,6 +73,7 @@ if ( ! function_exists( 'unysonplus_icons_settings_options' ) ) :
 		// (its per-technology toggles). The extension hooks this only while it is
 		// active, so with the extension off the Icons page keeps just Library /
 		// Browse / Upload. Return shape = a single `tab` container.
+		/** Filters an optional Animated sub-tab of options for the Icons settings page, added by the Animated Icons extension when active. */
 		$animated_tab = apply_filters( 'unysonplus_icons_animated_settings', array() );
 		if ( is_array( $animated_tab ) && ! empty( $animated_tab ) ) {
 			$options['icons']['options']['tab_animated'] = $animated_tab;

@@ -141,7 +141,7 @@ $box_style      = ( is_string( $box_style ) && preg_match( '/^boxp-[a-z0-9_-]+$/
 /* Per-card hover: when a Hover Interaction (Animations tab) is added to this Gallery, the engine
  * returns the class/attrs to stamp on EACH card — so it lands per card, not on the whole grid
  * (which would tilt/animate as one block). Empty array when no hover / engine inactive. */
-$hover_item     = function_exists( 'upw_hover_collection_item_attr' ) ? upw_hover_collection_item_attr( $atts ) : array();
+$hover_item     = ( function_exists( 'upw_hover_collection_item_attr' ) && ( ! function_exists( 'upw_hover_scope' ) || upw_hover_scope( $atts ) === 'each' ) ) ? upw_hover_collection_item_attr( $atts ) : array();
 
 /* Per-element color picks (kept off the wrapper). */
 $caption_styling = sc_extract_styling_atts( $atts, array( 'caption_color' ) );

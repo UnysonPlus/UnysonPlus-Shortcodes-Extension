@@ -46,6 +46,7 @@ if ( $is_pinned ) {
 	$dismissible = true; // pinned notices must be closeable
 }
 
+/** Filters the default per-type heading labels (Note!, Success!, Warning!, etc.) used by the notification shortcode. */
 $default_labels = apply_filters( 'sc_notification_default_labels', [
 	'primary'   => __( 'Note!',        'fw' ),
 	'secondary' => __( 'Note!',        'fw' ),
@@ -57,6 +58,7 @@ $default_labels = apply_filters( 'sc_notification_default_labels', [
 	'dark'      => __( 'Note!',        'fw' ),
 ] );
 
+/** Filters the default per-type icon classes (primary, success, warning, etc.) used by the notification shortcode. */
 $default_icons = apply_filters( 'sc_notification_default_icons', [
 	'primary'   => 'fa-solid fa-bolt',
 	'secondary' => 'fa-solid fa-circle-dot',
@@ -82,6 +84,7 @@ $use_new_icon_markup = ( $custom_icon !== '' || ! empty( $picked_icon ) );
 | Priority: custom_icon (emoji / inline SVG) > icon-v2 picked icon > default FA icon for type.
 */
 if ( ! function_exists( 'sc_notification_render_icon' ) ) {
+	/** Renders a notification icon, preferring the picked icon, then a legacy custom icon, then the per-type default. */
 	function sc_notification_render_icon( $custom_icon, $picked_icon, $type, $default_icons ) {
 
 		// 1. icon-v2 picked icon (font / svg / emoji / upload) via the central

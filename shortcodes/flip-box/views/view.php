@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_fb_icon' ) ) {
+	/** Renders a flip-box picked icon via the central icon renderer, falling back to inline font/upload markup. */
 	function sc_fb_icon( $picked ) {
 		// Central icon renderer (single source of truth). aria_hidden => false
 		// preserves this element's original decorative-icon markup.
@@ -34,6 +35,7 @@ if ( ! function_exists( 'sc_fb_icon' ) ) {
 }
 
 if ( ! function_exists( 'sc_fb_render' ) ) {
+	/** Renders the flip-box shortcode, resolving its design skin and front/back title and text content. */
 	function sc_fb_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		// Design comes from the multi-picker (design_settings/skin); fall back to the legacy

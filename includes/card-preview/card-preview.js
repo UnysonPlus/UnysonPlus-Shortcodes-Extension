@@ -48,7 +48,12 @@
 		quotemark:    '❝',
 		author:       'Name · Role',
 		identity:     'Img · Name · Role',
-		site:         'website.com'
+		site:         'website.com',
+		// Steps slots
+		content:      'Short description text',
+		number:       '1',
+		icon:         '◆',
+		marker:       '①'
 	};
 	var SLOT_KIND = {
 		media: 'media', image: 'media', title: 'title', name: 'title', job: 'muted', role: 'muted',
@@ -56,7 +61,8 @@
 		readmore: 'ghost', rating: 'rating', rating_count: 'muted', price: 'price',
 		cart: 'cart', button: 'cart', social: 'ghost', badges: 'badge', wishlist: 'heart',
 		quickview: 'ghost', divider: 'divider',
-		avatar: 'avatar', quote: 'excerpt', quotemark: 'ghost', author: 'title', identity: 'inline', site: 'ghost'
+		avatar: 'avatar', quote: 'excerpt', quotemark: 'ghost', author: 'title', identity: 'inline', site: 'ghost',
+		content: 'excerpt', number: 'badge', icon: 'ghost', marker: 'badge'
 	};
 
 	function chipEl( key ) {

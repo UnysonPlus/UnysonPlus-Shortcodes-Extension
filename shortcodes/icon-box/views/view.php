@@ -30,6 +30,7 @@ $title_tag      = ! empty( $atts['title_tag'] ) ? $atts['title_tag'] : 'h3';
 $allowed_tags   = [ 'h3', 'h4', 'h5', 'h6', 'span', 'p' ];
 $title_tag      = in_array( $title_tag, $allowed_tags, true ) ? $title_tag : 'h3';
 $mobile_stack   = ! empty( $atts['mobile_stack'] );
+$full_height    = ! empty( $atts['full_height'] );
 $custom_icon    = isset( $atts['custom_icon'] ) ? trim( (string) $atts['custom_icon'] ) : '';
 $picked_icon    = ! empty( $atts['icon'] ) ? $atts['icon'] : null;
 $title          = isset( $atts['title'] ) ? trim( (string) $atts['title'] ) : '';
@@ -181,6 +182,9 @@ $wrapper_classes = [ 'icon-box__wrapper', 'icon-box--style-' . sanitize_html_cla
 
 if ( $mobile_stack ) {
     $wrapper_classes[] = 'icon-box--mobile-stack';
+}
+if ( $full_height ) {
+    $wrapper_classes[] = 'icon-box--full-height';
 }
 if ( $box_link !== '' ) {
     $wrapper_classes[] = 'icon-box--linked';

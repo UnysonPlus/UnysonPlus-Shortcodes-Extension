@@ -419,6 +419,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 	 */
 	public function collect_shortcodes_data() {
 		$structure = array();
+		/** Filters the collected structure of shortcode data, letting listeners register or augment shortcode metadata. */
 		$structure = apply_filters( 'fw_ext:shortcodes:collect_shortcodes_data', $structure );
 		return $structure;
 	}
@@ -529,6 +530,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 
 		$is_loading = true;
 
+		/** Filters the array of shortcode tags to disable so they are skipped when the shortcode loader registers shortcodes. */
 		$disabled_shortcodes = apply_filters('fw_ext_shortcodes_disable_shortcodes', array());
 		$this->shortcodes    = _FW_Shortcodes_Loader::load(array(
 			'disabled_shortcodes' => $disabled_shortcodes
@@ -576,6 +578,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 	 */
 	public function _action_enqueue_shortcodes_static_in_frontend_head()
 	{
+		/** Fires when shortcode static assets are enqueued into the front-end head, letting extensions add head-time statics. */
 		do_action('fw:ext:shortcodes:enqueue_custom_content');
 
 		/** @var WP_Post $post */
@@ -586,6 +589,8 @@ class FW_Extension_Shortcodes extends FW_Extension
 		}
 
 		/**
+		 * Fires before a post's shortcode static assets are enqueued, passing the post content for preparation.
+		 *
 		* @since 1.3.26
 		*/
 		do_action(
@@ -596,6 +601,8 @@ class FW_Extension_Shortcodes extends FW_Extension
 		$this->enqueue_shortcodes_static($post->post_content);
 		
 		/**
+		 * Fires after a post's shortcode static assets are enqueued, passing the post content for follow-up work.
+		 *
 		* @since 1.3.26
 		*/
 		do_action(
@@ -637,6 +644,8 @@ class FW_Extension_Shortcodes extends FW_Extension
 			global $post;
 
 			/**
+			 * Fires before a shortcode's static assets are enqueued during content scan, passing the tag, raw shortcode, atts string, and post.
+			 *
 			 * @since 1.3.26
 			 */
 			do_action('fw_ext_shortcodes_enqueue_static_before', array(
@@ -646,6 +655,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 				'post' => $post
 			));
 
+			/** Fires per shortcode tag (hook name appends the tag) while scanning content, passing the raw atts string and post so a specific shortcode can enqueue its static assets. */
 			do_action('fw_ext_shortcodes_enqueue_static:'. $tag, array(
 				/**
 				 * Transform to array:
@@ -662,6 +672,8 @@ class FW_Extension_Shortcodes extends FW_Extension
 			$this->enqueue_shortcodes_static($shortcode[5]); // inner shortcodes
 
 			/**
+			 * Fires after a shortcode's static assets are enqueued during page scan, passing the raw shortcode array.
+			 *
 			 * @since 1.3.18
 			 */
 			do_action(
@@ -702,6 +714,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 			$coder_post_meta = new FW_Ext_Shortcodes_Attr_Coder_Post_Meta();
 			$this->coders[ $coder_post_meta->get_id() ] = $coder_post_meta;
 
+			/** Filters the list of custom shortcode attribute coder instances to register alongside the built-in JSON, aggressive, and post-meta coders. */
 			foreach (apply_filters('fw_ext_shortcodes_coders', array()) as $coder) {
 				if (!($coder instanceof FW_Ext_Shortcodes_Attr_Coder)) {
 					trigger_error(get_class($coder) .' must implement FW_Ext_Shortcodes_Attr_Coder', E_USER_WARNING);
@@ -796,6 +809,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 					'title_template' => null,
 					'popup_size'     => 'small'
 				),
+				/** Filters a shortcode's builder item config (icon, title template, popup size, localized labels) before it is registered. */
 				apply_filters( 'fw_ext:shortcodes:config_shortcode', $config, $tag )
 			);
 

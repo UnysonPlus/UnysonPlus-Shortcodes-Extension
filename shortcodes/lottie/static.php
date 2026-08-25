@@ -6,6 +6,7 @@ $ext = fw_ext( 'shortcodes' );
 
 // Vendored lottie-web (SVG/light build). Filterable so a site can swap in a CDN
 // or the full build if it needs the canvas renderer.
+/** Filters the URL of the vendored lottie-web library script, letting a site swap in a CDN or the full canvas-renderer build. */
 $lib_src = apply_filters(
 	'fw_shortcode_lottie_library_src',
 	$ext->get_declared_URI( '/shortcodes/lottie/static/js/vendor/lottie_light.min.js' )

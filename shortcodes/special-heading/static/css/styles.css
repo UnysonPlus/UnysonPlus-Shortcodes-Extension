@@ -169,3 +169,15 @@ img.heading-title__icon { width: auto; height: 0.9em; vertical-align: -0.08em; }
 .heading-overline__icon svg, .heading-overline__icon img { width: auto; height: 1em; display: block; }
 /* Title-icon placement — DOM order sets before/after; flip the gap side for "after". */
 .heading-title--icon-after .heading-title__icon { margin-right: 0; margin-left: 0.4em; }
+
+/* Gradient-text run (e.g. a hero title's clipped-to-text word). The clip/fill/display live here — a
+   global class, not inline — because wp_kses strips background-clip / -webkit-text-fill-color from
+   inline styles (which would leave a solid gradient BOX). The Site Converter tags such spans
+   sc-gradtext and rides only the gradient VALUE inline (background-image), which kses keeps. */
+.sc-gradtext{
+	-webkit-background-clip:text;
+	background-clip:text;
+	-webkit-text-fill-color:transparent;
+	color:transparent;
+	display:inline-block;
+}

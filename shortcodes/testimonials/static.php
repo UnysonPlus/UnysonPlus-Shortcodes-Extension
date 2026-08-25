@@ -91,6 +91,7 @@ endif;
    typography. Bare newlines (plain textarea input) become <br>. Use this in
    place of esc_html() for the quote body in every design. */
 if ( ! function_exists( 'sc_testimonial_quote_html' ) ) {
+	/** Sanitizes a testimonial quote to a safe inline subset (bold/italic/link/break) and converts newlines to <br>. */
 	function sc_testimonial_quote_html( $content ) {
 		$allowed = array(
 			'strong' => array(),
@@ -113,6 +114,7 @@ if ( ! function_exists( 'sc_testimonial_quote_html' ) ) {
 /* Shared per-item field extractor for the design templates (escaping happens
    at output in each template). Returns raw values with safe defaults. */
 if ( ! function_exists( 'sc_testimonial_fields' ) ) {
+	/** Extracts a testimonial item's fields (content, author, job, site, rating, avatar) with safe defaults for the design templates. */
 	function sc_testimonial_fields( $t ) {
 		return array(
 			'content'     => isset( $t['content'] ) ? $t['content'] : '',
@@ -132,6 +134,7 @@ if ( ! function_exists( 'sc_testimonial_fields' ) ) {
    per render, so every design's sc_render_rating( $rating ) call picks it up without
    threading a 2nd argument through the ~9 design partials. */
 if ( ! function_exists( 'sc_render_rating_set_style' ) ) {
+    /** Stores and returns the request-scoped testimonial rating style so every design partial reuses it. */
     function sc_render_rating_set_style( $style = null ) {
         static $current = array();
         if ( $style !== null ) { $current = is_array( $style ) ? $style : array(); }
@@ -144,6 +147,7 @@ if ( ! function_exists( 'sc_render_rating_set_style' ) ) {
    colors / size). Falls back to a self-contained inline SVG when the shared helper
    isn't available, so ratings still render on any theme. */
 if ( ! function_exists( 'sc_render_rating' ) ) {
+    /** Renders a star rating for a value 0-5 via the shared rating engine, falling back to inline SVG stars. */
     function sc_render_rating( $rating ) {
         if ($rating === '' || $rating === null) return '';
         $rating = (float) $rating;
@@ -194,6 +198,7 @@ if ( ! function_exists( 'sc_render_rating' ) ) {
 }
 
 if ( ! function_exists( 'sc_render_card' ) ) {
+    /** Renders a single testimonial card with the configured style, alignment, avatar, rating, and per-element color options. */
     function sc_render_card( $t, $args ) {
         $card_style      = $args['card_style'];
         $text_align      = $args['text_align'];
@@ -266,6 +271,25 @@ if ( ! function_exists( 'sc_render_card' ) ) {
         $quote_only  = '<blockquote class="' . esc_attr( $quote_class ) . '"' . $maybe_style( $quote_color_style ) . '><p class="mb-0">'
             . sc_testimonial_quote_html( $content ) . '</p></blockquote>';
 
+        // EXTRA TEXTS — optional stat/result rows (muted label + emphasized value) at the card footer, e.g.
+        // "Total savings" → "$14,200". Built as its own slot so Card Rows can position it; renders only when
+        // at least one row has content (empty entries collapse). A value-only row (blank label) is allowed.
+        $extra_html = '';
+        if ( ! empty( $t['extra'] ) && is_array( $t['extra'] ) ) {
+            $extra_rows = '';
+            foreach ( $t['extra'] as $ex ) {
+                if ( ! is_array( $ex ) ) { continue; }
+                $ex_label = isset( $ex['label'] ) ? trim( (string) $ex['label'] ) : '';
+                $ex_value = isset( $ex['value'] ) ? trim( (string) $ex['value'] ) : '';
+                if ( '' === $ex_label && '' === $ex_value ) { continue; }
+                $extra_rows .= '<div class="ts-card__extra-row">'
+                    . ( '' !== $ex_label ? '<span class="ts-card__extra-label">' . esc_html( $ex_label ) . '</span>' : '' )
+                    . ( '' !== $ex_value ? '<span class="ts-card__extra-value">' . esc_html( $ex_value ) . '</span>' : '' )
+                    . '</div>';
+            }
+            if ( '' !== $extra_rows ) { $extra_html = '<div class="ts-card__extra">' . $extra_rows . '</div>'; }
+        }
+
         $box_class = isset( $args['box_class'] ) ? trim( (string) $args['box_class'] ) : '';
         $card_rows = ( isset( $args['card_rows'] ) && is_array( $args['card_rows'] ) ) ? $args['card_rows'] : array();
 
@@ -294,6 +318,7 @@ if ( ! function_exists( 'sc_render_card' ) ) {
                 'identity'  => $identity,
                 'rating'    => $rating_html ? '<div class="ts-card__rating">' . $rating_html . '</div>' : '',
                 'site'      => $site_html ? '<div class="testimonial-meta small text-muted">' . $site_html . '</div>' : '',
+                'extra'     => $extra_html,
             );
             foreach ( $filter as $fs ) { if ( isset( $slot_map[ $fs ] ) ) { $slot_map[ $fs ] = ''; } } // design renders these itself
             $inner = sc_card_rows_render( $card_rows, $slot_map, 'ts-card' );
@@ -310,6 +335,7 @@ if ( ! function_exists( 'sc_render_card' ) ) {
         if ( $rating_html ) {
             $author_block .= '<div class="mt-2">' . $rating_html . '</div>';
         }
+        $author_block .= $extra_html; // stat/result footer rows (no Card Rows layout → after the author block)
         $quote_html = $quote_only . $author_block;
 
         $classes = trim( 'testimonial-item ' . $card_style . ' ' . $box_class . ' ' . $text_align . ' avatar-pos-' . $avatar_position );

@@ -34,6 +34,10 @@ endif;
 
 if(!function_exists('sc_get_post_option')) :
   /**
+   * Converts an attribute array to an HTML attribute string via fw_attr_to_html(), or returns the default.
+   *
+   * Adds 'unyson page-builder' body classes when the current post uses the page builder.
+   *
   * Get post options value
   * if framework is missing , load defaults
   * @return option value
@@ -49,9 +53,7 @@ endif;
 
 
 if(!function_exists('sc_html_tag')) :
-  /*
-   * Checks if Unyson framework is missing, load defaults fw_html_tag($atts['heading']['tag'], $heading_attr, $atts['heading']['text'])
-   */
+  /** Wraps fw_html_tag with guards, returning a default when the framework, tag, or content is missing. */
   function sc_html_tag($tag, array $attr, $content = NULL, $default = NULL){
 			if(! function_exists('fw_html_tag')) return $default;
       if ( empty($tag) ) 			return $content;
@@ -63,9 +65,7 @@ endif;
 
 
 if(!function_exists('sc_attr_to_html')) :
-  /*
-   * Checks if Unyson framework is missing, load defaults
-   */
+  /** Converts an attribute array to an HTML attribute string via fw_attr_to_html(), or returns the default. */
   function sc_attr_to_html(array $attr, $default = NULL){
       if (function_exists('fw_attr_to_html') && (!empty($attr))) {
           return fw_attr_to_html($attr);
@@ -77,9 +77,7 @@ endif;
 
 
 if( ! function_exists('sc_ext_page_builder_is_builder_post') ) :
-  /*
-   * Checks the page if it's using Unyson page builder and adds class to body tag
-   */
+  /** Adds 'unyson page-builder' body classes when the current post uses the page builder. */
   function sc_ext_page_builder_is_builder_post( $classes ) {
       global $post;
       if ( isset ( $post->ID ) && function_exists('fw_ext_page_builder_is_builder_post') && fw_ext_page_builder_is_builder_post($post->ID) ) {

@@ -15,8 +15,11 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_lg_item' ) ) {
-	function sc_lg_item( $logo, $linkable = true, $show_labels = false ) {
+	/** Renders a single logo-grid item with its SVG/image mark, optional label, and optional link wrapper. */
+	function sc_lg_item( $logo, $linkable = true, $show_labels = false, $hov = array() ) {
 		if ( ! is_array( $logo ) ) { return ''; }
+		$hc = isset( $hov['class'] ) ? $hov['class'] : '';
+		$ha = isset( $hov['attr'] ) ? $hov['attr'] : '';
 		$name = isset( $logo['name'] ) ? trim( (string) $logo['name'] ) : '';
 		$url  = isset( $logo['link_url'] ) ? trim( (string) $logo['link_url'] ) : '';
 		$tgt  = ( isset( $logo['link_target'] ) && $logo['link_target'] === '_self' ) ? '_self' : '_blank';
@@ -47,14 +50,15 @@ if ( ! function_exists( 'sc_lg_item' ) ) {
 		$inner = $mark . $label;
 
 		if ( $linkable && $url !== '' ) {
-			return '<a class="fw-lg__item" href="' . esc_url( $url ) . '"' . ( $tgt === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : '' )
-				. ( $name !== '' ? ' aria-label="' . esc_attr( $name ) . '"' : '' ) . '>' . $inner . '</a>';
+			return '<a class="fw-lg__item' . esc_attr( $hc ) . '" href="' . esc_url( $url ) . '"' . ( $tgt === '_blank' ? ' target="_blank" rel="noopener noreferrer"' : '' )
+				. ( $name !== '' ? ' aria-label="' . esc_attr( $name ) . '"' : '' ) . $ha . '>' . $inner . '</a>';
 		}
-		return '<span class="fw-lg__item">' . $inner . '</span>';
+		return '<span class="fw-lg__item' . esc_attr( $hc ) . '"' . $ha . '>' . $inner . '</span>';
 	}
 }
 
 if ( ! function_exists( 'sc_lg_render' ) ) {
+	/** Renders the logo-grid shortcode, resolving its design and emitting the grid of logo items. */
 	function sc_lg_render( $atts ) {
 		if ( function_exists( 'fw_sc_design_resolve' ) ) {
 			$design = fw_sc_design_resolve( 'logo_grid', $atts, 'grid' );
@@ -110,6 +114,8 @@ if ( ! function_exists( 'sc_lg_render' ) ) {
 
 		$atts['base_class']       = 'logo-grid';
 		$atts['unique_id_prefix'] = 'lg-';
+		// Per-item Hover (Hover Target = Each item): stamp each logo so only the hovered one reacts.
+		$hov = function_exists( 'sc_hover_item_markup' ) ? sc_hover_item_markup( $atts ) : array();
 		$atts['css_class']        = trim( implode( ' ', $classes ) . ' ' . ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) );
 		$attr = sc_build_wrapper_attr( $atts );
 		$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style_var;
@@ -136,19 +142,19 @@ if ( ! function_exists( 'sc_lg_render' ) ) {
 			);
 			echo '<div class="splide fw-lg__carousel" role="group" aria-label="' . esc_attr__( 'Logos', 'fw' ) . '" data-splide="' . esc_attr( wp_json_encode( $cfg ) ) . '">';
 			echo '<div class="splide__track"><ul class="splide__list">';
-			foreach ( $logos as $l ) { echo '<li class="splide__slide">' . sc_lg_item( $l, true, $show_labels ) . '</li>'; }
+			foreach ( $logos as $l ) { echo '<li class="splide__slide">' . sc_lg_item( $l, true, $show_labels, $hov ) . '</li>'; }
 			echo '</ul></div></div>';
 		} elseif ( $design === 'marquee' ) {
 			$per = array( 'slow' => 4.2, 'normal' => 2.8, 'fast' => 1.7 );
 			$dur = max( 8, count( $logos ) * ( isset( $per[ $speed ] ) ? $per[ $speed ] : 2.8 ) );
 			echo '<div class="fw-lg__marquee fw-lg__marquee--' . ( $direction === 'right' ? 'right' : 'left' ) . '" style="--lg-dur:' . esc_attr( rtrim( rtrim( number_format( $dur, 2, '.', '' ), '0' ), '.' ) ) . 's;">';
 			echo '<div class="fw-lg__track">';
-			foreach ( $logos as $l ) { echo sc_lg_item( $l, true, $show_labels ); }
-			foreach ( $logos as $l ) { echo sc_lg_item( $l, false, $show_labels ); }
+			foreach ( $logos as $l ) { echo sc_lg_item( $l, true, $show_labels, $hov ); }
+			foreach ( $logos as $l ) { echo sc_lg_item( $l, false, $show_labels, $hov ); }
 			echo '</div></div>';
 		} else { // grid / boxed
 			echo '<div class="fw-lg__grid">';
-			foreach ( $logos as $l ) { echo sc_lg_item( $l, true, $show_labels ); }
+			foreach ( $logos as $l ) { echo sc_lg_item( $l, true, $show_labels, $hov ); }
 			echo '</div>';
 		}
 

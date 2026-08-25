@@ -50,3 +50,38 @@
 	.fw-steps--design-alternating .fw-steps__item:nth-child(odd) .fw-steps__marker,
 	.fw-steps--design-alternating .fw-steps__item:nth-child(even) .fw-steps__marker { left: 0; right: auto; }
 }
+
+/* --------------------------------------------------------------------------
+   Card Rows — the step BODY layout (shared slot-designer). Governs how the
+   icon / number / title / description flow inside .fw-steps__body; the marker
+   chip + connector spine stay owned by the Design + Marker options. Mirrors
+   the ts-card / posts row rules (renamed prefix `steps-card`).
+   -------------------------------------------------------------------------- */
+.fw-steps__body .steps-card__row { display: flex; gap: .5rem; }
+.fw-steps__body .steps-card-row--inline { flex-direction: row; flex-wrap: wrap; align-items: center; }
+.fw-steps__body .steps-card-row--stack  { flex-direction: column; }
+.fw-steps__body .steps-card-row--inline.steps-card-row--reverse { flex-direction: row-reverse; }
+.fw-steps__body .steps-card-j-start   { justify-content: flex-start; }
+.fw-steps__body .steps-card-j-center  { justify-content: center; }
+.fw-steps__body .steps-card-j-between  { justify-content: space-between; }
+.fw-steps__body .steps-card-j-end     { justify-content: flex-end; }
+.fw-steps__body .steps-card-a-start   { align-items: flex-start; }
+.fw-steps__body .steps-card-a-center  { align-items: center; }
+.fw-steps__body .steps-card-a-end     { align-items: flex-end; }
+.fw-steps__body .steps-card-a-stretch { align-items: stretch; }
+.fw-steps__body .steps-card__row + .steps-card__row { margin-top: .5rem; }
+/* Inline number/icon slots (independent of the spine marker). */
+.fw-steps__body .fw-steps__num-inline { font-weight: 700; color: var(--st-accent, currentColor); }
+.fw-steps__body .fw-steps__icon-inline { display: inline-flex; align-items: center; color: var(--st-accent, currentColor); }
+.fw-steps__body .fw-steps__icon-inline svg { width: 1.25em; height: 1.25em; }
+/* Icon BADGE slot — same look as the marker chip (accent fill + shape + size), so the icon reads identically
+   whether it sits on the marker spine or inside a Card Row. Shape follows the shortcode's Marker Shape. */
+.fw-steps__body .fw-steps__icon-badge {
+	display: inline-flex; align-items: center; justify-content: center;
+	width: var(--st-size); height: var(--st-size); flex: 0 0 auto;
+	background: var(--st-accent); color: var(--st-marker-text);
+}
+.fw-steps--shape-circle  .fw-steps__body .fw-steps__icon-badge { border-radius: 50%; }
+.fw-steps--shape-rounded .fw-steps__body .fw-steps__icon-badge { border-radius: .7rem; }
+.fw-steps--shape-square  .fw-steps__body .fw-steps__icon-badge { border-radius: 0; }
+.fw-steps__body .fw-steps__icon-badge .fw-steps__icon svg { width: 1.4rem; height: 1.4rem; }

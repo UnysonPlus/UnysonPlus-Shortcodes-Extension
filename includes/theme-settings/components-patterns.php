@@ -21,8 +21,31 @@
 // The per-row live preview: build an isolated <iframe srcdoc> from the row's own HTML + CSS.
 // _.escape() entity-encodes the markup so it rides safely inside the single-quoted srcdoc
 // attribute; the iframe then decodes + renders it in full isolation from the admin page.
-$preview_template = <<<'TPL'
-{{= "<span class='upw-pat-thumb'><iframe sandbox='allow-same-origin' scrolling='no' srcdoc='" + _.escape("<style>html,body{margin:0;width:100%;height:100%;overflow:hidden}</style><style>" + (o.css || "") + "</style>" + (o.html || "")) + "'></iframe></span><span class='upw-pat-title'>" + _.escape(o.pattern_name || "Pattern") + "</span>" }}
+// Resolve the site body background colour (Theme Settings → General → Layout → Site
+// Background — a background-pro; its base colour is at color/value/custom, or a
+// color-preset class at color/value/predefined). Used as the DEFAULT preview backdrop
+// and to prefill each pattern's Preview Background, so a pattern previews against the
+// real page background rather than plain white.
+$upw_body_bg = '#ffffff';
+if ( function_exists( 'fw_get_db_settings_option' ) ) {
+	$gl  = fw_get_db_settings_option( 'general_layout', array() );
+	$sbc = function_exists( 'fw_akg' ) ? fw_akg( 'site_background/color/value', $gl, array() ) : array();
+	if ( is_array( $sbc ) ) {
+		if ( ! empty( $sbc['custom'] ) ) {
+			$upw_body_bg = $sbc['custom'];
+		} elseif ( ! empty( $sbc['predefined'] ) && function_exists( 'unysonplus_color_preset_slug_map' ) ) {
+			$slug = preg_replace( '/^(?:bg|text)-/', '', (string) $sbc['predefined'] );
+			$map  = unysonplus_color_preset_slug_map();
+			if ( isset( $map[ $slug ] ) ) { $upw_body_bg = $map[ $slug ]; }
+		}
+	}
+}
+
+// The iframe body is painted with the row's Preview Background when set (e.g. the
+// section a pattern was captured on), otherwise the site body background resolved
+// above. Preview-only — it never becomes part of the pattern's output CSS.
+$preview_template = <<<TPL
+{{= "<span class='upw-pat-thumb'><iframe sandbox='allow-same-origin' scrolling='no' srcdoc='" + _.escape("<style>html,body{margin:0;width:100%;height:100%;overflow:hidden}body{background:" + (o.preview_bg || "{$upw_body_bg}") + ";}</style><style>" + (o.css || "") + "</style>" + (o.html || "")) + "'></iframe></span><span class='upw-pat-title'>" + _.escape(o.pattern_name || "Pattern") + "</span>" }}
 TPL;
 
 $options = array();
@@ -77,6 +100,19 @@ if ( ! in_array( 'unysonplus-theme', array( get_template(), get_stylesheet() ), 
 				'type'            => 'text',
 				'value'           => '',
 				'desc'            => __( 'The outermost class in your pasted HTML (e.g. <code>encrypted-neon-pattern</code>). Leave blank — Unyson+ auto-detects it when it scopes the pattern.', 'fw' ),
+				'dynamic_content' => false,
+			),
+			// PREVIEW-ONLY. The colour this pattern is shown against in the editor preview —
+			// e.g. the section background it was captured on. Light patterns are invisible on
+			// white, so this lets you see them in context. It does NOT change the pattern's
+			// output: the pattern stays a reusable overlay and the SECTION's own background
+			// governs where it's applied. The Site Converter sets this to the captured section
+			// background. Blank → a subtle checkerboard backdrop.
+			'preview_bg'   => array(
+				'label'           => __( 'Preview Background', 'fw' ),
+				'type'            => 'color-picker',
+				'value'           => $upw_body_bg,
+				'desc'            => __( 'Preview only — the colour this pattern is shown against in the editor (e.g. the section it sits over). Defaults to the site background. Does not change the pattern output.', 'fw' ),
 				'dynamic_content' => false,
 			),
 			'html'         => array(

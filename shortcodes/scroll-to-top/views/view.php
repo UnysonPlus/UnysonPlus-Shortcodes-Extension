@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_stt_render' ) ) {
+	/** Renders the Scroll-to-Top shortcode (button and/or progress bar) from its position, shape, size, and color atts. */
 	function sc_stt_render( $atts ) {
 		$show_btn  = sc_get( 'show_button', $atts, 'yes' ) === 'yes';
 		$show_prog = sc_get( 'show_progress', $atts, 'no' ) === 'yes';

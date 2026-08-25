@@ -20,6 +20,7 @@
  * the two render the same shape.
  */
 if ( ! function_exists( 'sc_image_mask_library' ) ) :
+	/** Returns the shared, memoized image-mask library keyed by slug, matching the Image Box mask shapes. */
 	function sc_image_mask_library() {
 		static $lib = null;
 		if ( $lib !== null ) {

@@ -21,6 +21,7 @@ $options = array(
 	'spacing_scale' => array(
 		'label'           => __( 'Spacing Scale', 'fw' ),
 		'type'            => 'addable-box',
+		'inline'          => true,
 		'value'           => function_exists( 'unysonplus_default_spacing_scale' ) ? unysonplus_default_spacing_scale() : array(),
 		'desc'            => __( 'Values behind Bootstrap-style margin/padding classes. Each entry produces a complete set of utilities (<code>.m-NAME</code>, <code>.p-NAME</code>, <code>.mt-NAME</code>, <code>.mx-NAME</code>, etc.).', 'fw' ),
 		'sortable'        => true,
@@ -29,8 +30,15 @@ $options = array(
 		'width'           => 'full',
 		'add-button-text' => __( 'Add spacer', 'fw' ),
 		'box-options'     => array(
-			'name' => array( 'label' => __( 'Name', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false, 'desc' => __( 'Becomes the slot suffix (e.g. "3" → <code>.m-3</code> / <code>.p-3</code>). Avoid Bootstrap-reserved names: <code>sm md lg xl xxl n1–n5 auto</code>.', 'fw' ) ),
-			'size' => array( 'label' => __( 'Value', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false, 'desc' => __( 'Any CSS length: <code>0.5rem</code>, <code>8px</code>, <code>calc(1rem + 2px)</code>…', 'fw' ) ),
+			// Grouped ( show_borders => false ) — one panel, no dividers; flattens on save.
+			'grp_spacer' => array(
+				'type'         => 'group',
+				'show_borders' => false,
+				'options'      => array(
+					'name' => array( 'label' => __( 'Name', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false, 'help' => __( 'Becomes the slot suffix (e.g. "3" → <code>.m-3</code> / <code>.p-3</code>). Avoid Bootstrap-reserved names: <code>sm md lg xl xxl n1–n5 auto</code>.', 'fw' ) ),
+					'size' => array( 'label' => __( 'Value', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false, 'help' => __( 'Any CSS length: <code>0.5rem</code>, <code>8px</code>, <code>calc(1rem + 2px)</code>…', 'fw' ) ),
+				),
+			),
 		),
 		'template'        => '<strong>{{- name }}</strong> ({{- size }})',
 	),
@@ -41,6 +49,7 @@ $options = array(
 			'gap_scale' => array(
 				'label'           => __( 'Gap Scale', 'fw' ),
 				'type'            => 'addable-box',
+				'inline'          => true,
 				'value'           => function_exists( 'unysonplus_default_gap_scale' ) ? unysonplus_default_gap_scale() : array(),
 				'desc'            => __( 'Values available in every column-gap dropdown (Default Gap below and the per-section Gap field on the Section shortcode).', 'fw' ),
 				'sortable'        => true,
@@ -49,8 +58,15 @@ $options = array(
 				'width'           => 'full',
 				'add-button-text' => __( 'Add gap', 'fw' ),
 				'box-options'     => array(
-					'name' => array( 'label' => __( 'Name', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false ),
-					'size' => array( 'label' => __( 'Value', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false, 'desc' => __( 'Any CSS length: <code>0.5rem</code>, <code>8px</code>, <code>1.25rem</code>…', 'fw' ) ),
+					// Grouped ( show_borders => false ) — one panel, no dividers; flattens on save.
+					'grp_gap' => array(
+						'type'         => 'group',
+						'show_borders' => false,
+						'options'      => array(
+							'name' => array( 'label' => __( 'Name', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false, 'help' => __( 'Becomes the gap slot suffix.', 'fw' ) ),
+							'size' => array( 'label' => __( 'Value', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false, 'help' => __( 'Any CSS length: <code>0.5rem</code>, <code>8px</code>, <code>1.25rem</code>…', 'fw' ) ),
+						),
+					),
 				),
 				'template'        => '<strong>{{- name }}</strong> ({{- size }})',
 			),

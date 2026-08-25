@@ -39,6 +39,7 @@ if ( ! function_exists( 'sc_bi_fmt' ) ) {
 }
 
 if ( ! function_exists( 'sc_bi_render' ) ) {
+	/** Renders the business-info shortcode markup for the resolved design. */
 	function sc_bi_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'card' );

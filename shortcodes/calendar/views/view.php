@@ -28,6 +28,7 @@ if ( ! function_exists( 'sc_cal_to_ymd' ) ) {
 }
 
 if ( ! function_exists( 'sc_cal_color' ) ) {
+	/** Returns a validated calendar accent color, defaulting to 'blue' for unknown values. */
 	function sc_cal_color( $c ) {
 		$ok = array( 'blue', 'green', 'amber', 'red', 'purple', 'teal' );
 		return in_array( $c, $ok, true ) ? $c : 'blue';
@@ -136,6 +137,7 @@ if ( ! function_exists( 'sc_cal_render_grid' ) ) {
 }
 
 if ( ! function_exists( 'sc_cal_render' ) ) {
+	/** Renders the calendar shortcode markup for the resolved design. */
 	function sc_cal_render( $atts ) {
 		global $wp_locale;
 		$registry = require __DIR__ . '/parts/registry.php';

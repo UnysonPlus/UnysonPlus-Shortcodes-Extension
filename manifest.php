@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.13.63';
+$manifest['version'] = '1.13.91';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,85 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.13.88 - Entrance + Hover: two new "auto-detect a collection" options.
+ *          ENTRANCE ANIMATION gains "Sequence Items" + "Stagger (ms)": on a collection (gallery,
+ *          logo grid, feature list, pricing table, the 3D gallery, ...) the entrance cascades across
+ *          the items one-by-one instead of animating the whole block together; the toggle (default
+ *          on) switches back to "Together", the stagger is user-tunable. The runtime (sc-animations.js)
+ *          gained a data-sc-anim-defer path + window.upwScAnimBind() so a collection whose items are
+ *          built by JS after load (the 3D gallery's Mosaic Marquee) releases its sequencing once the
+ *          items exist rather than animating an empty wrapper.
+ *          HOVER INTERACTION gains a "Hover Target" choice (Each item / Whole element): on a collection
+ *          the hover lands on each card (only the hovered one reacts) instead of the whole grid. The
+ *          narrow hover-collection registry now covers gallery + logo grid + feature list + pricing
+ *          table (each view stamps its item via the shared sc_hover_item_markup() helper); "Whole
+ *          element" falls back to hovering the block. The wrapper-skip is now scope-aware.
+ *
+ * 1.13.87 - Icon Box: "Full Height" is now ON BY DEFAULT (was an opt-in toggle in 1.13.86).
+ *          A card grid almost always wants uniform heights, and the option is a harmless
+ *          no-op on a lone box or one with no background, so defaulting it on gives consistent
+ *          cards without any setup. The switch remains for the rare box you want at its natural
+ *          content height. The Site Converter now sets it unconditionally on every converted
+ *          card (class-based h-full/flex-1 detection proved fragile - most sources get equal
+ *          heights from the grid itself, with no h-full on the card).
+ *
+ * 1.13.86 - Icon Box: NEW "Full Height" option (Layout tab). When on, the box fills the
+ *          full height of its column so side-by-side cards in a multi-column grid line up
+ *          to the tallest one instead of ending raggedly. Adds an icon-box--full-height
+ *          class -> height:100% + flex-column on the wrapper; relies on the row keeping the
+ *          Column default "Stretched" vertical alignment (which it does out of the box), so
+ *          no other setup is needed. No visible effect on a single box or one without a
+ *          background.
+ *
+ * 1.13.84 - Testimonials: NEW per-testimonial "Extra Texts" field — a repeatable list of
+ *          label + value rows (e.g. "Total savings" -> "$14,200", or a lone "40% more
+ *          closes") rendered as a stat/result footer on the card (muted label over an
+ *          emphasized value). Exposed as a new "Extra Texts" slot in Card Rows (defaults
+ *          to a divider + the rows at the card footer), so it can be positioned like any
+ *          other slot; renders only when a row has content. The Site Converter now maps a
+ *          source card's bordered footer stat into this field (label + value split) instead
+ *          of cramming it into the author role line, and pins Card Rows to surface it.
+ * 1.13.67 - Steps / Process: the Cards design now supports the Connector line (it was
+ *          previously Horizontal / Vertical / Alternating only) — a short line bridges
+ *          the gap between cards at the marker's height when Connector = Solid / Dashed,
+ *          so a "connected cards" flow is possible. The Site Converter drives it: it
+ *          detects a source line between step cards and sets Connector accordingly
+ *          (off when the source has none), and emits Card Rows that include the step
+ *          NUMBER so a numbered source no longer drops it.
+ *
+ * 1.13.66 - Steps / Process shortcode gained the shared Card Rows slot designer (new
+ *          Card tab) — the same drag-to-reorder row/slot layout + live wireframe
+ *          preview used by Posts, Testimonials and wc_products. Card Rows govern the
+ *          step BODY interior: pick & order the Icon / Number / Title / Description
+ *          slots per row with inline-or-stacked + distribute + align, so a step can
+ *          read as e.g. [Number · Title] then [Description]. The marker chip +
+ *          connector SPINE stay owned by the Design + Marker options, so the flow
+ *          layouts (horizontal / vertical / alternating / cards) are untouched — the
+ *          body renders through the shared sc_card_rows_render() under a `steps-card`
+ *          CSS prefix. Box Style moved onto the same Card tab alongside it. Steps with
+ *          no saved rows keep the classic Title-then-Description body.
+ *
+ * 1.13.65 - Steps / Process shortcode gained a Box Style option (Design tab) — apply
+ *          a reusable Box Preset (border / corners / shadow / fill + hover) to every
+ *          step card, matching the shared card-skin system used by icon-box,
+ *          testimonials and wc_products. Most visible on the Cards design, where each
+ *          step is its own box; the `.boxp-{slug}` class is stamped on every
+ *          `.fw-steps__item`. The Site Converter now assigns it automatically: a boxed
+ *          source process is detected from measured computed styles (not just Tailwind
+ *          classes) and matched to a clustered Box Preset, and each step's icon glyph
+ *          + marker shape + accent colour are captured too, so an icon-driven process
+ *          reproduces instead of a flat number list.
+ *
+ * 1.13.64 - Text Styles (Theme Settings -> Components -> Text Styles) gained a Color
+ *          field and a Custom CSS escape hatch, and the Size + Letter-spacing fields
+ *          became unit-inputs (px/rem/em) instead of plain text. A Text Style can now
+ *          set a colour (a Color Preset or a custom value) and carry freeform CSS
+ *          (text-shadow, gradient text, etc.) via a `selector` placeholder, on top of
+ *          the existing size/weight/line-height/tracking/transform. The consumer
+ *          (core css-tokens) resolves the new fields and still tolerates legacy
+ *          bare-number sizes / "0.5px" tracking, and the unit-input option type now
+ *          coerces a legacy scalar length for display so promoted fields never show
+ *          blank. Every field stays optional (blank inherits).
  * 1.13.40 - REMOVED: the "Post Carousel" content element ([post_carousel], added in
  *          1.6.93). It was retired from the plugin some time ago but the deletion
  *          never reached the published extension repository — the copy-to-clone

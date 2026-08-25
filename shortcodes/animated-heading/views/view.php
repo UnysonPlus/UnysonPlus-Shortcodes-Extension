@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_ah_render' ) ) {
+	/** Renders the animated-heading shortcode with the resolved animation and word list. */
 	function sc_ah_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$anim     = sc_get( 'anim', $atts, 'typewriter' );

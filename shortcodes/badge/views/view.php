@@ -22,6 +22,7 @@ if ( ! function_exists( 'sc_announce_color' ) ) {
 }
 
 if ( ! function_exists( 'sc_announce_render' ) ) {
+	/** Renders the announcement/badge shortcode from its tag text and message atts. */
 	function sc_announce_render( $atts ) {
 		$get = function ( $k, $d = '' ) use ( $atts ) {
 			if ( function_exists( 'fw_akg' ) ) { $v = fw_akg( $k, $atts, null ); if ( $v !== null ) { return $v; } }

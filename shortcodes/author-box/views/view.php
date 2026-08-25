@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_ab_render' ) ) {
+	/** Renders the author-box shortcode markup for the resolved design and source. */
 	function sc_ab_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$catalog  = require __DIR__ . '/parts/socials.php';

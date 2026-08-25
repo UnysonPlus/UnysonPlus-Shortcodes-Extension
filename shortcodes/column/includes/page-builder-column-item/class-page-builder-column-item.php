@@ -65,7 +65,9 @@ class Page_Builder_Column_Item extends Page_Builder_Item {
 		foreach ( $builder_widths as $key => $value ) {
 			$column_thumbnails[ $key ] = array(
 				'tab'         => __( 'Layout Elements', 'fw' ),
+				/** Filters the page-builder column item title for a given column width key. */
 				'title'       => apply_filters( 'fw_ext_shortcodes_column_title', $value['title'], $key ),
+				/** Filters the page-builder column item description text for a given column width key. */
 				'description' => apply_filters( 'fw_ext_shortcodes_column_description',
 					sprintf( __( 'Add a %s column', 'fw' ), $value['title'] ), $key ),
 				'icon'        => ($icon = $column_shortcode->locate_URI( "/thumbnails/{$key}.svg" ))
@@ -76,6 +78,7 @@ class Page_Builder_Column_Item extends Page_Builder_Item {
 			);
 		}
 
+		/** Filters the column-width thumbnail data offered in the page builder, letting code add or alter available column layouts. */
 		return apply_filters( 'fw_shortcode_column_thumbnails_data', $column_thumbnails );
 	}
 
@@ -121,6 +124,7 @@ class Page_Builder_Column_Item extends Page_Builder_Item {
 			}
 		}
 
+		/** Filters the column item's parsed attribute values derived from its shortcode attributes. */
 		return apply_filters(
 			'fw:ext:shortcodes:column:value-from-attributes',
 			$attributes,

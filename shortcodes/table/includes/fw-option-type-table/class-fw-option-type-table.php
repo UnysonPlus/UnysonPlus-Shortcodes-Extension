@@ -16,6 +16,7 @@ class FW_Option_Type_Table extends FW_Option_Type
 	 * @return array
 	 */
 	public static function allowed_cell_html() {
+		/** Filters the list of inline HTML tags/attributes allowed inside a table option cell. */
 		return apply_filters( 'fw_option_type_table_allowed_cell_html', array(
 			'a'      => array( 'href' => true, 'title' => true, 'target' => true, 'rel' => true ),
 			'strong' => array(), 'b' => array(),
@@ -93,6 +94,7 @@ class FW_Option_Type_Table extends FW_Option_Type
 			'localizeTableBuilder',
 			array(
 				'msgEdit' => __( 'Edit', 'fw' ),
+				/** Filters the maximum number of columns allowed in the table shortcode builder, defaulting to 6. */
 				'maxCols' => apply_filters( 'fw_ext_shortcodes_table_max_columns', 6 )
 			)
 		);
@@ -495,6 +497,7 @@ class FW_Option_Type_Table extends FW_Option_Type
 		/** @var FW_Shortcode_Table $table */
 		$table = $shortcodes->get_shortcode('table');
 
+		/** Filters the default option definitions used by the table option type's header/body settings. */
 		return apply_filters( 'fw_option_type_table_defaults', array(
 			'header_options'  => array(
 				'table_purpose' => array(

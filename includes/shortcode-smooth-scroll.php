@@ -23,6 +23,7 @@ if ( ! defined( 'FW' ) ) die( 'Forbidden' );
  */
 if ( ! function_exists( 'sc_smooth_scroll_post_option' ) ) :
 function sc_smooth_scroll_post_option( $options, $post_type ) {
+    /** Filters which post types (default page and post) get the per-page smooth-scroll toggle metabox in the editor. */
     $allowed = apply_filters( 'sc_smooth_scroll_post_types', [ 'page', 'post' ] );
     if ( ! in_array( $post_type, (array) $allowed, true ) ) {
         return $options;

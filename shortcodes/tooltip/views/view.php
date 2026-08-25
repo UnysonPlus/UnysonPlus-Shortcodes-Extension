@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_tt_icon' ) ) {
+	/** Renders a tooltip trigger's picked icon via the central icon renderer, with a minimal font/upload fallback. */
 	function sc_tt_icon( $picked ) {
 		// Central icon renderer (single source of truth). aria_hidden => false
 		// preserves this element's original decorative-icon markup.
@@ -35,6 +36,7 @@ if ( ! function_exists( 'sc_tt_icon' ) ) {
 }
 
 if ( ! function_exists( 'sc_tt_render' ) ) {
+	/** Renders the tooltip shortcode, resolving the design and building the trigger and tip content markup. */
 	function sc_tt_render( $atts ) {
 		if ( function_exists( 'fw_sc_design_resolve' ) ) {
 			$design = fw_sc_design_resolve( 'tooltip', $atts, 'dark' );

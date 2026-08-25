@@ -52,6 +52,7 @@ class FW_Ext_Shortcodes_Editor {
 			array( 'title' => __( 'Steps (numbered)', 'fw' ), 'class' => 'fw-list-steps' ),
 			array( 'title' => __( 'Arrow', 'fw' ),            'class' => 'fw-list-arrow' ),
 		);
+		/** Filters the styled-list format definitions (Pros, Cons, Steps, Arrow) offered in the TinyMCE list-styles menu. */
 		return apply_filters( 'unysonplus_editor_list_formats', $styles );
 	}
 
@@ -110,6 +111,7 @@ class FW_Ext_Shortcodes_Editor {
 	 * list outside the main post can force the CSS on via the filter.
 	 */
 	private function _content_has_list_styles() {
+		/** Filters whether to force-load the fw-list-* styled-list CSS, for dynamic content that injects styled lists outside the main post. */
 		if ( apply_filters( 'unysonplus_force_list_styles_css', false ) ) {
 			return true;
 		}

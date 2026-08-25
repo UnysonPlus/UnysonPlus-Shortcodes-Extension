@@ -222,3 +222,9 @@
 .ts-card__author { display: flex; flex-direction: column; gap: .1rem; }
 .ts-card__identity { display: flex; align-items: center; gap: .75rem; }
 .ts-card-row--inline.ts-card-row--reverse { flex-direction: row-reverse; }
+/* Extra Texts — stat/result rows at the card footer (muted label over an emphasized value). */
+.ts-card__extra { width: 100%; margin-top: .85rem; padding-top: .85rem; border-top: 1px solid rgba(0, 0, 0, .08); }
+.ts-card__extra-row { display: flex; flex-direction: column; gap: .05rem; }
+.ts-card__extra-row + .ts-card__extra-row { margin-top: .4rem; }
+.ts-card__extra-label { font-size: .8rem; line-height: 1.3; color: var(--ts-extra-label, #6b7280); }
+.ts-card__extra-value { font-weight: 700; line-height: 1.25; color: var(--ts-extra-value, var(--color-primary, #1a7d5a)); }

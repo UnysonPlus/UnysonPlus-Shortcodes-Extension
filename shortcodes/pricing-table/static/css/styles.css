@@ -74,7 +74,10 @@
 	border-bottom: 1px solid rgba(0, 0, 0, .06);
 }
 .fw-pt--text-center .fw-pt__feature { justify-content: center; }
+.fw-pt--text-end .fw-pt__feature { justify-content: flex-end; }
 .fw-pt__feature:last-child { border-bottom: 0; }
+/* Divider-less feature list — spacing only (no line between features). */
+.fw-pt--no-dividers .fw-pt__feature { border-bottom: 0; padding: .3rem 0; }
 .fw-pt__tick { color: var(--pt-accent); font-weight: 700; flex: 0 0 auto; }
 .fw-pt__feature.is-off { opacity: .55; text-decoration: line-through; }
 .fw-pt__feature.is-off .fw-pt__tick { color: #c0392b; text-decoration: none; }

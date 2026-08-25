@@ -22,9 +22,11 @@
 
 $imgs_color = function ( $label, $desc ) {
 	if ( function_exists( 'sc_color_field_compact' ) ) {
-		return sc_color_field_compact( array( 'label' => $label, 'desc' => $desc, 'kind' => 'bg' ) );
+		$f = sc_color_field_compact( array( 'label' => $label, 'kind' => 'bg' ) );
+		$f['help'] = $desc;
+		return $f;
 	}
-	return array( 'type' => 'color-picker', 'label' => $label, 'desc' => $desc, 'value' => '' );
+	return array( 'type' => 'color-picker', 'label' => $label, 'help' => $desc, 'value' => '' );
 };
 
 // Live preview: an isolated <iframe> with a CSS-gradient "photo" stand-in (no external
@@ -59,6 +61,7 @@ $options = array(
 	'image_styles' => array(
 		'label'           => __( 'Image Styles', 'fw' ),
 		'type'            => 'addable-box',
+		'inline'          => true,
 		'value'           => function_exists( 'unysonplus_default_image_style_presets' ) ? unysonplus_default_image_style_presets() : array(),
 		'desc'            => __( 'Reusable image treatments. Each becomes a <code>.imgs-{name}</code> you pick on any element with an image (Styling → Image Style) — crop, corners, mask, filter and a legibility scrim. Advanced one-offs go in the element\'s <strong>Custom CSS</strong>. Animated hover lives in the Animation Engine.', 'fw' ),
 		'sortable'        => true,
@@ -67,113 +70,121 @@ $options = array(
 		'width'           => 'full',
 		'add-button-text' => __( 'Add Image Style', 'fw' ),
 		'box-options'     => array(
-			'id'         => array( 'type' => 'unique' ),
-			'style_name' => array(
-				'label'           => __( 'Style Name', 'fw' ),
-				'type'            => 'text',
-				'value'           => '',
-				'desc'            => __( 'Becomes the class suffix, e.g. Portrait Card → <code>.imgs-portrait-card</code>.', 'fw' ),
-				'dynamic_content' => false,
-			),
-			'aspect' => array(
-				'label'   => __( 'Aspect Ratio', 'fw' ),
-				'type'    => 'select',
-				'value'   => 'auto',
-				'choices' => array(
-					'auto' => __( 'Auto (native)', 'fw' ),
-					'1-1'  => __( 'Square 1:1', 'fw' ),
-					'4-3'  => __( 'Landscape 4:3', 'fw' ),
-					'3-2'  => __( 'Landscape 3:2', 'fw' ),
-					'16-9' => __( 'Wide 16:9', 'fw' ),
-					'3-4'  => __( 'Portrait 3:4', 'fw' ),
-				),
-				'desc'    => __( 'Crops the image to this ratio (object-fit: cover). Auto keeps the native ratio.', 'fw' ),
-			),
-			'radius' => array(
-				'label'       => __( 'Corner Radius', 'fw' ),
-				'type'        => 'text',
-				'value'       => '',
-				'placeholder' => '12px',
-				'desc'        => __( 'A CSS length (e.g. <code>12px</code>, <code>1rem</code>) for simple rounded corners. Used when Shape / Mask is “None”; picking a Mask shape overrides it.', 'fw' ),
-			),
-			// Shape / Mask — a popover image-picker of shape thumbnails (the same visual
-			// grid as the Image Box shortcode, from the shared mask library), with a
-			// "Custom" reveal for an inline SVG / URL / clip-path. Popover keeps the row
-			// compact; per the multi-picker rules the label sits on the TOP level.
-			'mask' => array(
-				'type'         => 'multi-picker',
-				'label'        => __( 'Shape / Mask', 'fw' ),
-				'desc'         => __( 'Clip the image to a shape — rounded / circle / arch, geometric (hexagon, star, diamond, …) or organic (heart, blob, leaf, …). Shape masks force a square crop. Pick “Custom” to supply your own SVG or clip-path.', 'fw' ),
-				'popover'      => true,
+			// Grouped ( show_borders => false ) — one panel, no dividers; flattens on save.
+			'grp_imgstyle' => array(
+				'type'         => 'group',
 				'show_borders' => false,
-				'picker'       => array(
+				'options'      => array(
+					'id'         => array( 'type' => 'unique' ),
+					'style_name' => array(
+						'label'           => __( 'Style Name', 'fw' ),
+						'type'            => 'text',
+						'value'           => '',
+						'help'            => __( 'Becomes the class suffix, e.g. Portrait Card → <code>.imgs-portrait-card</code>.', 'fw' ),
+						'dynamic_content' => false,
+					),
+					'aspect' => array(
+						'label'   => __( 'Aspect Ratio', 'fw' ),
+						'type'    => 'select',
+						'value'   => 'auto',
+						'choices' => array(
+							'auto' => __( 'Auto (native)', 'fw' ),
+							'1-1'  => __( 'Square 1:1', 'fw' ),
+							'4-3'  => __( 'Landscape 4:3', 'fw' ),
+							'3-2'  => __( 'Landscape 3:2', 'fw' ),
+							'16-9' => __( 'Wide 16:9', 'fw' ),
+							'3-4'  => __( 'Portrait 3:4', 'fw' ),
+						),
+						'help'    => __( 'Crops the image to this ratio (object-fit: cover). Auto keeps the native ratio.', 'fw' ),
+					),
+					'radius' => array(
+						'label'       => __( 'Corner Radius', 'fw' ),
+						'type'        => 'text',
+						'value'       => '',
+						'placeholder' => '12px',
+						'help'        => __( 'A CSS length (e.g. <code>12px</code>, <code>1rem</code>) for simple rounded corners. Used when Shape / Mask is “None”; picking a Mask shape overrides it.', 'fw' ),
+					),
+					// Shape / Mask — a popover image-picker of shape thumbnails (the same visual
+					// grid as the Image Box shortcode, from the shared mask library), with a
+					// "Custom" reveal for an inline SVG / URL / clip-path. Popover keeps the row
+					// compact; per the multi-picker rules the label sits on the TOP level.
 					'mask' => array(
-						'type'    => 'image-picker',
-						'label'   => false,
+						'type'         => 'multi-picker',
+						'label'        => __( 'Shape / Mask', 'fw' ),
+						'help'         => __( 'Clip the image to a shape — rounded / circle / arch, geometric (hexagon, star, diamond, …) or organic (heart, blob, leaf, …). Shape masks force a square crop. Pick “Custom” to supply your own SVG or clip-path.', 'fw' ),
+						'popover'      => true,
+						'show_borders' => false,
+						'picker'       => array(
+							'mask' => array(
+								'type'    => 'image-picker',
+								'label'   => false,
+								'value'   => 'none',
+								'choices' => function_exists( 'sc_image_mask_imagepicker_choices' ) ? sc_image_mask_imagepicker_choices() : array( 'none' => array( 'label' => __( 'None', 'fw' ) ) ),
+								'search'  => true,
+							),
+						),
+						'value'        => array( 'mask' => 'none' ),
+						'choices'      => array(
+							'custom' => array(
+								'custom_svg' => array(
+									'type'  => 'textarea',
+									'label' => __( 'Inline SVG or SVG URL', 'fw' ),
+									'desc'  => __( 'Paste inline <code>&lt;svg&gt;</code> (a filled shape on a transparent background) OR a URL to a hosted <code>.svg</code>.', 'fw' ),
+								),
+								'custom_clip' => array(
+									'type'        => 'text',
+									'label'       => __( 'Or a CSS clip-path', 'fw' ),
+									'value'       => '',
+									'placeholder' => 'polygon(50% 0, 100% 100%, 0 100%)',
+									'desc'        => __( 'Advanced: a raw CSS clip-path (used if the SVG field above is empty).', 'fw' ),
+								),
+							),
+						),
+					),
+					'filter' => array(
+						'label'   => __( 'Filter', 'fw' ),
+						'help'    => __( 'A CSS filter applied to the image (grayscale, sepia, blur, duotone tint, …).', 'fw' ),
+						'type'    => 'select',
 						'value'   => 'none',
-						'choices' => function_exists( 'sc_image_mask_imagepicker_choices' ) ? sc_image_mask_imagepicker_choices() : array( 'none' => array( 'label' => __( 'None', 'fw' ) ) ),
-						'search'  => true,
-					),
-				),
-				'value'        => array( 'mask' => 'none' ),
-				'choices'      => array(
-					'custom' => array(
-						'custom_svg' => array(
-							'type'  => 'textarea',
-							'label' => __( 'Inline SVG or SVG URL', 'fw' ),
-							'desc'  => __( 'Paste inline <code>&lt;svg&gt;</code> (a filled shape on a transparent background) OR a URL to a hosted <code>.svg</code>.', 'fw' ),
-						),
-						'custom_clip' => array(
-							'type'        => 'text',
-							'label'       => __( 'Or a CSS clip-path', 'fw' ),
-							'value'       => '',
-							'placeholder' => 'polygon(50% 0, 100% 100%, 0 100%)',
-							'desc'        => __( 'Advanced: a raw CSS clip-path (used if the SVG field above is empty).', 'fw' ),
+						'choices' => array(
+							'none'      => __( 'None', 'fw' ),
+							'grayscale' => __( 'Grayscale', 'fw' ),
+							'sepia'     => __( 'Sepia', 'fw' ),
+							'contrast'  => __( 'High Contrast', 'fw' ),
+							'saturate'  => __( 'Vivid (saturate)', 'fw' ),
+							'blur'      => __( 'Soft Blur', 'fw' ),
+							'duotone'   => __( 'Duotone (tint)', 'fw' ),
 						),
 					),
+					'duo_color' => $imgs_color(
+						__( 'Duotone Color', 'fw' ),
+						__( 'The tint colour for the Duotone filter (a grayscale image tinted with this colour).', 'fw' )
+					),
+					'scrim' => array(
+						'label'   => __( 'Scrim Overlay', 'fw' ),
+						'type'    => 'select',
+						'value'   => 'none',
+						'choices' => array(
+							'none'   => __( 'None', 'fw' ),
+							'bottom' => __( 'Bottom (for captions over image)', 'fw' ),
+							'top'    => __( 'Top', 'fw' ),
+							'radial' => __( 'Radial (corner)', 'fw' ),
+						),
+						'help'    => __( 'A gradient overlay that darkens part of the image so overlaid text stays legible.', 'fw' ),
+					),
+					'scrim_color' => $imgs_color(
+						__( 'Scrim Color', 'fw' ),
+						__( 'The scrim gradient colour (fades from transparent to this).', 'fw' )
+					),
+					'custom_css'  => array(
+						'label'       => __( 'Custom CSS (advanced)', 'fw' ),
+						'type'        => 'code-editor',
+						'mode'        => 'css',
+						'height'      => 150,
+						'placeholder' => "{{SELECTOR}} img {\n  /* your styles */\n}\n{{SELECTOR}}:hover img {\n  transform: scale(1.05);\n}",
+						'desc'        => __( 'Optional raw CSS for anything the fields above don\'t cover. Use <code>{{SELECTOR}}</code> for this style\'s wrapper class (e.g. <code>{{SELECTOR}} img { … }</code>, <code>{{SELECTOR}}::after { … }</code>). Applies wherever the style is used.', 'fw' ),
+					),
 				),
-			),
-			'filter' => array(
-				'label'   => __( 'Filter', 'fw' ),
-				'type'    => 'select',
-				'value'   => 'none',
-				'choices' => array(
-					'none'      => __( 'None', 'fw' ),
-					'grayscale' => __( 'Grayscale', 'fw' ),
-					'sepia'     => __( 'Sepia', 'fw' ),
-					'contrast'  => __( 'High Contrast', 'fw' ),
-					'saturate'  => __( 'Vivid (saturate)', 'fw' ),
-					'blur'      => __( 'Soft Blur', 'fw' ),
-					'duotone'   => __( 'Duotone (tint)', 'fw' ),
-				),
-			),
-			'duo_color' => $imgs_color(
-				__( 'Duotone Color', 'fw' ),
-				__( 'The tint colour for the Duotone filter (a grayscale image tinted with this colour).', 'fw' )
-			),
-			'scrim' => array(
-				'label'   => __( 'Scrim Overlay', 'fw' ),
-				'type'    => 'select',
-				'value'   => 'none',
-				'choices' => array(
-					'none'   => __( 'None', 'fw' ),
-					'bottom' => __( 'Bottom (for captions over image)', 'fw' ),
-					'top'    => __( 'Top', 'fw' ),
-					'radial' => __( 'Radial (corner)', 'fw' ),
-				),
-				'desc'    => __( 'A gradient overlay that darkens part of the image so overlaid text stays legible.', 'fw' ),
-			),
-			'scrim_color' => $imgs_color(
-				__( 'Scrim Color', 'fw' ),
-				__( 'The scrim gradient colour (fades from transparent to this).', 'fw' )
-			),
-			'custom_css'  => array(
-				'label'       => __( 'Custom CSS (advanced)', 'fw' ),
-				'type'        => 'code-editor',
-				'mode'        => 'css',
-				'height'      => 150,
-				'placeholder' => "{{SELECTOR}} img {\n  /* your styles */\n}\n{{SELECTOR}}:hover img {\n  transform: scale(1.05);\n}",
-				'desc'        => __( 'Optional raw CSS for anything the fields above don\'t cover. Use <code>{{SELECTOR}}</code> for this style\'s wrapper class (e.g. <code>{{SELECTOR}} img { … }</code>, <code>{{SELECTOR}}::after { … }</code>). Applies wherever the style is used.', 'fw' ),
 			),
 		),
 		'template'        => $preview_template,

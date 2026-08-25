@@ -5,6 +5,7 @@
 /** @var array $atts */
 
 if ( ! function_exists( 'sc_tl_render' ) ) {
+	/** Renders the tag-list shortcode, parsing one item per line (with optional "Label | URL" links) into linked tags. */
 	function sc_tl_render( $atts ) {
 		$get = function ( $k, $d = '' ) use ( $atts ) {
 			if ( function_exists( 'fw_akg' ) ) { $v = fw_akg( $k, $atts, null ); if ( $v !== null ) { return $v; } }

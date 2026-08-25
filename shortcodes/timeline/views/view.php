@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_tl_icon' ) ) {
+	/** Renders a timeline item's picked icon via the central icon renderer, with a minimal font/upload fallback. */
 	function sc_tl_icon( $picked ) {
 		// Central icon renderer (single source of truth). aria_hidden => false
 		// preserves this element's original decorative-icon markup.

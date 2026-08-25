@@ -1,12 +1,15 @@
 <?php if (!defined('FW')) die('Forbidden');
 
 /**
+ * Decodes a shortcode's encoded attributes using the first matching registered attribute coder.
+ *
  * @param array $attributes Encoded attributes
  * @param $shortcode_tag 'button', 'section', etc.
  * @param $post_id
  * @return array|WP_Error
  * @since 1.3.0
  */
+/** Decodes a shortcode's encoded attributes using the first matching registered attribute coder. */
 function fw_ext_shortcodes_decode_attr(array $attributes, $shortcode_tag, $post_id) {
 	/**
 	 * @var FW_Extension_Shortcodes $shortcodes_ext
@@ -58,10 +61,13 @@ function fw_ext_shortcodes_enqueue_shortcodes_admin_scripts() {
 		fw()->backend->enqueue_options_static($shortcode->get_options());
 	}
 
+	/** Fires after every shortcode's option statics are enqueued in admin, so extensions can enqueue their own admin scripts. */
 	do_action('fw:ext:shortcodes:enqueue-shortcodes-admin-scripts');
 }
 
 /**
+ * Returns the pool of distinct shortcode-tag aliases used for nested flexbox containers.
+ *
  * Pool of distinct shortcode-tag aliases for NESTED flexbox containers.
  *
  * WordPress' shortcode parser is non-recursive PER TAG: a [flexbox] inside a

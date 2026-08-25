@@ -3,3 +3,17 @@
 .fw-steps--design-cards { display: flex; gap: 1.1rem; flex-wrap: wrap; }
 .fw-steps--design-cards .fw-steps__item { flex: 1 1 200px; background: #fff; border: 1px solid #eef0f4; border-radius: .9rem; padding: 1.6rem 1.4rem; box-shadow: 0 8px 26px rgba(20,40,80,.06); }
 .fw-steps--design-cards .fw-steps__marker { margin-bottom: 1rem; }
+
+/* ---------- Connected cards (converter sets connector=solid when the source has a line between cards) ---------- */
+.fw-steps--design-cards .fw-steps__item { overflow: visible; }
+.fw-steps--design-cards.fw-steps--connector-solid .fw-steps__item:not(:first-child) .fw-steps__connector,
+.fw-steps--design-cards.fw-steps--connector-dashed .fw-steps__item:not(:first-child) .fw-steps__connector {
+	display: block; position: absolute; top: calc(1.6rem + var(--st-size) / 2);
+	left: -1.1rem; width: 1.1rem; height: 2px; background: var(--st-line); z-index: 0;
+}
+.fw-steps--design-cards.fw-steps--connector-dashed .fw-steps__item:not(:first-child) .fw-steps__connector {
+	background: none; border-top: 2px dashed var(--st-line); height: 0;
+}
+@media (max-width: 720px) {
+	.fw-steps--design-cards .fw-steps__connector { display: none !important; }
+}

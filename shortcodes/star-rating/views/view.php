@@ -15,6 +15,7 @@ if ( ! function_exists( 'sc_get' ) ) {
 }
 
 if ( ! function_exists( 'sc_sr_symbol' ) ) {
+	/** Returns the inline SVG symbol markup (star, heart, or circle) for the given rating design. */
 	function sc_sr_symbol( $design ) {
 		switch ( $design ) {
 			case 'heart':
@@ -29,6 +30,7 @@ if ( ! function_exists( 'sc_sr_symbol' ) ) {
 }
 
 if ( ! function_exists( 'sc_sr_render' ) ) {
+	/** Renders the Star Rating shortcode from its atts, resolving the design, max, rating value, label, and size. */
 	function sc_sr_render( $atts ) {
 		if ( function_exists( 'fw_sc_design_resolve' ) ) {
 			$design = fw_sc_design_resolve( 'star_rating', $atts, 'star' );

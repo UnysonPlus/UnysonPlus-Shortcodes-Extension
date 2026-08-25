@@ -12,6 +12,17 @@
     padding: 1.5rem 0;
 }
 
+/* Full Height — the box fills its column so equal-width cards in a grid line up
+   to the tallest one. Relies on the column keeping its default "Stretched"
+   vertical alignment (align-self: stretch), which gives this 100% something to
+   resolve against. flex-column keeps the card background filling the whole
+   height (no margin-collapse gaps) with the content riding at the top. */
+.icon-box__wrapper.icon-box--full-height {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
 .icon-box__wrapper *,
 .icon-box__wrapper *::before,
 .icon-box__wrapper *::after {

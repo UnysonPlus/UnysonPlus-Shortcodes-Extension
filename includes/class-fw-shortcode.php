@@ -131,6 +131,7 @@ class FW_Shortcode {
 			}
 		}
 
+		/** Filters a shortcode's option definitions after they are loaded from options.php, keyed by tag, letting code adjust its options. */
 		return apply_filters( 'fw_shortcode_get_options', $this->options, $this->tag );
 	}
 
@@ -182,6 +183,8 @@ class FW_Shortcode {
 				}
 			} else {
 				/**
+				 * Filters raw shortcode attributes before rendering (deprecated since Shortcodes 1.3.0), allowing legacy attribute adjustment.
+				 *
 				 * @deprecated Since Shortcodes 1.3.0
 				 */
 				$atts = apply_filters( 'fw_shortcode_atts', $atts, $content, $this->tag );
@@ -209,6 +212,7 @@ class FW_Shortcode {
 
 		$this->enqueue_static();
 
+		/** Filters the before/after wrapper markup applied around a shortcode's rendered view, keyed by atts and tag. */
 		$view_extra = apply_filters( 'fw_shortcode_render_view',
 			array(
 				'before' => '',
@@ -221,6 +225,7 @@ class FW_Shortcode {
 			$view_extra['before'] .
 			fw_render_view( $view_file,
 				array(
+					/** Filters the attributes passed into a shortcode's view template at render time, letting code adjust per-tag render data. */
 					'atts'    => apply_filters( 'fw_shortcode_render_view:atts', $atts, $this->tag ),
 					'content' => $content,
 					'tag'     => $this->tag

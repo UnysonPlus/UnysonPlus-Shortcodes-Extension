@@ -36,6 +36,7 @@ if ( ! function_exists( 'sc_ct_cell' ) ) {
 }
 
 if ( ! function_exists( 'sc_ct_render' ) ) {
+	/** Renders the comparison-table shortcode from its columns and rows atts. */
 	function sc_ct_render( $atts ) {
 		$columns = sc_get( 'columns', $atts, array() );
 		$rows    = sc_get( 'rows', $atts, array() );
