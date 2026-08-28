@@ -9,7 +9,7 @@ $pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
 	'structure' => '#dadada', 'structure_line' => '#dcdcde', 'ink' => '#1f2430',
 	'content' => '#ffffff', 'accent' => '#3858e9', 'caption' => '#50575e' );
 
-$tl_thumb = function ( $design ) {
+$tl_thumb = function ( $design ) use ( $pal ) {
 	$W = 120; $H = 46; $g = '#1a8f74';
 	$svg = '<rect width="' . $W . '" height="' . $H . '" fill="#ffffff"/>';
 	$xs = array( 13, 51, 85 ); $ws = array( 32, 28, 22 );

@@ -9,7 +9,7 @@ $pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
 	'structure' => '#dadada', 'structure_line' => '#dcdcde', 'ink' => '#1f2430',
 	'content' => '#ffffff', 'accent' => '#3858e9', 'caption' => '#50575e' );
 
-$ap_thumb = function ( $style ) {
+$ap_thumb = function ( $style ) use ( $pal ) {
 	$W = 132; $H = 48; $g = '#1a8f74';
 	$x = 14; $y = 14; $w = 104; $h = 20; $r = 10; // the pill
 	$defs = ''; $fill = '#ffffff'; $stroke = ''; $tagfill = $g; $tagtext = '#ffffff'; $msg = '#5b636b';

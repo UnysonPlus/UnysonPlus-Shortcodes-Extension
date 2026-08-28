@@ -3261,7 +3261,7 @@ if ( ! function_exists( 'sc_icon_sanitize_svg' ) ) :
 		);
 		$clean = preg_replace_callback(
 			'/\s(viewbox|preserveaspectratio|gradientunits|gradienttransform|spreadmethod|clippathunits|maskunits|maskcontentunits|attributename|attributetype|keytimes|keysplines|calcmode|repeatcount|repeatdur|keypoints)=/i',
-			function ( $m ) use ($camel, $pal) { return ' ' . $camel[ strtolower( $m[1] ) ] . '='; },
+			function ( $m ) use ( $camel ) { return ' ' . $camel[ strtolower( $m[1] ) ] . '='; },
 			$clean
 		);
 		// href / xlink:href are only allowed as same-document '#fragment'
@@ -3740,7 +3740,7 @@ if ( ! function_exists( 'sc_button_style_field' ) ) :
 		);
 		if ( function_exists( 'fw_ext' ) && fw_ext( 'shortcodes' ) ) {
 			$img  = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/button/static/img/shapes' );
-			$tile = function ( $file, $title ) use ($img, $pal) {
+			$tile = function ( $file, $title ) use ( $img ) {
 				return array( 'small' => array( 'src' => $img . '/' . $file, 'height' => 34, 'title' => $title ) );
 			};
 			$shape_field = array(
