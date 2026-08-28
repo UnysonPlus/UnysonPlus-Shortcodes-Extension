@@ -131,7 +131,7 @@
 }
 
 .upwc-cp-slot--cart {
-	background: #2271b1;
+	background: var(--fw-accent, #2271b1);
 	color: #fff;
 	font-weight: 600;
 	padding: 4px 12px;

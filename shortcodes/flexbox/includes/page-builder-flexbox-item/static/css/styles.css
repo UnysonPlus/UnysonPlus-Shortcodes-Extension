@@ -27,7 +27,7 @@
 }
 /* Bigger, clearer drop target on hover (when an item is being dragged over it). */
 .builder-item > .custom-flexbox > .builder-items.ui-sortable:hover {
-	border-color: #2271b1;
+	border-color: var(--fw-accent, #2271b1);
 	background: rgba(34, 113, 177, 0.06);
 }
 

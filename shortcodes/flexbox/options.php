@@ -12,6 +12,36 @@
  * parent Flexbox).
  */
 
+if ( ! function_exists( 'fw_upw_icon_palette' ) ) {
+	$fw_upw_icon_palette_file = dirname( __FILE__ ) . '/../../../../includes/icon-palette.php';
+	if ( file_exists( $fw_upw_icon_palette_file ) ) {
+		require_once $fw_upw_icon_palette_file;
+	}
+}
+// Shared UnysonPlus icon palette -- same legend and rules as the section glyphs.
+// Falls back to the previous literals if it is unavailable, so a partial install
+// degrades to the old glyphs instead of fataling.
+$pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
+	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => $pal['structure_line'],
+	'structure_soft' => '#ececec', 'content' => $pal['content'], 'ink' => '#1f2430',
+	'accent_light' => '#7b90ff', 'caption' => $pal['caption'],
+);
+
+if ( ! function_exists( 'fw_upw_icon_palette' ) ) {
+	$fw_upw_icon_palette_file = dirname( __FILE__ ) . '/../../../../includes/icon-palette.php';
+	if ( file_exists( $fw_upw_icon_palette_file ) ) {
+		require_once $fw_upw_icon_palette_file;
+	}
+}
+// Shared UnysonPlus icon palette -- same legend and rules as the section glyphs.
+// Falls back to the previous literals if it is unavailable, so a partial install
+// degrades to the old glyphs instead of fataling.
+$pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
+	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => '#dcdcde',
+	'structure_soft' => '#ececec', 'content' => '#ffffff', 'ink' => '#1f2430',
+	'accent_light' => '#7b90ff', 'caption' => '#50575e',
+);
+
 $fx_rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
 	return '<rect x="' . round( $x, 1 ) . '" y="' . round( $y, 1 ) . '" width="' . round( $w, 1 )
 		. '" height="' . round( $h, 1 ) . '" rx="' . $rx . '" fill="' . $fill . '"'
@@ -19,10 +49,10 @@ $fx_rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
 };
 
 // Caption + <svg> wrapper (mirrors the section's $section_glyph_svg).
-$fx_glyph = function ( $inner, $label, $w = 120, $icon_h = 50 ) {
+$fx_glyph = function ( $inner, $label, $w = 120, $icon_h = 50 ) use ( $pal ) {
 	$h = $icon_h + 16;
 	$inner .= '<text x="' . ( $w / 2 ) . '" y="' . ( $icon_h + 11 ) . '" text-anchor="middle" '
-		. 'font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#50575e">' . $label . '</text>';
+		. 'font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="' . $pal['caption'] . '">' . $label . '</text>';
 	$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $w . ' ' . $h . '" width="' . $w . '" height="' . $h . '">' . $inner . '</svg>';
 	return 'data:image/svg+xml,' . rawurlencode( $svg );
 };
@@ -39,25 +69,25 @@ $fx_pick = function ( $uri, $label ) {
 // flow arrow — Row = squares left→right with a → arrow; Column = squares top→bottom
 // with a ↓ arrow. Neutral squares (not pillars/bars) keep the arrangement, not the
 // box shape, as the only cue, so Row no longer reads like "columns" and vice-versa.
-$fx_dir_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
+$fx_dir_uri = function ( $mode, $label ) use ($fx_rrect, $fx_glyph, $pal) {
 	$w = 120; $icon_h = 50;
-	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );
+	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );
 	if ( $mode === 'row' ) {
 		$s = 17; $g = 7; $total = 3 * $s + 2 * $g; $x0 = ( $w - $total ) / 2; $y = 9;
-		for ( $i = 0; $i < 3; $i++ ) { $svg .= $fx_rrect( $x0 + $i * ( $s + $g ), $y, $s, $s, 3, '#ffffff', '#dcdcde' ); }
+		for ( $i = 0; $i < 3; $i++ ) { $svg .= $fx_rrect( $x0 + $i * ( $s + $g ), $y, $s, $s, 3, $pal['content'], $pal['structure_line'] ); }
 		$ay = $y + $s + 7; $x2 = $x0 + $total;
-		$svg .= '<path d="M' . $x0 . ' ' . $ay . 'H' . $x2 . 'M' . ( $x2 - 4 ) . ' ' . ( $ay - 3 ) . 'L' . $x2 . ' ' . $ay . 'L' . ( $x2 - 4 ) . ' ' . ( $ay + 3 ) . '" stroke="#bcd4ec" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+		$svg .= '<path d="M' . $x0 . ' ' . $ay . 'H' . $x2 . 'M' . ( $x2 - 4 ) . ' ' . ( $ay - 3 ) . 'L' . $x2 . ' ' . $ay . 'L' . ( $x2 - 4 ) . ' ' . ( $ay + 3 ) . '" stroke="' . $pal['accent_light'] . '" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
 	} else {
 		$s = 10; $g = 4; $total = 3 * $s + 2 * $g; $y0 = ( $icon_h - $total ) / 2; $x = ( $w - $s ) / 2 - 7;
-		for ( $i = 0; $i < 3; $i++ ) { $svg .= $fx_rrect( $x, $y0 + $i * ( $s + $g ), $s, $s, 3, '#ffffff', '#dcdcde' ); }
+		for ( $i = 0; $i < 3; $i++ ) { $svg .= $fx_rrect( $x, $y0 + $i * ( $s + $g ), $s, $s, 3, $pal['content'], $pal['structure_line'] ); }
 		$ax = $x + $s + 10; $y2 = $y0 + $total;
-		$svg .= '<path d="M' . $ax . ' ' . $y0 . 'V' . $y2 . 'M' . ( $ax - 3 ) . ' ' . ( $y2 - 4 ) . 'L' . $ax . ' ' . $y2 . 'L' . ( $ax + 3 ) . ' ' . ( $y2 - 4 ) . '" stroke="#bcd4ec" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+		$svg .= '<path d="M' . $ax . ' ' . $y0 . 'V' . $y2 . 'M' . ( $ax - 3 ) . ' ' . ( $y2 - 4 ) . 'L' . $ax . ' ' . $y2 . 'L' . ( $ax + 3 ) . ' ' . ( $y2 - 4 ) . '" stroke="' . $pal['accent_light'] . '" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
 	}
 	return $fx_glyph( $svg, $label, $w, $icon_h );
 };
 
 // Justify (main axis): 3 item boxes positioned along the horizontal track.
-$fx_justify_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
+$fx_justify_uri = function ( $mode, $label ) use ($fx_rrect, $fx_glyph, $pal) {
 	$w = 120; $icon_h = 50; $n = 3; $bw = 15; $bh = 28; $y = ( $icon_h - $bh ) / 2;
 	$tx = 8; $tw = $w - 16; $g = 4; $xs = array();
 	$tot = $n * $bw + ( $n - 1 ) * $g;
@@ -67,16 +97,16 @@ $fx_justify_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
 	elseif ( $mode === 'between' )  { for ( $i = 0; $i < $n; $i++ ) { $xs[] = $tx + $i * ( ( $tw - $bw ) / ( $n - 1 ) ); } }
 	elseif ( $mode === 'around' )   { $sp = ( $tw - $n * $bw ) / $n; for ( $i = 0; $i < $n; $i++ ) { $xs[] = $tx + $sp / 2 + $i * ( $bw + $sp ); } }
 	else /* evenly */               { $sp = ( $tw - $n * $bw ) / ( $n + 1 ); for ( $i = 0; $i < $n; $i++ ) { $xs[] = $tx + $sp * ( $i + 1 ) + $i * $bw; } }
-	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );
-	foreach ( $xs as $x ) { $svg .= $fx_rrect( $x, $y, $bw, $bh, 2, '#ffffff', '#dcdcde' ); }
+	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );
+	foreach ( $xs as $x ) { $svg .= $fx_rrect( $x, $y, $bw, $bh, 2, $pal['content'], $pal['structure_line'] ); }
 	return $fx_glyph( $svg, $label, $w, $icon_h );
 };
 
 // Align (cross axis): 3 item boxes positioned along the vertical track.
-$fx_align_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
+$fx_align_uri = function ( $mode, $label ) use ($fx_rrect, $fx_glyph, $pal) {
 	$w = 120; $icon_h = 50; $n = 3; $bw = 20; $g = 8; $total = $n * $bw + ( $n - 1 ) * $g; $x0 = ( $w - $total ) / 2;
 	$top = 8; $bot = $icon_h - 8; $th = $bot - $top;
-	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );
+	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );
 	for ( $i = 0; $i < $n; $i++ ) {
 		$bh = ( $mode === 'stretch' ) ? $th : 16;
 		if ( $mode === 'baseline' ) { $bh = 10 + $i * 5; }
@@ -84,16 +114,16 @@ $fx_align_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
 		if ( $mode === 'center' )        { $y = $top + ( $th - $bh ) / 2; }
 		elseif ( $mode === 'end' )       { $y = $bot - $bh; }
 		elseif ( $mode === 'baseline' )  { $y = $bot - $bh; }
-		$svg .= $fx_rrect( $x0 + $i * ( $bw + $g ), $y, $bw, $bh, 2, '#ffffff', '#dcdcde' );
+		$svg .= $fx_rrect( $x0 + $i * ( $bw + $g ), $y, $bw, $bh, 2, $pal['content'], $pal['structure_line'] );
 	}
 	return $fx_glyph( $svg, $label, $w, $icon_h );
 };
 
 // Align Content (cross axis, WRAPPED lines): two rows of item boxes positioned to
 // show how multiple wrapped lines are packed on the cross axis.
-$fx_aligncontent_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
+$fx_aligncontent_uri = function ( $mode, $label ) use ($fx_rrect, $fx_glyph, $pal) {
 	$w = 120; $icon_h = 50;
-	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );
+	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );
 	$top = 7; $bot = $icon_h - 7; $track = $bot - $top;
 	$bw = 22; $g = 6; $total = 3 * $bw + 2 * $g; $x0 = ( $w - $total ) / 2;
 	$lineH = 8;
@@ -116,7 +146,7 @@ $fx_aligncontent_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
 	}
 	foreach ( $ys as $ly ) {
 		for ( $i = 0; $i < 3; $i++ ) {
-			$svg .= $fx_rrect( $x0 + $i * ( $bw + $g ), $ly, $bw, $lineH, 2, '#ffffff', '#dcdcde' );
+			$svg .= $fx_rrect( $x0 + $i * ( $bw + $g ), $ly, $bw, $lineH, 2, $pal['content'], $pal['structure_line'] );
 		}
 	}
 	return $fx_glyph( $svg, $label, $w, $icon_h );
@@ -124,9 +154,9 @@ $fx_aligncontent_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
 
 // Align Self: one highlighted box (this item) positioned on the cross axis among
 // full-height faint siblings — shows how THIS box aligns against its row siblings.
-$fx_alignself_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
+$fx_alignself_uri = function ( $mode, $label ) use ($fx_rrect, $fx_glyph, $pal) {
 	$w = 120; $icon_h = 50;
-	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );
+	$svg = $fx_rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );
 	$top = 8; $bot = $icon_h - 8; $th = $bot - $top;
 	$bw = 22; $g = 8; $n = 3; $total = $n * $bw + ( $n - 1 ) * $g; $x0 = ( $w - $total ) / 2;
 	for ( $i = 0; $i < $n; $i++ ) {
@@ -137,9 +167,9 @@ $fx_alignself_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
 			if ( $mode === 'center' )       { $y = $top + ( $th - $bh ) / 2; }
 			elseif ( $mode === 'end' )      { $y = $bot - $bh; }
 			elseif ( $mode === 'baseline' ) { $y = $top + 6; }
-			$svg .= $fx_rrect( $x, $y, $bw, $bh, 2, '#ffffff', '#7da9d6' );
+			$svg .= $fx_rrect( $x, $y, $bw, $bh, 2, $pal['content'], $pal['accent_light'] );
 		} else {
-			$svg .= $fx_rrect( $x, $top, $bw, $th, 2, 'rgba(255,255,255,0.45)', '#dcdcde' );
+			$svg .= $fx_rrect( $x, $top, $bw, $th, 2, 'rgba(255,255,255,0.45)', $pal['structure_line'] );
 		}
 	}
 	return $fx_glyph( $svg, $label, $w, $icon_h );
@@ -148,17 +178,17 @@ $fx_alignself_uri = function ( $mode, $label ) use ( $fx_rrect, $fx_glyph ) {
 // Fraction-bar thumbnails for the responsive Width Override popover (mirrors the
 // Column's width tiles): the chosen portion is one blue bar, the remainder split
 // into gray bars. 'none' (Auto / inherit) = a faint full bar; 'custom' = a dashed bar.
-$fx_width_bar = function ( $cells_on, $mode, $label ) {
+$fx_width_bar = function ( $cells_on, $mode, $label ) use ( $pal ) {
 	$track = 60; $pad = 4; $W = $track + 2 * $pad; $gap = 2; $barH = 24; $H = $pad + $barH + 14;
-	$blue = '#2271b1'; $gray = '#9b9b9b';
+	$blue = $pal['field_strong']; $gray = $pal['structure'];
 	$reduce = array( 1 => array( 1, 12 ), 2 => array( 1, 6 ), 3 => array( 1, 4 ), 4 => array( 1, 3 ),
 		5 => array( 5, 12 ), 6 => array( 1, 2 ), 7 => array( 7, 12 ), 8 => array( 2, 3 ),
 		9 => array( 3, 4 ), 10 => array( 5, 6 ), 11 => array( 11, 12 ), 12 => array( 1, 1 ) );
-	$rects = '<rect x="0" y="0" width="' . $W . '" height="' . $H . '" fill="#ffffff"/>';
+	$rects = '<rect x="0" y="0" width="' . $W . '" height="' . $H . '" fill="' . $pal['content'] . '"/>';
 	if ( $mode === 'none' ) {
-		$rects .= '<rect x="' . $pad . '" y="' . $pad . '" width="' . $track . '" height="' . $barH . '" fill="#eef0f1" shape-rendering="crispEdges"/>';
+		$rects .= '<rect x="' . $pad . '" y="' . $pad . '" width="' . $track . '" height="' . $barH . '" fill="' . $pal['structure_soft'] . '" shape-rendering="crispEdges"/>';
 	} elseif ( $mode === 'custom' ) {
-		$rects .= '<rect x="' . $pad . '" y="' . $pad . '" width="' . $track . '" height="' . $barH . '" fill="#ffffff" stroke="#2271b1" stroke-dasharray="3 2" shape-rendering="crispEdges"/>';
+		$rects .= '<rect x="' . $pad . '" y="' . $pad . '" width="' . $track . '" height="' . $barH . '" fill="' . $pal['content'] . '" stroke="' . $pal['field_strong'] . '" stroke-dasharray="3 2" shape-rendering="crispEdges"/>';
 	} else {
 		list( $n, $d ) = isset( $reduce[ $cells_on ] ) ? $reduce[ $cells_on ] : array( $cells_on, 12 );
 		$fr = array( $n / $d );
@@ -172,7 +202,7 @@ $fx_width_bar = function ( $cells_on, $mode, $label ) {
 			$prev = $b;
 		}
 	}
-	$text = '<text x="' . ( $W / 2 ) . '" y="' . ( $pad + $barH + 11 ) . '" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#50575e">' . $label . '</text>';
+	$text = '<text x="' . ( $W / 2 ) . '" y="' . ( $pad + $barH + 11 ) . '" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="' . $pal['caption'] . '">' . $label . '</text>';
 	$svg  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $W . ' ' . $H . '" width="' . $W . '" height="' . $H . '">' . $rects . $text . '</svg>';
 	return 'data:image/svg+xml,' . rawurlencode( $svg );
 };

@@ -22,20 +22,50 @@
 // branch reduces it internally (gcd) so twelfths pass (i,12) and fifths pass (k,5) and
 // both draw a clean blue column + minimal gray remainder bars. $mode: 'width' | 'offset'
 // | 'auto' | 'default' ('auto'/'default' ignore $num/$den).
-$col_bar_uri = function ( $num, $den, $mode, $label ) {
+if ( ! function_exists( 'fw_upw_icon_palette' ) ) {
+	$fw_upw_icon_palette_file = dirname( __FILE__ ) . '/../../../../includes/icon-palette.php';
+	if ( file_exists( $fw_upw_icon_palette_file ) ) {
+		require_once $fw_upw_icon_palette_file;
+	}
+}
+// Shared UnysonPlus icon palette -- same legend and rules as the section glyphs.
+// Falls back to the previous literals if it is unavailable, so a partial install
+// degrades to the old glyphs instead of fataling.
+$pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
+	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => $pal['structure_line'],
+	'structure_soft' => '#ececec', 'content' => $pal['content'], 'ink' => '#1f2430',
+	'accent_light' => '#7b90ff', 'caption' => $pal['caption'],
+);
+
+if ( ! function_exists( 'fw_upw_icon_palette' ) ) {
+	$fw_upw_icon_palette_file = dirname( __FILE__ ) . '/../../../../includes/icon-palette.php';
+	if ( file_exists( $fw_upw_icon_palette_file ) ) {
+		require_once $fw_upw_icon_palette_file;
+	}
+}
+// Shared UnysonPlus icon palette -- same legend and rules as the section glyphs.
+// Falls back to the previous literals if it is unavailable, so a partial install
+// degrades to the old glyphs instead of fataling.
+$pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
+	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => '#dcdcde',
+	'structure_soft' => '#ececec', 'content' => '#ffffff', 'ink' => '#1f2430',
+	'accent_light' => '#7b90ff', 'caption' => '#50575e',
+);
+
+$col_bar_uri = function ( $num, $den, $mode, $label ) use ( $pal ) {
     // Bars are drawn inside a 60-unit "track" (keeps every cell on a whole pixel)
     // with a uniform $pad of white margin on top + both sides, so the tile looks
     // like a centered card. Canvas width = track + 2*pad.
     $track = 60; $pad = 4; $W = $track + 2 * $pad;
     $gap = 2; $barH = 24; $H = $pad + $barH + 14;
-    $blue = '#2271b1'; $gray = '#9b9b9b';
+    $blue = $pal['field_strong']; $gray = $pal['structure'];
     $den  = max( 1, (int) $den );
 
     // White backdrop so the tile is opaque on the dark hover tooltip.
-    $rects = '<rect x="0" y="0" width="' . $W . '" height="' . $H . '" fill="#ffffff"/>';
+    $rects = '<rect x="0" y="0" width="' . $W . '" height="' . $H . '" fill="' . $pal['content'] . '"/>';
 
     if ( $mode === 'auto' || $mode === 'default' ) {
-        $bg = ( $mode === 'auto' ) ? '#46b450' : '#eef0f1';
+        $bg = ( $mode === 'auto' ) ? '#46b450' : $pal['structure_soft'];
         $rects .= '<rect x="' . $pad . '" y="' . $pad . '" width="' . $track . '" height="' . $barH . '" fill="' . $bg . '" shape-rendering="crispEdges"/>';
     } elseif ( $mode === 'offset' ) {
         // gap (gray) then the column (blue)
@@ -59,7 +89,7 @@ $col_bar_uri = function ( $num, $den, $mode, $label ) {
         }
     }
 
-    $text = '<text x="' . ( $W / 2 ) . '" y="' . ( $pad + $barH + 11 ) . '" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#50575e">' . $label . '</text>';
+    $text = '<text x="' . ( $W / 2 ) . '" y="' . ( $pad + $barH + 11 ) . '" text-anchor="middle" font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="' . $pal['caption'] . '">' . $label . '</text>';
     $svg  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $W . ' ' . $H . '" width="' . $W . '" height="' . $H . '">' . $rects . $text . '</svg>';
     return 'data:image/svg+xml,' . rawurlencode( $svg );
 };
@@ -75,19 +105,19 @@ $rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
 };
 
 // A white element box + its #8c8c8c text line.
-$glyph_el = function ( $x, $y, $w, $h ) use ( $rrect ) {
+$glyph_el = function ( $x, $y, $w, $h ) use ($rrect, $pal) {
     $ly = $y + $h / 2;
-    return $rrect( $x, $y, $w, $h, 2, '#ffffff', '#dcdcde' )
+    return $rrect( $x, $y, $w, $h, 2, $pal['content'], $pal['structure_line'] )
         . '<line x1="' . round( $x + 6, 1 ) . '" y1="' . round( $ly, 1 ) . '" x2="' . round( $x + $w - 6, 1 )
-        . '" y2="' . round( $ly, 1 ) . '" stroke="#8c8c8c" stroke-width="1.5" stroke-linecap="round"/>';
+        . '" y2="' . round( $ly, 1 ) . '" stroke="' . $pal['ink'] . '" stroke-width="1.5" stroke-linecap="round"/>';
 };
 
 // Caption + <svg> wrapper. $icon_h = icon band height; the caption sits in the
 // 16px below it.
-$glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) {
+$glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) use ( $pal ) {
     $h = $icon_h + 16;
     $inner .= '<text x="' . ( $w / 2 ) . '" y="' . ( $icon_h + 11 ) . '" text-anchor="middle" '
-        . 'font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#50575e">' . $label . '</text>';
+        . 'font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="' . $pal['caption'] . '">' . $label . '</text>';
     $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $w . ' ' . $h . '" width="' . $w . '" height="' . $h . '">' . $inner . '</svg>';
     return 'data:image/svg+xml,' . rawurlencode( $svg );
 };
@@ -95,11 +125,11 @@ $glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) {
 // Horizontal content-alignment glyph: blue SECTION → full gray COLUMN → a white
 // ELEMENT at the TOP of the column, placed left / center / right (a half-width
 // bar). 'default' fills the width — identical to every other alignment's default.
-$align_uri = function ( $align, $label ) use ( $rrect, $glyph_el, $glyph_svg ) {
+$align_uri = function ( $align, $label ) use ($rrect, $glyph_el, $glyph_svg, $pal) {
     $w = 120; $icon_h = 50;
-    $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );            // blue section
+    $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );            // blue section
     $gx = 7; $bt = 7; $bb = $icon_h - 7; $gw = $w - 2 * $gx; // thin, even side padding (matches top/bottom)
-    $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // full gray column
+    $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure'], $pal['structure_line'] ); // full gray column
 
     // Element at the TOP of the column; horizontal position shows the alignment.
     $ix = $gx + 5; $iw = $gw - 10; $eh = 9; $ey = $bt + 4;
@@ -152,9 +182,9 @@ $halign_choices = array(
 // Content VA ('content') keeps a full-height column and moves the white ELEMENT
 // inside it. The default state of every alignment (Column Stretched, Content
 // Top/Default, Horizontal Default) looks identical: full column, element at top.
-$valign_uri = function ( $variant, $mode, $label ) use ( $rrect, $glyph_el, $glyph_svg ) {
+$valign_uri = function ( $variant, $mode, $label ) use ($rrect, $glyph_el, $glyph_svg, $pal) {
     $w = 120; $icon_h = 50;
-    $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' ); // blue section
+    $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] ); // blue section
 
     $gx = 7; $gw = $w - 2 * $gx;             // column x / width (thin, even side padding)
     $bt = 7; $bb = $icon_h - 7;              // column travel band within the section (7..43)
@@ -172,11 +202,11 @@ $valign_uri = function ( $variant, $mode, $label ) use ( $rrect, $glyph_el, $gly
             else                          { $gy = $bt; }       // top
             $wy = $gy + ( $gh - $eh ) / 2;                     // element centered in the short column
         }
-        $svg .= $rrect( $gx, $gy, $gw, $gh, 3, '#bdbdbd', '#dcdcde' );
+        $svg .= $rrect( $gx, $gy, $gw, $gh, 3, $pal['structure'], $pal['structure_line'] );
         $svg .= $glyph_el( $ex, $wy, $ew, $eh );
     } else {
         // Content VA: a full-height column; the white element(s) move inside it.
-        $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+        $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure'], $pal['structure_line'] );
         $top = $etop; $bottom = $bb - 4;
         if ( $mode === 'between' ) {
             $svg .= $glyph_el( $ex, $top, $ew, $eh );
@@ -217,22 +247,22 @@ $contentvalign_choices = array(
 // Content-direction glyph: blue section → gray column → white elements either
 // STACKED (three bars top-to-bottom = the default vertical flow) or INLINE (three
 // boxes side-by-side = a flex row). Same visual language as the alignment glyphs.
-$dir_uri = function ( $mode, $label ) use ( $rrect, $glyph_svg ) {
+$dir_uri = function ( $mode, $label ) use ($rrect, $glyph_svg, $pal) {
     $w = 120; $icon_h = 50;
-    $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );            // blue section
+    $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );            // blue section
     $gx = 7; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;             // thin, even side padding (matches top/bottom)
-    $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // gray column
+    $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure'], $pal['structure_line'] ); // gray column
     $ix = $gx + 5; $iw = $gw - 10; $iy = $bt + 4; $ih = ( $bb - 4 ) - ( $bt + 4 );
     $n = 3;
     if ( $mode === 'row' ) {
         $gap = 4; $ew = ( $iw - ( $n - 1 ) * $gap ) / $n;
         for ( $i = 0; $i < $n; $i++ ) {
-            $svg .= $rrect( $ix + $i * ( $ew + $gap ), $iy, $ew, $ih, 2, '#ffffff', '#dcdcde' );
+            $svg .= $rrect( $ix + $i * ( $ew + $gap ), $iy, $ew, $ih, 2, $pal['content'], $pal['structure_line'] );
         }
     } else {
         $gap = 5; $eh = ( $ih - ( $n - 1 ) * $gap ) / $n;
         for ( $i = 0; $i < $n; $i++ ) {
-            $svg .= $rrect( $ix, $iy + $i * ( $eh + $gap ), $iw, $eh, 2, '#ffffff', '#dcdcde' );
+            $svg .= $rrect( $ix, $iy + $i * ( $eh + $gap ), $iw, $eh, 2, $pal['content'], $pal['structure_line'] );
         }
     }
     return $glyph_svg( $svg, $label, $w, $icon_h );
@@ -269,7 +299,7 @@ $col_order = array(
     array( '7', 7, 12 ), array( '35', 3, 5 ), array( '8', 8, 12 ), array( '9', 9, 12 ),
     array( '45', 4, 5 ), array( '10', 10, 12 ), array( '11', 11, 12 ), array( '12', 12, 12 ),
 );
-$col_label = function ( $key ) use ( $frac12, $frac5 ) {
+$col_label = function ( $key ) use ($frac12, $frac5, $pal) {
     return isset( $frac5[ $key ] ) ? $frac5[ $key ] : $frac12[ (int) $key ];
 };
 

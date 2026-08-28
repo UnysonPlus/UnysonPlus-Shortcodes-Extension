@@ -10,6 +10,21 @@
  * gray column is full-height; the white element rides at the top / centre /
  * bottom of it to show where the content lands. Returned as a data-URI.
  */
+if ( ! function_exists( 'fw_upw_icon_palette' ) ) {
+	$fw_upw_icon_palette_file = dirname( __FILE__ ) . '/../../../../includes/icon-palette.php';
+	if ( file_exists( $fw_upw_icon_palette_file ) ) {
+		require_once $fw_upw_icon_palette_file;
+	}
+}
+// Shared UnysonPlus icon palette -- same legend and rules as the section glyphs.
+// Falls back to the previous literals if it is unavailable, so a partial install
+// degrades to the old glyphs instead of fataling.
+$pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
+	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => '#dcdcde',
+	'structure_soft' => '#ececec', 'content' => '#ffffff', 'ink' => '#1f2430',
+	'accent_light' => '#7b90ff', 'caption' => '#50575e',
+);
+
 $section_rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
 	return '<rect x="' . round( $x, 1 ) . '" y="' . round( $y, 1 ) . '" width="' . round( $w, 1 )
 		. '" height="' . round( $h, 1 ) . '" rx="' . $rx . '" fill="' . $fill . '"'
@@ -17,35 +32,35 @@ $section_rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
 };
 
 // A white element box + its #8c8c8c content line (mirrors the column's glyph_el).
-$section_el = function ( $x, $y, $w, $h ) use ( $section_rrect ) {
+$section_el = function ( $x, $y, $w, $h ) use ($section_rrect, $pal) {
 	$ly = $y + $h / 2;
-	return $section_rrect( $x, $y, $w, $h, 2, '#ffffff', '#dcdcde' )
+	return $section_rrect( $x, $y, $w, $h, 2, $pal['content'], $pal['structure_line'] )
 		. '<line x1="' . round( $x + 6, 1 ) . '" y1="' . round( $ly, 1 ) . '" x2="' . round( $x + $w - 6, 1 )
-		. '" y2="' . round( $ly, 1 ) . '" stroke="#8c8c8c" stroke-width="1.5" stroke-linecap="round"/>';
+		. '" y2="' . round( $ly, 1 ) . '" stroke="' . $pal['ink'] . '" stroke-width="1.5" stroke-linecap="round"/>';
 };
 
 // Caption + <svg> wrapper — mirrors the column's $glyph_svg so the section
 // thumbnails carry the same baked-in text label below the icon (the image-picker
 // itself doesn't render a visible caption). $icon_h = icon band height; the
 // caption sits in the 16px below it.
-$section_glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) {
+$section_glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) use ( $pal ) {
 	$h = $icon_h + 16;
 	$inner .= '<text x="' . ( $w / 2 ) . '" y="' . ( $icon_h + 11 ) . '" text-anchor="middle" '
-		. 'font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="#50575e">' . $label . '</text>';
+		. 'font-family="-apple-system,Segoe UI,Roboto,sans-serif" font-size="11" fill="' . $pal['caption'] . '">' . $label . '</text>';
 	$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $w . ' ' . $h . '" width="' . $w . '" height="' . $h . '">' . $inner . '</svg>';
 	return 'data:image/svg+xml,' . rawurlencode( $svg );
 };
 
-$section_valign_uri = function ( $mode, $label ) use ( $section_rrect, $section_el, $section_glyph_svg ) {
+$section_valign_uri = function ( $mode, $label ) use ($section_rrect, $section_el, $section_glyph_svg, $pal) {
 	$w = 120; $icon_h = 50;
-	$svg = $section_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' ); // blue section
+	$svg = $section_rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] ); // blue section
 
 	$gx = 7; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;         // thin, even side padding
 	$ex = $gx + 5; $ew = $gw - 10; $eh = 9;                          // white content bar
 
 	if ( $mode === 'stretch' ) {
 		// Default / Stretched — the columns fill the section height; content rides at the top.
-		$svg .= $section_rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+		$svg .= $section_rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure'], $pal['structure_line'] );
 		$svg .= $section_el( $ex, $bt + 4, $ew, $eh );
 	} else {
 		// The whole columns block (gray) sits top / center / bottom within the taller section —
@@ -55,7 +70,7 @@ $section_valign_uri = function ( $mode, $label ) use ( $section_rrect, $section_
 		if ( $mode === 'bottom' )     { $gy = $bb - $gh; }
 		elseif ( $mode === 'center' ) { $gy = ( $bt + $bb ) / 2 - $gh / 2; }
 		else                          { $gy = $bt; }       // top
-		$svg .= $section_rrect( $gx, $gy, $gw, $gh, 3, '#bdbdbd', '#dcdcde' );
+		$svg .= $section_rrect( $gx, $gy, $gw, $gh, 3, $pal['structure'], $pal['structure_line'] );
 		$svg .= $section_el( $ex, $gy + ( $gh - $eh ) / 2, $ew, $eh );
 	}
 
@@ -64,9 +79,9 @@ $section_valign_uri = function ( $mode, $label ) use ( $section_rrect, $section_
 
 // Horizontal counterpart: a HALF-width gray column riding at the left / centre /
 // right of the blue section, to show where the columns sit across the row.
-$section_halign_uri = function ( $mode, $label ) use ( $section_rrect, $section_el, $section_glyph_svg ) {
+$section_halign_uri = function ( $mode, $label ) use ($section_rrect, $section_el, $section_glyph_svg, $pal) {
 	$w = 120; $icon_h = 50;
-	$svg = $section_rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' ); // blue section
+	$svg = $section_rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] ); // blue section
 
 	$bt = 7; $bb = $icon_h - 7;                       // full-height column band
 	$inner_x = 7; $inner_w = $w - 2 * $inner_x;       // thin, even side padding (matches top/bottom)
@@ -79,7 +94,7 @@ $section_halign_uri = function ( $mode, $label ) use ( $section_rrect, $section_
 		else /* evenly */              { $gap = $free / ( $n + 1 ); $x0 = $inner_x + $gap; }
 		for ( $i = 0; $i < $n; $i++ ) {
 			$cx = $x0 + $i * ( $cw + $gap );
-			$svg .= $section_rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+			$svg .= $section_rrect( $cx, $bt, $cw, $bb - $bt, 3, $pal['structure'], $pal['structure_line'] );
 			$ew = $cw - 6; $eh = 9;
 			if ( $ew > 3 ) { $svg .= $section_el( $cx + 3, $bt + 4, $ew, $eh ); } // content at top (stretched column, default flow)
 		}
@@ -88,7 +103,7 @@ $section_halign_uri = function ( $mode, $label ) use ( $section_rrect, $section_
 		$cx = $inner_x;                                   // left / default
 		if ( $mode === 'center' )     { $cx = $inner_x + ( $inner_w - $cw ) / 2; }
 		elseif ( $mode === 'right' )  { $cx = $inner_x + $inner_w - $cw; }
-		$svg .= $section_rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' ); // gray column
+		$svg .= $section_rrect( $cx, $bt, $cw, $bb - $bt, 3, $pal['structure'], $pal['structure_line'] ); // gray column
 
 		$ew = $cw - 10; $eh = 9;                          // white element at TOP of the column (stretched, default flow)
 		$svg .= $section_el( $cx + 5, $bt + 4, $ew, $eh );

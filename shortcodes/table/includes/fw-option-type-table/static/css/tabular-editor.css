@@ -18,7 +18,7 @@
 	--tt-ctrl-bg-hover: #eef0f2;
 	--tt-header-bg: #eef3fb;
 	--tt-footer-bg: #f4f6f8;
-	--tt-accent: #2271b1;
+	--tt-accent: var(--fw-accent, #2271b1);
 	--tt-radius: 8px;
 	padding: 0 16px 4px;   /* breathing room on the left/right of the editor */
 	box-sizing: border-box;
@@ -276,9 +276,9 @@ table.fw-tabular-grid td {
 	cursor: pointer;
 }
 
-.fw-tabular-menu-item:hover { background: #f0f4fa; color: #135e96; }
+.fw-tabular-menu-item:hover { background: #f0f4fa; color: var(--fw-accent-hover, #135e96); }
 .fw-tabular-menu-item .dashicons { font-size: 17px; width: 17px; height: 17px; color: #6c7278; }
-.fw-tabular-menu-item:hover .dashicons { color: #135e96; }
+.fw-tabular-menu-item:hover .dashicons { color: var(--fw-accent-hover, #135e96); }
 
 .fw-tabular-menu-label { flex: 1; }
 .fw-tabular-menu-check { margin-left: auto; color: var(--tt-accent) !important; }

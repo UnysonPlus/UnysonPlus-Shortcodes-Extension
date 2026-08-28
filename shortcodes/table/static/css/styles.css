@@ -209,7 +209,7 @@ table th[class*="col-"] {
 	transition: background .12s ease, border-color .12s ease, color .12s ease;
 }
 .fw-dt-page:hover:not(.is-disabled):not(.is-active) { background: #f3f5f7; border-color: #b9bfc6; }
-.fw-dt-page.is-active { background: #2271b1; border-color: #2271b1; color: #fff; cursor: default; }
+.fw-dt-page.is-active { background: var(--fw-accent, #2271b1); border-color: var(--fw-accent, #2271b1); color: #fff; cursor: default; }
 .fw-dt-page.is-disabled { opacity: .45; cursor: default; }
 .fw-dt-ellipsis { padding: 6px 2px; color: #999; }
 

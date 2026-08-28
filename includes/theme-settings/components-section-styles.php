@@ -40,7 +40,7 @@ if ( function_exists( 'sc_color_field_compact' ) ) {
 // theme's unysonplus_hf_border_sides_field() so the control matches the Footer / Custom
 // Styling borders. Value is an ARRAY; default all four edges = the legacy all-around border.
 $sides_svg = function ( $side, $lbl ) {
-	$accent = '#2271b1'; $line = '#c3c4c7';
+	$accent = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette()['accent'] : '#3858e9'; $line = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette()['structure_line'] : '#dcdcde';
 	$box    = '<rect x="30" y="8" width="44" height="26" rx="3" fill="none" stroke="' . $line . '" stroke-width="1.5"/>';
 	$edges  = array(
 		'top'    => '<rect x="30" y="7"  width="44" height="3" rx="1.5" fill="' . $accent . '"/>',

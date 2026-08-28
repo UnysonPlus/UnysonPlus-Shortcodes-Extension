@@ -11,7 +11,7 @@
 #fw-sc-notice {
 	margin: 12px 0;
 	padding: 1px 12px;
-	border-left: 4px solid #72aee6;
+	border-left: 4px solid color-mix(in srgb, var(--fw-accent, #3858e9) 55%, #fff);
 	background: #fff;
 	box-shadow: 0 1px 1px rgba( 0, 0, 0, .04 );
 }
@@ -216,7 +216,7 @@
 	font-size: 11px;
 	font-weight: 600;
 	text-decoration: none;
-	color: #2271b1;
+	color: var(--fw-accent, var(--fw-accent, #3858e9));
 	white-space: nowrap;
 }
 

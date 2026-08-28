@@ -18,7 +18,7 @@
 	background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
 	overflow: hidden; transition: border-color .15s ease, box-shadow .15s ease, transform .1s ease;
 }
-.sc-design-tile:hover { border-color: #2271b1; box-shadow: 0 4px 14px rgba(2, 6, 23, .12); transform: translateY(-1px); }
+.sc-design-tile:hover { border-color: var(--fw-accent, #2271b1); box-shadow: 0 4px 14px rgba(2, 6, 23, .12); transform: translateY(-1px); }
 .sc-design-tile__thumb {
 	display: block; width: 100%; aspect-ratio: 3 / 2;
 	background: #f1f5f9 center / cover no-repeat;

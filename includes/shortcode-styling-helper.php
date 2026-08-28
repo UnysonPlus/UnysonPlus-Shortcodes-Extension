@@ -409,7 +409,12 @@ if ( ! function_exists( 'sc_flatten_spacing_value' ) ) :
 		if ( ! is_array( $spacing ) ) { return $out; }
 
 		// Collect every slot's class name from a margin/padding subtree pair.
-		$collect = function ( $layer ) use ( &$out ) {
+		// Shared UnysonPlus icon palette (loaded in bootstrap.php).
+		$pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array( 'field_strong' => '#3858e9',
+			'structure' => '#dadada', 'structure_line' => '#dcdcde', 'ink' => '#1f2430',
+			'content' => '#ffffff', 'accent' => '#3858e9', 'caption' => '#50575e' );
+
+		$collect = function ( $layer ) use (&$out, $pal) {
 			if ( ! is_array( $layer ) ) { return; }
 			foreach ( array( 'margin', 'padding' ) as $section ) {
 				if ( empty( $layer[ $section ] ) || ! is_array( $layer[ $section ] ) ) { continue; }
@@ -779,7 +784,7 @@ if ( ! function_exists( 'sc_alignment_field' ) ) :
 		$args = array_merge( $defaults, $args );
 
 		$base   = fw_ext( 'shortcodes' )->get_declared_URI( '/static/img/alignment' );
-		$swatch = function ( $file, $title ) use ( $base ) {
+		$swatch = function ( $file, $title ) use ($base, $pal) {
 			return array( 'small' => array( 'src' => $base . '/' . $file, 'height' => 40, 'title' => $title ) );
 		};
 
@@ -920,11 +925,11 @@ if ( ! function_exists( 'sc_section_align_fields' ) ) :
 				. '" height="' . round( $h, 1 ) . '" rx="' . $rx . '" fill="' . $fill . '"'
 				. ( $stroke !== '' ? ' stroke="' . $stroke . '"' : '' ) . '/>';
 		};
-		$el = function ( $x, $y, $w, $h ) use ( $rrect ) {
+		$el = function ( $x, $y, $w, $h ) use ($rrect, $pal) {
 			$ly = $y + $h / 2;
 			return $rrect( $x, $y, $w, $h, 2, '#ffffff', '#dcdcde' )
 				. '<line x1="' . round( $x + 6, 1 ) . '" y1="' . round( $ly, 1 ) . '" x2="' . round( $x + $w - 6, 1 )
-				. '" y2="' . round( $ly, 1 ) . '" stroke="#8c8c8c" stroke-width="1.5" stroke-linecap="round"/>';
+				. '" y2="' . round( $ly, 1 ) . '" stroke="' . $pal['ink'] . '" stroke-width="1.5" stroke-linecap="round"/>';
 		};
 		$glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) {
 			$h = $icon_h + 16;
@@ -933,27 +938,27 @@ if ( ! function_exists( 'sc_section_align_fields' ) ) :
 			$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $w . ' ' . $h . '" width="' . $w . '" height="' . $h . '">' . $inner . '</svg>';
 			return 'data:image/svg+xml,' . rawurlencode( $svg );
 		};
-		$valign_uri = function ( $mode, $label ) use ( $rrect, $el, $glyph_svg ) {
+		$valign_uri = function ( $mode, $label ) use ($rrect, $el, $glyph_svg, $pal) {
 			$w = 120; $icon_h = 50;
-			$svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );
+			$svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );
 			$gx = 7; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;
 			$ex = $gx + 5; $ew = $gw - 10; $eh = 9;
 			if ( $mode === 'stretch' ) {
-				$svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+				$svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure'], '#dcdcde' );
 				$svg .= $el( $ex, $bt + 4, $ew, $eh );
 			} else {
 				$gh = $eh + 8;
 				if ( $mode === 'bottom' )     { $gy = $bb - $gh; }
 				elseif ( $mode === 'center' ) { $gy = ( $bt + $bb ) / 2 - $gh / 2; }
 				else                          { $gy = $bt; }
-				$svg .= $rrect( $gx, $gy, $gw, $gh, 3, '#bdbdbd', '#dcdcde' );
+				$svg .= $rrect( $gx, $gy, $gw, $gh, 3, $pal['structure'], '#dcdcde' );
 				$svg .= $el( $ex, $gy + ( $gh - $eh ) / 2, $ew, $eh );
 			}
 			return $glyph_svg( $svg, $label, $w, $icon_h );
 		};
-		$halign_uri = function ( $mode, $label ) use ( $rrect, $el, $glyph_svg ) {
+		$halign_uri = function ( $mode, $label ) use ($rrect, $el, $glyph_svg, $pal) {
 			$w = 120; $icon_h = 50;
-			$svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, '#2271b1' );
+			$svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );
 			$bt = 7; $bb = $icon_h - 7;
 			$inner_x = 7; $inner_w = $w - 2 * $inner_x;
 			if ( in_array( $mode, array( 'between', 'around', 'evenly' ), true ) ) {
@@ -963,7 +968,7 @@ if ( ! function_exists( 'sc_section_align_fields' ) ) :
 				else /* evenly */              { $gap = $free / ( $n + 1 ); $x0 = $inner_x + $gap; }
 				for ( $i = 0; $i < $n; $i++ ) {
 					$cx = $x0 + $i * ( $cw + $gap );
-					$svg .= $rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+					$svg .= $rrect( $cx, $bt, $cw, $bb - $bt, 3, $pal['structure'], '#dcdcde' );
 					$ew = $cw - 6; $eh = 9;
 					if ( $ew > 3 ) { $svg .= $el( $cx + 3, $bt + 4, $ew, $eh ); }
 				}
@@ -972,7 +977,7 @@ if ( ! function_exists( 'sc_section_align_fields' ) ) :
 				$cx = $inner_x;
 				if ( $mode === 'center' )     { $cx = $inner_x + ( $inner_w - $cw ) / 2; }
 				elseif ( $mode === 'right' )  { $cx = $inner_x + $inner_w - $cw; }
-				$svg .= $rrect( $cx, $bt, $cw, $bb - $bt, 3, '#bdbdbd', '#dcdcde' );
+				$svg .= $rrect( $cx, $bt, $cw, $bb - $bt, 3, $pal['structure'], '#dcdcde' );
 				$ew = $cw - 10; $eh = 9;
 				$svg .= $el( $cx + 5, $bt + 4, $ew, $eh );
 			}
@@ -1414,7 +1419,7 @@ if ( ! function_exists( 'sc_icon_badge_preset_previews' ) ) :
 		$slug_map = function_exists( 'unysonplus_icon_badge_preset_slug_map' ) ? unysonplus_icon_badge_preset_slug_map() : array();
 		$choices  = function_exists( 'unysonplus_components_color_choices' ) ? unysonplus_components_color_choices() : array();
 
-		$resolve = function ( $v ) use ( $choices ) {
+		$resolve = function ( $v ) use ($choices, $pal) {
 			if ( is_array( $v ) ) {
 				if ( ! empty( $v['custom'] ) )     { return (string) $v['custom']; }
 				if ( ! empty( $v['predefined'] ) ) {
@@ -1547,7 +1552,7 @@ if ( ! function_exists( 'sc_card_rows_field' ) ) :
 	 */
 	function sc_card_rows_field( $args = array() ) {
 		$img = plugins_url( 'card-rows/img', __FILE__ );
-		$sw  = function ( $file, $title ) use ( $img ) {
+		$sw  = function ( $file, $title ) use ($img, $pal) {
 			return array( 'small' => array( 'src' => $img . '/' . $file, 'height' => 34, 'title' => $title ) );
 		};
 		$a = array_merge( array(
@@ -2150,7 +2155,7 @@ if ( ! function_exists( 'sc_emit_button_style_select_admin_css' ) ) :
 
 		// Resolve a compact color value { predefined, custom } (or legacy slug
 		// string) to a hex. Custom wins; else map the predefined slug.
-		$resolve = function ( $v ) use ( $slug_to_hex ) {
+		$resolve = function ( $v ) use ($slug_to_hex, $pal) {
 			if ( is_array( $v ) ) {
 				$custom = isset( $v['custom'] ) ? trim( (string) $v['custom'] ) : '';
 				if ( $custom !== '' ) { return $custom; }
@@ -3100,7 +3105,7 @@ if ( ! function_exists( 'sc_icon_flatten_svg_css' ) ) :
 			'font-style', 'letter-spacing', 'text-anchor', 'clip-path', 'mask',
 			'transform',
 		);
-		$parse_decls = function ( $body ) use ( $props ) {
+		$parse_decls = function ( $body ) use ($props, $pal) {
 			$out = array();
 			foreach ( explode( ';', $body ) as $decl ) {
 				$decl = trim( $decl );
@@ -3172,7 +3177,7 @@ if ( ! function_exists( 'sc_icon_flatten_svg_css' ) ) :
 		//    style="" (inline style wins over class rules, like CSS), written as
 		//    presentation attributes REPLACING same-name existing attributes
 		//    (class/style would have out-cascaded them anyway).
-		$markup = preg_replace_callback( '/<([a-zA-Z][\w:-]*)((?:[^>"\']|"[^"]*"|\'[^\']*\')*?)(\/?)>/', function ( $m ) use ( $class_map, $parse_decls ) {
+		$markup = preg_replace_callback( '/<([a-zA-Z][\w:-]*)((?:[^>"\']|"[^"]*"|\'[^\']*\')*?)(\/?)>/', function ( $m ) use ($class_map, $parse_decls, $pal) {
 			$tag  = $m[1];
 			$attr = $m[2];
 			$decls = array();
@@ -3235,7 +3240,7 @@ if ( ! function_exists( 'sc_icon_sanitize_svg' ) ) :
 		);
 		$clean = preg_replace_callback(
 			'/\s(viewbox|preserveaspectratio|gradientunits|gradienttransform|spreadmethod|clippathunits|maskunits|maskcontentunits|attributename|attributetype|keytimes|keysplines|calcmode|repeatcount|repeatdur|keypoints)=/i',
-			function ( $m ) use ( $camel ) { return ' ' . $camel[ strtolower( $m[1] ) ] . '='; },
+			function ( $m ) use ($camel, $pal) { return ' ' . $camel[ strtolower( $m[1] ) ] . '='; },
 			$clean
 		);
 		// href / xlink:href are only allowed as same-document '#fragment'
@@ -3671,7 +3676,7 @@ endif;
 if ( ! function_exists( 'sc_rating_style_from_atts' ) ) :
 	/** Pull the sc_rating_style_field values from an element's atts → sc_rating_stars() args. */
 	function sc_rating_style_from_atts( $atts, $prefix = 'rating_' ) {
-		$get = function ( $k, $d = '' ) use ( $atts ) {
+		$get = function ( $k, $d = '' ) use ($atts, $pal) {
 			return function_exists( 'sc_get' ) ? sc_get( $k, $atts, $d ) : ( isset( $atts[ $k ] ) ? $atts[ $k ] : $d );
 		};
 		return array(
@@ -3713,7 +3718,7 @@ if ( ! function_exists( 'sc_button_style_field' ) ) :
 		);
 		if ( function_exists( 'fw_ext' ) && fw_ext( 'shortcodes' ) ) {
 			$img  = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/button/static/img/shapes' );
-			$tile = function ( $file, $title ) use ( $img ) {
+			$tile = function ( $file, $title ) use ($img, $pal) {
 				return array( 'small' => array( 'src' => $img . '/' . $file, 'height' => 34, 'title' => $title ) );
 			};
 			$shape_field = array(

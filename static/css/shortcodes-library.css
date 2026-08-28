@@ -3,7 +3,7 @@
 .upw-scl__search { min-width: 240px; }
 .upw-scl__category { min-width: 180px; }
 
-.upw-scl__notice { margin: 12px 0; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #72aee6; background: #f0f6fc; }
+.upw-scl__notice { margin: 12px 0; padding: 10px 14px; border-radius: 6px; border-left: 4px solid color-mix(in srgb, var(--fw-accent, #3858e9) 55%, #fff); background: #f0f6fc; }
 .upw-scl__notice--success { border-left-color: #00a32a; background: #edfaef; }
 .upw-scl__notice--warning { border-left-color: #dba617; background: #fcf9e8; }
 .upw-scl__notice--error   { border-left-color: #d63638; background: #fcf0f1; }

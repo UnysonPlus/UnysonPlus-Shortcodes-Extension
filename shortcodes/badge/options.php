@@ -4,6 +4,11 @@
 
 // Inline data-URI SVG thumbnails for the Design image-picker — one mini pill drawn in each
 // style (no asset files). Brand green = #1a8f74; neutrals match the admin palette.
+// Shared UnysonPlus icon palette (loaded in bootstrap.php).
+$pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array( 'field_strong' => '#3858e9',
+	'structure' => '#dadada', 'structure_line' => '#dcdcde', 'ink' => '#1f2430',
+	'content' => '#ffffff', 'accent' => '#3858e9', 'caption' => '#50575e' );
+
 $ap_thumb = function ( $style ) {
 	$W = 132; $H = 48; $g = '#1a8f74';
 	$x = 14; $y = 14; $w = 104; $h = 20; $r = 10; // the pill
@@ -15,7 +20,7 @@ $ap_thumb = function ( $style ) {
 		case 'subtle':   $fill = '#eef0f1'; $msg = '#8a9096'; $tagfill = '#9aa1a8'; break;
 		case 'ghost':    $fill = 'none'; $msg = $g; break;
 		case 'gradient':
-			$defs = '<linearGradient id="apg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a8f74"/><stop offset="1" stop-color="#2f74e6"/></linearGradient>';
+			$defs = '<linearGradient id="apg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a8f74"/><stop offset="1" stop-color="' . $pal['accent'] . '"/></linearGradient>';
 			$fill = 'url(#apg)'; $msg = '#ffffff'; $tagfill = 'rgba(255,255,255,.85)'; $tagtext = '#1a8f74'; break;
 		case 'glass':    $fill = 'rgba(120,130,140,.18)'; $stroke = 'rgba(255,255,255,.7)'; $msg = '#45505a'; break;
 	}
@@ -32,7 +37,7 @@ $ap_thumb = function ( $style ) {
 	$svg  = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $W . ' ' . $H . '" width="' . $W . '" height="' . $H . '">' . $svg . '</svg>';
 	return 'data:image/svg+xml,' . rawurlencode( $svg );
 };
-$ap_pick = function ( $style, $label ) use ( $ap_thumb ) {
+$ap_pick = function ( $style, $label ) use ($ap_thumb, $pal) {
 	return array( 'small' => array( 'src' => $ap_thumb( $style ), 'height' => 48 ), 'label' => $label );
 };
 

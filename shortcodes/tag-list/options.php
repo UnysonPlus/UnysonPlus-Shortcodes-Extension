@@ -4,6 +4,11 @@
 
 // Inline data-URI SVG thumbnails for the Design image-picker — three mini tags drawn in each
 // design's style (no asset files). Brand green = #1a8f74; neutrals match the admin palette.
+// Shared UnysonPlus icon palette (loaded in bootstrap.php).
+$pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array( 'field_strong' => '#3858e9',
+	'structure' => '#dadada', 'structure_line' => '#dcdcde', 'ink' => '#1f2430',
+	'content' => '#ffffff', 'accent' => '#3858e9', 'caption' => '#50575e' );
+
 $tl_thumb = function ( $design ) {
 	$W = 120; $H = 46; $g = '#1a8f74';
 	$svg = '<rect width="' . $W . '" height="' . $H . '" fill="#ffffff"/>';
@@ -11,12 +16,12 @@ $tl_thumb = function ( $design ) {
 	for ( $i = 0; $i < 3; $i++ ) {
 		$x = $xs[ $i ]; $w = $ws[ $i ]; $y = 15; $h = 16; $r = 8;
 		if ( $design === 'line' ) {
-			$svg .= '<rect x="' . $x . '" y="20" width="' . $w . '" height="6" rx="3" fill="#8c8c8c"/>';
+			$svg .= '<rect x="' . $x . '" y="20" width="' . $w . '" height="6" rx="3" fill="' . $pal['ink'] . '"/>';
 			if ( $i < 2 ) { $svg .= '<circle cx="' . ( $x + $w + 5 ) . '" cy="23" r="1.7" fill="#c4c8cc"/>'; }
 			continue;
 		}
 		if ( $design === 'soft' )    { $fill = 'rgba(26,143,116,.14)'; $stroke = ''; $tcol = $g; }
-		elseif ( $design === 'outline' ) { $fill = '#ffffff'; $stroke = '#c9cdd2'; $tcol = '#8c8c8c'; }
+		elseif ( $design === 'outline' ) { $fill = '#ffffff'; $stroke = '#c9cdd2'; $tcol = $pal['ink']; }
 		elseif ( $design === 'solid' )   { $fill = $g; $stroke = ''; $tcol = '#ffffff'; }
 		else /* subtle */                { $fill = '#eef0f1'; $stroke = ''; $tcol = '#9aa1a8'; }
 		$svg .= '<rect x="' . $x . '" y="' . $y . '" width="' . $w . '" height="' . $h . '" rx="' . $r . '" fill="' . $fill . '"' . ( $stroke ? ' stroke="' . $stroke . '"' : '' ) . '/>';
@@ -25,7 +30,7 @@ $tl_thumb = function ( $design ) {
 	$svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' . $W . ' ' . $H . '" width="' . $W . '" height="' . $H . '">' . $svg . '</svg>';
 	return 'data:image/svg+xml,' . rawurlencode( $svg );
 };
-$tl_pick = function ( $design, $label ) use ( $tl_thumb ) {
+$tl_pick = function ( $design, $label ) use ($tl_thumb, $pal) {
 	return array( 'small' => array( 'src' => $tl_thumb( $design ), 'height' => 46 ), 'label' => $label );
 };
 
