@@ -174,10 +174,13 @@ img.heading-title__icon { width: auto; height: 0.9em; vertical-align: -0.08em; }
    global class, not inline — because wp_kses strips background-clip / -webkit-text-fill-color from
    inline styles (which would leave a solid gradient BOX). The Site Converter tags such spans
    sc-gradtext and rides only the gradient VALUE inline (background-image), which kses keeps. */
+/* Gradient text: clip the (inline) span's background to its glyphs. NO `display:inline-block` — an
+   inline-block box is sized to line-height, so a glyph DESCENDER (the tail of a 'g'/'y') falls outside
+   the painted box and reads as cut off; plain inline clips to the real glyph shapes (descenders included)
+   and lets the gradient wrap across lines. */
 .sc-gradtext{
 	-webkit-background-clip:text;
 	background-clip:text;
 	-webkit-text-fill-color:transparent;
 	color:transparent;
-	display:inline-block;
 }

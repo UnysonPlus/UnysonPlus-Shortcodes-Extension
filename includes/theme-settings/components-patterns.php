@@ -42,10 +42,12 @@ if ( function_exists( 'fw_get_db_settings_option' ) ) {
 }
 
 // The iframe body is painted with the row's Preview Background when set (e.g. the
-// section a pattern was captured on), otherwise the site body background resolved
-// above. Preview-only — it never becomes part of the pattern's output CSS.
+// section a pattern was captured on, or the site body background prefilled into a
+// newly-added row), otherwise plain white — the built-in starters are dark-ink-on-light
+// designs, so an unset preview_bg must NOT inherit a (possibly dark) site background or
+// they'd render dark-on-dark. Preview-only — it never becomes part of the pattern output.
 $preview_template = <<<TPL
-{{= "<span class='upw-pat-thumb'><iframe sandbox='allow-same-origin' scrolling='no' srcdoc='" + _.escape("<style>html,body{margin:0;width:100%;height:100%;overflow:hidden}body{background:" + (o.preview_bg || "{$upw_body_bg}") + ";}</style><style>" + (o.css || "") + "</style>" + (o.html || "")) + "'></iframe></span><span class='upw-pat-title'>" + _.escape(o.pattern_name || "Pattern") + "</span>" }}
+{{= "<span class='upw-pat-thumb'><iframe sandbox='allow-same-origin' scrolling='no' srcdoc='" + _.escape("<style>html,body{margin:0;width:100%;height:100%;overflow:hidden}body{background:" + (o.preview_bg || "#ffffff") + ";}</style><style>" + (o.css || "") + "</style>" + (o.html || "")) + "'></iframe></span><span class='upw-pat-title'>" + _.escape(o.pattern_name || "Pattern") + "</span>" }}
 TPL;
 
 $options = array();
