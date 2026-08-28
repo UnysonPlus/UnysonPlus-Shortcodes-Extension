@@ -1,5 +1,21 @@
 <?php if ( ! defined( 'FW' ) ) { die( 'Forbidden' ); }
 
+if ( ! function_exists( 'sc_ui_icon_palette' ) ) :
+	/** Shared admin-UI icon palette (field/structure/ink/… colours) used by the option-picker SVG/CSS builders.
+	 *  Memoised. Falls back to sensible defaults when fw_upw_icon_palette() is unavailable. */
+	function sc_ui_icon_palette() {
+		static $pal = null;
+		if ( null === $pal ) {
+			$pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
+				'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => '#dcdcde',
+				'ink' => '#1f2430', 'content' => '#ffffff', 'accent' => '#3858e9', 'caption' => '#50575e',
+			);
+		}
+		return $pal;
+	}
+endif;
+
+
 /**
  * Styling tab for every Unysonplus shortcode.
  *
@@ -774,6 +790,7 @@ if ( ! function_exists( 'sc_alignment_field' ) ) :
 	 *                    true, prepend an "Inherit" choice and default to '').
 	 */
 	function sc_alignment_field( $args = array() ) {
+		$pal = sc_ui_icon_palette();
 		$defaults = array(
 			'label'   => __( 'Alignment', 'fw' ),
 			'value'   => 'left',
@@ -919,6 +936,7 @@ if ( ! function_exists( 'sc_section_align_fields' ) ) :
 	 * @return array { column_halign, column_valign, reverse_columns } option defs.
 	 */
 	function sc_section_align_fields( $noun = 'section' ) {
+		$pal = sc_ui_icon_palette();
 		// --- Glyph builders (identical to the Section thumbnails). ---
 		$rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
 			return '<rect x="' . round( $x, 1 ) . '" y="' . round( $y, 1 ) . '" width="' . round( $w, 1 )
@@ -1414,6 +1432,7 @@ if ( ! function_exists( 'sc_icon_badge_preset_previews' ) ) :
 	 * preset's own badge/icon size is intentionally not applied here.
 	 */
 	function sc_icon_badge_preset_previews() {
+		$pal = sc_ui_icon_palette();
 		$out = array();
 		if ( ! function_exists( 'unysonplus_get_icon_badge_presets' ) ) { return $out; }
 		$slug_map = function_exists( 'unysonplus_icon_badge_preset_slug_map' ) ? unysonplus_icon_badge_preset_slug_map() : array();
@@ -1551,6 +1570,7 @@ if ( ! function_exists( 'sc_card_rows_field' ) ) :
 	 * @param array $args  'label','desc','slots'=>[slug=>Label], 'value'=>[ …seed rows… ]
 	 */
 	function sc_card_rows_field( $args = array() ) {
+		$pal = sc_ui_icon_palette();
 		$img = plugins_url( 'card-rows/img', __FILE__ );
 		$sw  = function ( $file, $title ) use ($img, $pal) {
 			return array( 'small' => array( 'src' => $img . '/' . $file, 'height' => 34, 'title' => $title ) );
@@ -2155,7 +2175,7 @@ if ( ! function_exists( 'sc_emit_button_style_select_admin_css' ) ) :
 
 		// Resolve a compact color value { predefined, custom } (or legacy slug
 		// string) to a hex. Custom wins; else map the predefined slug.
-		$resolve = function ( $v ) use ($slug_to_hex, $pal) {
+		$resolve = function ( $v ) use ( $slug_to_hex ) {
 			if ( is_array( $v ) ) {
 				$custom = isset( $v['custom'] ) ? trim( (string) $v['custom'] ) : '';
 				if ( $custom !== '' ) { return $custom; }
@@ -3091,6 +3111,7 @@ if ( ! function_exists( 'sc_icon_flatten_svg_css' ) ) :
 	 * safe property allowlist is inlined - anything else is discarded.
 	 */
 	function sc_icon_flatten_svg_css( $markup ) {
+		$pal = sc_ui_icon_palette();
 		$markup = (string) $markup;
 		if ( stripos( $markup, '<style' ) === false && stripos( $markup, 'style=' ) === false ) {
 			return $markup;
@@ -3676,6 +3697,7 @@ endif;
 if ( ! function_exists( 'sc_rating_style_from_atts' ) ) :
 	/** Pull the sc_rating_style_field values from an element's atts → sc_rating_stars() args. */
 	function sc_rating_style_from_atts( $atts, $prefix = 'rating_' ) {
+		$pal = sc_ui_icon_palette();
 		$get = function ( $k, $d = '' ) use ($atts, $pal) {
 			return function_exists( 'sc_get' ) ? sc_get( $k, $atts, $d ) : ( isset( $atts[ $k ] ) ? $atts[ $k ] : $d );
 		};
