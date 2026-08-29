@@ -477,6 +477,33 @@ function sc_get_animation_fields() {
 }
 endif;
 
+if ( ! function_exists( 'upw_page_animation_fields' ) ) :
+/**
+ * PAGE-scoped animation stack — the SAME `animation-stack` card inserter shortcodes use (Add Animation +
+ * category tabs), but filtered to the modules that make sense on a whole page/body: Entrance (`animation`
+ * + `animation_settings` — the page fades/zooms in), Scroll Motion (`gsap_motion`), and Backgrounds
+ * (`bg_effect`, multi — a page-wide ambient background). Per-element-only modules (Hover, Text Effects,
+ * Physics, Flip, per-element Scroll variants) are dropped. Reused by the theme's Page Settings → Animations
+ * tab; the container is transparent so each card still saves under its own key (identical to a shortcode).
+ * (Page Transitions is intentionally absent — it is a SITE-WIDE navigation effect with no per-element card.)
+ */
+function upw_page_animation_fields() {
+    if ( ! function_exists( 'sc_get_animation_fields' ) ) { return array(); }
+    $full = sc_get_animation_fields();
+    if ( ! isset( $full['animation_stack']['options'] ) || ! is_array( $full['animation_stack']['options'] ) ) { return array(); }
+    $allow    = array( 'animation', 'animation_settings', 'gsap_motion', 'bg_effect' );
+    $filtered = array();
+    foreach ( $full['animation_stack']['options'] as $k => $v ) {
+        $base = preg_replace( '/__\d+$/', '', (string) $k ); // bg_effect__2 → bg_effect (keep multi slots)
+        if ( in_array( $base, $allow, true ) ) { $filtered[ $k ] = $v; }
+    }
+    if ( ! $filtered ) { return array(); }
+    $stack            = $full['animation_stack'];
+    $stack['options'] = $filtered;
+    return array( 'page_animation_stack' => $stack );
+}
+endif;
+
 /**
  * Expand `anim_meta['multi']` module fields into up to $max instance slots (base + `<key>__2..__N`).
  * Each field (base and slot) is tagged `anim_meta['multi_base']` (the base key) and
@@ -495,12 +522,18 @@ function sc_expand_multi_animation_fields( $fields, $max = 4 ) {
             $out[ $key ] = $field;
             continue;
         }
-        for ( $i = 1; $i <= max( 1, (int) $max ); $i++ ) {
+        // A field may request its OWN slot count via anim_meta['multi_max'] (e.g. Background Effect wants
+        // many stackable layers), overriding the global default. NO upper cap — a module opts into as many
+        // slots as it declares (the modal gets heavier per slot, which is the module's call to make).
+        $slots = isset( $field['anim_meta']['multi_max'] )
+            ? max( 1, (int) $field['anim_meta']['multi_max'] )
+            : max( 1, (int) $max );
+        for ( $i = 1; $i <= $slots; $i++ ) {
             $slot_key = ( $i === 1 ) ? $key : $key . '__' . $i;
             $slot     = $field; // deep value-copy (arrays copy by value in PHP)
             $slot['anim_meta']['multi_base']  = $key;
             $slot['anim_meta']['multi_index'] = $i;
-            $slot['anim_meta']['multi_max']   = (int) $max;
+            $slot['anim_meta']['multi_max']   = $slots;
             $out[ $slot_key ] = $slot;
         }
     }
