@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.14.5';
+$manifest['version'] = '1.14.7';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,16 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.14.6 - NEW "Parallax Scene" element (Media Elements). A layered diorama: an addable list of image
+ *          layers, each absolutely anchored (h/v anchor + offset + width + z-order + flip + opacity) and
+ *          carrying three independent motions — PARALLAX depth on scroll/pointer, an ENTRANCE reveal as the
+ *          scene enters view (rise/drop/from-side/fade/scale, with a per-layer delay for staggering), and an
+ *          idle SWAY (rotate/bob/drift) for foliage. The scene sits in-flow, fixed to the viewport bottom
+ *          (content scrolls over it), or sticky, with pointer-events passthrough. Self-contained runtime
+ *          (scripts.js) — no Animation Engine dependency — and each layer nests four transform sources
+ *          (anchor / parallax / sway / entrance) so they never collide. Honours reduce-motion. The Site
+ *          Converter's decorative image-layer scenes map here (editable diorama) instead of a code_block.
+ *
  * 1.13.88 - Entrance + Hover: two new "auto-detect a collection" options.
  *          ENTRANCE ANIMATION gains "Sequence Items" + "Stagger (ms)": on a collection (gallery,
  *          logo grid, feature list, pricing table, the 3D gallery, ...) the entrance cascades across

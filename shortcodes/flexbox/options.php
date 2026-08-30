@@ -22,7 +22,7 @@ if ( ! function_exists( 'fw_upw_icon_palette' ) ) {
 // Falls back to the previous literals if it is unavailable, so a partial install
 // degrades to the old glyphs instead of fataling.
 $pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
-	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => $pal['structure_line'],
+	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_strong' => '#9b9b9b', 'structure_line' => $pal['structure_line'],
 	'structure_soft' => '#ececec', 'content' => $pal['content'], 'ink' => '#1f2430',
 	'accent_light' => '#7b90ff', 'caption' => $pal['caption'],
 );
@@ -37,7 +37,7 @@ if ( ! function_exists( 'fw_upw_icon_palette' ) ) {
 // Falls back to the previous literals if it is unavailable, so a partial install
 // degrades to the old glyphs instead of fataling.
 $pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
-	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => '#dcdcde',
+	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_strong' => '#9b9b9b', 'structure_line' => '#dcdcde',
 	'structure_soft' => '#ececec', 'content' => '#ffffff', 'ink' => '#1f2430',
 	'accent_light' => '#7b90ff', 'caption' => '#50575e',
 );
@@ -180,7 +180,7 @@ $fx_alignself_uri = function ( $mode, $label ) use ($fx_rrect, $fx_glyph, $pal) 
 // into gray bars. 'none' (Auto / inherit) = a faint full bar; 'custom' = a dashed bar.
 $fx_width_bar = function ( $cells_on, $mode, $label ) use ( $pal ) {
 	$track = 60; $pad = 4; $W = $track + 2 * $pad; $gap = 2; $barH = 24; $H = $pad + $barH + 14;
-	$blue = $pal['field_strong']; $gray = $pal['structure'];
+	$blue = $pal['field_strong']; $gray = $pal['structure_strong'];
 	$reduce = array( 1 => array( 1, 12 ), 2 => array( 1, 6 ), 3 => array( 1, 4 ), 4 => array( 1, 3 ),
 		5 => array( 5, 12 ), 6 => array( 1, 2 ), 7 => array( 7, 12 ), 8 => array( 2, 3 ),
 		9 => array( 3, 4 ), 10 => array( 5, 6 ), 11 => array( 11, 12 ), 12 => array( 1, 1 ) );

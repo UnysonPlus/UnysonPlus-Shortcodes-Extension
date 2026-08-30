@@ -943,11 +943,11 @@ if ( ! function_exists( 'sc_section_align_fields' ) ) :
 				. '" height="' . round( $h, 1 ) . '" rx="' . $rx . '" fill="' . $fill . '"'
 				. ( $stroke !== '' ? ' stroke="' . $stroke . '"' : '' ) . '/>';
 		};
-		$el = function ( $x, $y, $w, $h ) use ($rrect, $pal) {
-			$ly = $y + $h / 2;
-			return $rrect( $x, $y, $w, $h, 2, '#ffffff', '#dcdcde' )
-				. '<line x1="' . round( $x + 6, 1 ) . '" y1="' . round( $ly, 1 ) . '" x2="' . round( $x + $w - 6, 1 )
-				. '" y2="' . round( $ly, 1 ) . '" stroke="' . $pal['ink'] . '" stroke-width="1.5" stroke-linecap="round"/>';
+		// A content ELEMENT is a plain white box with a hairline edge -- no interior
+		// line. The ink rule that used to run through it read as a strikethrough at
+		// glyph size and fought the column it sits in for attention.
+		$el = function ( $x, $y, $w, $h ) use ($rrect) {
+			return $rrect( $x, $y, $w, $h, 2, '#ffffff', '#dcdcde' );
 		};
 		$glyph_svg = function ( $inner, $label, $w = 120, $icon_h = 50 ) {
 			$h = $icon_h + 16;
@@ -3651,7 +3651,7 @@ if ( ! function_exists( 'sc_rating_style_field' ) ) :
 	 * group. Read the saved values back with sc_rating_style_from_atts().
 	 */
 	function sc_rating_style_field( $args = array() ) {
-		$doc = 'https://unysonplus.github.io/docs/developers/rating-stars';
+		$doc = 'https://docs.unysonplus.com/docs/developers/rating-stars';
 
 		// Image-picker swatches, generated on the fly from the registered symbol paths
 		// (each drawn as a small filled data-URI SVG). Any shape added via the

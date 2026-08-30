@@ -32,7 +32,7 @@ if ( ! function_exists( 'fw_upw_icon_palette' ) ) {
 // Falls back to the previous literals if it is unavailable, so a partial install
 // degrades to the old glyphs instead of fataling.
 $pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
-	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => $pal['structure_line'],
+	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_strong' => '#9b9b9b', 'structure_line' => $pal['structure_line'],
 	'structure_soft' => '#ececec', 'content' => $pal['content'], 'ink' => '#1f2430',
 	'accent_light' => '#7b90ff', 'caption' => $pal['caption'],
 );
@@ -47,7 +47,7 @@ if ( ! function_exists( 'fw_upw_icon_palette' ) ) {
 // Falls back to the previous literals if it is unavailable, so a partial install
 // degrades to the old glyphs instead of fataling.
 $pal = function_exists( 'fw_upw_icon_palette' ) ? fw_upw_icon_palette() : array(
-	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_line' => '#dcdcde',
+	'field_strong' => '#3858e9', 'structure' => '#dadada', 'structure_strong' => '#9b9b9b', 'structure_line' => '#dcdcde',
 	'structure_soft' => '#ececec', 'content' => '#ffffff', 'ink' => '#1f2430',
 	'accent_light' => '#7b90ff', 'caption' => '#50575e',
 );
@@ -58,7 +58,7 @@ $col_bar_uri = function ( $num, $den, $mode, $label ) use ( $pal ) {
     // like a centered card. Canvas width = track + 2*pad.
     $track = 60; $pad = 4; $W = $track + 2 * $pad;
     $gap = 2; $barH = 24; $H = $pad + $barH + 14;
-    $blue = $pal['field_strong']; $gray = $pal['structure'];
+    $blue = $pal['field_strong']; $gray = $pal['structure_strong'];
     $den  = max( 1, (int) $den );
 
     // White backdrop so the tile is opaque on the dark hover tooltip.
@@ -105,11 +105,9 @@ $rrect = function ( $x, $y, $w, $h, $rx, $fill, $stroke = '' ) {
 };
 
 // A white element box + its #8c8c8c text line.
+// A content ELEMENT is a plain white box with a hairline edge -- no interior line.
 $glyph_el = function ( $x, $y, $w, $h ) use ($rrect, $pal) {
-    $ly = $y + $h / 2;
-    return $rrect( $x, $y, $w, $h, 2, $pal['content'], $pal['structure_line'] )
-        . '<line x1="' . round( $x + 6, 1 ) . '" y1="' . round( $ly, 1 ) . '" x2="' . round( $x + $w - 6, 1 )
-        . '" y2="' . round( $ly, 1 ) . '" stroke="' . $pal['ink'] . '" stroke-width="1.5" stroke-linecap="round"/>';
+    return $rrect( $x, $y, $w, $h, 2, $pal['content'], $pal['structure_line'] );
 };
 
 // Caption + <svg> wrapper. $icon_h = icon band height; the caption sits in the
@@ -129,7 +127,7 @@ $align_uri = function ( $align, $label ) use ($rrect, $glyph_el, $glyph_svg, $pa
     $w = 120; $icon_h = 50;
     $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );            // blue section
     $gx = 7; $bt = 7; $bb = $icon_h - 7; $gw = $w - 2 * $gx; // thin, even side padding (matches top/bottom)
-    $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure'], $pal['structure_line'] ); // full gray column
+    $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure_strong'], $pal['structure_line'] ); // full gray column
 
     // Element at the TOP of the column; horizontal position shows the alignment.
     $ix = $gx + 5; $iw = $gw - 10; $eh = 9; $ey = $bt + 4;
@@ -202,11 +200,11 @@ $valign_uri = function ( $variant, $mode, $label ) use ($rrect, $glyph_el, $glyp
             else                          { $gy = $bt; }       // top
             $wy = $gy + ( $gh - $eh ) / 2;                     // element centered in the short column
         }
-        $svg .= $rrect( $gx, $gy, $gw, $gh, 3, $pal['structure'], $pal['structure_line'] );
+        $svg .= $rrect( $gx, $gy, $gw, $gh, 3, $pal['structure_strong'], $pal['structure_line'] );
         $svg .= $glyph_el( $ex, $wy, $ew, $eh );
     } else {
         // Content VA: a full-height column; the white element(s) move inside it.
-        $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure'], $pal['structure_line'] );
+        $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure_strong'], $pal['structure_line'] );
         $top = $etop; $bottom = $bb - 4;
         if ( $mode === 'between' ) {
             $svg .= $glyph_el( $ex, $top, $ew, $eh );
@@ -251,7 +249,7 @@ $dir_uri = function ( $mode, $label ) use ($rrect, $glyph_svg, $pal) {
     $w = 120; $icon_h = 50;
     $svg = $rrect( 1, 1, $w - 2, $icon_h - 2, 4, $pal['field_strong'] );            // blue section
     $gx = 7; $gw = $w - 2 * $gx; $bt = 7; $bb = $icon_h - 7;             // thin, even side padding (matches top/bottom)
-    $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure'], $pal['structure_line'] ); // gray column
+    $svg .= $rrect( $gx, $bt, $gw, $bb - $bt, 3, $pal['structure_strong'], $pal['structure_line'] ); // gray column
     $ix = $gx + 5; $iw = $gw - 10; $iy = $bt + 4; $ih = ( $bb - 4 ) - ( $bt + 4 );
     $n = 3;
     if ( $mode === 'row' ) {

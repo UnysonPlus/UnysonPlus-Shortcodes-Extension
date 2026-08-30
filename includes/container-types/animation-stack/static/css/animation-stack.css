@@ -3,16 +3,19 @@
  * Admin (builder modal / Theme Settings) only.
  */
 
-/* The organizer's own chrome (empty state + inserter) is aligned to the SAME 27px content
-   gutter that Unyson's option rows use (.fw-backend-option-design-default = 24px 27px 21px),
-   so nothing hugs the modal edge. Cards keep the native per-option 27px padding — the gutter
-   here is applied only to the non-option chrome so the two never double up. */
+/* The organizer's own chrome (empty state + inserter) is aligned to the SAME content
+   gutter that Unyson's option rows use, so nothing hugs the modal edge. That gutter is
+   now 20px (the skin's --u-row-pad-x); it was 27px back when the row padding was
+   24px 27px 21px, which left this chrome sitting 7px further in than every field
+   around it. Cards take their inset from the option rows nested inside them
+   (.upw-anim-card is padding: 6px 0), so the gutter here applies only to the
+   non-option chrome and the two never double up. */
 .upw-anim-stack { margin: 4px 0 0; }
 
 /* ---- empty state ---- */
 .upw-anim-empty {
 	display: flex; align-items: center; gap: 10px;
-	padding: 18px 16px; margin: 4px 27px 16px;
+	padding: 18px 16px; margin: 4px 20px 16px;
 	border: 1px dashed #c9d4e2; border-radius: 8px;
 	background: #f7fafd; color: #56657a; font-size: 13px; line-height: 1.5;
 }
@@ -32,7 +35,20 @@
 /* Give the popover trigger room on the right so the remove × never overlaps its chevron,
    while the option itself still spans full width (aligned with the other tabs' rows). The
    reserve accounts for the × button's 8px right inset + its 26px width + a small gap. */
-.upw-anim-card .fw-mp-pop > .fw-mp-pop-trigger { padding-right: 42px; }
+/* The caret sits far RIGHT at rest (10px), and slides left to 28px while the row
+ * is hovered -- that vacated strip is what the remove (X) button fades into, so
+ * the two never sit on top of each other. Hover is taken from the whole
+ * .fw-backend-option rather than the trigger itself: the X appears on row hover,
+ * so the caret has to start moving at the same moment, not only once the pointer
+ * reaches the trigger. */
+.upw-anim-card .fw-mp-pop > .fw-mp-pop-trigger {
+	padding-right: 10px;
+	transition: padding-right .15s ease;
+}
+.upw-anim-card .fw-backend-option:hover .fw-mp-pop > .fw-mp-pop-trigger,
+.upw-anim-card:hover .fw-mp-pop > .fw-mp-pop-trigger {
+	padding-right: 28px;
+}
 
 .upw-anim-card-remove {
 	position: absolute; top: 11px; right: 8px; z-index: 3;
@@ -57,7 +73,7 @@
 .upw-anim-card-remove:focus { outline: none; box-shadow: 0 0 0 2px rgba(47,116,230,.35); }
 
 /* ---- inserter ---- */
-.upw-anim-inserter { margin: 16px 27px 4px; }
+.upw-anim-inserter { margin: 16px 20px 4px; }
 .upw-anim-add {
 	display: inline-flex; align-items: center; gap: 7px;
 	padding: 9px 16px;
