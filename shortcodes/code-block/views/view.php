@@ -130,6 +130,35 @@ if ( ! function_exists( 'sc_code_block_beautify_html' ) ) {
 // entities that get mangled on save (the failure mode of hand-pasting escaped code into a block).
 $render_as_code = ! empty( $atts['render_as_code'] );
 
+// "Sandbox (isolated iframe)" — run the markup in an <iframe srcdoc> so a whole self-contained page
+// (a WebGL / three.js landing, an art-directed layout with body-rooted CSS or scroll-hijack) renders in
+// its OWN document context, exactly as standalone — while the HTML stays RAW & EDITABLE here in the block.
+// Used by the Site Converter's "Duplicate as landing page". A <base href> inside the code resolves assets.
+// Render Mode is a multi-picker: array( 'mode' => 'inline'|'sandbox', 'sandbox' => array( 'sandbox_src' => … ) ).
+// Tolerate a legacy scalar ('sandbox') + top-level sandbox_src from blocks saved before the multi-picker.
+$rm   = isset( $atts['render_mode'] ) ? $atts['render_mode'] : 'inline';
+$mode = is_array( $rm ) ? ( isset( $rm['mode'] ) ? (string) $rm['mode'] : 'inline' ) : (string) $rm;
+$sandbox = 'sandbox' === $mode;
+$sandbox_html = '';
+if ( $sandbox && ! empty( $atts['code'] ) ) {
+	$sbx_cls = trim( 'sc-code-sandbox ' . ( isset( $atts['css_class'] ) ? (string) $atts['css_class'] : '' ) );
+	// Serve the markup as a real SAME-ORIGIN FILE, then point an <iframe src> at it — it runs in its own
+	// document context (body-rooted CSS, scroll-hijack, WebGL all work) while the code above stays RAW &
+	// EDITABLE in the block. NOT <iframe srcdoc>/data: — a 100KB+ srcdoc is stripped/mangled by wpautop and
+	// a data: iframe can't same-origin-load WebGL textures. CRITICAL: the file is written from the PRISTINE
+	// stored code (by the Landing importer / its save_post sync), never from $atts['code'] here — wpautop
+	// injects <p>/<br> into the render-time value, which would corrupt the inline CSS/JS. So we just point
+	// at the pre-written file via `sandbox_src`.
+	$src = '';
+	if ( is_array( $rm ) && isset( $rm['sandbox']['sandbox_src'] ) ) { $src = trim( (string) $rm['sandbox']['sandbox_src'] ); }
+	elseif ( isset( $atts['sandbox_src'] ) ) { $src = trim( (string) $atts['sandbox_src'] ); } // legacy top-level
+	if ( '' !== $src ) {
+		$sandbox_html = '<iframe class="' . esc_attr( $sbx_cls ) . '" src="' . esc_url( $src ) . '"'
+			. ' style="display:block;width:100%;height:70vh;border:0;margin:0;background:transparent"'
+			. ' allow="autoplay; fullscreen; xr-spatial-tracking" loading="eager" title="' . esc_attr__( 'Sandboxed content', 'fw' ) . '"></iframe>';
+	}
+}
+
 if ( $render_as_code ) {
 	$code_value = (string) $atts['code'];
 
@@ -153,7 +182,13 @@ if ( $render_as_code ) {
 ?>
 
 <?php if ( ! empty( $atts['code'] ) ) : ?>
-    <?php if ( $render_as_code ) : ?>
+    <?php if ( $sandbox ) : ?>
+        <?php if ( $needs_wrapper ) : ?>
+            <div <?php echo fw_attr_to_html( $attr ); ?>><?php echo $sandbox_html; // phpcs:ignore WordPress.Security.EscapeOutput — iframe built above with esc_attr on srcdoc/class ?></div>
+        <?php else : ?>
+            <?php echo $sandbox_html; // phpcs:ignore WordPress.Security.EscapeOutput ?>
+        <?php endif; ?>
+    <?php elseif ( $render_as_code ) : ?>
         <?php if ( $needs_wrapper ) : ?>
             <div <?php echo fw_attr_to_html( $attr ); ?>><?php echo $block; ?></div>
         <?php else : ?>

@@ -14,8 +14,8 @@ $options = [
 						'type'   => 'code-editor',
 						'label'  => __( 'Code', 'fw' ),
 						'desc'   => __( 'Enter some HTML/CSS/JavaScript here. Syntax highlighting enabled.', 'fw' ),
-						'help'   => __( 'Paste raw markup exactly as you want it output — it is not escaped, so use this only with code you trust. Best for embeds, custom widgets, or snippets the visual editor would strip.', 'fw' ),
-						'mode'   => 'htmlmixed', // covers HTML + inline CSS/JS — the common code-block case
+						'help'   => __( 'Paste raw markup exactly as you want it output - it is not escaped, so use this only with code you trust. Best for embeds, custom widgets, or snippets the visual editor would strip.', 'fw' ),
+						'mode'   => 'htmlmixed', // covers HTML + inline CSS/JS - the common code-block case
 						'height' => 500,
 					],
 					'render_as_code' => [
@@ -26,6 +26,41 @@ $options = [
 						'value'        => false,
 						'right-choice' => [ 'value' => true,  'label' => __( 'Yes', 'fw' ) ],
 						'left-choice'  => [ 'value' => false, 'label' => __( 'No', 'fw' ) ],
+					],
+					'render_mode' => [
+						// INLINE multi-picker (a `select` picker, NO popover) = Shape A. Per
+						// framework/includes/option-types/multi-picker/AGENTS.md the label/desc MUST live on the
+						// PICKER sub-option, and the TOP level is label:false, desc:false. Putting them on the top
+						// level is the #1 multi-picker mistake (misaligned label + desc floats to the bottom). The
+						// Sandbox Source URL field only appears when "Sandbox" is chosen.
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'show_borders' => false,
+						'value'        => [ 'mode' => 'inline' ],
+						'picker' => [
+							'mode' => [
+								'type'    => 'select',
+								'label'   => __( 'Render Mode', 'fw' ),
+								'desc'    => __( 'How the code runs on the page. <b>Inline</b> (default) outputs it directly into the page. <b>Sandbox (isolated iframe)</b> runs it in its own document - use it for a whole self-contained page (a WebGL / three.js landing, an art-directed layout with body-level CSS or scroll-hijack) that would break when nested in the page.', 'fw' ),
+								'value'   => 'inline',
+								'choices' => [
+									'inline'  => __( 'Inline (run in the page)', 'fw' ),
+									'sandbox' => __( 'Sandbox (isolated iframe)', 'fw' ),
+								],
+							],
+						],
+						'choices' => [
+							'inline'  => [],
+							'sandbox' => [
+								'sandbox_src' => [
+									'type'  => 'text',
+									'label' => __( 'Sandbox Source URL', 'fw' ),
+									'desc'  => __( 'The same-origin URL of the file to run in the iframe (e.g. a mirror index.html under uploads). The Site Converter sets this automatically.', 'fw' ),
+									'value' => '',
+								],
+							],
+						],
 					],
 					'beautify' => [
 						'type'         => 'switch',
@@ -39,7 +74,7 @@ $options = [
 					'code_language' => [
 						'type'    => 'select',
 						'label'   => __( 'Code Language', 'fw' ),
-						'desc'    => __( 'Syntax-highlighting language (only applies when "Render as Code" is ON). Leave on Auto-detect — it picks the language from the code. Maps to the Prism "language-*" class.', 'fw' ),
+						'desc'    => __( 'Syntax-highlighting language (only applies when "Render as Code" is ON). Leave on Auto-detect - it picks the language from the code. Maps to the Prism "language-*" class.', 'fw' ),
 						'value'   => 'auto',
 						'choices' => [
 							'auto'       => __( 'Auto-detect', 'fw' ),
