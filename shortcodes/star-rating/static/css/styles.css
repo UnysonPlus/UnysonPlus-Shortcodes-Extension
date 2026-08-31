@@ -29,6 +29,9 @@
 .fw-sr__sym { position: relative; width: 1em; height: 1em; display: inline-block; }
 .fw-sr__sym-empty { color: var(--sr-empty); display: block; }
 .fw-sr__sym-fill { position: absolute; top: 0; left: 0; bottom: 0; overflow: hidden; color: var(--sr-fill); }
+/* Hearts read in their natural red — bolder and more legible at small sizes than the amber the
+   stars/circles use, and the softer red empty keeps the shape visible when partly filled. */
+.fw-sr--design-heart { --sr-fill: #e11d48; --sr-empty: #f6c9d2; }
 /* max-width:none is REQUIRED — a theme's global `svg/img { max-width:100% }` would
    otherwise clamp the fill star's SVG to its (e.g. 50%-wide) clip box, SHRINKING it
    into a smaller star instead of letting overflow:hidden clip it to a HALF star. */

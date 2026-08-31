@@ -1,8 +1,15 @@
 /* Design-specific CSS — auto-split from styles.css. Loaded only when the "horizontal" design is used. */
 /* ---------- Horizontal ---------- */
 .fw-steps--design-horizontal { display: flex; gap: 1rem; }
-.fw-steps--design-horizontal .fw-steps__item { flex: 1 1 0; text-align: center; padding: 0 .5rem; }
+/* Override the number-left/text-right GRID that the shared base rule (styles.css) still
+   applies to horizontal items after the design split: horizontal stacks the marker ON TOP
+   and centres the body below. Without this the item stays display:grid and the title/text
+   shrink-wrap to the left of the column. */
+.fw-steps--design-horizontal .fw-steps__item { flex: 1 1 0; text-align: center; padding: 0 .5rem; display: flex; flex-direction: column; align-items: center; }
 .fw-steps--design-horizontal .fw-steps__marker { margin: 0 auto .9rem; }
+/* Force the title/text to fill the centred body so text-align:center actually centres them —
+   a themed heading rule (fit-content / inline-block) would otherwise shrink-wrap the title left. */
+.fw-steps--design-horizontal .fw-steps__title, .fw-steps--design-horizontal .fw-steps__text { display: block; width: 100%; }
 .fw-steps--design-horizontal .fw-steps__connector {
 	display: block; position: absolute; top: calc(var(--st-size) / 2);
 	left: calc(-50% + (var(--st-size) / 2)); width: calc(100% - var(--st-size));

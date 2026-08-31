@@ -32,7 +32,10 @@
 .fw-ss__btn:hover { transform: translateY(-2px); }
 .fw-ss__btn:focus-visible { outline: 2px solid var(--ss-color); outline-offset: 2px; }
 .fw-ss__icon { display: inline-flex; line-height: 0; }
-.fw-ss__icon svg { width: calc(var(--ss-size) * .45); height: calc(var(--ss-size) * .45); }
+/* Icon follows the button's text colour (fill:currentColor) so the brand/mono/soft designs,
+   which set the button `color`, actually recolour the glyph. Some bundled network SVGs ship a
+   hardcoded fill; this makes them honour the design colour instead. */
+.fw-ss__icon svg { width: calc(var(--ss-size) * .45); height: calc(var(--ss-size) * .45); fill: currentColor; }
 .fw-ss__label { display: none; font-weight: 600; font-size: .9rem; }
 
 /* Shapes ------------------------------------------------------------------- */
