@@ -697,6 +697,33 @@ if ( $fx_extra_classes !== '' ) {
 	$attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' ' . trim( $fx_extra_classes ) );
 }
 
+// Clean output for an EMPTY box: a flexbox with no child content (e.g. the blank cells of a grid the
+// user only partly filled) doesn't need its "lay out my children" classes — display flex/grid and the
+// direction / wrap / justify / align / gap / responsive-collapse utilities all do nothing with no
+// children, so they're pure DOM noise. Drop them, but KEEP every class that describes the box itself
+// or how it sits in ITS parent (fx-* id, width span / fifth / keyword, align-self, order, grow /
+// shrink, border preset, section band, background, text-align, pattern/divider markers) — so an empty
+// GRID CELL still occupies its track. Guarded on truly-empty content (trim === ''): a box with ANY
+// content, even a single element or a nested empty shortcode, is left exactly as-is, so a configured
+// box (e.g. one child centred via flex) is never touched. Empties are safe regardless of their options
+// because there are no children for those options to act on.
+if ( trim( (string) $content ) === '' && isset( $attr['class'] ) && $attr['class'] !== '' ) {
+	$fx_kept = array();
+	foreach ( preg_split( '/\s+/', trim( (string) $attr['class'] ) ) as $fx_cl ) {
+		if ( $fx_cl === '' ) { continue; }
+		// fw-flex / fw-flex-* (NOT fw-flexbox), fw-grid*, fw-collapse, fw-justify*, fw-items*,
+		// fw-content-* (NOT fw-contained), fw-gap* — the child-layout utilities.
+		if ( preg_match( '/^(fw-flex(-.*)?|fw-grid.*|fw-collapse|fw-justify.*|fw-items.*|fw-content-.*|fw-gap.*)$/', $fx_cl ) ) { continue; }
+		$fx_kept[] = $fx_cl;
+	}
+	$attr['class'] = implode( ' ', $fx_kept );
+	// The inline grid template (its display:grid rode on the now-removed fw-grid class) is inert too.
+	if ( isset( $attr['style'] ) && $attr['style'] !== '' ) {
+		$attr['style'] = trim( preg_replace( '/grid-template-columns:[^;]*;?/', '', (string) $attr['style'] ) );
+		if ( $attr['style'] === '' ) { unset( $attr['style'] ); }
+	}
+}
+
 echo '<' . $tag . ' ' . fw_attr_to_html( $attr ) . '>';
 // Decorative layers first (pattern behind content, then the shaped edges), then the children.
 echo $fx_pattern_html;     // phpcs:ignore WordPress.Security.EscapeOutput — admin-authored, scoped + script-stripped

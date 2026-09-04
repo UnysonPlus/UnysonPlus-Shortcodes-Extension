@@ -570,6 +570,11 @@
 					var patch = {};
 					if (fxTag) { patch.html_tag = fxTag; }
 					if (fxDisplay) { patch.display = fxDisplay; }
+					// A freshly-dropped Section defaults to a FULL-WIDTH BAND (background edge-to-edge,
+					// content contained) — the page-band convention (Divi / Bricks / Elementor Sections)
+					// and what "Section" implies. Only new sections get this explicit flag; the option
+					// default stays 'no', so existing sections keep their contained-band rendering.
+					if (fxTag === 'section') { patch.full_width = 'yes'; }
 					if (Object.keys(patch).length) {
 						this.set('atts', Object.assign({}, this.get('atts') || {}, patch));
 					}
