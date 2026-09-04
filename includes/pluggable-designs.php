@@ -252,6 +252,59 @@ if ( ! function_exists( 'fw_sc_design_enqueue' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'fw_sc_design_enqueue_now' ) ) :
+	/**
+	 * RENDER-TIME design-skin CSS enqueue — the ROBUST path for built-in SKIN designs.
+	 *
+	 * Skin designs ship their layout CSS as static/css/design/<key>.css and rely on the
+	 * shortcode's static.php enqueuing it per instance from the
+	 * `fw_ext_shortcodes_enqueue_static:<tag>` action. That action is driven by WordPress's
+	 * `[tag …]` shortcode regex over the post content — which a large HTML-entity-encoded atts
+	 * value defeats (e.g. the steps `steps="…&quot;title&quot;:…"` blob on page-builder /
+	 * Site-Converter pages). When the regex fails to match the instance, the action never fires
+	 * and the skin CSS never loads, so a `cards` / `horizontal` design silently collapses to an
+	 * unstyled block stack. Calling this from the shortcode's view.php AFTER resolving $design
+	 * closes that gap deterministically: it enqueues the skin CSS, and because render runs AFTER
+	 * wp_head (past the printed head batch) it prints the one handle inline — a body <link> is
+	 * valid and applies. Deduped per handle, so multiple instances / the head action can't double
+	 * it. Probes both `static/css/design/` (skins) and `static/css/designs/` (layout packs).
+	 *
+	 * @param string $tag    shortcode tag (underscored, e.g. 'steps').
+	 * @param string $design resolved design key (e.g. 'cards').
+	 */
+	function fw_sc_design_enqueue_now( $tag, $design ) {
+		if ( ! function_exists( 'fw_ext' ) || ! function_exists( 'wp_enqueue_style' ) ) { return; }
+		$ext = fw_ext( 'shortcodes' );
+		if ( ! $ext ) { return; }
+		$tag = sanitize_key( $tag );
+		$key = function_exists( 'sanitize_file_name' ) ? sanitize_file_name( (string) $design ) : preg_replace( '/[^A-Za-z0-9_-]/', '', (string) $design );
+		if ( $key === '' ) { return; }
+
+		// The shortcode TAG uses underscores; its FOLDER may hyphenate (pricing_table → pricing-table).
+		$folder = $tag;
+		if ( ! is_dir( $ext->get_declared_path( '/shortcodes/' . $folder ) ) ) {
+			$alt = str_replace( '_', '-', $tag );
+			if ( is_dir( $ext->get_declared_path( '/shortcodes/' . $alt ) ) ) { $folder = $alt; }
+		}
+
+		$rel = '';
+		foreach ( array( '/static/css/design/', '/static/css/designs/' ) as $dir ) {
+			$candidate = '/shortcodes/' . $folder . $dir . $key . '.css';
+			if ( is_readable( $ext->get_declared_path( $candidate ) ) ) { $rel = $candidate; break; }
+		}
+		if ( $rel === '' ) { return; }
+
+		$base   = 'fw-shortcode-' . str_replace( '_', '-', $tag ); // matches static.php base handle
+		$handle = $base . '-design-' . $key;
+		if ( wp_style_is( $handle, 'enqueued' ) || wp_style_is( $handle, 'done' ) ) { return; }
+		wp_enqueue_style( $handle, $ext->get_declared_URI( $rel ), array( $base ), $ext->manifest->get_version() );
+		// Render runs after wp_head, so the head style batch is already printed and won't include this;
+		// print the single handle inline (valid body <link>). If wp_head hasn't fired yet (e.g. content
+		// rendered early), the normal enqueue → head print covers it.
+		if ( did_action( 'wp_head' ) ) { wp_print_styles( $handle ); }
+	}
+endif;
+
 if ( ! function_exists( 'fw_sc_design_pack_option_fragments' ) ) :
 	/**
 	 * Collect installed design PACKS' option fragments for a shortcode:

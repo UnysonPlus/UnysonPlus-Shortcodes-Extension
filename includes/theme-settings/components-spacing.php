@@ -74,8 +74,16 @@ $options = array(
 				'label'   => __( 'Default Gap', 'fw' ),
 				'type'    => 'short-select',
 				'value'   => '',
-				'choices' => $gap( __( 'None (use Bootstrap default — 1.5rem horizontal, 0 vertical)', 'fw' ) ),
-				'desc'    => __( 'Sets both horizontal and vertical gap on every Bootstrap row site-wide.', 'fw' ),
+				// Label kept SHORT on purpose. This is a `short-select` (130px), and a
+				// long choice cannot be truncated in it: the skin renders selects with
+				// `appearance: base-select` for a styled dropdown panel, and Chrome
+				// paints that button's text with `overflow: visible` -- no combination of
+				// overflow/text-overflow/contain clips it (only a native `appearance:
+				// auto` select ellipsises, which would cost the styled panel). The old
+				// 60-character label therefore ran straight over the neighbouring rows.
+				// The detail it carried now lives in `desc`, where there is room for it.
+				'choices' => $gap( __( 'None', 'fw' ) ),
+				'desc'    => __( 'Sets both horizontal and vertical gap on every Bootstrap row site-wide. Leave as <strong>None</strong> to keep the Bootstrap default — 1.5rem horizontal, 0 vertical.', 'fw' ),
 			),
 			'default_gap_x' => array(
 				'label'   => __( 'Default Gap X', 'fw' ),

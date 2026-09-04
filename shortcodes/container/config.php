@@ -2,7 +2,7 @@
 
 $cfg = array(
 	'page_builder' => array(
-		'tab'         => __('Layout Elements', 'fw'),
+		'tab'         => __('Classic Layout', 'fw'),
 		'title'       => __('Container', 'fw'),
 		'description' => __('Add a second container to a section (Boxed or Full-width). Holds columns.', 'fw'),
 		'type'        => 'container', // WARNING: Do not edit this

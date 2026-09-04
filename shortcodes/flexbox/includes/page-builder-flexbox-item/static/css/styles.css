@@ -10,7 +10,7 @@
  */
 .builder-item > .custom-flexbox > .builder-items {
 	min-height: 74px;
-	margin: 10px;
+	margin: 0 10px 10px;
 	padding: 10px;
 	border: 1px dashed #c3ccd7;
 	border-radius: 0.5rem;
@@ -34,15 +34,24 @@
 /* Empty-state hint. The ItemsView keeps the `.builder-items` class; when it holds
    no `.builder-item` children we show a prompt so the drop target is obvious. */
 .builder-item > .custom-flexbox > .builder-items:not(:has(> .builder-item)) {
+	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
+/* Centre the hint over the WHOLE drop area (out of flow) so the ui-sortable
+   placeholder — a sibling flex item — can't shove it to one side. */
 .builder-item > .custom-flexbox > .builder-items:not(:has(> .builder-item))::before {
 	content: "Drop elements or a Flexbox here";
 	color: #9aa7b5;
 	font-style: italic;
 	font-size: 11px;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	white-space: nowrap;
+	pointer-events: none;
 }
 
 /* The ItemsView renders the children container as `.builder-items.fw-row`, so it
@@ -127,8 +136,18 @@
 	min-width: 0;
 }
 
-/* Width stepper in the flexbox panel ( < 6/12 > ), mirroring the column changer. */
-.fx-width-slot { margin-top: 2px; }
+/* Width stepper in the flexbox panel ( < 6/12 > ), mirroring the column changer.
+   The title (`div` / `section` / …) and the stepper sit on ONE line to keep the panel
+   short — scoped to the flexbox item so the classic column panel is untouched. */
+.custom-flexbox > .panel > .panel-left {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	flex-wrap: nowrap;
+}
+.custom-flexbox > .panel > .panel-left .column-title { flex: 0 0 auto; }
+.fx-width-slot { margin-top: 0; white-space: nowrap; }
 .fx-width-changer {
 	display: inline-flex;
 	align-items: center;
@@ -148,3 +167,22 @@
 }
 .fx-width-changer .dashicons:hover { opacity: 1; }
 .fx-width-changer .current-width { min-width: 36px; text-align: center; font-weight: 600; }
+
+/* Nested Divs (a Flexbox/Grid inside another Flexbox or a Section) get a subtle neutral tint
+   instead of the section-band blue, so nesting depth reads at a glance. This mirrors the classic
+   column's two-step scheme (#f8f8f8 -> #f0f0f0): the first level of nesting is the lighter shade,
+   and a Div nested inside an already-tinted Div goes one shade darker. It is capped at TWO steps —
+   level 2 and everything below it share #f0f0f0, so it never darkens cumulatively per level. */
+.custom-section .pb-item-type-column.custom-section.custom-flexbox {
+	background-color: #f8f8f8;
+}
+.custom-section .pb-item-type-column.custom-section.custom-flexbox
+	.pb-item-type-column.custom-section.custom-flexbox {
+	background-color: #f0f0f0;
+}
+
+/* Conditional option visibility in the Flexbox options modal (driven by scripts.js
+   fxApplyModalVisibility): a hidden option GROUP / option keeps its value while out of view,
+   so toggling Display or the HTML Tag reveals it unchanged. !important beats the framework's
+   own inline/utility display so a hidden group can never leak back in. */
+.fx-cond-hidden { display: none !important; }

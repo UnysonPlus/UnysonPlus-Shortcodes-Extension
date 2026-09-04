@@ -402,8 +402,7 @@ class FW_Extension_Shortcodes extends FW_Extension
 		}
 
 		$tags = array(
-			// Structure
-			'flexbox',
+			// (Flexbox is now a general layout primitive available everywhere — no longer isolated.)
 			// Dynamic Content (8)
 			'post_title', 'post_content', 'post_excerpt', 'featured_image',
 			'post_author', 'post_date', 'post_terms', 'post_meta',

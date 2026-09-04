@@ -9,6 +9,12 @@
 
 .icon-box__wrapper {
     box-sizing: border-box;
+}
+/* Default vertical rhythm at ZERO specificity (:where) so a Box Preset's OWN padding (boxp-*, which
+   carries the source card's padding on all sides) WINS. As a plain single-class rule this stomped the
+   preset's left/right padding down to 0 (equal specificity, loaded later), pinning a boxed icon-box's
+   content flush to the card edges. A NON-boxed icon-box (no preset) still gets 1.5rem vertical, 0 sides. */
+:where(.icon-box__wrapper) {
     padding: 1.5rem 0;
 }
 

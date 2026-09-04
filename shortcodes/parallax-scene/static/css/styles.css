@@ -1,0 +1,37 @@
+/* Parallax Scene — layered diorama. Four nested transform sources per layer so anchor / parallax / sway /
+   entrance never collide. Base is static CSS; scripts.js drives parallax + entrance; reduce-motion freezes. */
+
+.fw-parallax-scene { position: relative; width: 100%; overflow: hidden; }
+.fw-parallax-scene.ps--fixed_bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 0; }
+.fw-parallax-scene.ps--sticky { position: sticky; bottom: 0; }
+
+.fw-ps-layer { position: absolute; }
+.fw-ps-move,
+.fw-ps-sway { will-change: transform; }
+.fw-ps-layer img { display: block; width: 100%; height: auto; }
+.fw-ps-layer img.ps-flip { transform: scaleX(-1); }
+
+/* Entrance — hidden base state per direction, revealed by .is-in (added on scroll into view). */
+.fw-ps-enter { transition: transform .9s cubic-bezier(.2,.7,.2,1), opacity .9s ease; }
+.ps-enter--up    { transform: translateY(60px);  opacity: 0; }
+.ps-enter--down  { transform: translateY(-60px); opacity: 0; }
+.ps-enter--left  { transform: translateX(-70px); opacity: 0; }
+.ps-enter--right { transform: translateX(70px);  opacity: 0; }
+.ps-enter--fade  { opacity: 0; }
+.ps-enter--scale { transform: scale(.86); opacity: 0; }
+.ps-enter--none  { opacity: 1; }
+.fw-ps-enter.is-in { transform: none; opacity: 1; }
+
+/* Idle sway — gentle, always-on. --ps-sway is the amount (deg for sway, px for bob/drift). */
+.ps-sway--sway  { animation: ps-sway 6s ease-in-out infinite; transform-origin: bottom center; }
+.ps-sway--bob   { animation: ps-bob  5s ease-in-out infinite; }
+.ps-sway--drift { animation: ps-drift 8s ease-in-out infinite; }
+@keyframes ps-sway  { 0%,100% { transform: rotate(calc(var(--ps-sway,3) * -1deg)); } 50% { transform: rotate(calc(var(--ps-sway,3) * 1deg)); } }
+@keyframes ps-bob   { 0%,100% { transform: translateY(calc(var(--ps-sway,3) * -1px)); } 50% { transform: translateY(calc(var(--ps-sway,3) * 1px)); } }
+@keyframes ps-drift { 0%,100% { transform: translateX(calc(var(--ps-sway,3) * -1px)); } 50% { transform: translateX(calc(var(--ps-sway,3) * 1px)); } }
+
+@media (prefers-reduced-motion: reduce) {
+	.fw-ps-enter { transition: none; transform: none !important; opacity: 1 !important; }
+	.ps-sway--sway, .ps-sway--bob, .ps-sway--drift { animation: none !important; }
+	.fw-ps-move { transform: none !important; }
+}

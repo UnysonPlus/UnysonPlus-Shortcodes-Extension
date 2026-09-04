@@ -12,3 +12,35 @@
 .fw-flexbox > * {
 	min-width: 0;
 }
+
+/* Shape Dividers (Section-tag Flexbox only) — an SVG-shaped edge on the top / bottom of the band.
+   Same visual contract as the classic Section, but self-contained here so a Flexbox <section> renders
+   its dividers even when no classic Section is on the page (the Section stylesheet may not be loaded).
+   Each divider is absolutely positioned + clipped; the SVG stretches to fill it. Content children are
+   lifted above the shapes. (Pattern-layer + Section-variant CSS are global — css-tokens.php — so no
+   copy is needed for those.) */
+.fw-flexbox.section--has-divider {
+	position: relative;
+}
+.fw-flexbox > .sc-shape-divider {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	line-height: 0;
+	overflow: hidden;
+	pointer-events: none;
+	z-index: 1;
+	min-width: 0;
+}
+.fw-flexbox > .sc-shape-divider--top    { top: 0; }
+.fw-flexbox > .sc-shape-divider--bottom { bottom: 0; }
+.fw-flexbox > .sc-shape-divider svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+/* Keep the real content above the shapes (the dividers + any pattern-layer sit at z-index ≤ 1). */
+.fw-flexbox.section--has-divider > :not(.sc-shape-divider):not(.pattern-layer) {
+	position: relative;
+	z-index: 2;
+}

@@ -116,4 +116,21 @@ class FW_Shortcode_Flexbox extends FW_Shortcode
 			require $this->get_declared_path('/includes/page-builder-flexbox-item/class-page-builder-flexbox-item.php');
 		}
 	}
+
+	/**
+	 * Print the page's collected flexbox instance CSS as ONE consolidated <style> in the footer
+	 * (Phase 4 of the clean-output plan — the Elementor/Bricks/Divi model), instead of a <style>
+	 * block glued before each element. The view (views/view.php) appends each element's remaining
+	 * scoped rules — a hand-typed custom width, a per-device value, min-height, gap overrides — to
+	 * $GLOBALS['_fw_flex_inline_css'] and registers this on wp_footer the first time.
+	 *
+	 * @internal
+	 */
+	public static function _print_inline_css() {
+		if ( ! empty( $GLOBALS['_fw_flex_inline_css'] ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput — generated, value-sanitized CSS
+			echo '<style id="fw-flex-inline-css">' . $GLOBALS['_fw_flex_inline_css'] . '</style>';
+			$GLOBALS['_fw_flex_inline_css'] = '';
+		}
+	}
 }

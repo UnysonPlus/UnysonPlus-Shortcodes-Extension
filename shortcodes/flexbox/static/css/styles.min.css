@@ -1,1 +1,1 @@
-.fw-flexbox>*{min-width:0}
+.fw-flexbox>*{min-width:0}.fw-flexbox.section--has-divider{position:relative}.fw-flexbox>.sc-shape-divider{left:0;line-height:0;min-width:0;overflow:hidden;pointer-events:none;position:absolute;width:100%;z-index:1}.fw-flexbox>.sc-shape-divider--top{top:0}.fw-flexbox>.sc-shape-divider--bottom{bottom:0}.fw-flexbox>.sc-shape-divider svg{display:block;height:100%;width:100%}.fw-flexbox.section--has-divider>:not(.sc-shape-divider):not(.pattern-layer){position:relative;z-index:2}

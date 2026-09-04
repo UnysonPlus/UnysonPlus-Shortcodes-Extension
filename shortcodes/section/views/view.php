@@ -39,9 +39,8 @@ if ( $variant !== '' ) {
 // `.section--gap-{slug} .row` / `-x-` / `-y-` rules.
 // Gap is now per-device: array( base, md, lg ). base = section--gap-{slug} (all
 // widths); md/lg add section--gap-{bp}-{slug} overrides. A legacy scalar folds into base.
-$gap_resp = fw_akg( 'gap', $atts, array() );
-if ( ! is_array( $gap_resp ) ) { $gap_resp = array( 'base' => (string) $gap_resp ); }
-foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+$gap_resp = fw_sc_resp_value( $atts, 'gap' ); // shared responsive reader (section/flexbox/column)
+foreach ( fw_sc_bp_layers() as $layer => $infix ) {
 	$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) ( isset( $gap_resp[ $layer ] ) ? $gap_resp[ $layer ] : '' ) );
 	if ( $slug === '' ) { continue; }
 	$section_extra_classes .= ' section--gap' . $infix . '-' . strtolower( $slug );
@@ -50,9 +49,8 @@ foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infi
 // all widths (section--gap-x-{slug}); md/lg add section--gap-{x|y}-{bp}-{slug} overrides
 // (css-tokens.php). A legacy scalar folds into base. Only bite once Gap is set.
 foreach ( array( 'gap_x' => 'section--gap-x', 'gap_y' => 'section--gap-y' ) as $att_key => $class_base ) {
-	$resp = fw_akg( $att_key, $atts, array() );
-	if ( ! is_array( $resp ) ) { $resp = array( 'base' => (string) $resp ); }
-	foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+	$resp = fw_sc_resp_value( $atts, $att_key ); // shared responsive reader
+	foreach ( fw_sc_bp_layers() as $layer => $infix ) {
 		$slug = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) ( isset( $resp[ $layer ] ) ? $resp[ $layer ] : '' ) );
 		if ( $slug === '' ) { continue; }
 		$section_extra_classes .= ' ' . $class_base . $infix . '-' . strtolower( $slug );

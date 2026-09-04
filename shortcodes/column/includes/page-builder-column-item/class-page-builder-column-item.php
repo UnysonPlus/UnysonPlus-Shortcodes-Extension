@@ -64,7 +64,7 @@ class Page_Builder_Column_Item extends Page_Builder_Item {
 		$column_thumbnails = array();
 		foreach ( $builder_widths as $key => $value ) {
 			$column_thumbnails[ $key ] = array(
-				'tab'         => __( 'Layout Elements', 'fw' ),
+				'tab'         => __( 'Classic Layout', 'fw' ), // Bootstrap column-width tiles → Classic Layout (modern columns = a Grid Div)
 				/** Filters the page-builder column item title for a given column width key. */
 				'title'       => apply_filters( 'fw_ext_shortcodes_column_title', $value['title'], $key ),
 				/** Filters the page-builder column item description text for a given column width key. */

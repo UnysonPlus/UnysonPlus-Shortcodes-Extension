@@ -111,10 +111,15 @@
 				}
 			},
 			render: function () {
-				var title;
-				if (this.preset() === 'custom') {
+				var title, p = this.preset();
+				// Fifths + content-sizing widths aren't in the twelfths stepper list, so show their
+				// own label instead of falling back to "Auto".
+				var extra = { '1_5': '1/5', '2_5': '2/5', '3_5': '3/5', '4_5': '4/5', 'fit': 'Fit', 'max': 'Max', 'min': 'Min' };
+				if (p === 'custom') {
 					var wc = (this.widthObj().custom || {}).width_custom || {};
 					title = (String(wc.value || '').trim() !== '') ? (String(wc.value).trim() + (wc.unit || '%')) : 'Custom';
+				} else if (extra[p]) {
+					title = extra[p];
 				} else {
 					// NB: hoist the value — inside the callback `this` is not the view.
 					var curId = this.currentId();
@@ -201,14 +206,26 @@
 
 				this.$el[this.model.get('fw-collapse') ? 'addClass' : 'removeClass']('pb-item-section-collapsed');
 
-				// Mount the width stepper in the panel (defaultRender rebuilt the slot).
-				this.$el.find('.fx-width-slot:first').append(this.widthChangerView.$el);
-				this.widthChangerView.delegateEvents();
+				// Mount the width stepper in the panel (defaultRender rebuilt the slot) — but NOT
+				// for a Section-tag Div: a section is always a full-width band, so it has no Width
+				// (use Content Width to constrain its content instead).
+				if ((this.model.get('atts') || {}).html_tag !== 'section') {
+					this.$el.find('.fx-width-slot:first').append(this.widthChangerView.$el);
+					this.widthChangerView.delegateEvents();
+				}
 
 				// Canvas preview (device-aware): direction, width sizing, justify/align.
 				// Registered on the device-preview bus so a device toggle re-runs it.
 				if (fwDeviceFlexViews.indexOf(this) === -1) { fwDeviceFlexViews.push(this); }
 				this.applyFlexPreview();
+				// A Grid's equal cells carry no width and are sized by this parent re-running their
+				// preview (below in applyFlexPreview). On first insert the child views don't exist yet
+				// when the parent renders, so re-run once after the DOM settles — otherwise the cells
+				// stack until the grid is clicked.
+				if ((this.model.get('atts') || {}).display === 'grid') {
+					var fxSelf = this;
+					setTimeout(function () { if (document.body.contains(fxSelf.el)) { fxSelf.applyFlexPreview(); } }, 0);
+				}
 
 				fwEvents.trigger('fw:page-builder:shortcode:flexbox:controls', {
 					$controls: this.$('.controls:first'),
@@ -220,6 +237,9 @@
 			applyFlexPreview: function () {
 				var fxAtts = this.model.get('atts') || {};
 				var device = window.fwPbDevice || 'lg';
+				// A Section-tag Div is always a full-width band (Width is hidden for it), so it
+				// never sizes itself to a fraction on the canvas.
+				var fxIsSection = ( fxAtts.html_tag === 'section' );
 
 				// Resolve a per-device value { base, md, lg } with the mobile-first cascade
 				// (sm->base, md->md||base, lg->lg||md||base); tolerates a legacy scalar.
@@ -236,12 +256,21 @@
 				var fxIsRow = ( fxResolve(fxAtts.direction, device) !== 'column' );
 				this.$el.toggleClass('fx-dir-row', fxIsRow);
 				this.$el.toggleClass('fx-dir-col', !fxIsRow);
+				// Mark a Grid box so its child cells can detect "my parent is a grid" from the DOM
+				// (reliable on first insert, unlike the model back-reference which isn't wired yet).
+				this.$el.toggleClass('fx-disp-grid', fxAtts.display === 'grid');
 
 				// Canvas COLUMN SIZING: size the box to its width so the editor mirrors the
 				// real layout. Parent is the owner of THIS model's sibling collection.
 				var fxParent     = this.model.collection && this.model.collection._item;
 				var fxParentType = (fxParent && fxParent.get) ? fxParent.get('type') : null;
 				var fxParentCol  = ( fxParentType === 'flexbox' && fxResolve( ( fxParent.get('atts') || {} ).direction, device ) === 'column' );
+				// A grid parent sizes its cells via tracks, so an equal-grid cell carries NO width; on
+				// the canvas (which previews with flex) distribute those width-less cells equally. Detect
+				// the grid parent by the model OR — on first insert, before the model is wired — by the
+				// parent element's fx-disp-grid class in the DOM.
+				var fxParentGrid = ( fxParentType === 'flexbox' && ( fxParent.get('atts') || {} ).display === 'grid' )
+					|| this.$el.parent().closest('.builder-item').hasClass('fx-disp-grid');
 
 				// Width: pick the active device's layer from the responsive { base, md, lg }
 				// (each layer = { preset, custom }), mobile-first; tolerate a legacy flat shape.
@@ -266,16 +295,22 @@
 					if (typeof fxWC.value !== 'undefined' && String(fxWC.value).trim() !== '') {
 						fxWidthCss = String(fxWC.value).replace(/[^0-9.\-]/g, '') + (fxWC.unit || '%');
 					}
+				} else if ({ '1_5':'20%', '2_5':'40%', '3_5':'60%', '4_5':'80%' }[fxPreset]) {
+					fxWidthCss = { '1_5':'20%', '2_5':'40%', '3_5':'60%', '4_5':'80%' }[fxPreset];
 				} else if (/^([1-9]|1[0-2])$/.test(fxPreset)) {
 					fxWidthCss = (parseInt(fxPreset, 10) / 12 * 100) + '%';
 				}
 
-				if (fxResolve(fxAtts.flex_grow, device) === 'yes' && !fxParentCol) {
+				if (fxIsSection) {
+					this.$el.css({ 'flex': '', 'max-width': '', 'width': '' });
+				} else if (fxResolve(fxAtts.flex_grow, device) === 'yes' && !fxParentCol) {
 					this.$el.css({ 'flex': '1 1 0', 'max-width': '' });
 				} else if (fxWidthCss && fxParentCol) {
 					this.$el.css({ 'flex': '', 'max-width': fxWidthCss });
 				} else if (fxWidthCss) {
 					this.$el.css({ 'flex': '0 0 ' + fxWidthCss, 'max-width': fxWidthCss });
+				} else if (fxParentGrid) {
+					this.$el.css({ 'flex': '1 1 0', 'max-width': '', 'width': '' });
 				} else {
 					this.$el.css({ 'flex': fxParentCol ? '' : '0 0 100%', 'max-width': '', 'width': '' });
 				}
@@ -387,6 +422,22 @@
 						changed = true;
 					}
 
+					// Content Width: became a preset multi-picker ({ preset, custom:{ custom_width } }).
+					// A legacy flat unit-input { value, unit } → Custom; anything else → Inherit. Guards
+					// against the modal (which expects a `preset` key) silently resetting an existing
+					// custom width to Inherit on the next save.
+					if (isObj(a.content_width) && typeof a.content_width.preset === 'undefined') {
+						if (typeof a.content_width.value !== 'undefined' && String(a.content_width.value).trim() !== '') {
+							a.content_width = { preset: 'custom', custom: { custom_width: { value: String(a.content_width.value).replace(/[^0-9.\-]/g, ''), unit: a.content_width.unit || 'px' } } };
+						} else {
+							a.content_width = { preset: 'inherit' };
+						}
+						changed = true;
+					} else if (!isObj(a.content_width)) {
+						a.content_width = { preset: 'inherit' };
+						changed = true;
+					}
+
 					// Drop the retired flat overrides so they don't linger in saved atts.
 					['direction_mobile', 'direction_tablet', 'justify_content_mobile', 'justify_content_tablet', 'responsive_note', 'width_phone'].forEach(function (k) {
 						if (typeof a[k] !== 'undefined') { delete a[k]; changed = true; }
@@ -409,15 +460,30 @@
 
 				this.listenTo(this.modal, 'change:values', function (modal, values) {
 					this.model.set('atts', values);
+					// Re-run conditional option visibility when Display / HTML Tag change.
+					if (typeof window.fxApplyModalVisibility === 'function') {
+						window.fxApplyModalVisibility(values);
+					}
 				});
 
 				this.listenTo(this.modal, {
 					'open': function(){
+						// Apply visibility once the options DOM has settled after opening.
+						var self = this;
+						setTimeout(function () {
+							if (typeof window.fxApplyModalVisibility === 'function') {
+								window.fxApplyModalVisibility(self.modal.get('values') || self.model.get('atts'));
+							}
+						}, 0);
 						fwEvents.trigger(getEventName(this.model, 'options-modal:open'), {
 							modal: this.modal, item: this.model, itemView: this
 						});
 					},
 					'render': function(){
+						// The framework rebuilt the options DOM — re-apply visibility.
+						if (typeof window.fxApplyModalVisibility === 'function') {
+							window.fxApplyModalVisibility(this.modal.get('values') || this.model.get('atts'));
+						}
 						fwEvents.trigger(getEventName(this.model, 'options-modal:render'), {
 							modal: this.modal, item: this.model, itemView: this
 						});
@@ -494,13 +560,18 @@
 				type: 'flexbox'
 			},
 			initialize: function (atts, opts) {
-				// Per-tag palette tiles: a freshly-dropped flexbox reads the tile's
-				// data-fxtag (set in get_thumbnails_data) and presets its html_tag, so
-				// dragging the "Main"/"Aside"/… tile gives a <main>/<aside> right away.
+				// Palette-tile presets: a freshly-dropped flexbox reads the tile's data-* and presets
+				// its atts — data-fxtag → html_tag (Main/Aside/… tiles), data-fxdisplay → display (the
+				// Flexbox / Grid tiles drop a flex / grid container right away).
 				if (opts && opts.$thumb) {
-					var fxTag = opts.$thumb.find('.item-data').attr('data-fxtag');
-					if (fxTag) {
-						this.set('atts', Object.assign({}, this.get('atts') || {}, { html_tag: fxTag }));
+					var $data = opts.$thumb.find('.item-data');
+					var fxTag = $data.attr('data-fxtag');
+					var fxDisplay = $data.attr('data-fxdisplay');
+					var patch = {};
+					if (fxTag) { patch.html_tag = fxTag; }
+					if (fxDisplay) { patch.display = fxDisplay; }
+					if (Object.keys(patch).length) {
+						this.set('atts', Object.assign({}, this.get('atts') || {}, patch));
 					}
 				}
 
@@ -520,6 +591,21 @@
 				});
 
 				this.defaultInitialize();
+
+			// Enforce "sections are root-only" in the LIVE canvas: a section-tagged Div that
+			// lands nested (has a parent item) is demoted to a plain <div>, mirroring the
+			// items-corrector's server-side rule so there is never a <section> inside a
+			// <section>. Deferred so the item's collection/parent is resolved after placement;
+			// the corrector is the backstop for moves/imports this best-effort check misses.
+			var self = this;
+			setTimeout(function () {
+				var atts = self.get('atts') || {};
+				if (atts.html_tag !== 'section') { return; }
+				var parent = self.collection && self.collection._item;
+				if (parent && parent.get) {
+					self.set('atts', Object.assign({}, atts, { html_tag: 'div' }));
+				}
+			}, 0);
 			},
 			allowIncomingType: function (type) {
 				var allow = true;
@@ -536,12 +622,23 @@
 				) {
 					allow = false; reason = 'section-like';
 				} else if (type === 'flexbox') {
-					// One level of flexbox-in-flexbox: a flexbox that is ITSELF already
-					// inside a flexbox may not accept further flexboxes (WordPress can't
-					// nest the same shortcode tag deeper than the fw_inner_flexbox alias).
-					var parent = this.collection && this.collection._item;
-					if (parent && parent.get && parent.get('type') === 'flexbox') {
-						allow = false; reason = 'one-level-nest-cap';
+					// Flexbox-in-flexbox (Div-in-Div) nests up to the inner-flexbox alias-pool
+					// depth. The notation generator cycles fw_inner_flexbox…fw_inner_flexbox16 by
+					// depth (modulo the pool); beyond the pool the aliases wrap and the repeated
+					// shortcode tags collide, leaking the trailing close tags as text. So cap at
+					// the pool size. MUST equal count(fw_flexbox_inner_alias_pool()) in the
+					// shortcodes extension helpers.php — bump both together. NOTE: this only
+					// measures the DESTINATION depth; dropping a pre-built deep subtree (or an
+					// import/paste) can still exceed it, which is why the pool is sized generously
+					// (16) well beyond any realistic design rather than relied on as a hard guard.
+					var FLEXBOX_NEST_MAX = 16;
+					var depth = 0, node = this.collection && this.collection._item;
+					while (node && node.get && node.get('type') === 'flexbox') {
+						depth++;
+						node = (node.collection && node.collection._item) || null;
+					}
+					if (depth >= FLEXBOX_NEST_MAX) {
+						allow = false; reason = 'max-nest-depth-' + FLEXBOX_NEST_MAX;
 					}
 				}
 
@@ -606,4 +703,62 @@
 	function itemData () {
 		return page_builder_item_type_flexbox_data;
 	}
+
+	// ── Conditional option visibility (the flexbox options modal) ───────────────
+	// The framework has no declarative show_if, so we reactively show/hide option GROUPS
+	// (rendered as #fw-backend-options-group-<id>) and a couple of lone options from the modal's
+	// live values, so each KIND of flexbox (dropped from its own palette tile — Section / Flex /
+	// Grid / Block) shows ONLY the options that apply to it. Two independent axes drive it:
+	//
+	//   Display (how it lays out its children):
+	//     • Grid-only tracks  (group_grid)     → Display = Grid.
+	//     • Flex-only flow    (group_flex)     → Display = Flex  (Direction / Wrap / Reverse).
+	//     • Shared arrange    (group_arrange)  → Display = Flex OR Grid  (Gap + Justify / Align).
+	//     • Responsive Collapse (lone option)  → Display = Flex OR Grid  (Block has no columns).
+	//
+	//   HTML Tag (band vs. nestable box):
+	//     • Section Style (pattern + variant), Shape Dividers, Full-Width Band → Tag = section
+	//       (band-only decoration; parity with the classic Section).
+	//     • Placement (group_placement: Width Override / Grow / Shrink / Align Self / Order) →
+	//       Tag ≠ section. These describe how a box behaves as a CHILD of a flex/grid parent; a
+	//       root <section> is never such a child, so they are all inert for it.
+	//
+	// Toggling is a `.fx-cond-hidden` class (display:none) in the item's backend CSS, so a hidden
+	// option keeps its value — changing Display / Tag reveals it again unchanged.
+	function fxApplyModalVisibility (values, $scope) {
+		var $ = jQuery;
+		values = values || {};
+		var display    = values.display || 'flex';
+		var isGrid     = ( display === 'grid' );
+		var isFlex     = ( display === 'flex' );
+		var isFlexGrid = ( isFlex || isGrid );
+		var isSection  = ( values.html_tag === 'section' );
+		// Scope the lookups to the open modal when we have it (defensive against a second
+		// modal), else fall back to the document — only one options modal is open at a time.
+		var find = function (sel) {
+			var $s = ( $scope && $scope.length ) ? $scope.find( sel ) : $();
+			return $s.length ? $s : $( sel );
+		};
+		var toggle = function ($el, show) {
+			if ($el && $el.length) { $el[ show ? 'removeClass' : 'addClass' ]( 'fx-cond-hidden' ); }
+		};
+		// Display-driven groups.
+		toggle( find( '#fw-backend-options-group-group_grid' ),    isGrid );
+		toggle( find( '#fw-backend-options-group-group_flex' ),    isFlex );
+		toggle( find( '#fw-backend-options-group-group_arrange' ), isFlexGrid );
+		// HTML-Tag-driven groups.
+		toggle( find( '#fw-backend-options-group-group_section_style' ), isSection );
+		toggle( find( '#fw-backend-options-group-group_dividers' ),      isSection );
+		toggle( find( '#fw-backend-options-group-group_placement' ),     !isSection );
+		// Lone options that sit among always-shown ones → target by id suffix (the modal prefixes
+		// option ids, so match the tail).
+		find( '[id^="fw-backend-option-"][id$="full_width"]' ).each( function () {
+			toggle( $( this ), isSection );
+		} );
+		find( '[id^="fw-backend-option-"][id$="responsive_collapse"]' ).each( function () {
+			toggle( $( this ), isFlexGrid );
+		} );
+	}
+	// Expose so the item view (defined in the register-items closure above) can call it.
+	window.fxApplyModalVisibility = fxApplyModalVisibility;
 })(fwEvents);

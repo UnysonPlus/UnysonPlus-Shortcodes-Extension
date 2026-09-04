@@ -180,10 +180,9 @@ if ( in_array( $o_desk, $offset_valid, true ) )  { $outer_extra[] = 'fw-offset-l
 // Column self vertical alignment within the row — now per-device: array( base, md, lg ).
 // Each set layer emits align-self{-bp}-{v}. 'default' maps to no class (natural stretch).
 // A legacy scalar folds into base.
-$as_resp = fw_akg( 'align_self', $atts, array() );
-if ( ! is_array( $as_resp ) ) { $as_resp = array( 'base' => (string) $as_resp ); }
+$as_resp = fw_sc_resp_value( $atts, 'align_self' ); // shared responsive reader
 $as_valid = array( 'start', 'center', 'end', 'stretch' );
-foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+foreach ( fw_sc_bp_layers() as $layer => $infix ) {
     $av = isset( $as_resp[ $layer ] ) ? (string) $as_resp[ $layer ] : '';
     if ( in_array( $av, $as_valid, true ) ) {
         $outer_extra[] = 'align-self' . $infix . '-' . $av;
@@ -201,14 +200,12 @@ foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infi
 // array( base, md, lg ). The BASE token drives the (unchanged) axis-aware mapping
 // below; the md / lg tokens are appended as breakpoint-infixed override utilities
 // further down. A legacy scalar (pre-responsive save) folds into the base layer.
-$content_h_resp = fw_akg( 'content_h', $atts, array() );
-if ( ! is_array( $content_h_resp ) ) { $content_h_resp = array( 'base' => (string) $content_h_resp ); }
+$content_h_resp = fw_sc_resp_value( $atts, 'content_h' ); // shared responsive reader
 $content_h = isset( $content_h_resp['base'] ) ? (string) $content_h_resp['base'] : '';
 $ch_md     = isset( $content_h_resp['md'] )   ? (string) $content_h_resp['md']   : '';
 $ch_lg     = isset( $content_h_resp['lg'] )   ? (string) $content_h_resp['lg']   : '';
 
-$content_v_resp = fw_akg( 'content_v', $atts, array() );
-if ( ! is_array( $content_v_resp ) ) { $content_v_resp = array( 'base' => (string) $content_v_resp ); }
+$content_v_resp = fw_sc_resp_value( $atts, 'content_v' ); // shared responsive reader
 $content_v = isset( $content_v_resp['base'] ) ? (string) $content_v_resp['base'] : '';
 $cv_md     = isset( $content_v_resp['md'] )   ? (string) $content_v_resp['md']   : '';
 $cv_lg     = isset( $content_v_resp['lg'] )   ? (string) $content_v_resp['lg']   : '';
@@ -255,21 +252,21 @@ $gap_ok   = ( $gap_base !== '' || $gap_md !== '' || $gap_lg !== '' );
 $content_align_tokens = array();
 $content_align_style  = '';
 if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $ch_lg !== '' || $cv_md !== '' || $cv_lg !== '' ) {
-    $content_align_tokens[] = 'd-flex';
+    $content_align_tokens[] = 'fw-flex';
 
     // Direction + Reverse (Content Order). Direction is a single value; Reverse is now a
     // per-device switch. Each layer picks flex-{dir} or flex-{dir}-reverse, emitted only
     // when its effective reverse differs from the smaller layer (mobile-first cascade).
     $dir = $is_row ? 'row' : 'column';
-    $content_align_tokens[] = $rev_base ? 'flex-' . $dir . '-reverse' : 'flex-' . $dir;
+    $content_align_tokens[] = $rev_base ? 'fw-flex-' . $dir . '-reverse' : 'fw-flex-' . $dir;
     if ( $rev_md !== $rev_base ) {
-        $content_align_tokens[] = $rev_md ? 'flex-md-' . $dir . '-reverse' : 'flex-md-' . $dir;
+        $content_align_tokens[] = $rev_md ? 'fw-flex-md-' . $dir . '-reverse' : 'fw-flex-md-' . $dir;
     }
     if ( $rev_lg !== $rev_md ) {
-        $content_align_tokens[] = $rev_lg ? 'flex-lg-' . $dir . '-reverse' : 'flex-lg-' . $dir;
+        $content_align_tokens[] = $rev_lg ? 'fw-flex-lg-' . $dir . '-reverse' : 'fw-flex-lg-' . $dir;
     }
 
-    if ( $is_row ) { $content_align_tokens[] = 'flex-wrap'; }
+    if ( $is_row ) { $content_align_tokens[] = 'fw-flex-wrap'; }
 
     // Axis-aware mapping: a row swaps the flex axes, so "Content Alignment" drives
     // justify-content in a row but align-items in a column — and vice-versa for "Content
@@ -277,13 +274,13 @@ if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $
     // Alignment are fully independent. The distribute values (between/around/evenly) exist
     // only on the main axis (justify-content).
     if ( $is_row ) {
-        if ( $ch_main ) { $content_align_tokens[] = 'justify-content-' . $content_h; }
+        if ( $ch_main ) { $content_align_tokens[] = 'fw-justify-' . $content_h; }
         if ( in_array( $content_v, array( 'start','center','end' ), true ) ) {
-            $content_align_tokens[] = 'align-items-' . $content_v;
+            $content_align_tokens[] = 'fw-items-' . $content_v;
         }
     } else {
-        if ( $cv_ok ) { $content_align_tokens[] = 'justify-content-' . $content_v; }
-        if ( $ch_cross ) { $content_align_tokens[] = 'align-items-' . $content_h; }
+        if ( $cv_ok ) { $content_align_tokens[] = 'fw-justify-' . $content_v; }
+        if ( $ch_cross ) { $content_align_tokens[] = 'fw-items-' . $content_h; }
     }
 
     // Responsive Content-alignment overrides (md / lg) — additive breakpoint-infixed
@@ -296,10 +293,10 @@ if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $
         $infix = '-' . $bp;
         if ( $is_row ) {
             $ok = in_array( $token, array( 'start', 'center', 'end', 'between', 'around', 'evenly' ), true );
-            return $ok ? 'justify-content' . $infix . '-' . $token : '';
+            return $ok ? 'fw-justify' . $infix . '-' . $token : '';
         }
         $ok = in_array( $token, array( 'start', 'center', 'end' ), true );
-        return $ok ? 'align-items' . $infix . '-' . $token : '';
+        return $ok ? 'fw-items' . $infix . '-' . $token : '';
     };
     // content_v is the opposite axis of content_h: main (justify) in a column, cross
     // (align-items) in a row.
@@ -307,10 +304,10 @@ if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $
         $infix = '-' . $bp;
         if ( $is_row ) {
             $ok = in_array( $token, array( 'start', 'center', 'end' ), true );
-            return $ok ? 'align-items' . $infix . '-' . $token : '';
+            return $ok ? 'fw-items' . $infix . '-' . $token : '';
         }
         $ok = in_array( $token, array( 'start', 'center', 'end', 'between', 'around', 'evenly' ), true );
-        return $ok ? 'justify-content' . $infix . '-' . $token : '';
+        return $ok ? 'fw-justify' . $infix . '-' . $token : '';
     };
     foreach ( array( 'md' => $ch_md, 'lg' => $ch_lg ) as $bp => $tok ) {
         if ( $tok === '' ) { continue; }
@@ -325,9 +322,9 @@ if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $
 
     // Gap → per-breakpoint flex-gap utilities (base + md/lg), replacing the old inline
     // gap style so a different gap per device is possible.
-    if ( $gap_base !== '' ) { $content_align_tokens[] = 'sc-cgap-' . $gap_base; }
-    if ( $gap_md !== '' )   { $content_align_tokens[] = 'sc-cgap-md-' . $gap_md; }
-    if ( $gap_lg !== '' )   { $content_align_tokens[] = 'sc-cgap-lg-' . $gap_lg; }
+    if ( $gap_base !== '' ) { $content_align_tokens[] = 'fw-gap-' . $gap_base; }
+    if ( $gap_md !== '' )   { $content_align_tokens[] = 'fw-gap-md-' . $gap_md; }
+    if ( $gap_lg !== '' )   { $content_align_tokens[] = 'fw-gap-lg-' . $gap_lg; }
 }
 
 // Position + Z-Index now come from the shared Advanced-tab control (element_position),

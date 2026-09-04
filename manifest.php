@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.14.14';
+$manifest['version'] = '1.14.52';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,53 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.14.48 - Flexbox Section gains a "Full-Width Band" toggle. A section-tag Div is contained to the
+ *          site width by default (background and content both); turning this on stretches the band —
+ *          its background — edge-to-edge across the window while the CONTENT stays inset to the
+ *          Content Width (or the site container if that's empty). That's the classic full-bleed hero /
+ *          colour-band pattern, which previously needed nesting a contained Div inside a full-width
+ *          one. Implemented as the shared `.fw-full-bleed` class (symmetric padding to a `--fw-cw`
+ *          variable, keeping at least the site gutter) so it needs no per-element style and works
+ *          whatever the section's Display is.
+ *
+ * 1.14.45 - The Flexbox Div's HTML Tag gains the full semantic set on Pages. Previously a page-level
+ *          Div could only be div / section / article / aside; it can now also be nav / header /
+ *          footer (main stays Theme-Builder-only, since the theme already provides the page's single
+ *          <main>). So a card can render as <article>, a callout <aside>, an in-page menu <nav>, and a
+ *          band's <header> / <footer> — accessible, SEO-friendly output instead of generic <div>s.
+ *
+ * 1.14.36 - A Section-tag Flexbox Div is now always a full-width band. The Width control is hidden
+ *          in the editor for a Div tagged `section`, and any stored Width is ignored on the front
+ *          end, so a section can no longer render narrower / left-aligned by accident (matching the
+ *          classic Section). To constrain a band's content use Content Width, which keeps the band
+ *          full-width and centres its content. Width stays available on div / article / aside Divs,
+ *          which are genuine columns / flex items.
+ *
+ * 1.14.35 - Flexbox gains Responsive Collapse (on by default). A multi-column Grid or Flex row now
+ *          steps down on smaller screens with no per-device setup — a numeric Grid goes to 2 columns
+ *          on tablets (768–991px) and a single stacked column on phones (<768px); a 12-track spanning
+ *          Grid and a Flex row stack to one column on phones (spanned cells reset to their own row).
+ *          A Grid using Auto-fit already reflows, so it is left untouched. Emitted as scoped @media
+ *          rules keyed to the box's fx-* class with !important, so they override the inline
+ *          grid-template-columns / child widths while an explicit per-device Width still wins. A new
+ *          "Responsive Collapse" switch turns it off to keep the exact column count at every size.
+ *
+ * 1.14.32 - Flexbox Width gains Fifths + content-sizing keywords. Four new fraction tiles — 1/5, 2/5,
+ *          3/5, 4/5 — cover five-column layouts a twelfths grid can't express in lowest terms; they
+ *          render as an exact 20 / 40 / 60 / 80% width (via the existing scoped-CSS path, since a
+ *          fifth is not a clean twelfths span). Three intrinsic-sizing keywords — Fit / Max / Min
+ *          (content) — let a Div size to its own content: they emit width:fit-content / max-content /
+ *          min-content with flex:0 0 auto instead of a fixed fraction. The canvas Width stepper shows
+ *          the new labels; the popover picker offers all seven alongside the twelfths + Custom.
+ *
+ * 1.14.17 - Flexbox gains a Display mode: Flex (default) / Grid / Block. Grid turns the element into
+ *          a CSS grid (a column count, a raw grid-template-columns value, or breakpoint-free
+ *          auto-fit with a min column width) and reuses the existing Gap / Justify / Align controls
+ *          (all valid grid properties); Block drops it to normal flow. Flex is unchanged — the
+ *          d-flex utility class and every existing option render exactly as before, so this is
+ *          purely additive (existing flexboxes keep working). First step toward one universal
+ *          layout primitive (Block / Flex / Grid) replacing the rigid Section > Row > Column grid.
+ *
  * 1.14.6 - NEW "Parallax Scene" element (Media Elements). A layered diorama: an addable list of image
  *          layers, each absolutely anchored (h/v anchor + offset + width + z-order + flip + opacity) and
  *          carrying three independent motions — PARALLAX depth on scroll/pointer, an ENTRANCE reveal as the

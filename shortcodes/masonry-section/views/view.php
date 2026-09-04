@@ -24,7 +24,14 @@ $bg_video_attr    = function_exists( 'sc_bg_pro_video_attr' ) ? sc_bg_pro_video_
 $padding_top      = isset( $atts['padding_top'] ) ? trim( $atts['padding_top'] ) : '';
 $padding_bottom   = isset( $atts['padding_bottom'] ) ? trim( $atts['padding_bottom'] ) : '';
 
-$container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] === 'yes' )
+// Full Width — the `switch` option type stores its right-choice value, which defaults to
+// BOOLEAN true (see FW_Option_Type_Switch::_get_defaults), so the old `=== 'yes'` test never
+// matched and this option did nothing at all: the container stayed fixed whether the switch
+// was on or off. Accept the boolean the switch actually stores, and still honour a legacy
+// 'yes' string from content saved when this option's default was the string 'no'.
+$fw_is_fullwidth = isset( $atts['is_fullwidth'] ) ? $atts['is_fullwidth'] : false;
+$container_class = ( $fw_is_fullwidth === true || $fw_is_fullwidth === 1
+		|| $fw_is_fullwidth === '1' || $fw_is_fullwidth === 'yes' )
 	? 'fw-container-fluid'
 	: 'fw-container';
 

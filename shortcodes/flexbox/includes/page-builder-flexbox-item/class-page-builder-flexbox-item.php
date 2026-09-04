@@ -75,39 +75,70 @@ class Page_Builder_Flexbox_Item extends Page_Builder_Item
 	 */
 	protected function get_thumbnails_data()
 	{
-		$config = $this->get_shortcode_config();
-		$tab    = isset( $config['tab'] ) ? $config['tab'] : __( 'Structure', 'fw' );
-
-		$tags = array(
-			'div'     => __( 'Div', 'fw' ),
-			'main'    => __( 'Main', 'fw' ),
-			'article' => __( 'Article', 'fw' ),
-			'header'  => __( 'Header', 'fw' ),
-			'footer'  => __( 'Footer', 'fw' ),
-			'aside'   => __( 'Aside', 'fw' ),
-			'nav'     => __( 'Nav', 'fw' ),
-		);
-
-		// A distinct icon per tag (header = top bar, footer = bottom bar, aside =
-		// side panel, nav = menu lines, article = text lines, main = content block,
-		// div = plain box). Served as real .svg FILES, not data-URIs: the builder's
-		// iconToHtml() only renders an icon as an <img> when the string ends in an
-		// image extension (…/header.svg) — a data:image/svg URI falls through to its
-		// raw-text branch and prints the URI verbatim in the palette.
 		$shortcode = fw_ext( 'shortcodes' )->get_shortcode( 'flexbox' );
+		$base      = '/includes/page-builder-flexbox-item/static/img/tiles/';
 
-		$thumbs = array();
-		foreach ( $tags as $tag => $label ) {
-			$thumbs[ 'flexbox_' . $tag ] = array(
-				'tab'         => $tab,
-				'title'       => $label,
-				'description' => sprintf( __( 'A flexbox container that outputs a %s element.', 'fw' ), strtoupper( $tag ) ),
-				'icon'        => $shortcode->locate_URI( '/includes/page-builder-flexbox-item/static/img/tiles/' . $tag . '.svg' ),
-				'data'        => array( 'fxtag' => $tag ),
+		$in_tb = function_exists( 'up_theme_builder_current_admin_post_type' )
+			&& in_array( up_theme_builder_current_admin_post_type(), array( 'up_header', 'up_body', 'up_footer' ), true );
+
+		// Theme Builder (Header / Body / Footer): the FULL set of semantic-tag tiles under "Structure"
+		// — what site chrome is built from. Each drops the flexbox preset to that html_tag.
+		if ( $in_tb ) {
+			$tags   = array(
+				'div' => __( 'Div', 'fw' ),
+				'main' => __( 'Main', 'fw' ),
+				'article' => __( 'Article', 'fw' ),
+				'header' => __( 'Header', 'fw' ),
+				'footer' => __( 'Footer', 'fw' ),
+				'aside' => __( 'Aside', 'fw' ),
+				'nav' => __( 'Nav', 'fw' ),
 			);
+			$thumbs = array();
+			foreach ( $tags as $tag => $label ) {
+				$thumbs[ 'flexbox_' . $tag ] = array(
+					'tab'         => __( 'Structure', 'fw' ),
+					'title'       => $label,
+					'description' => sprintf( __( 'A flexbox container that outputs a %s element.', 'fw' ), strtoupper( $tag ) ),
+					'icon'        => $shortcode->locate_URI( $base . $tag . '.svg' ),
+					'data'        => array( 'fxtag' => $tag ),
+				);
+			}
+			return $thumbs;
 		}
 
-		return $thumbs;
+		// Normal pages / posts: the MODERN layout primitives. Both drop the flexbox (Div) preset to
+		// the right CSS display — Flexbox = one-dimensional rows/stacks, Grid = two-dimensional columns.
+		$tab = __( 'Layout Elements', 'fw' );
+		return array(
+			'flexbox_section' => array(
+				'tab'         => $tab,
+				'title'       => __( 'Section', 'fw' ),
+				'description' => __( 'A full-width content band — where you start a page. Outputs a section element and keeps its content contained to the site width.', 'fw' ),
+				'icon'        => $shortcode->locate_URI( $base . 'section.svg' ),
+				'data'        => array( 'fxtag' => 'section', 'fxdisplay' => 'block' ),
+			),
+			'flexbox_flex' => array(
+				'tab'         => $tab,
+				'title'       => __( 'Flexbox (div)', 'fw' ),
+				'description' => __( 'A one-dimensional layout — a row or a stack of items (CSS flexbox). Outputs a div.', 'fw' ),
+				'icon'        => $shortcode->locate_URI( $base . 'flexbox.svg' ),
+				'data'        => array( 'fxtag' => 'div', 'fxdisplay' => 'flex' ),
+			),
+			'flexbox_grid' => array(
+				'tab'         => $tab,
+				'title'       => __( 'Grid (div)', 'fw' ),
+				'description' => __( 'A two-dimensional column layout (CSS grid). Set the number of columns in the options. Outputs a div.', 'fw' ),
+				'icon'        => $shortcode->locate_URI( $base . 'grid.svg' ),
+				'data'        => array( 'fxtag' => 'div', 'fxdisplay' => 'grid' ),
+			),
+			'flexbox_block' => array(
+				'tab'         => $tab,
+				'title'       => __( 'Block (div)', 'fw' ),
+				'description' => __( 'A plain container that stacks its children (CSS block) — the simplest wrapper, for grouping, spacing or a background. Outputs a div.', 'fw' ),
+				'icon'        => $shortcode->locate_URI( $base . 'div.svg' ),
+				'data'        => array( 'fxtag' => 'div', 'fxdisplay' => 'block' ),
+			),
+		);
 	}
 
 	public function get_value_from_attributes($attributes)

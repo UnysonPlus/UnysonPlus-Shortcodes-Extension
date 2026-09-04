@@ -2,7 +2,7 @@
 
 $cfg = array(
 	'page_builder' => array(
-		'tab'         => __('Layout Elements', 'fw'),
+		'tab'         => __('Classic Layout', 'fw'),
 		'title'       => __('Section', 'fw'),
 		'description' => __('Add a Section', 'fw'),
 		'type'        => 'section', // WARNING: Do not edit this
