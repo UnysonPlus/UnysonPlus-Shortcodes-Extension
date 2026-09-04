@@ -73,6 +73,14 @@ if ( ! $design_file || ! file_exists( $design_file ) ) {
 	$design_file = dirname( __FILE__ ) . '/designs/grid.php';
 }
 
+// ROBUST render-time enqueue of the resolved design's layout CSS (static/css/designs/<design>.css).
+// The per-instance `fw_ext_shortcodes_enqueue_static:gallery` action is driven by WordPress's [tag …]
+// shortcode regex over the post content, which a large HTML-entity-encoded atts blob defeats (e.g. the
+// gallery's `design_settings="…&quot;…"` value on page-builder / Site-Converter pages) — so the action
+// never fires and the design CSS never loads, collapsing even a grid to a full-width block stack. Enqueue
+// it here from the view so the layout is never lost regardless of how the instance was authored.
+if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'gallery', $design ); }
+
 /* Per-design option reader: design_settings/<design>/<sub>, with a default. */
 $g_dp = function ( $sub, $default ) use ( $atts, $design ) {
 	return sc_get( 'design_settings/' . $design . '/' . $sub, $atts, $default );
