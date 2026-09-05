@@ -53,7 +53,12 @@ $layer_box_options = array(
 				'none' => __( 'None', 'fw' ), 'up' => __( 'Rise up', 'fw' ), 'down' => __( 'Drop down', 'fw' ),
 				'left' => __( 'From left', 'fw' ), 'right' => __( 'From right', 'fw' ), 'fade' => __( 'Fade', 'fw' ), 'scale' => __( 'Scale in', 'fw' ) ),
 				__( 'How the layer reveals when the scene scrolls into view.', 'fw' ) ),
-			'delay'    => $sld( __( 'Entrance delay (ms)', 'fw' ), 0, 0, 1200, 20, __( 'Stagger layers by giving each a bigger delay.', 'fw' ) ),
+			'exit'     => $sel( __( 'Exit', 'fw' ), 'auto', array(
+				'auto' => __( 'Leave the way it entered', 'fw' ), 'none' => __( 'Stay (parallax only)', 'fw' ),
+				'up' => __( 'Rise up', 'fw' ), 'down' => __( 'Drop down', 'fw' ),
+				'left' => __( 'To left', 'fw' ), 'right' => __( 'To right', 'fw' ), 'fade' => __( 'Fade', 'fw' ), 'scale' => __( 'Scale out', 'fw' ) ),
+				__( 'How the layer leaves as the scene scrolls back OUT of view. “Leave the way it entered” mirrors the entrance; “Stay” keeps it in place and only parallaxes.', 'fw' ) ),
+			'delay'    => $sld( __( 'Entrance / exit delay (ms)', 'fw' ), 0, 0, 1200, 20, __( 'Stagger layers by giving each a bigger delay (applies to both entrance and exit).', 'fw' ) ),
 			'sway'     => $sel( __( 'Idle sway', 'fw' ), 'none', array(
 				'none' => __( 'None', 'fw' ), 'sway' => __( 'Sway (rotate)', 'fw' ), 'bob' => __( 'Bob (up/down)', 'fw' ), 'drift' => __( 'Drift (side)', 'fw' ) ),
 				__( 'A gentle, always-on motion — good for foliage.', 'fw' ) ),
@@ -84,10 +89,14 @@ $options = array(
 			'placement'      => $sel( __( 'Placement', 'fw' ), 'in_flow', array(
 				'in_flow'      => __( 'In flow (a band on the page)', 'fw' ),
 				'fixed_bottom' => __( 'Fixed to viewport bottom (content scrolls over it)', 'fw' ),
-				'sticky'       => __( 'Sticky', 'fw' ) ),
-				__( 'How the whole scene sits relative to the page.', 'fw' ) ),
+				'sticky'       => __( 'Pinned — holds full-screen while you scroll, then dissolves', 'fw' ) ),
+				__( 'How the whole scene sits relative to the page. <strong>Pinned</strong> gives the “Kage” effect: the scene locks to the viewport and holds while you scroll through it, then the layers scroll up and blur away.', 'fw' ) ),
 			'height'         => array( 'type' => 'text', 'label' => __( 'Scene height', 'fw' ), 'value' => '60vh',
-				'desc' => __( 'CSS length — e.g. <code>60vh</code>, <code>480px</code>, or <code>100vh</code> for a full-screen hero.', 'fw' ) ),
+				'desc' => __( 'CSS length — e.g. <code>60vh</code>, <code>480px</code>, or <code>100vh</code> for a full-screen hero. For <strong>Pinned</strong> this is the held viewport height (use <code>100vh</code>).', 'fw' ) ),
+			'hold'           => $sel( __( 'Hold length (Pinned only)', 'fw' ), '2.5', array(
+				'1.5' => __( 'Short (1.5×)', 'fw' ), '2' => __( 'Medium (2×)', 'fw' ),
+				'2.5' => __( 'Comfortable (2.5×)', 'fw' ), '3.5' => __( 'Long (3.5×)', 'fw' ), '5' => __( 'Epic (5×)', 'fw' ) ),
+				__( 'How long the scene stays pinned, as multiples of its height. Ignored unless Placement is Pinned.', 'fw' ) ),
 			'source'         => $sel( __( 'Motion source', 'fw' ), 'scroll', array(
 				'scroll' => __( 'Scroll', 'fw' ), 'pointer' => __( 'Pointer', 'fw' ), 'both' => __( 'Scroll + Pointer', 'fw' ), 'none' => __( 'None (static)', 'fw' ) ) ),
 			'intensity'      => $sld( __( 'Intensity (px)', 'fw' ), 60, 0, 240, 5, __( 'How far the deepest layers travel at full scroll / pointer.', 'fw' ) ),

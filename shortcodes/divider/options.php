@@ -48,6 +48,13 @@ $options = [
                                 'shadow'   => __( 'Inner Shadow', 'fw' ),
                             ]
                         ],
+                        'line_thickness' => [
+                            'type'  => 'text',
+                            'label' => __( 'Line Thickness (px)', 'fw' ),
+                            'help'  => __( 'Thickness of the Standard (Solid) line, in pixels. Leave blank for a 1px hairline. Raise it (e.g. 4) for a bold accent bar — the short coloured rule often placed under a heading.', 'fw' ),
+                            'value' => '',
+                            'condition' => [ 'line_design' => 'std' ],
+                        ],
                         'content_type' => [
                             'type'    => 'select',
                             'label'   => __( 'Add Element', 'fw' ),
@@ -138,7 +145,8 @@ $options = [
         'options' => [
             'margin_top'    => [ 'type' => 'text', 'label' => __( 'Margin Top (px)', 'fw' ), 'help' => __( 'Space above the divider, in pixels (number only). Combine with Margin Bottom to control how far it sits from the surrounding content.', 'fw' ) ],
             'margin_bottom' => [ 'type' => 'text', 'label' => __( 'Margin Bottom (px)', 'fw' ), 'help' => __( 'Space below the divider, in pixels (number only).', 'fw' ) ],
-            'width'         => [ 'type' => 'text', 'label' => __( 'Width (%)', 'fw' ), 'help' => __( 'Divider width as a percentage of its container. Use a value under 100 for a short centered rule rather than a full-width line.', 'fw' ), 'value' => '100' ],
+            'width'         => [ 'type' => 'text', 'label' => __( 'Width', 'fw' ), 'help' => __( 'Divider width. With Unit = %, a value under 100 gives a short centered rule rather than a full-width line; with Unit = px, a fixed length (e.g. 64) for a compact accent bar. The rule stays horizontally centered.', 'fw' ), 'value' => '100' ],
+            'width_unit'    => [ 'type' => 'select', 'label' => __( 'Width Unit', 'fw' ), 'help' => __( 'Percent = relative to the container; Pixels = a fixed length regardless of container width.', 'fw' ), 'value' => '%', 'choices' => [ '%' => __( 'Percent (%)', 'fw' ), 'px' => __( 'Pixels (px)', 'fw' ) ] ],
         ]
     ],
     'tab_styling' => [

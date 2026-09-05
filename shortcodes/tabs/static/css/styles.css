@@ -109,6 +109,16 @@
     padding: 1rem;
     background-color: #fff;
 }
+/* Frameless content panel (Content Frame = Frameless) — no box: drop the border, radius, background and the
+   SIDE padding so the content sits flush with the nav width; keep the top padding as the nav → content gap. */
+.tabs-container.tabs--content-frameless .tab-content {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+}
 .tabs-container .fw-row .tab-content {
     margin-top: 0; /* remove margin when vertical */
     margin-left: 1rem;

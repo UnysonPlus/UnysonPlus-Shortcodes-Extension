@@ -112,7 +112,23 @@ if ( ! empty( $line_extras ) ) {
 
 // 2. Build Inline Styles
 $styles = [];
-if ( ! empty( $atts['width'] ) ) $styles[] = "width: {$atts['width']}%; margin-left: auto; margin-right: auto;";
+if ( ! empty( $atts['width'] ) ) {
+    // Width honors a unit (Percent default, or Pixels for a fixed-length accent bar). A pixel width needs
+    // max-width too, so it can shrink on a narrow container instead of overflowing.
+    $w_unit = ( isset( $atts['width_unit'] ) && 'px' === $atts['width_unit'] ) ? 'px' : '%';
+    $w_val  = preg_replace( '/[^0-9.]/', '', (string) $atts['width'] );
+    if ( '' !== $w_val ) {
+        $styles[] = "width: {$w_val}{$w_unit}; margin-left: auto; margin-right: auto;";
+        if ( 'px' === $w_unit ) { $styles[] = "max-width: 100%;"; }
+    }
+}
+// Standard-line thickness (a bold accent bar vs a 1px hairline) → a CSS var the .divider-std rule reads.
+// The value lives under the multi-picker's line branch ($atts['style']['line']['line_thickness']).
+$line_thickness = ( $ruler_type === 'line' && isset( $line['line_thickness'] ) ) ? $line['line_thickness'] : '';
+if ( '' !== trim( (string) $line_thickness ) ) {
+    $lt = preg_replace( '/[^0-9.]/', '', (string) $line_thickness );
+    if ( '' !== $lt && (float) $lt > 0 ) { $styles[] = "--fw-divider-thickness: {$lt}px;"; }
+}
 if ( ! empty( $atts['margin_top'] ) ) $styles[] = "margin-top: {$atts['margin_top']}px;";
 if ( ! empty( $atts['margin_bottom'] ) ) $styles[] = "margin-bottom: {$atts['margin_bottom']}px;";
 

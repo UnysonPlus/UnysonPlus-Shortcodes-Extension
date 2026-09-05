@@ -199,6 +199,12 @@ if ( ! function_exists( 'sc_gallery_get_items' ) ) :
 			if ( $item['url'] === '' ) {
 				continue;
 			}
+			// Inline text passthrough — a source that carries per-image caption/title/alt/description DIRECTLY
+			// on the gallery value (e.g. the Site Converter reproducing image-tile captions) overrides the
+			// Media-Library field, so captions render even when the sideloaded attachment has no excerpt.
+			foreach ( array( 'caption', 'title', 'alt', 'description' ) as $g_inl ) {
+				if ( isset( $img[ $g_inl ] ) && '' !== trim( (string) $img[ $g_inl ] ) ) { $item[ $g_inl ] = (string) $img[ $g_inl ]; }
+			}
 			$items[] = $item;
 		}
 
@@ -337,7 +343,11 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 		}
 
 		$caption    = sc_gallery_caption_text( $item, $a['caption_source'] );
-		$has_overlay = ( $a['captions'] === 'hover' && $caption !== '' );
+		// 'overlay' = a PERMANENT bottom caption over a gradient scrim (the image-tile look); 'hover' = the
+		// same overlay revealed only on hover. Both share the `.fw-gallery__overlay` markup; the always-on
+		// variant adds `.fw-gallery--overlay-always` so the CSS keeps the scrim + caption visible at rest.
+		$overlay_always = ( $a['captions'] === 'overlay' && $caption !== '' );
+		$has_overlay = ( ( $a['captions'] === 'hover' || $a['captions'] === 'overlay' ) && $caption !== '' );
 		$has_below   = ( $a['captions'] === 'below' && $caption !== '' );
 
 		$media_classes = trim(
@@ -348,6 +358,7 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 			. ( $image_style === '' && $a['rounded'] !== '' ? $a['rounded'] . ' ' : '' )
 			. ( $a['hover_zoom'] ? 'fw-gallery--zoom ' : '' )
 			. ( $has_overlay ? 'fw-gallery--has-overlay ' : '' )
+			. ( $overlay_always ? 'fw-gallery--overlay-always ' : '' )
 			. $a['media_class']
 		);
 

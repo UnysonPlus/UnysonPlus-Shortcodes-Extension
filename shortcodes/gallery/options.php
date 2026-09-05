@@ -593,11 +593,12 @@ $options = array(
 						'type'  => 'select',
 						'value' => 'none',
 						'choices' => array(
-							'none'  => __( 'None', 'fw' ),
-							'hover' => __( 'Overlay on Hover', 'fw' ),
-							'below' => __( 'Below the Image', 'fw' ),
+							'none'    => __( 'None', 'fw' ),
+							'overlay' => __( 'Overlay (Always Visible)', 'fw' ),
+							'hover'   => __( 'Overlay on Hover', 'fw' ),
+							'below'   => __( 'Below the Image', 'fw' ),
 						),
-						'desc' => __( 'Show a caption for each image, sourced from the Media Library field below.', 'fw' ),
+						'desc' => __( 'Show a caption for each image, sourced from the Media Library field below. “Overlay (Always Visible)” pins the caption to the bottom of each image over a gradient scrim (the classic image-tile look); “Overlay on Hover” reveals it only on hover.', 'fw' ),
 					),
 					'caption_source' => array(
 						'label' => __( 'Caption Source', 'fw' ),

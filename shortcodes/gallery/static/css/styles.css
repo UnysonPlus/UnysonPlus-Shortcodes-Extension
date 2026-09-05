@@ -68,6 +68,10 @@ a.fw-gallery__media[href]:not([data-fw-lightbox]) { cursor: pointer; }
 }
 .fw-gallery__media--has-overlay:hover .fw-gallery__overlay,
 .fw-gallery__media--has-overlay:focus-within .fw-gallery__overlay { opacity: 1; }
+/* Always-visible overlay caption (the 'overlay' captions mode) — the gradient scrim + caption stay shown
+   at rest (the classic image-tile look: a title pinned to the bottom of each photo). Self-sufficient
+   opacity so it does not depend on the hover reveal. */
+.fw-gallery--overlay-always .fw-gallery__overlay { opacity: 1; }
 .fw-gallery__overlay-text {
 	font-size: .9rem;
 	line-height: 1.35;

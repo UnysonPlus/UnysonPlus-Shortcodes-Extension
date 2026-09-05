@@ -3153,10 +3153,33 @@ if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
 	// A trusted, already-sanitised SVG import (e.g. the Site Converter sideloading a source's icon SVGs)
 	// may run without an admin user. `fw_sc_svg_upload_allowed` lets such a flow lift ONLY the admin gate
 	// for the duration of its own call; the sanitiser below still runs, so safety is unchanged.
-	/** Returns whether the current context may upload SVGs (manage_options capability or the filter override). */
+	/** The role slugs permitted to upload SVGs, from Page Builder settings (default: administrator only). */
+	function sc_svg_upload_roles() {
+		$roles = function_exists( 'fw_get_db_ext_settings_option' )
+			? fw_get_db_ext_settings_option( 'page-builder', 'svg_upload_roles', array( 'administrator' => true ) )
+			: array( 'administrator' => true );
+		if ( ! is_array( $roles ) || empty( $roles ) ) {
+			$roles = array( 'administrator' => true );
+		}
+		return array_keys( array_filter( $roles ) );
+	}
+
+	/** Returns whether the current context may upload SVGs (a permitted role, or the trusted-flow filter). */
 	function sc_svg_upload_allowed() {
-		/** Filters whether the current context may upload SVGs, letting a trusted flow lift the manage_options gate without an admin user. */
-		return current_user_can( 'manage_options' ) || (bool) apply_filters( 'fw_sc_svg_upload_allowed', false );
+		$allowed = sc_svg_upload_roles();
+		// 'administrator' permitted (the default) covers every manage_options-capable user, preserving the
+		// original capability gate exactly; uncheck it to lock admins out too. Other roles extend by role name.
+		if ( in_array( 'administrator', $allowed, true ) && current_user_can( 'manage_options' ) ) {
+			return true;
+		}
+		if ( function_exists( 'wp_get_current_user' ) ) {
+			$user = wp_get_current_user();
+			if ( $user && $user->ID && array_intersect( (array) $user->roles, $allowed ) ) {
+				return true;
+			}
+		}
+		/** Filters whether the current context may upload SVGs, letting a trusted flow lift the role gate without a logged-in user. */
+		return (bool) apply_filters( 'fw_sc_svg_upload_allowed', false );
 	}
 
 	/** Adds the SVG MIME type to the allowed upload types when SVG uploads are permitted for the current context. */

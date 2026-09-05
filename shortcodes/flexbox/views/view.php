@@ -196,6 +196,15 @@ foreach ( $fx_layers as $layer => $infix ) {
 	if ( in_array( $ord_r[ $layer ], $ord_valid, true ) ) { $classes[] = 'fw-order' . $infix . '-' . $ord_r[ $layer ]; }
 }
 
+// Grid Column Start (per-device): fw-col-start-{bp}-N -> grid-column-start:N when this box is a
+// child of a Grid Div (the class is scoped under .fw-grid in frontend-grid.css, so it's inert in a
+// Flex/Block parent). Lets an item be placed at an exact column without empty spacer cells.
+$cs_valid = array( '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12' );
+$cs_r     = $fx_resp( 'col_start' );
+foreach ( $fx_layers as $layer => $infix ) {
+	if ( in_array( $cs_r[ $layer ], $cs_valid, true ) ) { $classes[] = 'fw-col-start' . $infix . '-' . $cs_r[ $layer ]; }
+}
+
 // Grow to Fill (per-device switch, default off). Base emits only when on; md/lg emit
 // (flex-grow-{bp}-1 / -0) only when they differ from the device below.
 $grow_eff = $fx_switch_eff( 'flex_grow', 'no' );

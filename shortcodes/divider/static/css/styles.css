@@ -58,14 +58,14 @@
    default color below is the fallback when no Line Color is picked. */
 .divider-std {
     height: 0;
-    border-top: 1px solid currentColor;
+    border-top: var(--fw-divider-thickness, 1px) solid currentColor;
     color: #ccc;
     overflow: visible;
 }
 
 /* --- Content Handling (Text/Icons) --- */
 .has-content.divider-std {
-    border-top: 1px solid currentColor;
+    border-top: var(--fw-divider-thickness, 1px) solid currentColor;
     height: 0;
     overflow: visible;
 }

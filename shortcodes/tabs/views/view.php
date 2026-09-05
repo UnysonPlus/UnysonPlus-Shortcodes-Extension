@@ -57,6 +57,8 @@ $interval_ms  = max( 2, min( 12, (int) ( $atts['autoplay_interval'] ?? 5 ) ) ) *
 $atts['css_class'] = trim(
 	( ! empty( $atts['css_class'] ) ? $atts['css_class'] . ' ' : '' )
 	. 'tabs-container tabs--design-' . sanitize_html_class( $design ) . ' design-' . sanitize_html_class( $design )
+	// Frameless content panel — drop the border/radius/background + side padding (a top gap is kept in CSS).
+	. ( ( ! empty( $atts['content_frame'] ) && 'frameless' === $atts['content_frame'] ) ? ' tabs--content-frameless' : '' )
 );
 $attr = sc_build_wrapper_attr( $atts );
 if ( $activate_on === 'hover' ) { $attr['data-fw-activate'] = 'hover'; }

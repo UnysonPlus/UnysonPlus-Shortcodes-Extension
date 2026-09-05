@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.14.55';
+$manifest['version'] = '1.14.66';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,29 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.14.66 - Tabs gain a Content Frame option. The tab content panel always drew a bordered, rounded,
+ *          padded white box; a source whose panel is frameless (its content brings its own cards /
+ *          layout, like a menu grid) then sat inside an unwanted box. Content Frame = Frameless drops
+ *          the border, radius, background and SIDE padding (a top gap below the nav is kept) via a
+ *          `tabs--content-frameless` wrapper class, decoupled from the nav design so any style can be
+ *          frameless. Framed stays the default. The Site Converter reads the source panel's own box and
+ *          sets it automatically.
+ * 1.14.65 - Divider gains Line Thickness + a Width unit. The Standard (Solid) line was a fixed 1px
+ *          hairline and its Width was percent-only, so a common design motif — the short, bold,
+ *          coloured accent bar under a heading (e.g. a 64px x 4px rule) — could not be expressed and
+ *          the Site Converter had to fall back to a plain styled box. Line Thickness (px) drives the
+ *          std line via a `--fw-divider-thickness` CSS variable; a Width Unit (Percent / Pixels) lets
+ *          the rule be a fixed length instead of a container fraction. The converter now translates
+ *          those accent bars — and semantic `<hr>` rules — into a real, editable Divider element.
+ * 1.14.64 - SVG uploads are now per-role configurable. The Media-Library SVG upload support (always
+ *          sanitised on the way in via the icon allow-list sanitiser) was previously hardcoded to
+ *          administrators; a new "Allow SVG uploads for" setting (Page Builder settings) exposes a role
+ *          checklist so a site can also permit Editors/Authors, or uncheck every role to switch SVG
+ *          uploads off entirely. Defaults to Administrator only, so existing behaviour is unchanged.
+ *          sc_svg_upload_allowed() now reads sc_svg_upload_roles() (the fw_get_db_ext_settings_option
+ *          'page-builder'/'svg_upload_roles' value); the trusted-flow filter fw_sc_svg_upload_allowed and
+ *          the on-upload sanitiser are unchanged.
+ *
  * 1.14.48 - Flexbox Section gains a "Full-Width Band" toggle. A section-tag Div is contained to the
  *          site width by default (background and content both); turning this on stretches the band —
  *          its background — edge-to-edge across the window while the CONTENT stays inset to the

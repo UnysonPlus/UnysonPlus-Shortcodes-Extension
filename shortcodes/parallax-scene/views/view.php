@@ -23,13 +23,22 @@ $height    = preg_replace( '/[^0-9a-z.%()+\-\s]/i', '', (string) ( $atts['height
 $source    = in_array( ( $atts['source'] ?? 'scroll' ), array( 'scroll', 'pointer', 'both', 'none' ), true ) ? $atts['source'] : 'scroll';
 $intensity = max( 0, min( 240, (int) ( $atts['intensity'] ?? 60 ) ) );
 $pass      = ( $atts['pass_clicks'] ?? 'yes' ) === 'yes';
+$hold      = max( 1, min( 6, (float) ( $atts['hold'] ?? 2.5 ) ) ); // 'sticky' only: runway = viewport height × hold.
 
 if ( ! $layers ) { return; }
 
-$scene_style = 'height:' . ( '' !== $height ? $height : '60vh' ) . ';';
+$pinned = ( 'sticky' === $placement );
+$vp_h   = '' !== $height ? $height : ( $pinned ? '100vh' : '60vh' );
+
+// PINNED (Kage-style): a TALL outer runway holds a position:sticky inner viewport, so the scene pins
+// full-screen and HOLDS while you scroll the runway, then releases + dissolves. Non-pinned scenes put
+// the layers straight in the scene box (its height IS the scene height).
+$scene_style = 'height:' . ( $pinned ? 'calc(' . $vp_h . ' * ' . rtrim( rtrim( sprintf( '%.3f', $hold ), '0' ), '.' ) . ')' : $vp_h ) . ';';
 if ( $pass ) { $scene_style .= 'pointer-events:none;'; }
 
 echo '<div class="fw-parallax-scene ps--' . esc_attr( $placement ) . '" data-source="' . esc_attr( $source ) . '" data-intensity="' . esc_attr( (string) $intensity ) . '" style="' . esc_attr( $scene_style ) . '" aria-hidden="true">';
+
+if ( $pinned ) { echo '<div class="fw-ps-viewport" style="height:' . esc_attr( $vp_h ) . ';">'; }
 
 foreach ( $layers as $L ) {
 	if ( ! is_array( $L ) ) { continue; }
@@ -47,6 +56,9 @@ foreach ( $layers as $L ) {
 
 	$depth    = max( 0, min( 100, (int) ( $L['depth'] ?? 30 ) ) );
 	$entrance = in_array( ( $L['entrance'] ?? 'up' ), array( 'none', 'up', 'down', 'left', 'right', 'fade', 'scale' ), true ) ? $L['entrance'] : 'up';
+	$exit     = ( isset( $L['exit'] ) && in_array( $L['exit'], array( 'auto', 'none', 'up', 'down', 'left', 'right', 'fade', 'scale' ), true ) ) ? $L['exit'] : 'auto';
+	// 'auto' = leave the way it entered; a layer with no entrance has nothing to reverse → no exit.
+	$exit_dir = ( 'auto' === $exit ) ? $entrance : $exit;
 	$delay    = max( 0, min( 2000, (int) ( $L['delay'] ?? 0 ) ) );
 	$sway     = in_array( ( $L['sway'] ?? 'none' ), array( 'none', 'sway', 'bob', 'drift' ), true ) ? $L['sway'] : 'none';
 	$sway_amt = max( 0, min( 12, (float) ( $L['sway_amt'] ?? 3 ) ) );
@@ -70,12 +82,18 @@ foreach ( $layers as $L ) {
 	$sway_cls   = ( 'none' !== $sway ) ? ' ps-sway ps-sway--' . $sway : '';
 	$sway_style = ( 'none' !== $sway ) ? ' style="--ps-sway:' . esc_attr( (string) $sway_amt ) . '"' : '';
 
+	$enter_cls = 'fw-ps-enter ps-enter--' . $entrance;
+	if ( 'none' !== $exit_dir ) { $enter_cls .= ' ps-exit--' . $exit_dir; }
+	$exit_attr = ( 'none' === $exit_dir ) ? ' data-exit="none"' : '';
+
 	echo '<div class="fw-ps-layer" style="' . esc_attr( $ls ) . '">'
 		. '<div class="fw-ps-move" data-depth="' . esc_attr( (string) $depth ) . '">'
 		. '<div class="fw-ps-sway' . esc_attr( $sway_cls ) . '"' . $sway_style . '>'
-		. '<div class="fw-ps-enter ps-enter--' . esc_attr( $entrance ) . '" data-delay="' . esc_attr( (string) $delay ) . '">'
+		. '<div class="' . esc_attr( $enter_cls ) . '" data-delay="' . esc_attr( (string) $delay ) . '"' . $exit_attr . '>'
 		. '<img src="' . esc_url( $url ) . '" alt="" loading="lazy" decoding="async" class="' . ( $flip ? 'ps-flip' : '' ) . '">'
 		. '</div></div></div></div>';
 }
+
+if ( $pinned ) { echo '</div>'; } // .fw-ps-viewport
 
 echo '</div>';

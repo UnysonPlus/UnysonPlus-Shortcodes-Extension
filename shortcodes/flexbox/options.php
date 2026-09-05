@@ -640,6 +640,21 @@ $options = [
 							],
 						],
 					],
+					'col_start' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Grid Column Start', 'fw' ),
+						'desc'    => __( 'Which grid column this box begins at (1–12).', 'fw' ),
+						'help'    => __( 'Only inside a Grid parent. Lets you place an item at an exact column — e.g. start at 6 — WITHOUT leaving empty spacer cells before it. Combine with Width Override to set how many columns it spans. Auto lets the grid flow it into the next free cell. Per-device via the Phone / Tablet / Desktop tabs.', 'fw' ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'short-select',
+							'choices' => [
+								''   => __( 'Auto', 'fw' ),
+								'1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6',
+								'7' => '7', '8' => '8', '9' => '9', '10' => '10', '11' => '11', '12' => '12',
+							],
+						],
+					],
 				],
 			],
 		],
