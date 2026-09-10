@@ -258,12 +258,14 @@ if ( ! function_exists( 'fw_sc_design_enqueue_now' ) ) :
 	 *
 	 * Skin designs ship their layout CSS as static/css/design/<key>.css and rely on the
 	 * shortcode's static.php enqueuing it per instance from the
-	 * `fw_ext_shortcodes_enqueue_static:<tag>` action. That action is driven by WordPress's
-	 * `[tag …]` shortcode regex over the post content — which a large HTML-entity-encoded atts
-	 * value defeats (e.g. the steps `steps="…&quot;title&quot;:…"` blob on page-builder /
-	 * Site-Converter pages). When the regex fails to match the instance, the action never fires
-	 * and the skin CSS never loads, so a `cards` / `horizontal` design silently collapses to an
-	 * unstyled block stack. Calling this from the shortcode's view.php AFTER resolving $design
+	 * `fw_ext_shortcodes_enqueue_static:<tag>` action. That action is fired from a scan whose
+	 * shortcode regex is NOT recursive: `enqueue_shortcode_static()` re-scans inner content only one
+	 * level at a time, so on a deeply nested page-builder / Site-Converter tree it reaches the outer
+	 * elements and never the deeper ones. (Measured on a converted page: the scan runs over 1.94 MB of
+	 * builder-generated shortcodes and fires for 34 tags — `flexbox` among them, carrying an 8,784-char
+	 * entity-encoded atts blob — while a nested `testimonials` with a registered listener never fires.
+	 * So the encoded blob is not the cause; the nesting depth is.) When the action never fires the skin
+	 * CSS never loads, and a `cards` / `horizontal` design silently collapses to an unstyled block stack. Calling this from the shortcode's view.php AFTER resolving $design
 	 * closes that gap deterministically: it enqueues the skin CSS, and because render runs AFTER
 	 * wp_head (past the printed head batch) it prints the one handle inline — a body <link> is
 	 * valid and applies. Deduped per handle, so multiple instances / the head action can't double
@@ -292,9 +294,31 @@ if ( ! function_exists( 'fw_sc_design_enqueue_now' ) ) :
 			$candidate = '/shortcodes/' . $folder . $dir . $key . '.css';
 			if ( is_readable( $ext->get_declared_path( $candidate ) ) ) { $rel = $candidate; break; }
 		}
-		if ( $rel === '' ) { return; }
+		$base = 'fw-shortcode-' . str_replace( '_', '-', $tag ); // matches static.php base handle
 
-		$base   = 'fw-shortcode-' . str_replace( '_', '-', $tag ); // matches static.php base handle
+		// No BUILT-IN file for this key → it may be an installed design PACK, whose CSS/JS live in
+		// uploads and are addressed by URI rather than by a path under the extension. Those are
+		// normally enqueued by fw_sc_design_enqueue() from the same per-instance action that the
+		// atts-blob regex defeats, so without this fallback a pack design never loads on a
+		// page-builder / Site-Converter page at all. Deduped by the same handle it would use.
+		if ( $rel === '' ) {
+			$designs = function_exists( 'fw_sc_designs' ) ? fw_sc_designs( $tag ) : array();
+			if ( ! isset( $designs[ $key ] ) ) { return; }
+			$d       = $designs[ $key ];
+			$phandle = $base . '-' . $key;
+			$version = $ext->manifest->get_version();
+			if ( ! empty( $d['css_uri'] ) && ! wp_style_is( $phandle, 'enqueued' ) && ! wp_style_is( $phandle, 'done' ) ) {
+				wp_enqueue_style( $phandle, $d['css_uri'], array( $base ), $version );
+				if ( did_action( 'wp_head' ) ) { wp_print_styles( $phandle ); }
+			}
+			if ( ! empty( $d['js_uri'] ) && ! wp_script_is( $phandle, 'enqueued' ) && ! wp_script_is( $phandle, 'done' ) ) {
+				$deps = array_merge( array_values( (array) $d['vendor_deps'] ), array( $base ) );
+				wp_enqueue_script( $phandle, $d['js_uri'], $deps, $version, true );
+				if ( did_action( 'wp_footer' ) ) { wp_print_scripts( $phandle ); }
+			}
+			return;
+		}
+
 		$handle = $base . '-design-' . $key;
 		if ( wp_style_is( $handle, 'enqueued' ) || wp_style_is( $handle, 'done' ) ) { return; }
 		wp_enqueue_style( $handle, $ext->get_declared_URI( $rel ), array( $base ), $ext->manifest->get_version() );

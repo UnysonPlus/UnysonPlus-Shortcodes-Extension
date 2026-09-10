@@ -34,6 +34,66 @@ $options = [
                     ],
                 ],
             ],
+            'crop' => [
+                'type'    => 'group',
+                'options' => [
+                    'image_ratio' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Aspect Ratio', 'fw' ),
+                        'desc'    => __( 'Crop the image into a fixed ratio. Leave as Original to keep the photo\'s own shape.', 'fw' ),
+                        'help'    => __( 'When set, the image is placed in a box of this ratio and cropped to fill it (see Fit + Crop Position). Great for making a row of different-sized photos line up.', 'fw' ),
+                        'value'   => '',
+                        'choices' => [
+                            ''     => __( 'Original (no crop)', 'fw' ),
+                            '1/1'  => __( 'Square 1:1', 'fw' ),
+                            '4/3'  => __( 'Landscape 4:3', 'fw' ),
+                            '3/2'  => __( 'Landscape 3:2', 'fw' ),
+                            '16/9' => __( 'Widescreen 16:9', 'fw' ),
+                            '3/4'  => __( 'Portrait 3:4', 'fw' ),
+                            '2/3'  => __( 'Portrait 2:3', 'fw' ),
+                            '9/16' => __( 'Portrait 9:16', 'fw' ),
+                        ],
+                    ],
+                    'image_fit' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Fit', 'fw' ),
+                        'desc'    => __( 'Cover fills the box and crops the overflow; Contain fits the whole image (may letterbox). Only applies when an Aspect Ratio is set.', 'fw' ),
+                        'value'   => 'cover',
+                        'choices' => [
+                            'cover'   => __( 'Cover (crop to fill)', 'fw' ),
+                            'contain' => __( 'Contain (fit whole image)', 'fw' ),
+                        ],
+                    ],
+                    'focal_position' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Crop Position', 'fw' ),
+                        'desc'    => __( 'Which part of the image to keep when cropping — like a background-image position. Only applies with Fit = Cover.', 'fw' ),
+                        'help'    => __( 'Pick the region you care about (e.g. Top for a face near the top). The crop keeps that area in view and trims the rest.', 'fw' ),
+                        'value'   => 'center center',
+                        'choices' => [
+                            'left top'      => __( 'Top Left', 'fw' ),
+                            'center top'    => __( 'Top', 'fw' ),
+                            'right top'     => __( 'Top Right', 'fw' ),
+                            'left center'   => __( 'Left', 'fw' ),
+                            'center center' => __( 'Center', 'fw' ),
+                            'right center'  => __( 'Right', 'fw' ),
+                            'left bottom'   => __( 'Bottom Left', 'fw' ),
+                            'center bottom' => __( 'Bottom', 'fw' ),
+                            'right bottom'  => __( 'Bottom Right', 'fw' ),
+                        ],
+                    ],
+                ],
+            ],
+            'caption_group' => [
+                'type'    => 'group',
+                'options' => [
+                    'caption' => [
+                        'type'  => 'text',
+                        'label' => __( 'Caption', 'fw' ),
+                        'desc'  => __( 'Optional caption shown beneath the image (wraps it in a semantic <figure>). Leave blank for none.', 'fw' ),
+                    ],
+                ],
+            ],
             'loading' => [
                 'type'    => 'group',
                 'options' => [
@@ -71,6 +131,15 @@ $options = [
                             'value' => '_self',
                             'label' => __('No', 'fw'),
                         ],
+                    ],
+                    'lightbox' => [
+                        'type'         => 'switch',
+                        'label'        => __( 'Lightbox (click to zoom)', 'fw' ),
+                        'desc'         => __( 'Open the full-size image in a lightbox overlay when clicked. Takes precedence over the Image Link above.', 'fw' ),
+                        'help'         => __( 'Best for photos you want visitors to inspect. Uses the shared, dependency-free lightbox. When on, the Image Link is ignored.', 'fw' ),
+                        'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                        'left-choice'  => [ 'value' => 'no',  'label' => __( 'No', 'fw' ) ],
+                        'value'        => 'no',
                     ],
                 ],
             ],

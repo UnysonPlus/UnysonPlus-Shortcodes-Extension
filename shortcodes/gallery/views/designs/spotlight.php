@@ -11,7 +11,8 @@ $side = $g_dp( 'feature_side', 'left' );
 if ( $side !== 'right' ) {
 	$side = 'left';
 }
-$cols = max( 1, (int) $g_dp( 'columns', 3 ) );
+// See metro.php — $g_dp('columns') is the multi-picker ARRAY; casting it to int yields 1.
+$cols = max( 1, (int) $g_cols( 3 )['desktop'] );
 $gap  = sc_gallery_gap_css( $g_dp( 'gap', '3' ) );
 
 $feature = $items[0];

@@ -39,6 +39,10 @@
 @media (max-width: 720px) {
 	.fw-steps--design-horizontal, .fw-steps--design-circles, .fw-steps--design-cards { flex-direction: column; }
 	.fw-steps--design-horizontal .fw-steps__item, .fw-steps--design-circles .fw-steps__item { text-align: left; display: grid; grid-template-columns: var(--st-size) 1fr; gap: 0 1rem; padding: 0 0 1.5rem; }
+	/* Marker = None → no marker element is rendered, so the body would occupy the reserved marker
+	   track. Collapse to one column (same reason as design/vertical.css). */
+	.fw-steps--marker-none.fw-steps--design-horizontal .fw-steps__item,
+	.fw-steps--marker-none.fw-steps--design-circles .fw-steps__item { grid-template-columns: 1fr; }
 	.fw-steps--design-horizontal .fw-steps__marker, .fw-steps--design-circles .fw-steps__marker { margin: 0; --st-size: 48px; }
 	.fw-steps--design-horizontal .fw-steps__connector { display: none; }
 

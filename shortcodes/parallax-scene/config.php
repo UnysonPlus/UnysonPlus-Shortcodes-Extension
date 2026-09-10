@@ -15,7 +15,7 @@ $cfg = array();
 $cfg['page_builder'] = array(
 	'title'       => __( 'Parallax Scene', 'fw' ),
 	'description' => __( 'A layered foreground/background scene — stacked images that drift at different depths on scroll, reveal on entrance, and gently sway. Great for art-directed heroes and diorama backdrops.', 'fw' ),
-	'tab'         => __( 'Media Elements', 'fw' ),
+	'tab'         => __( 'Animation Engine', 'fw' ),
 	'popup_size'  => 'large',
 
 	'title_template' => '

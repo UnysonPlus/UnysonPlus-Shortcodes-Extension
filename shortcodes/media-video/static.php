@@ -1,10 +1,8 @@
 <?php if ( ! defined( 'FW' ) ) { die( 'Forbidden' ); }
 
-// The `.ratio*` aspect-ratio container + `.mx-auto` helper live in the builder's
-// frontend-grid sheet (shipped in place of Bootstrap).
+// Self-contained: the aspect-ratio box + centering are defined in media-video.css,
+// so this element no longer pulls in the builder's global Bootstrap-style grid sheet.
 if ( ! is_admin() ) {
-	wp_enqueue_style( 'fw-ext-builder-frontend-grid' );
-
 	$uri = fw_get_framework_directory_uri( '/extensions/shortcodes/shortcodes/media-video/static' );
 	$ext = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
 	$ver = ( $ext && $ext->manifest ) ? $ext->manifest->get_version() : false;

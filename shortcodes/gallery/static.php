@@ -18,13 +18,19 @@ wp_enqueue_style(
 	array( 'fw-ext-builder-frontend-grid' ),
 	$g_version
 );
-wp_enqueue_script(
-	'fw-shortcode-gallery',
-	$shortcodes_extension->get_declared_URI( '/shortcodes/gallery/static/js/lightbox.js' ),
-	array(),
-	$g_version,
-	true
-);
+// Shared lightbox (overlay CSS + delegated-handler JS), now a neutral `fw-lightbox`
+// handle so Media Image and future shortcodes reuse the SAME file (loaded once).
+if ( function_exists( 'sc_enqueue_lightbox' ) ) {
+	sc_enqueue_lightbox();
+} else {
+	wp_enqueue_style( 'fw-lightbox', $shortcodes_extension->get_declared_URI( '/shortcodes/gallery/static/css/lightbox.css' ), array(), $g_version );
+	wp_enqueue_script( 'fw-lightbox', $shortcodes_extension->get_declared_URI( '/shortcodes/gallery/static/js/lightbox.js' ), array(), $g_version, true );
+}
+// Keep the legacy base SCRIPT handle alive as a dependency-only alias: gallery design
+// JS (fw_sc_design_enqueue) deps on `fw-shortcode-gallery`, so it must resolve — now it
+// simply chains to the shared lightbox instead of pointing at lightbox.js directly.
+wp_register_script( 'fw-shortcode-gallery', '', array( 'fw-lightbox' ), $g_version, true );
+wp_enqueue_script( 'fw-shortcode-gallery' );
 
 /* ---------------------------------------------------------------------------
  * Per-design assets (registry-driven). A design's OWN css/js — and Splide for

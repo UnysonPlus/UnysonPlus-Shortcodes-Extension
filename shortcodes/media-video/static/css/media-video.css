@@ -1,14 +1,46 @@
 /* Media Video — self-hosted <video> + oEmbed lazy-load facade.
-   The .ratio container already absolutely-fills its direct child (Bootstrap ratio),
-   so both the <video> and the facade button fill the aspect box. */
+   Self-contained: the aspect-ratio box (`.ratio` + `.ratio-*`) and the centering are
+   defined here, so this element no longer depends on the builder's global Bootstrap
+   grid sheet (its `.ratio*` / `.mx-auto` helpers). */
 
-/* Give the wrapper a DEFINITE width. The inner video is `position:absolute` inside the
-   `.ratio` box, so `.ratio` has no in-flow content — without an explicit width the wrapper
-   collapses to 0 (and `padding-top:%` of a 0-width box is 0) inside a shrink-to-fit / centered
-   flex column, hiding the video entirely. `width:100%` + the inline `max-width` + `mx-auto`
-   keeps it responsive and centered. */
-.video-wrapper { width: 100%; }
+/* Give the wrapper a DEFINITE width, and center it (replaces `.mx-auto`). The inner
+   video is `position:absolute` inside the `.ratio` box, so `.ratio` has no in-flow
+   content — without an explicit width the wrapper collapses to 0 (and `padding-top:%`
+   of a 0-width box is 0) inside a shrink-to-fit / centered flex column, hiding the
+   video entirely. `width:100%` + the inline `max-width` + `margin-inline:auto` keeps
+   it responsive and centered. */
+.video-wrapper { width: 100%; margin-left: auto; margin-right: auto; }
 .video-wrapper .video-el { border: 0; background: #000; }
+
+/* Aspect-ratio box (replaces Bootstrap's `.ratio`): a padding-top spacer sizes the box
+   and the single media child (iframe / <video> / facade) is absolutely stretched to fill
+   it. `.video-ratiobox` sits EITHER on the wrapper itself (when the wrapper is bare — the
+   view merges the two to save a <div>) OR on a nested child (when the wrapper carries a
+   padding/background frame). The same rules work in both positions. data-ratio maps to
+   the padding via --vid-aspect. */
+.video-ratiobox { position: relative; width: 100%; }
+.video-ratiobox::before { content: ""; display: block; padding-top: var(--vid-aspect, 56.25%); }
+.video-ratiobox > * { position: absolute; inset: 0; width: 100%; height: 100%; }
+.video-ratiobox[data-ratio="16x9"] { --vid-aspect: 56.25%; }       /* 9/16 */
+.video-ratiobox[data-ratio="4x3"]  { --vid-aspect: 75%; }          /* 3/4 */
+.video-ratiobox[data-ratio="1x1"]  { --vid-aspect: 100%; }         /* 1/1 */
+.video-ratiobox[data-ratio="21x9"] { --vid-aspect: 42.8571%; }     /* 9/21 */
+.video-ratiobox[data-ratio="9x16"] { --vid-aspect: 177.7778%; }    /* 16/9 */
+.video-ratiobox[data-ratio="3x4"]  { --vid-aspect: 133.3333%; }    /* 4/3 */
+
+/* SECTION-BACKGROUND mode ("Use as Section Background" = Yes). The shared `.sc-bg-fill` runtime
+   (sc-bg-fill.css/js) moves this wrapper into the nearest <section> as an absolute, edge-to-edge
+   backdrop and lifts the section's content above it. Here we neutralise the Max-Width cap AND the
+   aspect-ratio box so the <video> FILLS the whole section (object-fit: cover) instead of sitting in
+   a centered 16:9 box — delivering the full-bleed background/hero clip the options describe. */
+.video-wrapper.video--bg { max-width: none !important; width: 100%; height: 100%; }
+/* Neutralise the aspect box whether it's the wrapper (bare → merged) or a nested child. */
+.video-wrapper.video--bg.video-ratiobox,
+.video-wrapper.video--bg .video-ratiobox { height: 100%; }
+.video-wrapper.video--bg.video-ratiobox::before,
+.video-wrapper.video--bg .video-ratiobox::before { content: none; padding-top: 0; display: none; }
+.video-wrapper.video--bg .video-el,
+.video-wrapper.video--bg .video-facade { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
 /* Lazy-load facade: a poster (background-image) with a centered play button. */
 .video-wrapper .video-facade {

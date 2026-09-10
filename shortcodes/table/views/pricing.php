@@ -6,8 +6,6 @@
  * @var array $atts
  */
 
-$class_width = 'fw-col-sm-' . ceil( 12 / count( $atts['table']['cols'] ) );
-
 /** @var FW_Extension_Shortcodes $shortcodes */
 $shortcodes = fw_ext( 'shortcodes' );
 /** @var FW_Shortcode_Table $table */
@@ -17,11 +15,25 @@ $table = $shortcodes->get_shortcode( 'table' );
 $atts['base_class']       = 'pricing';
 $atts['unique_id_prefix'] = 'pri-';
 $attr = sc_build_wrapper_attr( $atts );
+
+// CSS-grid columns (replaces the Bootstrap-style fw-col-sm-N on each package).
+// One track per column: a description/label column stays narrow; plan columns
+// share the remaining space equally. Emitted as a custom property the pricing
+// CSS reads, so the whole layout is self-contained (no .fw- grid classes) and
+// collapses to a single column on mobile.
+$pt_tracks = array();
+foreach ( $atts['table']['cols'] as $col ) {
+	$pt_tracks[] = ( isset( $col['name'] ) && $col['name'] === 'desc-col' )
+		? 'minmax(0, 225px)'
+		: 'minmax(0, 1fr)';
+}
+$pt_decl       = '--pt-tracks:' . implode( ' ', $pt_tracks ) . ';';
+$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ) ? rtrim( $attr['style'], '; ' ) . ';' . $pt_decl : $pt_decl;
 ?>
 
 <div <?php echo fw_attr_to_html( $attr ); ?>>
 	<?php foreach ( $atts['table']['cols'] as $col_key => $col ): ?>
-        <div class="package-wrap <?php echo esc_attr( $class_width . ' ' . $col['name'] ); ?> ">
+        <div class="package-wrap <?php echo esc_attr( $col['name'] ); ?>">
             <div class="package">
 				<?php foreach ( $atts['table']['rows'] as $row_key => $row ): ?>
 					<?php if ( $col['name'] == 'desc-col' ) : ?>

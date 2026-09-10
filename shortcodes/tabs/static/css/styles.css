@@ -81,9 +81,12 @@
     font-weight: 500;
 }
 
-/* --- Vertical tabs (uses the .fw- grid) ---------------------------------- */
-.tabs-container .fw-row {
-    --bs-gutter-x: 0; /* remove default padding between columns */
+/* --- Vertical tabs (CSS grid — was the .fw- grid) ------------------------ */
+.tabs-container .tabs-vertical {
+    display: grid;
+    grid-template-columns: 1fr 3fr; /* nav | panes (was fw-col-3 / fw-col-9) */
+    gap: 1rem;
+    align-items: start;
 }
 .tabs-container .nav.flex-column {
     flex-direction: column;
@@ -119,9 +122,8 @@
     padding-right: 0;
     padding-bottom: 0;
 }
-.tabs-container .fw-row .tab-content {
-    margin-top: 0; /* remove margin when vertical */
-    margin-left: 1rem;
+.tabs-container .tabs-vertical .tab-content {
+    margin-top: 0; /* vertical: the grid gap handles nav → panes spacing, no side margin needed */
 }
 
 /* Tab panes — show/hide is what previously came from Bootstrap. */
@@ -201,7 +203,15 @@
  * other (feature / product showcase). The list is a vertical nav; each pane
  * is the tab's image + an optional caption.
  * ====================================================================== */
-.tabs-container--media .tabs-media__row { align-items: center; }
+/* Media row — CSS grid (was fw-row / fw-col-md-4 / fw-col-md-8). List 1/3, media 2/3;
+   the ratio flips for Image Left. The view still swaps DOM order, so the tracks match. */
+.tabs-container--media .tabs-media__row {
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	gap: 1.5rem;
+	align-items: center;
+}
+.tabs-container--media-left .tabs-media__row { grid-template-columns: 2fr 1fr; }
 .tabs-container--media .nav { border: 0; gap: .25rem; }
 .tabs-container--media .nav-link {
 	width: 100%;
@@ -248,11 +258,9 @@
 .tabs-container--media .tab-pane.fade.show { opacity: 1; }
 
 @media (max-width: 767.98px) {
-	/* Stack list above the image on phones regardless of Image Side. */
-	.tabs-container--media .tabs-media__row { display: block; }
-	.tabs-container--media .tabs-media__list,
-	.tabs-container--media .tabs-media__media { width: 100%; max-width: 100%; }
-	.tabs-container--media .tabs-media__media { margin-top: 1rem; }
+	/* Stack into a single column on phones (grid row-gap provides the spacing). */
+	.tabs-container--media .tabs-media__row,
+	.tabs-container--media-left .tabs-media__row { grid-template-columns: 1fr; }
 }
 
 /* =============================================================================

@@ -47,10 +47,11 @@ if ( ! function_exists( 'sc_steps_render' ) ) {
 		}
 
 		// Render-time skin-CSS enqueue (robust). static.php enqueues design/<key>.css from the
-		// [steps] static-scan action, but that regex is defeated by the huge HTML-entity-encoded
-		// `steps="…"` atts blob on builder / Site-Converter pages, so the skin CSS silently never
-		// loads and `cards` / `horizontal` collapse to an unstyled block stack. Enqueue it here now
-		// that $design is resolved. Deduped, so the head action (when it does fire) can't double it.
+		// [steps] static-scan action, but that scan's shortcode regex is NOT recursive — on a deeply
+		// nested builder / Site-Converter tree it only reaches the outer elements, so the action never
+		// fires here and the skin CSS silently never loads, leaving `cards` / `horizontal` an unstyled
+		// block stack. Enqueue it here now that $design is resolved. Deduped, so the head action
+		// (when it does fire) can't double it.
 		if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'steps', $design ); }
 
 		$steps = sc_get( 'steps', $atts, array() );

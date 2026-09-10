@@ -3,6 +3,65 @@ if ( ! defined( 'FW' ) ) {
     die( 'Forbidden' );
 }
 
+/* ---------------------------------------------------------------------------
+ * Render-time static enqueue (robust).
+ *
+ * static.php enqueues the per-card CSS, the per-mode CSS and the behaviour JS from the
+ * per-instance `fw_ext_shortcodes_enqueue_static:posts` action. That action is fired from a scan
+ * whose shortcode regex is NOT recursive — it re-scans inner content one level at a time, so on a
+ * deeply nested page-builder / Site-Converter tree it only reaches the outer elements and never
+ * fires for this instance. A Slider then loses BOTH its layout CSS and the JS that drives it
+ * (AJAX Load More / Infinite Scroll / Live Filters lose their JS too). Re-run the same three
+ * enqueues here, now that the values are resolved.
+ * Handles match static.php, and wp_enqueue_* dedupes, so the head action can't double them.
+ * ------------------------------------------------------------------------- */
+if ( ! function_exists( 'sc_posts_enqueue_now' ) ) :
+    function sc_posts_enqueue_now( $style, $mode, $ptype, $filters ) {
+        if ( ! function_exists( 'fw_ext' ) || ! function_exists( 'wp_enqueue_style' ) ) { return; }
+        $ext = fw_ext( 'shortcodes' );
+        if ( ! $ext ) { return; }
+        $base = dirname( dirname( __FILE__ ) );
+        $ver  = $ext->manifest->get_version();
+
+        foreach ( array( 'card' => $style, 'mode' => $mode ) as $kind => $key ) {
+            $key = sanitize_file_name( (string) $key );
+            if ( $key === '' ) { continue; }
+            $handle = 'fw-shortcode-posts-' . $kind . '-' . $key;
+            if ( wp_style_is( $handle, 'enqueued' ) || wp_style_is( $handle, 'done' ) ) { continue; }
+            if ( ! file_exists( $base . '/static/css/' . $kind . '/' . $key . '.css' ) ) { continue; }
+            wp_enqueue_style(
+                $handle,
+                $ext->get_declared_URI( '/shortcodes/posts/static/css/' . $kind . '/' . $key . '.css' ),
+                array( 'fw-shortcode-posts' ),
+                $ver
+            );
+            // Render runs after wp_head, so the head batch is already printed — print this one inline.
+            if ( did_action( 'wp_head' ) ) { wp_print_styles( $handle ); }
+        }
+
+        $needs_js = ( $mode === 'slider' )
+            || in_array( $ptype, array( 'ajax_loadmore', 'infinite' ), true )
+            || $filters;
+        if ( ! $needs_js ) { return; }
+        if ( ! wp_script_is( 'fw-shortcode-posts', 'enqueued' ) && ! wp_script_is( 'fw-shortcode-posts', 'done' ) ) {
+            wp_enqueue_script( 'fw-shortcode-posts' );
+        }
+        // static.php keeps its OWN `static $localized` flag, so a local one is not enough — both would
+        // fire and the page would carry TWO `var fwScPosts` blocks. Ask WP_Scripts whether the data is
+        // already attached to the handle instead; that is shared by both paths.
+        $reg = function_exists( 'wp_scripts' ) ? wp_scripts() : null;
+        $has = ( $reg && method_exists( $reg, 'get_data' ) ) ? $reg->get_data( 'fw-shortcode-posts', 'data' ) : false;
+        if ( ! $has || strpos( (string) $has, 'fwScPosts' ) === false ) {
+            wp_localize_script( 'fw-shortcode-posts', 'fwScPosts', array(
+                'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+                'nonce'   => wp_create_nonce( 'fw_sc_posts' ),
+            ) );
+        }
+        // Late enqueue lands after wp_footer's script batch on some themes — print it here.
+        if ( did_action( 'wp_footer' ) ) { wp_print_scripts( 'fw-shortcode-posts' ); }
+    }
+endif;
+
 /**
  * @var array $atts
  */
@@ -163,6 +222,9 @@ if ( ! function_exists( 'sc_posts_normalize_atts' ) ) {
 
         /* Read-more style (was `readmore_style` → now `readmore/style`). */
         $atts['readmore_style'] = sc_get( 'readmore/style', $atts, sc_get( 'readmore_style', $atts, 'text-link' ) );
+
+        // Every value the per-instance static action would have needed is resolved by here.
+        sc_posts_enqueue_now( $style, $mode, $ptype, ( isset( $atts['live_filters'] ) && $atts['live_filters'] === 'yes' ) );
 
         return $atts;
     }
@@ -967,7 +1029,16 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
             } );
         }
 
-        /* Render */
+        /* Render. The .posts__layout-wrap (flex row) + .posts__main (main column) only
+           exist to sit a sidebar filter bar beside the grid — so they're emitted ONLY for
+           the left/right-sidebar layouts. Without a sidebar they'd be two empty wrappers
+           (layout-wrap is display:block, main is a no-op flex child), so the grid/pagination
+           go straight into .posts instead — two fewer nesting levels in the common case. */
+        $has_sidebar = $live_filters && in_array( $filters_pos, [ 'left-sidebar', 'right-sidebar' ], true );
+        $lw_open   = $has_sidebar ? '<div class="posts__layout-wrap posts__layout-wrap--' . esc_attr( $filters_pos ) . '">' : '';
+        $lw_close  = $has_sidebar ? '</div>' : '';
+        $main_open = $has_sidebar ? '<div class="posts__main">' : '';
+        $main_close = $has_sidebar ? '</div>' : '';
         ob_start();
         ?>
         <div <?php echo fw_attr_to_html( $attr ); ?>>
@@ -976,13 +1047,13 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
                 <?php echo sc_posts_render_filter_bar( $atts ); ?>
             <?php endif; ?>
 
-            <div class="posts__layout-wrap posts__layout-wrap--<?php echo esc_attr( $filters_pos ); ?>">
+            <?php echo $lw_open; ?>
 
                 <?php if ( $live_filters && in_array( $filters_pos, [ 'left-sidebar' ], true ) ) : ?>
                     <?php echo sc_posts_render_filter_bar( $atts ); ?>
                 <?php endif; ?>
 
-                <div class="posts__main">
+                <?php echo $main_open; ?>
 
                     <?php if ( $pag_type === 'numeric' && in_array( $pag_pos, [ 'above-grid', 'both' ], true ) ) : ?>
                         <?php echo sc_posts_render_pagination( $query, $pag_align ); ?>
@@ -1013,12 +1084,12 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
                         <?php endif; ?>
 
                     <?php endif; ?>
-                </div>
+                <?php echo $main_close; ?>
 
                 <?php if ( $live_filters && $filters_pos === 'right-sidebar' ) : ?>
                     <?php echo sc_posts_render_filter_bar( $atts ); ?>
                 <?php endif; ?>
-            </div>
+            <?php echo $lw_close; ?>
         </div>
         <?php
         wp_reset_postdata();

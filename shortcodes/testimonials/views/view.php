@@ -52,6 +52,13 @@ if ( function_exists( 'fw_sc_design_resolve' ) ) {
     if ( ! is_string( $design ) || ! isset( $ts_designs[ $design ] ) ) { $design = 'default'; }
     $design_file = dirname( __FILE__ ) . '/designs/' . $design . '.php';
 }
+// Render-time enqueue of the resolved design's CSS (static/css/design[s]/<key>.css). The
+// per-instance `fw_ext_shortcodes_enqueue_static:testimonials` action is fired from a scan whose
+// shortcode regex is NOT recursive, so on a deeply nested page-builder / Site-Converter tree it
+// only reaches the outer elements — the action never fires for this one and the design CSS
+// silently never loads, collapsing the design to an unstyled block stack. Deduped by handle.
+if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'testimonials', $design ); }
+
 
 /* Reader for options that moved INTO the per-design multi-picker: prefer the
    new nested path (design_settings/<design>/<sub>), fall back to the legacy
@@ -70,7 +77,12 @@ if ( ! $design_file || ! file_exists( $design_file ) ) {
 $atts['base_class']       = 'testimonials';
 $atts['unique_id_prefix'] = 'ts-';
 $attr = sc_build_wrapper_attr( $atts );
-$attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' design-' . $design );
+// Only tag the wrapper with design-<key> for NON-default designs — that class only
+// exists to scope a design's own CSS, and the default design has none, so
+// `design-default` was dead weight in the markup.
+if ( $design !== 'default' ) {
+	$attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' design-' . $design );
+}
 
 /* Content */
 $testimonials = sc_get( 'testimonials', $atts, sc_get( 'group/testimonials', $atts, [] ) );
@@ -91,7 +103,7 @@ $text_align_raw  = sc_get( 'text_align', $atts, '' );
 $text_align      = ( is_string( $text_align_raw ) && strpos( $text_align_raw, 'text-' ) === 0 )
 	? $text_align_raw
 	: sc_alignment_class( $text_align_raw );
-$container_cls   = sc_get( 'container_type', $atts, 'container' ); // '' = None → no wrapper, fills the parent (e.g. nested in a section)
+$container_cls   = sc_get( 'container_type', $atts, '' ); // default None → no wrapper, fills the parent (the section/column owns width, like every other element). Container/Fluid stay available as an escape hatch for full-width placements with no containing section.
 $avatar_shape    = sc_get( 'avatar_shape', $atts, 'rounded-circle' );
 $avatar_size     = sc_get( 'avatar_size', $atts, 'avatar-md' );
 $show_rating     = sc_get( 'show_rating', $atts, 'yes' ) === 'yes';
@@ -173,8 +185,60 @@ $bubble_columns    = (int) sc_get( 'design_settings/bubble/bubble_columns', $att
 /* Map saved Bootstrap grid/container values onto the plugin's self-contained
    .fw- grid (the plugin no longer ships Bootstrap). Saved values are unchanged
    in the DB — only the emitted class names are translated here. */
-$container_cls = ( $container_cls === 'container-fluid' ) ? 'fw-container-fluid' : ( '' === $container_cls ? '' : 'fw-container' );
+$container_cls = ( $container_cls === 'container-fluid' ) ? 'testimonials-container--fluid' : ( '' === $container_cls ? '' : 'testimonials-container' );
 $grid_columns  = str_replace( 'row-cols-', 'fw-row-cols-', (string) $grid_columns );
+
+/* Native CSS-grid values for the Classic "grid" layout (default.php). The grid
+   used to emit Bootstrap-style .fw-row / .fw-row-cols-N / .fw-col markup; it now
+   renders as a self-contained CSS grid driven by these. `$grid_cols_n` is the
+   desktop column count (1–6, parsed from the saved row-cols value); the CSS
+   collapses it to 1 col on phones and 2 on tablets so a 3/4-up grid is no longer
+   unusable on small screens (the old .fw-row-cols-* had no breakpoints). The gap
+   maps the saved Bootstrap gutter (g-0..g-5) to a rem value; empty = Bootstrap's
+   1.5rem row default. */
+$grid_cols_n = 3;
+if ( preg_match( '/(\d+)/', (string) $grid_columns, $m ) ) { $grid_cols_n = max( 1, min( 6, (int) $m[1] ) ); }
+$ts_gutter_map = array( 'g-0' => '0', 'g-1' => '0.25rem', 'g-2' => '0.5rem', 'g-3' => '1rem', 'g-4' => '1.5rem', 'g-5' => '3rem' );
+$grid_gap_css  = isset( $ts_gutter_map[ $gutter ] ) ? $ts_gutter_map[ $gutter ] : '1.5rem';
+
+/* Bare-wrapper merge (same condition as Image + Content). The element normally
+   renders an outer styling wrapper (.testimonials, carrying id/classes/colors/
+   spacing/animation) AND an inner width container (.testimonials-container). When
+   the element has NO styling of its own — nothing that sc_wrapper_is_bare() flags —
+   the two collapse into ONE div (the container class rides on the wrapper), so a
+   plain testimonials block is a single div, not two. When any styling IS set the
+   split is kept, so a wrapper background/padding can still span wider than the
+   max-width container. "None" (no container) emits no inner div at all (it used to
+   emit an empty <div class="">). Every design template opens/closes the container
+   through $ts_container_open / $ts_container_close, so this covers all designs. */
+$ts_is_bare = function_exists( 'sc_wrapper_is_bare' ) ? sc_wrapper_is_bare( $atts ) : false;
+if ( $container_cls === '' ) {
+	$ts_container_open  = '';
+	$ts_container_close = '';
+} elseif ( $ts_is_bare ) {
+	$attr['class']      = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' ' . $container_cls );
+	$ts_container_open  = '';
+	$ts_container_close = '';
+} else {
+	$ts_container_open  = '<div class="' . esc_attr( $container_cls ) . '">';
+	$ts_container_close = '</div>';
+}
+
+/* Grid-into-wrapper merge (the Image + Content pattern). When the Classic "grid"
+   layout's grid would be a DIRECT child of the wrapper — i.e. there is no separate
+   width-container div between them ($ts_container_open === '') — fold the grid onto
+   the wrapper itself: the wrapper gets .testimonials-grid + data-cols + the --tg-gap
+   style, and default.php emits the cells directly (no child grid div). One fewer
+   wrapper for the common case. Only the default design's grid layout can merge; the
+   carousel/single layouts and the other designs keep their own inner structure. */
+$ts_grid_merged = false;
+if ( $design === 'default' && $layout_choice === 'grid' && $ts_container_open === '' ) {
+	$attr['class']      = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' testimonials-grid' );
+	$attr['data-cols']  = (string) $grid_cols_n;
+	$gap_decl           = '--tg-gap:' . $grid_gap_css . ';';
+	$attr['style']      = isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' . $gap_decl : $gap_decl;
+	$ts_grid_merged     = true;
+}
 
 /* Dispatch to the chosen design template (inherits all of the above). */
 include $design_file;

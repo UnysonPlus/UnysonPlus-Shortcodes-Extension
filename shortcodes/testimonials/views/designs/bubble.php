@@ -12,26 +12,35 @@
  */
 
 if ( empty( $testimonials ) ) {
-	echo '<div ' . fw_attr_to_html( $attr ) . '><div class="' . esc_attr( $container_cls ) . '"><div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div></div></div>';
+	echo '<div ' . fw_attr_to_html( $attr ) . '>' . $ts_container_open . '<div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div>' . $ts_container_close . '</div>';
 	return;
 }
 
 $cols = max( 1, min( 4, (int) $bubble_columns ) );
 ?>
-<div <?php echo fw_attr_to_html( $attr ); ?>>
-	<div class="<?php echo esc_attr( $container_cls ); ?>">
+<div <?php echo fw_attr_to_html( $attr ); ?>><?php echo $ts_container_open; ?>
 
 		<div class="ts-bubble-grid ts-bubble-grid--cols-<?php echo (int) $cols; ?>">
 			<?php foreach ( $testimonials as $t ):
 				$f      = sc_testimonial_fields( $t );
+				$rating = ( $show_rating && function_exists( 'sc_render_rating' ) ) ? sc_render_rating( $f['rating'] ) : '';
 				?>
-				<div class="fw-tst-item <?php echo esc_attr( $box_style ); ?> ts-bubble">
+				<div class="fw-tst-item ts-bubble">
 					<blockquote class="ts-bubble__quote testimonial-quote <?php echo esc_attr( $quote_class_extra ); ?>">
 						<?php echo sc_testimonial_quote_html( $f['content'] ); ?>
 					</blockquote>
-					<div class="ts-bubble__author"><?php echo sc_render_card( $t, array_merge( $card_args, array( 'filter_slots' => $card_filter ) ) ); ?></div>
+					<figcaption class="ts-bubble__author">
+						<?php if ( $f['avatar'] ) : ?>
+							<img class="ts-bubble__avatar <?php echo esc_attr( $avatar_shape ); ?>" src="<?php echo esc_url( $f['avatar'] ); ?>" alt="<?php echo esc_attr( $f['author_name'] ); ?>" loading="lazy" decoding="async" />
+						<?php endif; ?>
+						<span class="ts-bubble__byline">
+							<?php if ( $f['author_name'] ) : ?><span class="testimonial-author <?php echo esc_attr( $author_name_class_extra ); ?>"><?php echo esc_html( $f['author_name'] ); ?></span><?php endif; ?>
+							<?php if ( $f['author_job'] ) : ?><span class="testimonial-job <?php echo esc_attr( $author_job_class_extra ); ?>"><?php echo esc_html( $f['author_job'] ); ?></span><?php endif; ?>
+							<?php if ( $rating ) : ?><span class="ts-bubble__rating"><?php echo $rating; ?></span><?php endif; ?>
+						</span>
+					</figcaption>
 				</div>
 			<?php endforeach; ?>
 		</div>
-	</div>
+<?php echo $ts_container_close; ?>
 </div>

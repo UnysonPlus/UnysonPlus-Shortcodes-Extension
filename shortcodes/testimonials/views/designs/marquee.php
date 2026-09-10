@@ -12,7 +12,7 @@
  */
 
 if ( empty( $testimonials ) ) {
-	echo '<div ' . fw_attr_to_html( $attr ) . '><div class="' . esc_attr( $container_cls ) . '"><div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div></div></div>';
+	echo '<div ' . fw_attr_to_html( $attr ) . '>' . $ts_container_open . '<div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div>' . $ts_container_close . '</div>';
 	return;
 }
 
@@ -52,17 +52,16 @@ foreach ( $testimonials as $t ) {
 	$items_html .= $render_card( $t );
 }
 ?>
-<div <?php echo fw_attr_to_html( $attr ); ?>>
-	<div class="<?php echo esc_attr( $container_cls ); ?>">
-	</div>
-	<?php
-	$ts_marquee_dur = ( $marquee_speed === 'slow' ) ? '60s' : ( ( $marquee_speed === 'fast' ) ? '25s' : '40s' );
-	$ts_marquee_dir = ( $marquee_direction === 'right' ) ? ' ts-marquee--ltr' : ' ts-marquee--rtl';
-	?>
+<?php
+$ts_marquee_dur = ( $marquee_speed === 'slow' ) ? '60s' : ( ( $marquee_speed === 'fast' ) ? '25s' : '40s' );
+$ts_marquee_dir = ( $marquee_direction === 'right' ) ? ' ts-marquee--ltr' : ' ts-marquee--rtl';
+?>
+<div <?php echo fw_attr_to_html( $attr ); ?>><?php echo $ts_container_open; ?>
 	<div class="ts-marquee<?php echo $ts_marquee_dir; ?>" aria-label="<?php echo esc_attr( __( 'Testimonials', 'fw' ) ); ?>">
 		<div class="ts-marquee__track" style="--ts-marquee-duration: <?php echo esc_attr( $ts_marquee_dur ); ?>;">
 			<?php echo $items_html; /* original set */ ?>
 			<?php echo $items_html; /* duplicate for seamless loop (aria-hidden) */ ?>
 		</div>
 	</div>
+<?php echo $ts_container_close; ?>
 </div>

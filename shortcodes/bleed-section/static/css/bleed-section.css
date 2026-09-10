@@ -40,9 +40,46 @@
 	pointer-events: none;
 }
 
+/* Width wrapper — self-contained replacement for the Bootstrap-style .fw-container.
+   Constrains the content/spacer grid to the site width (so the text lines up with the
+   rest of the page) while the image half bleeds to the viewport edge. The --fluid
+   modifier (Full Width) drops the max-width. */
 .bleed-section__container {
 	position: relative;
 	z-index: 2;
+	width: 100%;
+	margin-right: auto;
+	margin-left: auto;
+	padding-right: 12px;
+	padding-left: 12px;
+	box-sizing: border-box;
+}
+.bleed-section__container--fluid { max-width: none; }
+@media (min-width: 576px)  { .bleed-section__container:not(.bleed-section__container--fluid) { max-width: 540px; } }
+@media (min-width: 768px)  { .bleed-section__container:not(.bleed-section__container--fluid) { max-width: 720px; } }
+@media (min-width: 992px)  { .bleed-section__container:not(.bleed-section__container--fluid) { max-width: 960px; } }
+@media (min-width: 1200px) { .bleed-section__container:not(.bleed-section__container--fluid) { max-width: 1140px; } }
+@media (min-width: 1400px) { .bleed-section__container:not(.bleed-section__container--fluid) { max-width: 1320px; } }
+
+/* The content|spacer split — native CSS grid (was .fw-row + fw-col-md-N). Track
+   sizes come from --bs-cols (e.g. "5fr 7fr"), set inline per side. Desktop only;
+   on mobile the section stacks (below) and the spacer is hidden. */
+@media (min-width: 768px) {
+	.bleed-section__grid {
+		display: grid;
+		grid-template-columns: var(--bs-cols, 5fr 7fr);
+	}
+}
+
+/* Content breathing room. The old fw-col carried a gutter; the grid does not, so
+   the text otherwise hugged the container edge on the outer side and ran right up
+   to the image on the inner side. A symmetric horizontal padding gives space on
+   both — from the page edge and from the bleed image. (Vertical padding is the
+   Content Padding option, set inline as padding-top/bottom, so it never clashes.) */
+.bleed-section__content {
+	padding-inline: clamp(1.5rem, 4vw, 3.5rem);
+	box-sizing: border-box;
+	min-width: 0;
 }
 
 /* Minimum-height (hero) — stretch the container / row so Content Vertical Align
@@ -50,7 +87,7 @@
  * the halves stack in normal flow. */
 @media (min-width: 768px) {
 	.bleed-section--minh > .bleed-section__container,
-	.bleed-section--minh > .bleed-section__container > .fw-row {
+	.bleed-section--minh > .bleed-section__container > .bleed-section__grid {
 		min-height: inherit;
 	}
 }

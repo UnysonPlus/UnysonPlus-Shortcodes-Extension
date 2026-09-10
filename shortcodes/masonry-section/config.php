@@ -4,7 +4,7 @@
 
 $cfg = array(
 	'page_builder' => array(
-		'tab'            => __( 'Classic Layout', 'fw' ),
+		'tab'            => __( 'Layout Elements', 'fw' ),
 		'title'          => __( 'Masonry Section', 'fw' ),
 		'description'    => __( 'A section that packs its columns into a masonry grid', 'fw' ),
 		'type'           => 'masonry_section', // WARNING: must match get_type() returned by the item class

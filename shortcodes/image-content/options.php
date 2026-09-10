@@ -274,6 +274,17 @@ $options = [
 					],
 				],
 			],
+			'group_spacing' => [
+				'type'    => 'group',
+				'options' => [
+					'spacing' => [
+						'type'  => 'spacing',
+						'label' => __( 'Margin & Padding', 'fw' ),
+						'desc'  => __( 'Outer margin (space between this element and its neighbours) and inner padding (around both columns), from the Spacing Scale presets. All Sides applies to every side at once; any per-side value overrides it.', 'fw' ),
+						'help'  => function_exists( 'sc_styling_help_text' ) ? sc_styling_help_text( 'spacing' ) : '',
+					],
+				],
+			],
 		],
 	],
 

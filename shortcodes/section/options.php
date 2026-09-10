@@ -333,6 +333,14 @@ $options = [
 						'desc'  => __( 'Color, gradient, image and video background layers (they stack: image over gradient over color). Replaces the old separate Background Color / Image / Video fields — existing sections are migrated automatically.', 'fw' ),
 						'help'  => __( 'Image attachment "Fixed" gives a parallax effect. Video renders a muted, looping background via the section\'s video player; set a poster/fallback image for while it loads or where autoplay is blocked.', 'fw' ),
 					],
+					'backdrop_blur' => [
+						'type'  => 'unit-input',
+						'label' => __( 'Backdrop Blur (Glass)', 'fw' ),
+						'desc'  => __( 'Blur whatever shows through this section — the frosted-glass band effect.', 'fw' ),
+						'help'  => __( 'CSS backdrop-filter: blur(). Pair with a semi-transparent Background color so the content behind shows through as frosted glass. Empty / 0 = off. Older browsers that lack backdrop-filter just show the solid background.', 'fw' ),
+						'units' => [ 'px', 'rem' ],
+						'value' => [ 'value' => '', 'unit' => 'px' ],
+					],
 					// Reusable CSS/HTML background pattern drawn as a decorative layer BEHIND the
 					// content (over the Background above). Stores the preset id (stable across renames).
 					'background_pattern' => [

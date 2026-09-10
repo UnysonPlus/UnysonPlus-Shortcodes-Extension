@@ -30,10 +30,12 @@ $padding_bottom   = isset( $atts['padding_bottom'] ) ? trim( $atts['padding_bott
 // was on or off. Accept the boolean the switch actually stores, and still honour a legacy
 // 'yes' string from content saved when this option's default was the string 'no'.
 $fw_is_fullwidth = isset( $atts['is_fullwidth'] ) ? $atts['is_fullwidth'] : false;
-$container_class = ( $fw_is_fullwidth === true || $fw_is_fullwidth === 1
-		|| $fw_is_fullwidth === '1' || $fw_is_fullwidth === 'yes' )
-	? 'fw-container-fluid'
-	: 'fw-container';
+$is_fluid        = ( $fw_is_fullwidth === true || $fw_is_fullwidth === 1
+		|| $fw_is_fullwidth === '1' || $fw_is_fullwidth === 'yes' );
+// Self-contained width wrapper (was Bootstrap-style .fw-container / .fw-container-fluid). The modern
+// shared .fw-contained centres the content at the site container width; Full Width drops the cap to a
+// simple edge gutter. No dependency on the Bootstrap grid container.
+$container_class = 'masonry-section__inner' . ( $is_fluid ? ' masonry-section__inner--fluid' : ' fw-contained' );
 
 $attr = function_exists( 'sc_build_wrapper_attr' ) ? sc_build_wrapper_attr( $atts ) : array();
 

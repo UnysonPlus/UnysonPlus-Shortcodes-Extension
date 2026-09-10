@@ -14,6 +14,10 @@
    Gap comes from `--mc-gap` set on the section wrapper in views/view.php.
    =========================================================================== */
 
+/* Width wrapper. Contained (default) rides the shared .fw-contained (centred, site width, gutter);
+   Full Width drops the cap and keeps a simple edge gutter. No Bootstrap .fw-container dependency. */
+.masonry-section__inner--fluid { padding-inline: var( --container-gutter, clamp( 1.25rem, 3vw, 2rem ) ); }
+
 .masonry-section .fw-row {
 	display: grid;
 	grid-template-columns: repeat(12, minmax(0, 1fr));

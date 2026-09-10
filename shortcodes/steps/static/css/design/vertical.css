@@ -3,6 +3,14 @@
 .fw-steps--design-vertical .fw-steps__item { display: grid; grid-template-columns: var(--st-size) 1fr; gap: 0 1.1rem; padding-bottom: 1.9rem; }
 .fw-steps--design-vertical .fw-steps__item:last-child { padding-bottom: 0; }
 .fw-steps--design-vertical .fw-steps__body { padding-top: calc((var(--st-size) - 1.5rem) / 2); }
+
+/* Marker = None. The view renders NO marker chip at all (`if ( $marker !== 'none' )` in view.php), so
+   the body becomes the item's first grid child and lands in the reserved `var(--st-size)` marker track
+   — a 48px column that wraps the step's text into a tall ribbon (measured: a paragraph 663px tall in a
+   103px column, blowing one section from 682px to 2,987px). With no marker there is nothing to reserve
+   space for, so collapse the item to a single column. */
+.fw-steps--marker-none.fw-steps--design-vertical .fw-steps__item { grid-template-columns: 1fr; }
+.fw-steps--marker-none.fw-steps--design-vertical .fw-steps__body { padding-top: 0; }
 .fw-steps--design-vertical .fw-steps__connector {
 	display: block; position: absolute; left: calc(var(--st-size) / 2 - 1px);
 	top: var(--st-size); bottom: 0; width: 2px; background: var(--st-line);

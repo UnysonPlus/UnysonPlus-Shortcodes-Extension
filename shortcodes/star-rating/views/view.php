@@ -39,6 +39,13 @@ if ( ! function_exists( 'sc_sr_render' ) ) {
 			$design   = sc_get( 'design', $atts, 'star' );
 			if ( ! isset( $registry[ $design ] ) ) { $design = 'star'; }
 		}
+		// Render-time enqueue of the resolved design's CSS (static/css/design[s]/<key>.css). The
+		// per-instance `fw_ext_shortcodes_enqueue_static:star_rating` action is fired from a scan whose
+		// shortcode regex is NOT recursive, so on a deeply nested page-builder / Site-Converter tree it
+		// only reaches the outer elements — the action never fires for this one and the design CSS
+		// silently never loads, collapsing the design to an unstyled block stack. Deduped by handle.
+		if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'star_rating', $design ); }
+
 
 		$max    = (int) sc_get( 'max', $atts, 5 );
 		$max    = $max === 10 ? 10 : 5;

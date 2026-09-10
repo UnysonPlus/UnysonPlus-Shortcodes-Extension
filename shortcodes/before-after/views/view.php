@@ -141,6 +141,11 @@ if ( ! function_exists( 'sc_bac_render_comparison' ) ) {
 		}
 		// A pack design isn't in the local registry — default its meta safely.
 		$meta = isset( $registry[ $design ] ) ? $registry[ $design ] : array();
+		// Render-time enqueue of the resolved design's CSS. The per-instance
+		// `fw_ext_shortcodes_enqueue_static:before_after` action is fired from a scan whose shortcode regex is
+		// NOT recursive, so on a deeply nested page-builder / Site-Converter tree it only reaches the
+		// outer elements and never fires for this one. Deduped by handle.
+		if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'before_after', $design ); }
 
 		/* --- Behaviour ---------------------------------------------------- */
 		$orientation = sc_get( 'type/comparison/orientation', $atts, 'horizontal' ) === 'vertical' ? 'vertical' : 'horizontal';

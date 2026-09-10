@@ -47,21 +47,24 @@ $css_id = isset( $attr['id'] ) ? $attr['id'] : '';
 // Class placement: with a wrapper, the <div> owns base/unique/styling classes
 // and the id; the <img> only needs the responsive helper. Without a wrapper the
 // <img> (or its <a>) keeps carrying them, exactly as before.
+// `.media-image__img` is the shortcode's own self-contained responsive-image rule
+// (max-width:100%; height:auto) — no dependency on the builder's global .img-fluid.
 if ( $should_wrap ) {
-	$img_classes = array( 'img-fluid' );
+	$img_classes = array( 'media-image__img' );
 } else {
 	$img_classes = array_values( array_filter( preg_split( '/\s+/', trim( isset( $attr['class'] ) ? $attr['class'] : '' ) ) ) );
-	if ( ! in_array( 'img-fluid', $img_classes, true ) ) {
-		$img_classes[] = 'img-fluid';
+	if ( ! in_array( 'media-image__img', $img_classes, true ) ) {
+		$img_classes[] = 'media-image__img';
 	}
 }
 
-$link     = ! empty( $atts['link'] ) ? $atts['link'] : '';
-$has_link = ( '' !== $link );
+$link        = ! empty( $atts['link'] ) ? $atts['link'] : '';
+$lightbox_on = ( isset( $atts['lightbox'] ) && 'yes' === $atts['lightbox'] );
+$has_link    = ( ! $lightbox_on && '' !== $link ); // lightbox takes precedence over the link
 
-// CSS id lands on the <img> only when no wrapper / link will carry it.
+// CSS id lands on the <img> only when no wrapper / link / lightbox anchor will carry it.
 $extra_attr = array();
-if ( ! $should_wrap && ! $has_link && $css_id ) {
+if ( ! $should_wrap && ! $has_link && ! $lightbox_on && $css_id ) {
 	$extra_attr['id'] = $css_id;
 }
 
@@ -69,15 +72,25 @@ if ( ! $should_wrap && ! $has_link && $css_id ) {
 // CLS, fetchpriority/eager for above-the-fold, lazy otherwise — via fw_image_tag.
 $fetchpriority = ( ! empty( $atts['fetchpriority'] ) && 'high' === $atts['fetchpriority'] ) ? 'high' : '';
 
+// Focal crop (optional): an Aspect Ratio drops the image into a ratio box and chooses
+// which part shows via object-fit + object-position — "like a background-image position".
+$image_ratio    = isset( $atts['image_ratio'] ) ? trim( (string) $atts['image_ratio'] ) : '';
+$image_fit      = ( isset( $atts['image_fit'] ) && 'contain' === $atts['image_fit'] ) ? 'contain' : 'cover';
+$focal_position = ( '' !== $image_ratio && isset( $atts['focal_position'] ) && '' !== trim( (string) $atts['focal_position'] ) )
+	? trim( (string) $atts['focal_position'] ) : 'center center';
+
 $img_html = fw_image_tag(
 	$attachment_id ? $attachment_id : $image_url,
 	array(
-		'width'         => isset( $atts['width'] ) ? $atts['width'] : '',
-		'height'        => isset( $atts['height'] ) ? $atts['height'] : '',
-		'class'         => implode( ' ', $img_classes ),
-		'fetchpriority' => $fetchpriority,
-		'fallback_size' => 'large',
-		'extra_attr'    => $extra_attr,
+		'width'           => isset( $atts['width'] ) ? $atts['width'] : '',
+		'height'          => isset( $atts['height'] ) ? $atts['height'] : '',
+		'class'           => implode( ' ', $img_classes ),
+		'fetchpriority'   => $fetchpriority,
+		'fallback_size'   => 'large',
+		'extra_attr'      => $extra_attr,
+		'aspect_ratio'    => $image_ratio,
+		'object_fit'      => $image_fit,
+		'object_position' => $focal_position,
 	)
 );
 
@@ -85,7 +98,23 @@ if ( '' === $img_html ) {
 	return;
 }
 
-if ( $has_link ) {
+if ( $lightbox_on ) {
+	// Lightbox: click opens the FULL-size image in the shared overlay. A unique group id
+	// scopes prev/next to this instance; the shared lightbox JS neutralises the href on
+	// load (keeps it a real link for no-JS visitors). Enqueued per-instance in static.php.
+	$full = $attachment_id ? wp_get_attachment_image_url( $attachment_id, 'full' ) : $image_url;
+	if ( ! $full ) { $full = $image_url; }
+	$group      = function_exists( 'wp_unique_id' ) ? wp_unique_id( 'mi-lb-' ) : uniqid( 'mi-lb-' );
+	$lb_caption = isset( $atts['caption'] ) ? trim( (string) $atts['caption'] ) : '';
+
+	$anchor = '<a class="media-image__lightbox" href="' . esc_url( $full ) . '"'
+		. ' data-fw-lightbox="' . esc_attr( $group ) . '"';
+	if ( '' !== $lb_caption ) { $anchor .= ' data-fw-caption="' . esc_attr( $lb_caption ) . '"'; }
+	if ( ! $should_wrap && $css_id ) { $anchor .= ' id="' . esc_attr( $css_id ) . '"'; }
+	$anchor .= '>';
+
+	$inner_html = $anchor . $img_html . '</a>';
+} elseif ( $has_link ) {
 	$target = ( ! empty( $atts['target'] ) && in_array( $atts['target'], array( '_self', '_blank' ), true ) )
 		? $atts['target']
 		: '_self';
@@ -116,6 +145,15 @@ if ( $has_link ) {
 $imgs_cls = function_exists( 'sc_image_style_class' ) ? sc_image_style_class( $atts ) : '';
 if ( '' !== $imgs_cls ) {
 	$inner_html = '<span class="imgs-wrap ' . esc_attr( $imgs_cls ) . '">' . $inner_html . '</span>';
+}
+
+// Caption: wrap the image (and any link/lightbox/style layer) in a semantic <figure>
+// with a <figcaption> beneath it. Kept outside the styled image so the caption sits
+// below the frame, not on top of it.
+$caption = isset( $atts['caption'] ) ? trim( (string) $atts['caption'] ) : '';
+if ( '' !== $caption ) {
+	$inner_html = '<figure class="media-image__figure">' . $inner_html
+		. '<figcaption class="media-image__caption">' . esc_html( $caption ) . '</figcaption></figure>';
 }
 
 // Render the wrapper only when it carries something (styling / animation / id /

@@ -20,6 +20,11 @@ if ( ! function_exists( 'sc_ah_render' ) ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$anim     = sc_get( 'anim', $atts, 'typewriter' );
 		if ( ! isset( $registry[ $anim ] ) ) { $anim = 'typewriter'; }
+		// Render-time enqueue of the resolved design's CSS. The per-instance
+		// `fw_ext_shortcodes_enqueue_static:animated_heading` action is fired from a scan whose shortcode regex is
+		// NOT recursive, so on a deeply nested page-builder / Site-Converter tree it only reaches the
+		// outer elements and never fires for this one. Deduped by handle.
+		if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'animated_heading', $anim ); }
 
 		$before = trim( (string) sc_get( 'before_text', $atts, '' ) );
 		$after  = trim( (string) sc_get( 'after_text', $atts, '' ) );

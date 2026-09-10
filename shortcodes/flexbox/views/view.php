@@ -422,6 +422,135 @@ if ( $fx_uid !== ''
 	if ( $mh['lg'] !== '' )   { $w_custom_css .= '@media (min-width:992px){' . $uid . '{min-height:' . $mh['lg'] . ';}}'; }
 }
 
+// ----- Flex Basis + Min Width (per-device unit-inputs) → scoped @media rules on this box's fx-* class.
+// Flex Basis is the box's STARTING size (composes with the fw-grow-* / fw-shrink-0 classes for the
+// `flex: 1 1 300px` wrapping-card pattern), unlike Width Override which is a hard fixed size. Min Width
+// keeps a flexible box from collapsing and lets a card grid wrap. Both mobile-first: base, then md, lg.
+if ( $fx_uid !== '' ) {
+	$fx_len = function ( $L, $units ) {
+		if ( is_array( $L ) && isset( $L['value'] ) && trim( (string) $L['value'] ) !== '' ) {
+			$v = preg_replace( '/[^0-9.\-]/', '', (string) $L['value'] );
+			$u = ( isset( $L['unit'] ) && in_array( $L['unit'], $units, true ) ) ? $L['unit'] : $units[0];
+			if ( $v !== '' ) { return $v . $u; }
+		}
+		return '';
+	};
+	// Read the RAW responsive value (not fw_sc_resp_value, which casts each layer to string and
+	// would mangle a unit-input's {value,unit} array — same reason min_height reads it raw).
+	$fx_len_prop = function ( $key, $prop ) use ( $fx_uid, $atts, $fx_layers, $fx_len ) {
+		$css   = '';
+		$units = array( 'px', 'rem', '%', 'vw' );
+		$raw   = fw_akg( $key, $atts, array() );
+		if ( ! is_array( $raw ) ) { return ''; }
+		foreach ( $fx_layers as $layer => $infix ) {
+			$v = $fx_len( isset( $raw[ $layer ] ) ? $raw[ $layer ] : array(), $units );
+			if ( $v === '' ) { continue; }
+			$rule = $fx_uid . '{' . $prop . ':' . $v . ';}';
+			if ( $infix === '' )        { $css .= $rule; }
+			elseif ( $infix === '-md' ) { $css .= '@media (min-width:768px){' . $rule . '}'; }
+			elseif ( $infix === '-lg' ) { $css .= '@media (min-width:992px){' . $rule . '}'; }
+		}
+		return $css;
+	};
+	$w_custom_css .= $fx_len_prop( 'flex_basis', 'flex-basis' );
+	$w_custom_css .= $fx_len_prop( 'min_width', 'min-width' );
+}
+
+// ----- Backdrop Blur (Glass): a frosted-glass effect on the box. Emits backdrop-filter (+ -webkit- for
+// Safari) as a scoped rule keyed to this box's fx-* class. Needs a translucent background to reveal.
+if ( $fx_uid !== '' && function_exists( 'fw_akg' ) ) {
+	$bb_raw  = fw_akg( 'backdrop_blur', $atts, array() );
+	$bb_val  = ( is_array( $bb_raw ) && isset( $bb_raw['value'] ) ) ? preg_replace( '/[^0-9.\-]/', '', (string) $bb_raw['value'] ) : '';
+	$bb_unit = ( is_array( $bb_raw ) && isset( $bb_raw['unit'] ) && in_array( $bb_raw['unit'], array( 'px', 'rem' ), true ) ) ? $bb_raw['unit'] : 'px';
+	if ( $bb_val !== '' && (float) $bb_val > 0 ) {
+		$blur          = 'blur(' . $bb_val . $bb_unit . ')';
+		$w_custom_css .= $fx_uid . '{backdrop-filter:' . $blur . ';-webkit-backdrop-filter:' . $blur . ';}';
+	}
+}
+
+// ----- Compositing: Blend Mode / Clip Shape / Edge Fade. Three single-declaration effects, each a
+// scoped rule keyed to this box's fx-* class (same mechanism as Backdrop Blur above) so they need no
+// extra markup and no library. Every value is whitelisted or number-sanitized before it reaches CSS.
+if ( $fx_uid !== '' && function_exists( 'fw_akg' ) ) {
+
+	// Blend Mode — mix-blend-mode against whatever sits behind the box.
+	$blend_allowed = array(
+		'multiply', 'screen', 'overlay', 'darken', 'lighten', 'color-dodge', 'color-burn',
+		'hard-light', 'soft-light', 'difference', 'exclusion', 'hue', 'saturation', 'color', 'luminosity',
+	);
+	$blend = (string) fw_akg( 'blend_mode', $atts, '' );
+	if ( in_array( $blend, $blend_allowed, true ) ) {
+		// isolation:isolate is deliberately NOT set — the point of the option is to blend with the
+		// ancestor background, which a new stacking context would prevent.
+		$w_custom_css .= $fx_uid . '{mix-blend-mode:' . $blend . ';}';
+	}
+
+	// Clip Shape — a named silhouette, or any custom clip-path.
+	$clip_raw   = fw_akg( 'clip_shape', $atts, array() );
+	$clip_shape = ( is_array( $clip_raw ) && isset( $clip_raw['shape'] ) ) ? (string) $clip_raw['shape'] : 'none';
+	$clip_named = array(
+		'circle'       => 'circle(50% at 50% 50%)',
+		'ellipse'      => 'ellipse(50% 50% at 50% 50%)',
+		'diagonal'     => 'polygon(0 0, 100% 0, 100% 100%, 0 88%)',
+		'diagonal-rev' => 'polygon(0 0, 100% 0, 100% 88%, 0 100%)',
+		'chevron'      => 'polygon(0 0, 100% 0, 100% 88%, 50% 100%, 0 88%)',
+		'notch'        => 'polygon(0 0, 88% 0, 100% 12%, 100% 100%, 0 100%)',
+	);
+	$clip_val = '';
+	if ( isset( $clip_named[ $clip_shape ] ) ) {
+		$clip_val = $clip_named[ $clip_shape ];
+	} elseif ( $clip_shape === 'custom' ) {
+		$clip_custom = fw_akg( 'clip_shape/custom/clip_custom', $atts, '' );
+		if ( ! is_string( $clip_custom ) || $clip_custom === '' ) {
+			$clip_custom = ( is_array( $clip_raw ) && isset( $clip_raw['custom']['clip_custom'] ) ) ? $clip_raw['custom']['clip_custom'] : '';
+		}
+		// A clip-path is a function call over lengths/percentages/keywords. Allow exactly that
+		// character set so no `;`, `{`, `}` or url() can break out of the declaration.
+		$clip_custom = trim( (string) $clip_custom );
+		if ( $clip_custom !== '' && preg_match( '/^[a-z0-9()%.,\s\/#-]+$/i', $clip_custom ) ) {
+			$clip_val = $clip_custom;
+		}
+	}
+	if ( $clip_val !== '' ) {
+		$w_custom_css .= $fx_uid . '{clip-path:' . $clip_val . ';-webkit-clip-path:' . $clip_val . ';}';
+	}
+
+	// Edge Fade — mask-image, so the box dissolves into whatever is behind it at the chosen edges.
+	$mask_raw   = fw_akg( 'mask_fade', $atts, array() );
+	$mask_edges = ( is_array( $mask_raw ) && isset( $mask_raw['edges'] ) ) ? (string) $mask_raw['edges'] : 'none';
+	if ( in_array( $mask_edges, array( 'x', 'y', 'top', 'bottom', 'all' ), true ) ) {
+		$size_key = 'mask_size_' . $mask_edges;
+		$size_raw = fw_akg( 'mask_fade/' . $mask_edges . '/' . $size_key, $atts, array() );
+		if ( ! is_array( $size_raw ) || ! isset( $size_raw['value'] ) ) {
+			$size_raw = ( is_array( $mask_raw ) && isset( $mask_raw[ $mask_edges ][ $size_key ] ) ) ? $mask_raw[ $mask_edges ][ $size_key ] : array();
+		}
+		$size_v = ( is_array( $size_raw ) && isset( $size_raw['value'] ) ) ? preg_replace( '/[^0-9.]/', '', (string) $size_raw['value'] ) : '';
+		$size_u = ( is_array( $size_raw ) && isset( $size_raw['unit'] ) && in_array( $size_raw['unit'], array( '%', 'px', 'rem' ), true ) ) ? $size_raw['unit'] : '%';
+		if ( $size_v === '' || (float) $size_v <= 0 ) { $size_v = '12'; $size_u = '%'; }
+		$len = $size_v . $size_u;
+		// One gradient per axis; `to right` fades the left/right edges, `to bottom` the top/bottom.
+		$grad_x = 'linear-gradient(to right,transparent 0,#000 ' . $len . ',#000 calc(100% - ' . $len . '),transparent 100%)';
+		$grad_y = 'linear-gradient(to bottom,transparent 0,#000 ' . $len . ',#000 calc(100% - ' . $len . '),transparent 100%)';
+		$grad_t = 'linear-gradient(to bottom,transparent 0,#000 ' . $len . ')';
+		$grad_b = 'linear-gradient(to bottom,#000 calc(100% - ' . $len . '),transparent 100%)';
+		$mask   = '';
+		switch ( $mask_edges ) {
+			case 'x':      $mask = $grad_x; break;
+			case 'y':      $mask = $grad_y; break;
+			case 'top':    $mask = $grad_t; break;
+			case 'bottom': $mask = $grad_b; break;
+			// Both axes at once: two mask layers intersected, so the corners fade too.
+			case 'all':    $mask = $grad_x . ',' . $grad_y; break;
+		}
+		if ( $mask !== '' ) {
+			$compose       = ( $mask_edges === 'all' ) ? 'mask-composite:intersect;-webkit-mask-composite:source-in;' : '';
+			$w_custom_css .= $fx_uid . '{mask-image:' . $mask . ';-webkit-mask-image:' . $mask . ';'
+				. 'mask-size:100% 100%;-webkit-mask-size:100% 100%;'
+				. 'mask-repeat:no-repeat;-webkit-mask-repeat:no-repeat;' . $compose . '}';
+		}
+	}
+}
+
 // Grid item span: a fraction Width doubles as a CSS Grid span when this box is a child of a
 // Grid Div. That mapping now lives in static CSS (frontend-grid.css: `.fw-grid > .fw-col-N
 // { grid-column: span N }`, keyed to the parent's `fw-grid` marker), so nothing is emitted
@@ -526,6 +655,12 @@ if ( is_array( $cw_raw ) && isset( $cw_raw['preset'] ) ) {
 	} elseif ( $cw_preset !== '' && $cw_preset !== 'inherit' ) {
 		$cw_map = function_exists( 'unysonplus_container_width_map' ) ? unysonplus_container_width_map() : array( 'narrow' => '768px', 'medium' => '896px', 'wide' => '1024px' );
 		if ( isset( $cw_map[ $cw_preset ] ) ) { $cw_has = true; $cw_css = $cw_map[ $cw_preset ]; }
+		// A `content-<px>` slug (the Site Converter's shared name for a non-standard content-band width, e.g.
+		// `content-1392` = the site's own container width) carries its px IN THE SLUG. It is only registered as a
+		// named preset when the source clustered that exact width, so a section that inherited it as a fallback
+		// (a full-width flex band with no max-w-* wrapper of its own) had no map entry → the cap silently vanished
+		// and the band rendered edge-to-edge. Resolve the px straight from the slug so it always caps.
+		elseif ( preg_match( '/^content-(\d{3,4})$/', $cw_preset, $cwm ) ) { $cw_has = true; $cw_css = $cwm[1] . 'px'; }
 	}
 } elseif ( is_array( $cw_raw ) && isset( $cw_raw['value'] ) && trim( (string) $cw_raw['value'] ) !== '' ) {
 	$cw_v = preg_replace( '/[^0-9.\-]/', '', (string) $cw_raw['value'] );

@@ -20,6 +20,11 @@ if ( ! function_exists( 'sc_hl_render' ) ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$fx       = sc_get( 'fx', $atts, 'marker' );
 		if ( ! isset( $registry[ $fx ] ) ) { $fx = 'marker'; }
+		// Render-time enqueue of the resolved design's CSS. The per-instance
+		// `fw_ext_shortcodes_enqueue_static:highlight_text` action is fired from a scan whose shortcode regex is
+		// NOT recursive, so on a deeply nested page-builder / Site-Converter tree it only reaches the
+		// outer elements and never fires for this one. Deduped by handle.
+		if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'highlight_text', $fx ); }
 
 		$text = trim( (string) sc_get( 'text', $atts, '' ) );
 		if ( $text === '' ) {

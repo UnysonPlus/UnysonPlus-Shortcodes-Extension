@@ -156,6 +156,17 @@ $options = [
                     ],
 
                     /* ---------- shared by both sources ---------- */
+                    // Reusable "Use as Section Background" toggle (same helper the Before/After
+                    // shortcode uses). When on, the video FILLS its parent Section edge-to-edge and
+                    // sits behind the Section's content (lifted on top) — the Max Width / Aspect Ratio
+                    // below are ignored. This is what finally makes the shortcode deliver the
+                    // "full-bleed background / hero clip" its Self-hosted options already describe.
+                    'as_background' => function_exists( 'sc_section_background_field' )
+                        ? sc_section_background_field( array(
+                            'desc' => __( 'Fill the parent Section and sit behind its content as a full-bleed background video — the Section\'s own elements are automatically lifted on top. Best with a Self-hosted, muted, looping, autoplaying clip and Object Fit = Cover.', 'fw' ),
+                            'help' => __( 'When on, Max Width and Aspect Ratio are ignored — the video stretches to cover its Section (object-fit: cover). Give the Section a min-height so it has room to fill.', 'fw' ),
+                        ) )
+                        : array( 'type' => 'switch', 'label' => __( 'Use as Section Background', 'fw' ), 'value' => 'no', 'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ), 'left-choice' => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ) ),
                     'width' => [
                         'type'  => 'unit-input',
                         'label' => __( 'Video Max Width', 'fw' ),

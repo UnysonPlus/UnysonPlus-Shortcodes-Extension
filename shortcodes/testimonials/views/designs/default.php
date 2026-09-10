@@ -10,17 +10,16 @@
  * dispatcher) by scope. This is the design legacy instances fall back to.
  */
 ?>
-<div <?php echo fw_attr_to_html( $attr ); ?>>
-    <div class="<?php echo esc_attr( $container_cls ); ?>">
+<div <?php echo fw_attr_to_html( $attr ); ?>><?php echo $ts_container_open; ?>
 
         <?php if ( empty( $testimonials ) ): ?>
             <div class="text-muted small"><?php esc_html_e( 'No testimonials found.', 'fw' ); ?></div>
         <?php else: ?>
 
             <?php if ( $layout_choice === 'grid' ): ?>
-                <div class="fw-row <?php echo esc_attr( trim( $grid_columns . ' ' . $gutter ) ); ?>">
+                <?php if ( empty( $ts_grid_merged ) ): ?><div class="testimonials-grid" data-cols="<?php echo esc_attr( $grid_cols_n ); ?>" style="--tg-gap:<?php echo esc_attr( $grid_gap_css ); ?>;"><?php endif; ?>
                     <?php foreach ( $testimonials as $t ): ?>
-                        <div class="fw-col mb-4 d-flex">
+                        <div class="testimonials-grid__cell">
                             <?php echo sc_render_card( $t, [
                                 'card_rows'       => $card_rows,
                                 'box_class'       => $box_style,
@@ -43,12 +42,12 @@
                             ] ); ?>
                         </div>
                     <?php endforeach; ?>
-                </div>
+                <?php if ( empty( $ts_grid_merged ) ): ?></div><?php endif; ?>
 
             <?php elseif ( $layout_choice === 'single' ): ?>
                 <?php $t = $testimonials[0]; ?>
-                <div class="d-flex flex-column align-items-center">
-                    <div class="w-100" style="max-width:700px;">
+                <div class="testimonials-single">
+                    <div class="testimonials-single__inner">
                         <?php echo sc_render_card( $t, [
                             'card_rows'       => $card_rows,
                             'box_class'       => $box_style,
@@ -107,7 +106,7 @@
                                     <?php echo sc_render_card( $t, [
                                         'card_rows'       => $card_rows,
                                         'box_class'       => $box_style,
-                                        'card_style'      => trim( $card_style . ' w-100' ),
+                                        'card_style'      => $card_style,
                                         'text_align'      => $text_align,
                                         'show_avatar'     => $show_avatar,
                                         'avatar_shape'    => $avatar_shape,
@@ -128,5 +127,5 @@
             <?php endif; ?>
 
         <?php endif; ?>
-    </div>
+<?php echo $ts_container_close; ?>
 </div>

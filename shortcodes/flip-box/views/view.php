@@ -48,6 +48,11 @@ if ( ! function_exists( 'sc_fb_render' ) ) {
 		} elseif ( ! isset( $registry[ $design ] ) ) {
 			$design = 'solid';
 		}
+		// Render-time enqueue of the resolved design's CSS. The per-instance
+		// `fw_ext_shortcodes_enqueue_static:flip_box` action is fired from a scan whose shortcode regex is
+		// NOT recursive, so on a deeply nested page-builder / Site-Converter tree it only reaches the
+		// outer elements and never fires for this one. Deduped by handle.
+		if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'flip_box', $design ); }
 
 		$front_title = trim( (string) sc_get( 'front_title', $atts, '' ) );
 		$front_text  = trim( (string) sc_get( 'front_text', $atts, '' ) );

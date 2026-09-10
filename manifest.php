@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.14.66';
+$manifest['version'] = '1.14.93';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,123 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.14.93 - Media Image: three new capabilities. FOCAL CROP — an Aspect Ratio (1:1 … 9:16) drops the
+ *          image into a ratio box and Fit (Cover/Contain) + Crop Position (a 9-point object-position,
+ *          "like a background-image position") choose which part shows. CAPTION — an optional caption
+ *          wraps the image in a semantic <figure>/<figcaption>. LIGHTBOX — a toggle opens the full
+ *          image in the shared, dependency-free lightbox (click to zoom; takes precedence over the
+ *          Image Link). The lightbox overlay CSS was extracted from the Gallery stylesheet into a
+ *          shared gallery/static/css/lightbox.css behind a neutral `fw-lightbox` handle, and the new
+ *          sc_enqueue_lightbox() helper lets any shortcode reuse it (loaded once). The Gallery keeps
+ *          its `fw-shortcode-gallery` script handle as a dependency-only alias so design-JS deps still
+ *          resolve. (Pairs with core fw_image_tag focal-crop args + a new "Pill" Image Style preset.)
+ * 1.14.87 - Posts: flattened the wrapper DOM. The .posts__layout-wrap and .posts__main divs only
+ *          exist to place a sidebar filter bar beside the grid, so they are now emitted ONLY for the
+ *          left/right-sidebar filter layouts. Without a sidebar (the common case) the grid and
+ *          pagination sit directly inside .posts — two fewer nesting levels. NOTE: custom CSS that
+ *          targeted .posts__layout-wrap / .posts__main on a non-sidebar posts block should retarget
+ *          .posts / .posts__grid.
+ *
+ * 1.14.86 - Testimonials: the card renderer no longer emits Bootstrap-style utility classes
+ *          (img-fluid / mx-auto / text-center / flex-shrink-0 / mb-3 / fw-semibold / d-flex / w-100 /
+ *          flex-md-row / gap-3 / flex-grow-1 / mt-2). Those are replaced by semantic, self-contained
+ *          .testimonial-* classes styled in the shortcode CSS (avatar, author, quote spacing, the
+ *          legacy stacked/split layouts), so the output markup carries no "bootstrappy" class names.
+ *          NOTE: custom CSS that targeted those utility classes inside a testimonial should retarget
+ *          the .testimonial-* classes.
+ *
+ * 1.14.85 - Gallery: the optional Container width wrapper no longer emits the Bootstrap-style
+ *          .fw-container / .fw-container-fluid — it uses a self-contained .fw-gallery__container
+ *          (same stepped max-widths, --fluid for full width). Default is unchanged (None → the gallery
+ *          fills its parent). No fw- container classes remain in the markup.
+ *
+ * 1.14.84 - Bleed Section: the content|image split now lays out with a native CSS Grid instead of the
+ *          Bootstrap-style .fw-container > .fw-row > fw-col-md-N markup. The ratio drives the grid
+ *          tracks (e.g. 5fr 7fr, mirrored for Image Left) via a --bs-cols custom property; the width
+ *          wrapper is a self-contained .bleed-section__container (stepped max-widths, or --fluid for
+ *          Full Width) rather than .fw-container. The full-bleed image and mobile stacking are
+ *          unchanged. No fw- grid classes remain in the markup.
+ *
+ * 1.14.83 - Table (pricing mode): the pricing layout now lays its plan columns out on a native CSS
+ *          Grid instead of the Bootstrap-style fw-col-sm-N class on each package. One grid track per
+ *          column (the feature-label desc-col stays narrow; plan columns share the rest equally, via a
+ *          --pt-tracks custom property the view emits), packages are equal-height flex boxes, and the
+ *          grid collapses to a single column on phones. The old fw-col-sm-N sat on a non-flex parent,
+ *          so the columns did not reliably sit side by side; the grid fixes that too. No fw- grid
+ *          classes remain in the pricing markup.
+ *
+ * 1.14.81 - Testimonials: the Classic "grid" layout now renders as a native CSS Grid instead of the
+ *          Bootstrap-style fw-row / fw-row-cols-N / fw-col markup. The column count drives
+ *          grid-template-columns via a data-cols attribute, and the saved gutter maps to the grid
+ *          gap. Unlike the old .fw-row-cols-* (a fixed N columns at EVERY width), the grid now
+ *          collapses responsively — one column on phones, two on tablets, the chosen N on desktop —
+ *          so a 3/4-up testimonial grid is no longer unusable on small screens. Cards keep equal
+ *          height (each cell is a flex box; the card is width/height:100%). Only the Classic grid
+ *          changed; the carousel and the CSS designs (masonry, bubble, split, zigzag, …) were already
+ *          self-contained. NOTE: custom CSS targeting the old .fw-row / .fw-col inside a testimonials
+ *          grid should retarget .testimonials-grid / .testimonials-grid__cell. The outer width wrapper
+ *          (container_type option) also dropped its Bootstrap-style .fw-container / .fw-container-fluid
+ *          class for a self-contained .testimonials-container / --fluid (same stepped max-widths), so
+ *          none of the element's markup carries a "bootstrappy" class name any more. That container now
+ *          also honours the bare-wrapper merge (as Image + Content does): when the element has no
+ *          styling of its own the outer wrapper and the width container collapse into a single div
+ *          (and "None" emits no inner div at all, instead of an empty one). The Container option now
+ *          DEFAULTS to None — the element fills its parent and the section/column owns the width, like
+ *          every other element (testimonials was the only one shipping its own container). Container /
+ *          Fluid remain as an opt-in escape hatch for full-width placements with no containing
+ *          section; instances that explicitly saved a container keep it. Avatars gained
+ *          loading="lazy" + decoding="async". Three further trims: the grid layout now MERGES onto
+ *          the .testimonials wrapper when the grid is its direct child (one div, like Image + Content,
+ *          instead of wrapper > grid); the dead `design-default` class is no longer emitted (it scoped
+ *          nothing — only non-default designs get a design-<key> hook); and the hardcoded
+ *          `.testimonials { margin: 2.5rem 0 }` is gone so the section/column (or the Spacing option)
+ *          owns vertical rhythm like every other element.
+ *
+ * 1.14.80 - Tabs: the Media-panel and Vertical layouts now lay out with CSS Grid instead of the
+ *          Bootstrap-style fw-row / fw-col grid. The list | image split (Media panel) and the
+ *          nav | panes split (Vertical orientation) are grid-template-columns (1fr 2fr and 1fr 3fr);
+ *          the media ratio flips for Image Left, and both collapse to a single column on mobile — no
+ *          fw-row / fw-col / fw-col-md-* in the markup. The tab nav itself was already flexbox.
+ *          Visually identical (verified media both sides + vertical, desktop + mobile). NOTE: custom
+ *          CSS that targeted the old .fw-row / .fw-col inside a media/vertical tabs should retarget
+ *          .tabs-media__row / .tabs-vertical.
+ *
+ * 1.14.79 - Image + Content: a Margin & Padding option (Styling tab) for outer spacing, plus a
+ *          wrapper collapse. When the element carries nothing that needs a dedicated wrapper — no
+ *          Margin/Padding, no entrance Animation, and no Advanced-tab option (CSS ID/Class, Custom
+ *          CSS, Custom Attributes, Responsive Hide, Overflow, Position) — its identity now merges
+ *          onto the single CSS-grid div, so a bare element renders as ONE div instead of a wrapper
+ *          around the grid. Any of those options restores the standard wrapper. Adds a reusable
+ *          sc_wrapper_is_bare() helper (extends sc_needs_wrapper() with the three Advanced-tab items
+ *          it doesn't check) so other shortcodes with their own layout container can adopt the same
+ *          collapse. Output is visually identical (verified bare -> 1 div, styled -> wrapper + grid).
+ *
+ * 1.14.78 - Image + Content now lays out with its OWN CSS Grid instead of the Bootstrap-style
+ *          framework grid. The element's markup no longer emits .fw-row / .fw-col-* / .fw-order-* /
+ *          .g-* / .align-items- / .img-fluid / .rounded-* / .shadow-* utility classes — the two
+ *          columns, ratio, gap, vertical alignment, breakpoint and source-order are all driven by a
+ *          scoped stylesheet (static/css/styles.css) reading data-attributes + custom properties, so
+ *          the element is self-contained and renders correctly anywhere without depending on the
+ *          framework grid sheet for its structure. Visually identical across every layout / ratio /
+ *          alignment (verified desktop + mobile). NOTE: any custom CSS that targeted the old
+ *          .fw-row / .fw-col-* inside an image-content should retarget .image-content__grid /
+ *          .image-content__media / .image-content__body. First step of a broader move to give
+ *          shortcodes modern, self-contained (non-"bootstrappy") markup.
+ *
+ * 1.14.69 - Flexbox (Div) gains three compositing options: Blend Mode, Clip Shape and Edge Fade.
+ *          A Div could carry a background, a blur and a border, but nothing expressed how it
+ *          COMBINES with what sits behind it, so three common source motifs had no native home and
+ *          the Site Converter had to keep them as raw markup: an image wash tinted into the band
+ *          colour (mix-blend-mode), a band cut to a diagonal / chevron / circle (clip-path), and a
+ *          logo strip or image dissolving at its edges (mask-image). Blend Mode is the 15 CSS
+ *          blend modes; Clip Shape offers six named silhouettes plus a Custom clip-path value; Edge
+ *          Fade fades the chosen edges by a Fade Size (percent, px or rem), intersecting both axes
+ *          for "All edges". All three render as one scoped rule keyed to the box's fx-* class -- no
+ *          extra markup and no library -- alongside the existing Backdrop Blur. Values are
+ *          whitelisted (blend mode, edge set, named shapes) or character-filtered (the custom
+ *          clip-path, the fade size), so a hostile value emits no rule rather than escaping the
+ *          declaration. Options live in Styling -> Box Style; defaults are off, so existing Divs
+ *          render unchanged.
  * 1.14.66 - Tabs gain a Content Frame option. The tab content panel always drew a bordered, rounded,
  *          padded white box; a source whose panel is frameless (its content brings its own cards /
  *          layout, like a menu grid) then sat inside an unwanted box. Content Frame = Frameless drops

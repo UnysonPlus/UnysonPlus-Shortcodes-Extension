@@ -12,15 +12,14 @@
  */
 
 if ( empty( $testimonials ) ) {
-	echo '<div ' . fw_attr_to_html( $attr ) . '><div class="' . esc_attr( $container_cls ) . '"><div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div></div></div>';
+	echo '<div ' . fw_attr_to_html( $attr ) . '>' . $ts_container_open . '<div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div>' . $ts_container_close . '</div>';
 	return;
 }
 
 /* Column count from this design's own Columns option (1–4). */
 $cols = max( 1, min( 4, (int) $masonry_columns ) );
 ?>
-<div <?php echo fw_attr_to_html( $attr ); ?>>
-	<div class="<?php echo esc_attr( $container_cls ); ?>">
+<div <?php echo fw_attr_to_html( $attr ); ?>><?php echo $ts_container_open; ?>
 
 		<div class="ts-masonry ts-masonry--cols-<?php echo (int) $cols; ?>">
 			<?php foreach ( $testimonials as $t ):
@@ -42,5 +41,5 @@ $cols = max( 1, min( 4, (int) $masonry_columns ) );
 				</figure>
 			<?php endforeach; ?>
 		</div>
-	</div>
+<?php echo $ts_container_close; ?>
 </div>

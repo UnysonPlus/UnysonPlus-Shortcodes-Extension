@@ -64,10 +64,31 @@ $bgv = ( ! empty( $atts['background'] ) && is_array( $atts['background'] ) )
 
 $section_style = sc_bg_pro_style( $bgv );
 
+// Backdrop Blur (Glass): frosted-glass band — blur what shows through this section. Needs a
+// translucent Background color to reveal. backdrop-filter + -webkit- for Safari.
+$bb_raw  = ( isset( $atts['backdrop_blur'] ) && is_array( $atts['backdrop_blur'] ) ) ? $atts['backdrop_blur'] : array();
+$bb_val  = isset( $bb_raw['value'] ) ? preg_replace( '/[^0-9.\-]/', '', (string) $bb_raw['value'] ) : '';
+$bb_unit = ( isset( $bb_raw['unit'] ) && in_array( $bb_raw['unit'], array( 'px', 'rem' ), true ) ) ? $bb_raw['unit'] : 'px';
+if ( $bb_val !== '' && (float) $bb_val > 0 ) {
+	$__blur         = 'blur(' . $bb_val . $bb_unit . ')';
+	$section_style .= 'backdrop-filter:' . $__blur . ';-webkit-backdrop-filter:' . $__blur . ';';
+}
+
 $__vattr = sc_bg_pro_video_attr( $bgv );
+$bg_video_overlay_html = '';
 if ( ! empty( $__vattr ) ) {
 	$bg_video_data_attr     = array_merge( $bg_video_data_attr, $__vattr );
 	$section_extra_classes .= ' background-video';
+	// A VIDEO background is a JS-injected `fs-background-container` element (z-index:0) painted OVER the section's
+	// CSS background — so an overlay folded into `background-image` (sc_bg_pro_style) is buried BEHIND the video.
+	// Render it as a real scrim LAYER above the video (z:1) so overlaid hero text stays legible (the openhero
+	// hero heading disappeared as the video reveal brightened). Content sits in its own positioned wrapper above.
+	if ( function_exists( 'sc_bg_pro_overlay_image' ) ) {
+		$__ov = sc_bg_pro_overlay_image( $bgv );
+		if ( '' !== $__ov ) {
+			$bg_video_overlay_html = '<span class="fs-background-overlay" aria-hidden="true" style="background-image:' . esc_attr( $__ov ) . ';"></span>';
+		}
+	}
 }
 
 // --- Min height + content vertical alignment (hero-style full-screen sections). ---
@@ -289,6 +310,7 @@ if ( ! empty( $section_extra_classes ) ) {
 }
 ?>
 <section <?php echo fw_attr_to_html( $attr ); ?>>
+<?php echo $bg_video_overlay_html; // phpcs:ignore WordPress.Security.EscapeOutput — built + esc_attr'd above (scrim over the JS video layer) ?>
 <?php echo $pattern_html; // phpcs:ignore WordPress.Security.EscapeOutput — admin-authored, scoped + script-stripped ?>
 <?php
 	echo $divider_top_html;    // phpcs:ignore WordPress.Security.EscapeOutput — built + value-sanitized above

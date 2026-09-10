@@ -45,6 +45,13 @@ if ( ! function_exists( 'sc_mp_render' ) ) {
 		} elseif ( ! isset( $registry[ $design ] ) ) {
 			$design = 'center';
 		}
+		// Render-time enqueue of the resolved design's CSS (static/css/design[s]/<key>.css). The
+		// per-instance `fw_ext_shortcodes_enqueue_static:modal_popup` action is fired from a scan whose
+		// shortcode regex is NOT recursive, so on a deeply nested page-builder / Site-Converter tree it
+		// only reaches the outer elements — the action never fires for this one and the design CSS
+		// silently never loads, collapsing the design to an unstyled block stack. Deduped by handle.
+		if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'modal_popup', $design ); }
+
 
 		$ttype = sc_get( 'trigger_type', $atts, 'button' );
 		$label = trim( (string) sc_get( 'trigger_label', $atts, '' ) );

@@ -455,13 +455,13 @@ $options = [
                     'container_type' => [
                         'label' => __('Container', 'fw'),
                         'type'  => 'select',
-                        'value' => 'container',
+                        'value' => '',
                         'choices' => [
-                            ''                => __('None', 'fw'),
+                            ''                => __('None (fill the section)', 'fw'),
                             'container'       => __('Container', 'fw'),
                             'container-fluid' => __('Fluid', 'fw'),
                         ],
-                        'desc' => __('Outer width wrapper.', 'fw'),
+                        'desc' => __('Outer width wrapper. Normally leave this on None — the section or column the element sits in already controls the width. Only add a container when you drop the element into a full-width area that has no containing section.', 'fw'),
                     ],
                     // Text Alignment — shared alignment image-picker (Default / Left / Center /
                     // Right). Stores KEYS ('' / left / center / right); the view maps them to

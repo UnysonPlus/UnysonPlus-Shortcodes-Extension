@@ -40,6 +40,10 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 	function sc_fl_render( $atts ) {
 		$registry = require __DIR__ . '/parts/registry.php';
 		$design   = sc_get( 'design', $atts, 'check' );
+		// static.php keys its CSS off the RAW `design` att, and the legacy `badge` design (whose
+		// badge.css is the only per-design stylesheet here) is normalised away below — so keep the
+		// raw key for the render-time enqueue or badge.css would never load.
+		$design_raw = is_string( $design ) ? $design : 'check';
 		// Back-compat: the pre-1.13 designs fold into the new icon-overrides-marker
 		// model. `icon` (marker = item icon, else check) is exactly the new `check`
 		// behavior; `badge` = the same, boxed → `check` + a square Icon Style.
@@ -52,6 +56,11 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 		} elseif ( ! isset( $registry[ $design ] ) ) {
 			$design = 'check';
 		}
+		// Render-time enqueue of the resolved design's CSS. The per-instance
+		// `fw_ext_shortcodes_enqueue_static:feature_list` action is fired from a scan whose shortcode regex is
+		// NOT recursive, so on a deeply nested page-builder / Site-Converter tree it only reaches the
+		// outer elements and never fires for this one. Deduped by handle.
+		if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'feature_list', $design_raw ); }
 
 		$items = sc_get( 'items', $atts, array() );
 		if ( ! is_array( $items ) || empty( $items ) ) {

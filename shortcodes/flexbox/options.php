@@ -265,6 +265,19 @@ $fx_divider_ip_bottom = function_exists( 'unysonplus_shape_divider_imagepicker_c
 $fx_pattern_choices   = function_exists( 'unysonplus_pattern_imagepicker_choices' ) ? unysonplus_pattern_imagepicker_choices( 76 ) : [ 'none' => [ 'label' => __( 'None', 'fw' ) ] ];
 $fx_variant_choices   = function_exists( 'unysonplus_section_style_choices' ) ? unysonplus_section_style_choices() : [ '' => __( 'Default', 'fw' ), 'alt' => __( 'Alt', 'fw' ), 'light' => __( 'Light', 'fw' ), 'dark' => __( 'Dark', 'fw' ) ];
 
+// Edge Fade size — the same unit-input is revealed under every "Edges" choice, so build it once.
+// Percent is the sensible default: the fade then scales with the box instead of being a fixed
+// bite out of a narrow one.
+$mask_size_field = function () {
+	return [
+		'type'  => 'unit-input',
+		'label' => __( 'Fade Size', 'fw' ),
+		'desc'  => __( 'How far in from each edge the fade reaches.', 'fw' ),
+		'units' => [ '%', 'px', 'rem' ],
+		'value' => [ 'value' => '12', 'unit' => '%' ],
+	];
+};
+
 $options = [
 	'tab_layout' => [
 		'title'   => __( 'Layout', 'fw' ),
@@ -604,6 +617,30 @@ $options = [
 						'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
 						'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
 					],
+					'flex_basis' => [
+						'type'  => 'responsive',
+						'label' => __( 'Flex Basis', 'fw' ),
+						'desc'  => __( 'The box\'s ideal size before it grows or shrinks along the row.', 'fw' ),
+						'help'  => __( 'flex-basis. Unlike Width Override (a hard fixed size), Basis is the STARTING size that "Grow to Fill" can expand and shrinking can reduce — the `flex: 1 1 300px` card pattern (Basis 300px + Grow On + a Min Width so the cards wrap onto new rows cleanly). Only inside a Flex parent. Per-device via the Phone / Tablet / Desktop tabs (a blank device inherits the smaller one).', 'fw' ),
+						'value' => [ 'base' => [ 'value' => '', 'unit' => 'px' ], 'md' => [ 'value' => '', 'unit' => 'px' ], 'lg' => [ 'value' => '', 'unit' => 'px' ] ],
+						'inner' => [
+							'type'  => 'unit-input',
+							'units' => [ 'px', 'rem', '%', 'vw' ],
+							'value' => [ 'value' => '', 'unit' => 'px' ],
+						],
+					],
+					'min_width' => [
+						'type'  => 'responsive',
+						'label' => __( 'Min Width', 'fw' ),
+						'desc'  => __( 'Smallest this box may shrink to along the row.', 'fw' ),
+						'help'  => __( 'min-width. Stops a flexible box collapsing too narrow, and forces it onto the next row when there is no room — the clean way to make a card grid wrap. Per-device via the Phone / Tablet / Desktop tabs (a blank device inherits the smaller one).', 'fw' ),
+						'value' => [ 'base' => [ 'value' => '', 'unit' => 'px' ], 'md' => [ 'value' => '', 'unit' => 'px' ], 'lg' => [ 'value' => '', 'unit' => 'px' ] ],
+						'inner' => [
+							'type'  => 'unit-input',
+							'units' => [ 'px', 'rem', '%', 'vw' ],
+							'value' => [ 'value' => '', 'unit' => 'px' ],
+						],
+					],
 					'align_self' => [
 						'type'    => 'responsive',
 						'label'   => __( 'Align Self', 'fw' ),
@@ -758,6 +795,14 @@ $options = [
 						'show_borders' => false,
 						'choices'      => function_exists( 'sc_get_border_preset_choices' ) ? sc_get_border_preset_choices() : array( '' => __( 'None', 'fw' ) ),
 					],
+					'backdrop_blur' => [
+						'type'  => 'unit-input',
+						'label' => __( 'Backdrop Blur (Glass)', 'fw' ),
+						'desc'  => __( 'Blur whatever shows through this box — the frosted-glass effect.', 'fw' ),
+						'help'  => __( 'CSS backdrop-filter: blur(). Pair with a semi-transparent Background (e.g. white at 60%) and a subtle border for a glass card. Empty / 0 = off. Leave the box Background translucent or the blur has nothing to reveal. Older browsers that lack backdrop-filter just show the solid background.', 'fw' ),
+						'units' => [ 'px', 'rem' ],
+						'value' => [ 'value' => '', 'unit' => 'px' ],
+					],
 					'min_height' => [
 						'type'  => 'responsive',
 						'label' => __( 'Min Height', 'fw' ),
@@ -777,6 +822,98 @@ $options = [
 						'help'        => __( 'e.g. 16 / 9, 4 / 3, or 1 for a square. Empty = natural height. Pairs well with a background image / media, or a Grid cell you want kept square.', 'fw' ),
 						'value'       => '',
 						'placeholder' => '16 / 9',
+					],
+					// --- Compositing: how this box blends with, is clipped by, or fades into what
+					// sits behind it. All three are single scoped declarations keyed to the box's
+					// fx-* class (see views/view.php) — no extra markup, no library.
+					'blend_mode' => [
+						'type'    => 'select',
+						'label'   => __( 'Blend Mode', 'fw' ),
+						'desc'    => __( 'How this box composites with whatever sits behind it.', 'fw' ),
+						'help'    => __( 'CSS mix-blend-mode. Normal = no blending. Overlay / Multiply / Screen tint an image wash into the band colour behind it; Difference gives the inverted "knockout" look. Needs something behind it to blend WITH — a parent background, an image, or another layer. Pair with a Background image + reduced opacity for the classic photo-wash hero.', 'fw' ),
+						'value'   => '',
+						'choices' => [
+							''             => __( 'Normal (no blending)', 'fw' ),
+							'multiply'     => __( 'Multiply', 'fw' ),
+							'screen'       => __( 'Screen', 'fw' ),
+							'overlay'      => __( 'Overlay', 'fw' ),
+							'darken'       => __( 'Darken', 'fw' ),
+							'lighten'      => __( 'Lighten', 'fw' ),
+							'color-dodge'  => __( 'Color Dodge', 'fw' ),
+							'color-burn'   => __( 'Color Burn', 'fw' ),
+							'hard-light'   => __( 'Hard Light', 'fw' ),
+							'soft-light'   => __( 'Soft Light', 'fw' ),
+							'difference'   => __( 'Difference', 'fw' ),
+							'exclusion'    => __( 'Exclusion', 'fw' ),
+							'hue'          => __( 'Hue', 'fw' ),
+							'saturation'   => __( 'Saturation', 'fw' ),
+							'color'        => __( 'Color', 'fw' ),
+							'luminosity'   => __( 'Luminosity', 'fw' ),
+						],
+					],
+					'clip_shape' => [
+						'type'   => 'multi-picker',
+						'label'  => __( 'Clip Shape', 'fw' ),
+						'desc'   => __( 'Cut the box to a shape instead of a rectangle.', 'fw' ),
+						'help'   => __( 'CSS clip-path. The named shapes cover the common cases (a circle avatar, a diagonal band edge, a chevron, a corner notch); Custom takes any clip-path value, e.g. polygon(0 0, 100% 0, 100% 85%, 0 100%). The clip applies to the box AND its background — content outside the shape is hidden, so keep padding generous on angled shapes.', 'fw' ),
+						'value'  => [ 'shape' => 'none' ],
+						'picker' => [
+							'shape' => [
+								'type'    => 'select',
+								'label'   => __( 'Shape', 'fw' ),
+								'value'   => 'none',
+								'choices' => [
+									'none'         => __( 'None', 'fw' ),
+									'circle'       => __( 'Circle', 'fw' ),
+									'ellipse'      => __( 'Ellipse', 'fw' ),
+									'diagonal'     => __( 'Diagonal (bottom-left rise)', 'fw' ),
+									'diagonal-rev' => __( 'Diagonal (bottom-right rise)', 'fw' ),
+									'chevron'      => __( 'Chevron (pointed base)', 'fw' ),
+									'notch'        => __( 'Corner notch', 'fw' ),
+									'custom'       => __( 'Custom…', 'fw' ),
+								],
+							],
+						],
+						'choices' => [
+							'custom' => [
+								'clip_custom' => [
+									'type'        => 'text',
+									'label'       => __( 'clip-path value', 'fw' ),
+									'desc'        => __( 'Any CSS clip-path value.', 'fw' ),
+									'value'       => '',
+									'placeholder' => 'polygon(0 0, 100% 0, 100% 85%, 0 100%)',
+								],
+							],
+						],
+					],
+					'mask_fade' => [
+						'type'   => 'multi-picker',
+						'label'  => __( 'Edge Fade', 'fw' ),
+						'desc'   => __( 'Dissolve the box into the background at its edges.', 'fw' ),
+						'help'   => __( 'CSS mask-image. Use for logo strips and scrolling rails that should fade out at the ends, or an image that should melt into the section below it. Fade Size is how far in from each edge the fade reaches.', 'fw' ),
+						'value'  => [ 'edges' => 'none' ],
+						'picker' => [
+							'edges' => [
+								'type'    => 'select',
+								'label'   => __( 'Edges', 'fw' ),
+								'value'   => 'none',
+								'choices' => [
+									'none'   => __( 'None', 'fw' ),
+									'x'      => __( 'Left + right', 'fw' ),
+									'y'      => __( 'Top + bottom', 'fw' ),
+									'top'    => __( 'Top only', 'fw' ),
+									'bottom' => __( 'Bottom only', 'fw' ),
+									'all'    => __( 'All edges', 'fw' ),
+								],
+							],
+						],
+						'choices' => [
+							'x'      => [ 'mask_size_x' => $mask_size_field() ],
+							'y'      => [ 'mask_size_y' => $mask_size_field() ],
+							'top'    => [ 'mask_size_top' => $mask_size_field() ],
+							'bottom' => [ 'mask_size_bottom' => $mask_size_field() ],
+							'all'    => [ 'mask_size_all' => $mask_size_field() ],
+						],
 					],
 				],
 			],

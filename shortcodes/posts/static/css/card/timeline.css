@@ -1,7 +1,33 @@
-/* Posts card design: Timeline. */
+/* Posts card design: Timeline. A date-led card on a continuous vertical connector
+   line with a dot marker centered on each entry. */
 .posts__card--timeline { overflow: visible; position: relative; padding-left: 1.75rem; }
-.posts__card--timeline::before { content: ""; position: absolute; left: .65rem; top: 0; bottom: 0; width: 2px; background: rgba(0,0,0,.12); }
-.posts__timeline-marker { position: absolute; left: .25rem; top: .5rem; z-index: 1; width: 12px; height: 12px; border-radius: 50%; background: currentColor; }
+/* The connector line. It extends down by one row-gap so the segments of adjacent
+   cards join into ONE continuous line; the first card's line starts at its dot and
+   the last card's ends at its dot (so the line spans dot-to-dot, not past the ends). */
+.posts__card--timeline::before {
+	content: "";
+	position: absolute;
+	left: .65rem;
+	top: 0;
+	bottom: calc(-1 * var(--posts-row-gap, 2rem));
+	width: 2px;
+	background: rgba(0,0,0,.12);
+}
+.posts__card--timeline:first-child::before { top: 50%; }
+.posts__card--timeline:last-child::before  { bottom: 50%; }
+/* Dot marker — vertically centered on the entry (the card height equals the
+   .posts__timeline-inner height, so 50% is the inner's center) and sitting on the line. */
+.posts__timeline-marker {
+	position: absolute;
+	left: .25rem;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 1;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: currentColor;
+}
 .posts__timeline-inner { display: flex; gap: 1rem; align-items: flex-start; }
 .posts__timeline-media { flex: 0 0 28%; max-width: 28%; }
 .posts__card--timeline .posts__body { flex: 1 1 auto; padding: 0 0 1.25rem; }

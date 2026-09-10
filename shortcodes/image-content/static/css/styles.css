@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Image + Content — self-contained CSS GRID layout.
+
+   Replaces the previous Bootstrap-style .fw-row / .fw-col-* / .fw-order-* /
+   .g-* / .align-items-* markup. Layout, column ratio, gap, vertical alignment
+   and source-order are all driven by data-attributes + custom properties the
+   view emits, so the element renders correctly ANYWHERE without depending on
+   the framework grid stylesheet for its structure. Image sizing / radius /
+   shadow are handled here (or inline) too — no img-fluid / rounded-* / shadow-*.
+
+   Custom properties (set on the grid element by view.php):
+     --ic-cols      grid-template-columns for the layout   (e.g. "4fr 8fr")
+     --ic-cols-rev  reversed tracks for image-right         (e.g. "8fr 4fr")
+     --ic-gap       gap length                              (e.g. 1.5rem)
+     --ic-valign    align-items value (start | center | end)
+
+   NOTE: fr units are emitted whole into --ic-cols; they are NOT computed with
+   calc() (fr is invalid inside calc()).
+   ========================================================================== */
+
+.image-content__grid,
+.image-content__stack {
+	display: grid;
+	grid-template-columns: 1fr;          /* mobile / stacked: one column */
+	gap: var(--ic-gap, 1.5rem);
+	box-sizing: border-box;
+}
+.image-content__grid { align-items: var(--ic-valign, center); }
+
+/* Image cell — replaces .img-fluid; width:100% (for cover / fixed-ratio) is set
+   inline by the view only when needed. */
+.image-content .image-content__media img {
+	max-width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* Source-order on the stacked (mobile) axis — Content First swaps the two cells. */
+.image-content__grid[data-mobile="content-first"] > .image-content__media { order: 2; }
+.image-content__grid[data-mobile="content-first"] > .image-content__body  { order: 1; }
+
+/* ---- Side-by-side at the chosen breakpoint -------------------------------- */
+/* Each rule is gated by BOTH the media query AND the data-bp value, so only the
+   instance's chosen breakpoint reacts. Left = image | content (DOM order);
+   Right = content | image (columns reversed + order swapped). */
+
+@media (min-width: 576px) {
+	.image-content__grid[data-bp="sm"] { grid-template-columns: var(--ic-cols); }
+	.image-content__grid[data-bp="sm"][data-layout="left"] > .image-content__media,
+	.image-content__grid[data-bp="sm"][data-layout="left"] > .image-content__body { order: 0; }
+	.image-content__grid[data-bp="sm"][data-layout="right"] { grid-template-columns: var(--ic-cols-rev); }
+	.image-content__grid[data-bp="sm"][data-layout="right"] > .image-content__media { order: 2; }
+	.image-content__grid[data-bp="sm"][data-layout="right"] > .image-content__body  { order: 1; }
+}
+
+@media (min-width: 768px) {
+	.image-content__grid[data-bp="md"] { grid-template-columns: var(--ic-cols); }
+	.image-content__grid[data-bp="md"][data-layout="left"] > .image-content__media,
+	.image-content__grid[data-bp="md"][data-layout="left"] > .image-content__body { order: 0; }
+	.image-content__grid[data-bp="md"][data-layout="right"] { grid-template-columns: var(--ic-cols-rev); }
+	.image-content__grid[data-bp="md"][data-layout="right"] > .image-content__media { order: 2; }
+	.image-content__grid[data-bp="md"][data-layout="right"] > .image-content__body  { order: 1; }
+}
+
+@media (min-width: 992px) {
+	.image-content__grid[data-bp="lg"] { grid-template-columns: var(--ic-cols); }
+	.image-content__grid[data-bp="lg"][data-layout="left"] > .image-content__media,
+	.image-content__grid[data-bp="lg"][data-layout="left"] > .image-content__body { order: 0; }
+	.image-content__grid[data-bp="lg"][data-layout="right"] { grid-template-columns: var(--ic-cols-rev); }
+	.image-content__grid[data-bp="lg"][data-layout="right"] > .image-content__media { order: 2; }
+	.image-content__grid[data-bp="lg"][data-layout="right"] > .image-content__body  { order: 1; }
+}

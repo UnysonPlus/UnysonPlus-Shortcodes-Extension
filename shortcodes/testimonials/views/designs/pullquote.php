@@ -12,7 +12,7 @@
  */
 
 if ( empty( $testimonials ) ) {
-	echo '<div ' . fw_attr_to_html( $attr ) . '><div class="' . esc_attr( $container_cls ) . '"><div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div></div></div>';
+	echo '<div ' . fw_attr_to_html( $attr ) . '>' . $ts_container_open . '<div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div>' . $ts_container_close . '</div>';
 	return;
 }
 
@@ -30,8 +30,7 @@ $splide_config = array(
 	'speed'        => 600,
 );
 ?>
-<div <?php echo fw_attr_to_html( $attr ); ?>>
-	<div class="<?php echo esc_attr( $container_cls ); ?>">
+<div <?php echo fw_attr_to_html( $attr ); ?>><?php echo $ts_container_open; ?>
 
 		<div class="splide testimonials-splide ts-pullquote testimonials-splide--dots"
 		     role="group"
@@ -67,5 +66,5 @@ $splide_config = array(
 				</ul>
 			</div>
 		</div>
-	</div>
+<?php echo $ts_container_close; ?>
 </div>

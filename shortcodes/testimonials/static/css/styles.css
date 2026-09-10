@@ -10,7 +10,18 @@
  * ========================================================================= */
 .testimonials {
     position: relative;
-    margin: 2.5rem 0;
+    /* Fill the parent and cap intrinsic width. The element used to sit inside a
+       .fw-container (width:100%), which gave the Splide-based designs (carousel,
+       split, spotlight, thumbnav, pullquote) a DEFINITE width to size slides
+       against. Without that container, as a flex child, Splide's wide slide row
+       would blow the element out to its content width. width:100% + min-width:0
+       restore a definite, non-overflowing width in any parent (flex or block). */
+    width: 100%;
+    min-width: 0;
+    /* No hardcoded vertical margin — the section/column (or the element's own
+       Spacing option) owns the rhythm, like every other element. A fixed margin
+       here fought the builder's spacing controls and double-spaced inside a
+       padded section. */
 }
 
 /* --- Ported utility classes (scoped) ------------------------------------- */
@@ -44,6 +55,54 @@
     .testimonials .flex-md-row         { flex-direction: row; }
     .testimonials .flex-md-row-reverse { flex-direction: row-reverse; }
     .testimonials .text-md-start       { text-align: left; }
+}
+
+/* --- Outer width container (container_type option) ----------------------------
+ * Self-contained replacement for the plugin's Bootstrap-style .fw-container /
+ * .fw-container-fluid (the `container_type` option emits one of these, echoed by
+ * every design). Same stepped max-widths + gutter so existing instances render at
+ * the same width — just without a "bootstrappy" class name. "None" emits no class
+ * (the element fills its parent, e.g. a builder section that already constrains). */
+.testimonials-container,
+.testimonials-container--fluid {
+    width: 100%;
+    padding-right: 12px;
+    padding-left: 12px;
+    margin-right: auto;
+    margin-left: auto;
+    box-sizing: border-box;
+}
+@media (min-width: 576px)  { .testimonials-container { max-width: 540px; } }
+@media (min-width: 768px)  { .testimonials-container { max-width: 720px; } }
+@media (min-width: 992px)  { .testimonials-container { max-width: 960px; } }
+@media (min-width: 1200px) { .testimonials-container { max-width: 1140px; } }
+@media (min-width: 1400px) { .testimonials-container { max-width: 1320px; } }
+
+/* --- Grid layout (Classic design, layout = "grid") ----------------------------
+ * Native CSS grid — replaces the old .fw-row / .fw-row-cols-N / .fw-col markup.
+ * `data-cols` is the desktop column count; `--tg-gap` is the gutter (both set
+ * inline by the view). Unlike the old .fw-row-cols-* (fixed N at every width),
+ * this collapses to 1 column on phones and 2 on tablets so a 3/4-up grid stays
+ * readable on small screens. Each cell is a flex box so the card (which is
+ * width/height:100%) stretches to equal height across the row. */
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--tg-gap, 1.5rem);
+}
+.testimonials-grid__cell { display: flex; }
+@media (min-width: 576px) {
+    .testimonials-grid[data-cols="2"],
+    .testimonials-grid[data-cols="3"],
+    .testimonials-grid[data-cols="4"],
+    .testimonials-grid[data-cols="5"],
+    .testimonials-grid[data-cols="6"] { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 992px) {
+    .testimonials-grid[data-cols="3"] { grid-template-columns: repeat(3, 1fr); }
+    .testimonials-grid[data-cols="4"] { grid-template-columns: repeat(4, 1fr); }
+    .testimonials-grid[data-cols="5"] { grid-template-columns: repeat(5, 1fr); }
+    .testimonials-grid[data-cols="6"] { grid-template-columns: repeat(6, 1fr); }
 }
 
 /* --- Card styles (card_style option) ------------------------------------- */
@@ -80,6 +139,28 @@
 .avatar-lg img { width:128px; height:128px; }
 .testimonial-avatar img {
     object-fit: cover;
+    max-width: 100%;
+}
+
+/* --- Scoped element styling (replaces the Bootstrap-style utility classes the card
+   renderer used to emit: text-center / flex-shrink-0 / mx-auto / mb-3 / img-fluid /
+   fw-semibold / d-flex / w-100 / flex-md-row / gap-3 / flex-grow-1 / mt-2, so the
+   markup carries semantic .testimonial-* classes instead). ------------------------ */
+.testimonial-avatar { text-align: center; flex-shrink: 0; margin: 0 auto 1rem; }
+.testimonial-author { font-weight: 600; }
+.testimonial-quote  { margin-bottom: 1rem; }
+.testimonial-quote p { margin-bottom: 0; }
+.testimonial-item--slotted .testimonial-quote { margin-bottom: 0; } /* slotted cards space via Card Rows */
+.testimonial-rating-row { margin-top: .5rem; }
+
+/* Legacy (non-Card-Rows) card layouts. */
+.testimonial-item--stacked { display: flex; flex-direction: column; width: 100%; text-align: center; }
+.testimonial-item--split   { display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; width: 100%; }
+.testimonial-item--split .testimonial-body { flex: 1 1 auto; text-align: center; }
+@media (min-width: 768px) {
+    .testimonial-item--split          { flex-direction: row; }
+    .testimonial-item--split-reverse  { flex-direction: row-reverse; }
+    .testimonial-item--split .testimonial-body { text-align: left; }
 }
 /* Horizontal layouts */
 .avatar-pos-left .testimonial-body,
@@ -141,7 +222,11 @@
 }
 /* Make slides equal height so cards line up. */
 .testimonials-splide .splide__slide { height: auto; }
-.testimonials-splide .splide__slide > .testimonial-item { height: 100%; }
+.testimonials-splide .splide__slide > .testimonial-item { width: 100%; height: 100%; } /* card fills the slide (was a w-100 class) */
+
+/* Single layout (Classic, layout = "single") — one centered, constrained card. */
+.testimonials-single { display: flex; flex-direction: column; align-items: center; }
+.testimonials-single__inner { width: 100%; max-width: 700px; }
 
 /* Arrows — positioned + themed here (core CSS provides neither). */
 .testimonials-splide .splide__arrows { line-height: 0; }
@@ -221,6 +306,10 @@
 /* Composite slots + per-row reverse. `author` = name over role; `identity` = avatar + author inline. */
 .ts-card__author { display: flex; flex-direction: column; gap: .1rem; }
 .ts-card__identity { display: flex; align-items: center; gap: .75rem; }
+/* Avatar placed in an INLINE row (e.g. the default/carousel card, avatar beside the name) must not
+   keep the avatar-top centering — mx-auto's auto side margins would eat the row's free space and shove
+   the name/role to the far edge. Neutralise them so the identity sits right next to the image. */
+.ts-card-row--inline > .testimonial-avatar { margin-left: 0 !important; margin-right: 0 !important; margin-bottom: 0 !important; }
 .ts-card-row--inline.ts-card-row--reverse { flex-direction: row-reverse; }
 /* Extra Texts — stat/result rows at the card footer (muted label over an emphasized value). */
 .ts-card__extra { width: 100%; margin-top: .85rem; padding-top: .85rem; border-top: 1px solid rgba(0, 0, 0, .08); }

@@ -163,6 +163,11 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
         $part       = $resolved['part'];
         $design_sub = $resolved['sub']; // the chosen family's variation values
         $meta       = isset( $registry['designs'][ $design ] ) ? $registry['designs'][ $design ] : array();
+        // Render-time enqueue of the resolved design's CSS. The per-instance
+        // `fw_ext_shortcodes_enqueue_static:image_box` action is fired from a scan whose shortcode regex is
+        // NOT recursive, so on a deeply nested page-builder / Site-Converter tree it only reaches the
+        // outer elements and never fires for this one. Deduped by handle.
+        if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'image_box', $design ); }
 
         $part_file = sc_imgbox_locate_part( $part );
         if ( ! file_exists( $part_file ) ) {

@@ -26,12 +26,15 @@
 .testimonials.design-thumbnav .testimonial-author { font-weight: 700; }
 .testimonials.design-thumbnav .testimonial-job { color: #6c757d; font-size: .92em; }
 
-/* Thumbnail nav row */
+/* Thumbnail nav row — fade the left/right edges so the partial avatars at the ends
+   dissolve instead of hard-cutting. */
 .testimonials.design-thumbnav .ts-thumbnav__nav {
 	margin-top: 1.5rem;
 	max-width: 480px;
 	margin-left: auto;
 	margin-right: auto;
+	-webkit-mask-image: linear-gradient(to right, transparent 0, #000 14%, #000 86%, transparent 100%);
+	mask-image: linear-gradient(to right, transparent 0, #000 14%, #000 86%, transparent 100%);
 }
 .testimonials.design-thumbnav .ts-thumbnav__nav .splide__slide {
 	border-radius: 50%;

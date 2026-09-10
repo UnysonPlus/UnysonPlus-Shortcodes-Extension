@@ -8,7 +8,8 @@
  * other row is shifted by half a cell (handled in CSS from --hc-cols).
  */
 
-$cols = max( 2, (int) $g_dp( 'columns', 4 ) );
+// See metro.php — $g_dp('columns') is the multi-picker ARRAY; casting it to int yields 1.
+$cols = max( 2, (int) $g_cols( 4 )['desktop'] );
 $gap  = sc_gallery_gap_css( $g_dp( 'gap', '3' ) );
 
 $wrap_style = sprintf( '--hc-cols:%d;--gal-gap:%s;', $cols, $gap );

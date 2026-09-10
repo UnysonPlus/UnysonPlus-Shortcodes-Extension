@@ -1,7 +1,12 @@
-/* Posts card design: Tile (Hover Reveal). */
-.posts__card--tile { display: block; position: relative; aspect-ratio: 1 / 1; }
-.posts__card--tile .posts__image { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
-.posts__card--tile .posts__image img { transition: transform .5s ease; }
+/* Posts card design: Tile (Hover Reveal). A square image; the content is hidden
+   and slides up over a scrim on hover/focus. */
+.posts__card--tile { display: block; position: relative; overflow: hidden; }
+/* The image is IN-FLOW with a square aspect-ratio (not an absolutely-positioned
+   layer under a card whose height is aspect-ratio only). An all-absolute card sized
+   only by its own aspect-ratio reports ~0 height to the grid, so the row collapses
+   and the tiles overflow the section — giving the image real in-flow height fixes it. */
+.posts__card--tile .posts__image { position: relative; display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; overflow: hidden; z-index: 0; }
+.posts__card--tile .posts__image img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
 .posts__card--tile:hover .posts__image img { transform: scale(1.07); }
 .posts__tile-scrim { position: absolute; inset: 0; z-index: 1; background: rgba(0,0,0,.45); opacity: 0; transition: opacity .3s ease; pointer-events: none; }
 .posts__tile-body { position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column; justify-content: flex-end; padding: var(--posts-card-pad); color: #fff; opacity: 0; transform: translateY(12px); transition: opacity .3s ease, transform .3s ease; }

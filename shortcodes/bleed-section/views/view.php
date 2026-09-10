@@ -57,15 +57,23 @@ $ov_op    = isset( $atts['bleed_overlay_opacity'] ) ? max( 0, min( 100, (int) $a
 $bgv      = ( ! empty( $atts['background'] ) && is_array( $atts['background'] ) ) ? $atts['background'] : null;
 $bg_style = function_exists( 'sc_bg_pro_style' ) ? sc_bg_pro_style( $bgv ) : '';
 
-$container_class = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] )
-	? 'fw-container-fluid'
-	: 'fw-container';
+// Width wrapper: self-contained (was Bootstrap-style .fw-container / .fw-container-fluid).
+// Constrained by default (content lines up with the rest of the page while the image bleeds
+// to the viewport edge); the Full Width toggle drops the max-width.
+$container_fluid = ( isset( $atts['is_fullwidth'] ) && $atts['is_fullwidth'] );
 
 // Ratio → columns (each pair sums to 12; clamp defensively).
 $ratio_parts = explode( '-', $bleed_ratio );
 $image_col   = isset( $ratio_parts[0] ) ? (int) $ratio_parts[0] : 5;
 $image_col   = max( 1, min( 11, $image_col ) );
 $content_col = 12 - $image_col;
+
+// CSS-grid track split (replaces .fw-row + fw-col-md-N). Tracks follow DOM order:
+// image-left => spacer(image) | content; image-right => content | spacer(image). Emitted
+// whole (fr units are invalid inside calc()) as a custom property the CSS consumes.
+$bs_cols = ( $bleed_side === 'left' )
+	? $image_col . 'fr ' . $content_col . 'fr'
+	: $content_col . 'fr ' . $image_col . 'fr';
 
 $padding_style = ( $bleed_padding !== '0' && $bleed_padding !== '' )
 	? 'padding-top:' . esc_attr( $bleed_padding ) . ';padding-bottom:' . esc_attr( $bleed_padding ) . ';'
@@ -127,18 +135,18 @@ if ( $bleed_url ) {
 			<?php endif; ?>
 		</div>
 	<?php endif; ?>
-	<div class="<?php echo esc_attr( $container_class ); ?> bleed-section__container">
-		<div class="fw-row">
+	<div class="bleed-section__container<?php echo $container_fluid ? ' bleed-section__container--fluid' : ''; ?>">
+		<div class="bleed-section__grid" style="--bs-cols:<?php echo esc_attr( $bs_cols ); ?>;">
 			<?php if ( $bleed_side === 'left' ) : ?>
-				<div class="fw-col-md-<?php echo (int) $image_col; ?> bleed-section__spacer" aria-hidden="true"></div>
-				<div class="fw-col-md-<?php echo (int) $content_col; ?> bleed-section__content" style="<?php echo $content_style; ?>">
+				<div class="bleed-section__spacer" aria-hidden="true"></div>
+				<div class="bleed-section__content" style="<?php echo $content_style; ?>">
 					<?php echo do_shortcode( $content ); ?>
 				</div>
 			<?php else : ?>
-				<div class="fw-col-md-<?php echo (int) $content_col; ?> bleed-section__content" style="<?php echo $content_style; ?>">
+				<div class="bleed-section__content" style="<?php echo $content_style; ?>">
 					<?php echo do_shortcode( $content ); ?>
 				</div>
-				<div class="fw-col-md-<?php echo (int) $image_col; ?> bleed-section__spacer" aria-hidden="true"></div>
+				<div class="bleed-section__spacer" aria-hidden="true"></div>
 			<?php endif; ?>
 		</div>
 	</div>

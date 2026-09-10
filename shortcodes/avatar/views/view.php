@@ -163,6 +163,13 @@ if ( function_exists( 'fw_sc_design_resolve' ) ) {
 	$design = sc_get( 'design', $atts, 'plain' );
 	if ( ! is_string( $design ) || ! isset( $av_registry[ $design ] ) ) { $design = 'plain'; }
 }
+// Render-time enqueue of the resolved design's CSS (static/css/design[s]/<key>.css). The
+// per-instance `fw_ext_shortcodes_enqueue_static:avatar` action is fired from a scan whose
+// shortcode regex is NOT recursive, so on a deeply nested page-builder / Site-Converter tree it
+// only reaches the outer elements — the action never fires for this one and the design CSS
+// silently never loads, collapsing the design to an unstyled block stack. Deduped by handle.
+if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'avatar', $design ); }
+
 
 $shape = sc_get( 'shape', $atts, 'circle' );
 if ( ! in_array( $shape, array( 'circle', 'rounded', 'square' ), true ) ) { $shape = 'circle'; }

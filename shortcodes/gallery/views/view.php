@@ -74,11 +74,13 @@ if ( ! $design_file || ! file_exists( $design_file ) ) {
 }
 
 // ROBUST render-time enqueue of the resolved design's layout CSS (static/css/designs/<design>.css).
-// The per-instance `fw_ext_shortcodes_enqueue_static:gallery` action is driven by WordPress's [tag …]
-// shortcode regex over the post content, which a large HTML-entity-encoded atts blob defeats (e.g. the
-// gallery's `design_settings="…&quot;…"` value on page-builder / Site-Converter pages) — so the action
-// never fires and the design CSS never loads, collapsing even a grid to a full-width block stack. Enqueue
-// it here from the view so the layout is never lost regardless of how the instance was authored.
+// The per-instance `fw_ext_shortcodes_enqueue_static:gallery` action is fired from a scan whose
+// shortcode regex is NOT recursive: it re-scans inner content only one level at a time, so on a deeply
+// nested page-builder / Site-Converter tree it reaches the outer elements and never this one. (Measured:
+// 34 tags fire on a converted page, `flexbox` among them WITH an 8,784-char entity-encoded atts blob —
+// so the blob is not what breaks it, the nesting depth is.) The action therefore never fires and the
+// design CSS never loads, collapsing even a grid to a full-width block stack. Enqueue it here from the
+// view so the layout is never lost regardless of how the instance was authored.
 if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'gallery', $design ); }
 
 /* Per-design option reader: design_settings/<design>/<sub>, with a default. */
@@ -184,12 +186,15 @@ $atts['unique_id_prefix'] = 'gal-';
 $attr          = sc_build_wrapper_attr( $atts );
 $attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' design-' . $design );
 
-/* Container class (self-contained .fw- grid; the plugin no longer ships Bootstrap). */
+/* Optional width wrapper (default is None — the gallery fills its parent, and the
+   section/column owns width, like every other element). Container/Fluid are an
+   opt-in escape hatch, emitted as a self-contained .fw-gallery__container rather
+   than the Bootstrap-style .fw-container / .fw-container-fluid. */
 $container_cls = '';
 if ( $container_type === 'container' ) {
-	$container_cls = 'fw-container';
+	$container_cls = 'fw-gallery__container';
 } elseif ( $container_type === 'container-fluid' ) {
-	$container_cls = 'fw-container-fluid';
+	$container_cls = 'fw-gallery__container fw-gallery__container--fluid';
 }
 
 /* Nothing to render — bail (but keep an editor-friendly note in the builder). */

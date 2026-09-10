@@ -1905,6 +1905,60 @@ if ( ! function_exists( 'sc_needs_wrapper' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'sc_wrapper_is_bare' ) ) :
+	/**
+	 * True when the wrapper carries NOTHING that needs a dedicated element — so a
+	 * shortcode with its own layout container (e.g. image-content's CSS-grid div)
+	 * can merge the wrapper's identity onto that container and emit one fewer <div>.
+	 *
+	 * It extends sc_needs_wrapper() (which covers CSS ID/Class, Custom CSS, Custom
+	 * Attributes, colors, the Margin & Padding composite, font size and animation)
+	 * with the three Advanced-tab items that helper doesn't check but which DO land
+	 * on the wrapper: Responsive Hide, Overflow and Position (+ a raw css_style).
+	 *
+	 * @return bool True = safe to merge (wrapper is empty); false = keep the wrapper.
+	 */
+	function sc_wrapper_is_bare( $atts ) {
+		if ( ! is_array( $atts ) ) { return false; }
+		if ( sc_needs_wrapper( $atts ) ) { return false; }
+
+		if ( ! empty( $atts['css_style'] ) ) { return false; }
+
+		if ( ! empty( $atts['responsive_hide'] ) && is_array( $atts['responsive_hide'] )
+			&& array_filter( $atts['responsive_hide'] ) ) {
+			return false;
+		}
+		if ( ! empty( $atts['element_overflow'] )
+			&& in_array( $atts['element_overflow'], array( 'hidden', 'auto', 'scroll', 'clip' ), true ) ) {
+			return false;
+		}
+		if ( ! empty( $atts['element_position'] ) && function_exists( 'sc_position_style' )
+			&& sc_position_style( $atts ) !== '' ) {
+			return false;
+		}
+		return true;
+	}
+endif;
+
+if ( ! function_exists( 'sc_enqueue_lightbox' ) ) :
+	/**
+	 * Enqueue the shared, dependency-free lightbox (overlay CSS + delegated-handler JS).
+	 * Any `<a href="<full>" data-fw-lightbox="<group>">` (optional `data-fw-caption`)
+	 * opens it on click. Used by the Gallery and Media Image shortcodes; the assets live
+	 * beside the gallery (its original home) but carry a neutral `fw-lightbox` handle so
+	 * ANY shortcode can reuse them and the file loads once. Safe to call repeatedly.
+	 */
+	function sc_enqueue_lightbox() {
+		if ( is_admin() ) { return; }
+		$ext = function_exists( 'fw_ext' ) ? fw_ext( 'shortcodes' ) : null;
+		if ( ! $ext ) { return; }
+		$ver  = ( $ext->manifest ) ? $ext->manifest->get_version() : false;
+		$base = '/shortcodes/gallery/static';
+		wp_enqueue_style( 'fw-lightbox', $ext->get_declared_URI( $base . '/css/lightbox.css' ), array(), $ver );
+		wp_enqueue_script( 'fw-lightbox', $ext->get_declared_URI( $base . '/js/lightbox.js' ), array(), $ver, true );
+	}
+endif;
+
 /* -----------------------------------------------------------------------------
  * Frontend wiring — Styling-tab atts → wrapper classes (default behavior)
  * -------------------------------------------------------------------------- */
@@ -2596,6 +2650,34 @@ if ( ! function_exists( 'sc_bg_pro_style' ) ) :
 		}
 
 		return $style;
+	}
+endif;
+
+if ( ! function_exists( 'sc_bg_pro_overlay_image' ) ) :
+	/**
+	 * JUST the overlay tint of a background-pro value as a CSS `background-image` value (gradient + flat colour),
+	 * or '' when none. `sc_bg_pro_style` folds the overlay into the section's OWN `background-image`, which paints
+	 * BEHIND a VIDEO background (the video is a separate JS-injected `fs-background-container` element on top). So
+	 * when a section has a video, the caller renders THIS as a real overlay LAYER above the video instead, keeping
+	 * white hero text legible over the footage (the openhero hero: heading vanished as the video reveal brightened).
+	 *
+	 * @param array $bgv A background-pro value.
+	 * @return string A `background-image` value ('' when the overlay is empty/transparent).
+	 */
+	function sc_bg_pro_overlay_image( $bgv ) {
+		if ( ! is_array( $bgv ) ) { return ''; }
+		$overlay  = array();
+		$ov_stops = fw_akg( 'overlay/gradient/stops', $bgv );
+		if ( is_array( $ov_stops ) && count( $ov_stops ) >= 2 && class_exists( 'FW_Option_Type_Gradient_V2' ) ) {
+			$og = FW_Option_Type_Gradient_V2::to_css( fw_akg( 'overlay/gradient', $bgv ) );
+			if ( $og ) { $overlay[] = $og; }
+		}
+		$ov_color = trim( (string) fw_akg( 'overlay/color', $bgv, '' ) );
+		if ( $ov_color !== '' && $ov_color !== 'rgba(0,0,0,0)' && $ov_color !== 'transparent'
+			&& preg_match( '/^(#[0-9a-fA-F]{3,8}|rgba?\([0-9.,%\s]+\))$/', $ov_color ) ) {
+			$overlay[] = 'linear-gradient(' . $ov_color . ',' . $ov_color . ')';
+		}
+		return $overlay ? implode( ', ', $overlay ) : '';
 	}
 endif;
 

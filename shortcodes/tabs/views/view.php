@@ -39,6 +39,12 @@ $valid = function_exists( 'fw_sc_designs' )
 $design = (string) fw_akg( 'design', $atts, fw_akg( 'design_settings/design', $atts, '' ) );
 if ( $design === '' || ! in_array( $design, $valid, true ) ) { $design = 'underline'; }
 
+// Render-time enqueue. Tabs ships no built-in per-design CSS (the designs are class-driven in the
+// base stylesheet), but an installed design PACK carries its own CSS/JS — normally enqueued from the
+// per-instance `fw_ext_shortcodes_enqueue_static:tabs` action, which the HTML-entity-encoded atts
+// blob on page-builder / Site-Converter pages defeats. The helper falls back to the pack path.
+if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'tabs', $design ); }
+
 /* Settings */
 $layout       = ( ! empty( $atts['layout'] ) && $atts['layout'] === 'media' ) ? 'media' : 'content';
 $is_vertical  = ! empty( $atts['orientation'] ) && $atts['orientation'] === 'vertical';
@@ -169,12 +175,15 @@ $render_panes = function ( $media = false, $extra_wrap_class = '' ) use ( $tabs,
 echo '<div ' . fw_attr_to_html( $attr ) . '>';
 
 if ( $layout === 'media' ) {
-	$list = '<div class="fw-col-md-4 tabs-media__list">' . $render_nav( 'flex-column' ) . '</div>';
-	$mcol = '<div class="fw-col-md-8 tabs-media__media">' . $render_panes( true, 'tabs-media__panel' ) . '</div>';
-	echo '<div class="fw-row tabs-media__row">' . ( $media_side === 'left' ? $mcol . $list : $list . $mcol ) . '</div>'; // phpcs:ignore
+	// CSS grid (was fw-row / fw-col-md-4 / fw-col-md-8). The list is 1/3, the media 2/3;
+	// the column ratio flips for Image Left via the container's --media-left class.
+	$list = '<div class="tabs-media__list">' . $render_nav( 'flex-column' ) . '</div>';
+	$mcol = '<div class="tabs-media__media">' . $render_panes( true, 'tabs-media__panel' ) . '</div>';
+	echo '<div class="tabs-media__row">' . ( $media_side === 'left' ? $mcol . $list : $list . $mcol ) . '</div>'; // phpcs:ignore
 } elseif ( $is_vertical ) {
-	echo '<div class="fw-row"><div class="fw-col-3">' . $render_nav( 'flex-column' ) . '</div>'
-		. '<div class="fw-col-9">' . $render_panes() . '</div></div>'; // phpcs:ignore
+	// CSS grid (was fw-row / fw-col-3 / fw-col-9): nav column beside the panes column.
+	echo '<div class="tabs-vertical"><div class="tabs-vertical__nav">' . $render_nav( 'flex-column' ) . '</div>'
+		. '<div class="tabs-vertical__panes">' . $render_panes() . '</div></div>'; // phpcs:ignore
 } else {
 	echo $render_nav() . $render_panes(); // phpcs:ignore
 }

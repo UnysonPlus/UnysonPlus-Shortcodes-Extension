@@ -9,7 +9,9 @@
  * `grid-auto-flow: dense` container.
  */
 
-$cols = max( 2, (int) $g_dp( 'columns', 4 ) );
+// Columns come from the multi-picker shape ({ count:'N', … }) — resolve it with $g_cols(); a raw
+// (int) cast of that ARRAY yields 1, which silently collapsed every metro gallery to 2 columns.
+$cols = max( 2, (int) $g_cols( 4 )['desktop'] );
 $gap  = sc_gallery_gap_css( $g_dp( 'gap', '3' ) );
 
 $wrap_style = sprintf( '--gal-cols:%d;--gal-gap:%s;', $cols, $gap );

@@ -11,7 +11,7 @@
  */
 
 if ( empty( $testimonials ) ) {
-	echo '<div ' . fw_attr_to_html( $attr ) . '><div class="' . esc_attr( $container_cls ) . '"><div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div></div></div>';
+	echo '<div ' . fw_attr_to_html( $attr ) . '>' . $ts_container_open . '<div class="text-muted small">' . esc_html__( 'No testimonials found.', 'fw' ) . '</div>' . $ts_container_close . '</div>';
 	return;
 }
 
@@ -42,15 +42,14 @@ $nav_config = array(
 	'dragMinThreshold'  => array( 'mouse' => 4, 'touch' => 10 ),
 );
 ?>
-<div <?php echo fw_attr_to_html( $attr ); ?>>
-	<div class="<?php echo esc_attr( $container_cls ); ?>">
+<div <?php echo fw_attr_to_html( $attr ); ?>><?php echo $ts_container_open; ?>
 
 		<div class="ts-thumbnav"
 		     aria-label="<?php echo esc_attr( __( 'Testimonials', 'fw' ) ); ?>"
 		     data-thumbnav-main="<?php echo esc_attr( wp_json_encode( $main_config ) ); ?>"
 		     data-thumbnav-nav="<?php echo esc_attr( wp_json_encode( $nav_config ) ); ?>">
 
-			<div class="ts-thumbnav__main splide">
+			<div class="ts-thumbnav__main testimonials-splide splide">
 				<div class="splide__track">
 					<ul class="splide__list">
 						<?php foreach ( $testimonials as $t ):
@@ -83,5 +82,5 @@ $nav_config = array(
 			</div>
 
 		</div>
-	</div>
+<?php echo $ts_container_close; ?>
 </div>

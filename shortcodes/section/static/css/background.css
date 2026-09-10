@@ -72,6 +72,23 @@
   z-index: 0;
   overflow: hidden;
 }
+/* A VIDEO-background section's OVERLAY scrim (rendered by the section view) sits ABOVE the JS-injected video
+   layer (fs-background-container, z-index:0) but BELOW the content, so overlaid hero text stays legible over the
+   footage. Folding the overlay into the section's own background-image instead (sc_bg_pro_style) buried it behind
+   the video (the openhero hero: white heading vanished as the video reveal brightened). Content is lifted above. */
+.background-video > .fs-background-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+/* Lift EVERY content child of a video-background section above the video (z:0) + scrim (z:1). The video wrapper is
+   a positioned z:0 element, so in-flow content would otherwise paint UNDER it (the hero heading rendered behind
+   the footage). Excludes the two background layers. */
+.background-video > :not(.fs-background-container):not(.fs-background-overlay):not(.sc-shape-divider):not(.pattern-layer) {
+  position: relative;
+  z-index: 2;
+}
 .fs-background-media {
   position: absolute;
   top: 0;

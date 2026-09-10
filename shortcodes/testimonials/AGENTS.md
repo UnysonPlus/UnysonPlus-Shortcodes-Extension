@@ -124,7 +124,7 @@ Wrapped in `group`.
 | `layout_type.grid.grid_columns` | `select` (`row-cols-1` / `row-cols-2` / `row-cols-3` / `row-cols-4`) | `row-cols-3` | Only present when `layout_type.layout_choice === 'grid'` |
 | `gutter` | `select` (`''` / `g-0` / `g-1` / `g-2` / `g-3` / `g-4` / `g-5`) | `''` (default) | Bootstrap `g-*` gutter utility between cards |
 | `text_align` | `select` (`''` / `text-center` / `text-end`) | `''` (left) | Bootstrap text alignment utility |
-| `container_type` | `select` (`''` / `container` / `container-fluid`) | `container` | Outer width wrapper. None = no Bootstrap container |
+| `container_type` | `select` (`''` / `container` / `container-fluid`) | `''` (None) | Outer width wrapper. Defaults to None — the element fills its parent and the section/column owns the width (like every other element). `container`/`container-fluid` emit a self-contained `.testimonials-container` / `--fluid` (stepped max-widths) as an opt-in escape hatch for full-width placements with no containing section. When set and the element is otherwise bare, the container class merges onto the `.testimonials` wrapper (one div). |
 | `items_per_slide` | `select` (`1` / `2` / `3`) | `1` | Carousel-only: cards grouped per slide |
 
 ### Tab: Style

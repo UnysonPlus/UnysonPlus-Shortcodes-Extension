@@ -12,6 +12,7 @@
 	text-decoration: none;
 }
 .fw-gallery.design-flipcards .fw-gallery__flip-inner {
+	display: block; /* the inner is a <span>; without this the inline box ignores width/aspect-ratio and collapses to 0 height */
 	position: relative;
 	width: 100%;
 	aspect-ratio: var(--gal-ratio, 4 / 3);

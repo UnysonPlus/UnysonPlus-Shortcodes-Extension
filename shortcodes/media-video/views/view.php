@@ -111,18 +111,41 @@ if ( $source === 'self_hosted' ) {
 		$inner = '<button type="button" class="video-facade" data-video-src="' . esc_attr( $iframe_src ) . '" aria-label="' . esc_attr__( 'Play video', 'fw' ) . '"' . $style . '>'
 			. '<span class="video-facade__play" aria-hidden="true"></span></button>';
 	} else {
+		// Defer a below-the-fold embed's iframe (Core Web Vitals) when the provider
+		// didn't already set it. The Lazy-load facade above is the stronger option —
+		// it loads no provider iframe at all until the visitor clicks.
+		if ( strpos( $embed, '<iframe' ) !== false && strpos( $embed, 'loading=' ) === false ) {
+			$embed = preg_replace( '/<iframe(\s)/i', '<iframe loading="lazy"$1', $embed, 1 );
+		}
 		$inner = $embed; // WordPress oEmbed output (already-sanitized HTML)
 	}
 }
+
+/* --- "Use as Section Background" (shared sc-bg-fill runtime) ----------------------- */
+// When on, the wrapper carries the shared `.sc-bg-fill` class (the runtime moves it into
+// the nearest <section> as a backdrop, lifting the section's content on top) plus our own
+// `video--bg` class (styles.css neutralises the max-width + aspect-ratio box so the video
+// fills the section, object-fit: cover). Max Width / Aspect Ratio no longer apply.
+$as_bg_val = isset( $atts['as_background'] ) ? $atts['as_background'] : 'no';
+$as_bg = function_exists( 'sc_section_background_is_on' )
+	? sc_section_background_is_on( $as_bg_val )
+	: ( $as_bg_val === 'yes' || $as_bg_val === true || $as_bg_val === '1' || $as_bg_val === 1 );
 
 /* --- Wrapper (Styling-tab bg + spacing, max-width, centered) ----------------------- */
 $atts['base_class']       = 'video';
 $atts['unique_id_prefix'] = 'vid-';
 $attr = sc_build_wrapper_attr( $atts );
 
+// `.video-wrapper` centers itself (media-video.css: margin-inline:auto) — no
+// dependency on the builder's global Bootstrap-style `.mx-auto` helper.
 $classes = array_values( array_filter( preg_split( '/\s+/', trim( $attr['class'] ?? '' ) ) ) );
-foreach ( array( 'video-wrapper', 'shortcode-container', 'mx-auto' ) as $fixed ) {
+foreach ( array( 'video-wrapper', 'shortcode-container' ) as $fixed ) {
 	if ( ! in_array( $fixed, $classes, true ) ) { $classes[] = $fixed; }
+}
+if ( $as_bg ) {
+	$classes[] = 'sc-bg-fill'; // shared runtime: fill the parent Section + sit behind its content
+	$classes[] = 'video--bg';  // element-specific fill CSS (neutralise ratio box + max-width)
+	if ( function_exists( 'sc_section_background_use' ) ) { sc_section_background_use(); }
 }
 $attr['class'] = implode( ' ', $classes );
 
@@ -141,21 +164,32 @@ if ( is_array( $raw_width ) ) {
 if ( $max_width === '' ) { $max_width = '600px'; }
 
 $existing_style = isset( $attr['style'] ) ? rtrim( trim( $attr['style'] ), ';' ) : '';
-$attr['style']  = ( $existing_style !== '' ? $existing_style . '; ' : '' ) . "max-width: {$max_width};";
+// In Section-Background mode the video FILLS the section, so a max-width cap must not apply
+// (styles.css also forces max-width:none, but keeping it out of the inline style is cleaner).
+$attr['style']  = $as_bg
+	? ( $existing_style !== '' ? $existing_style . ';' : '' )
+	: ( $existing_style !== '' ? $existing_style . '; ' : '' ) . "max-width: {$max_width};";
 
-// Responsive aspect-ratio container.
-$ratio_class_map = array(
-	'16x9' => 'ratio ratio-16x9',
-	'4x3'  => 'ratio ratio-4x3',
-	'1x1'  => 'ratio ratio-1x1',
-	'21x9' => 'ratio ratio-21x9',
-	'9x16' => 'ratio ratio-9x16',
-	'3x4'  => 'ratio ratio-3x4',
-);
-$ratio_class = $ratio_class_map[ $atts['ratio'] ?? '16x9' ] ?? 'ratio ratio-16x9';
-?>
-<div <?php echo fw_attr_to_html( $attr ); ?>>
-    <div class="<?php echo esc_attr( $ratio_class ); ?>">
-        <?php echo $inner; // self-hosted <video>, oEmbed iframe, or lazy facade ?>
-    </div>
-</div>
+// Aspect ratio → a data attribute the CSS maps to the box's padding-top (--vid-aspect),
+// replacing the Bootstrap `.ratio ratio-16x9` class pair.
+$valid_ratios = array( '16x9', '4x3', '1x1', '21x9', '9x16', '3x4' );
+$ratio_val    = in_array( $atts['ratio'] ?? '16x9', $valid_ratios, true ) ? $atts['ratio'] : '16x9';
+
+// Flatten one <div>: when the wrapper is bare (no Styling / Spacing / Animation / id /
+// class / custom CSS or attrs), the wrapper ITSELF becomes the aspect box — one fewer
+// element in the DOM. When the wrapper DOES carry something (e.g. padding + a background
+// = a framed video), keep a nested `.video-ratiobox` so that frame still shows AROUND the
+// video instead of being covered by the edge-to-edge media.
+$merge_box = function_exists( 'sc_wrapper_is_bare' ) ? sc_wrapper_is_bare( $atts ) : false;
+
+if ( $merge_box ) {
+	$attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' video-ratiobox' );
+	echo '<div ' . fw_attr_to_html( $attr ) . ' data-ratio="' . esc_attr( $ratio_val ) . '">'
+		. $inner // self-hosted <video>, oEmbed iframe, or lazy facade
+		. '</div>';
+} else {
+	echo '<div ' . fw_attr_to_html( $attr ) . '>'
+		. '<div class="video-ratiobox" data-ratio="' . esc_attr( $ratio_val ) . '">'
+		. $inner
+		. '</div></div>';
+}

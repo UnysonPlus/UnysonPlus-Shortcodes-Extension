@@ -18,7 +18,40 @@ $atts['base_class']       = 'image-content';
 $atts['unique_id_prefix'] = 'ic-';
 $atts['extra_attrs']      = [];
 
+// sc_build_wrapper_attr already applies the Styling-tab classes (incl. the new
+// Margin & Padding composite) via its `sc_build_wrapper_attr` filter, so the
+// wrapper carries them without an extra call here.
 $attr = sc_build_wrapper_attr( $atts );
+
+// Wrapper collapse. When the wrapper carries nothing — no Margin & Padding, no
+// entrance Animation, no Advanced-tab option (CSS ID/Class, Custom CSS/Attrs,
+// Responsive Hide, Overflow, Position) — its identity (image-content + unique
+// class) is merged onto the single CSS-grid/stack div, so a bare element renders
+// as ONE div instead of two. Any of those options → keep the standard wrapper.
+$ic_is_bare = function_exists( 'sc_wrapper_is_bare' ) ? sc_wrapper_is_bare( $atts ) : false;
+
+/**
+ * Emit the element shell. $grid_data is an assoc array of data-* attributes for the
+ * layout div. Bare → identity + layout class/attrs/style live on one div; otherwise
+ * the wrapper div wraps the layout div (today's structure).
+ */
+$ic_shell = function ( $grid_class, array $grid_data, $grid_style, $cells ) use ( $attr, $ic_is_bare ) {
+	if ( $ic_is_bare ) {
+		$a          = $attr;
+		$a['class'] = trim( ( isset( $a['class'] ) ? $a['class'] : '' ) . ' ' . $grid_class );
+		if ( $grid_style !== '' ) {
+			$a['style'] = ( isset( $a['style'] ) && $a['style'] !== '' ? rtrim( $a['style'], '; ' ) . ';' : '' ) . $grid_style;
+		}
+		foreach ( $grid_data as $k => $v ) { $a[ $k ] = $v; }
+		return '<div ' . fw_attr_to_html( $a ) . '>' . $cells . '</div>';
+	}
+	$data_html = '';
+	foreach ( $grid_data as $k => $v ) { $data_html .= ' ' . $k . '="' . esc_attr( $v ) . '"'; }
+	$style_html = $grid_style !== '' ? ' style="' . esc_attr( $grid_style ) . '"' : '';
+	return '<div ' . fw_attr_to_html( $attr ) . '>'
+		. '<div class="' . esc_attr( $grid_class ) . '"' . $data_html . $style_html . '>'
+		. $cells . '</div></div>';
+};
 
 $layout         = ! empty( $atts['layout'] ) ? $atts['layout'] : 'image-left';
 $vertical_align = ! empty( $atts['vertical_align'] ) ? $atts['vertical_align'] : 'align-items-center';
@@ -28,71 +61,81 @@ $image_shadow   = ! empty( $atts['image_shadow'] ) ? $atts['image_shadow'] : '';
 $bp             = ! empty( $atts['breakpoint'] ) && in_array( $atts['breakpoint'], [ 'sm', 'md', 'lg' ], true ) ? $atts['breakpoint'] : 'md';
 $content_align  = ! empty( $atts['content_align'] ) ? $atts['content_align'] : ''; // left / center / right (sc_alignment_field)
 
-// Gap = a gap-scale slug (e.g. "4"); legacy saves hold the full class ("g-4").
-$gap_raw = ! empty( $atts['gap'] ) ? $atts['gap'] : '4';
-if ( preg_match( '/^g[xy]?-/', $gap_raw ) ) {          // legacy full class
-	$gap_class   = $gap_raw;
-	$gap_y_class = 'gy-' . preg_replace( '/^g[xy]?-/', '', $gap_raw );
-} elseif ( $gap_raw !== '' ) {
-	$gap_class   = 'g-' . $gap_raw;
-	$gap_y_class = 'gy-' . $gap_raw;
-} else {                                                // inherit the site Default Gap
-	$gap_class = $gap_y_class = '';
+// Gap → a CSS length. The picker stores a gap-scale slug ("0".."5"); legacy saves
+// hold the full class ("g-4"). Map to the same rem scale the framework grid used.
+$gap_raw   = ! empty( $atts['gap'] ) ? (string) $atts['gap'] : '4';
+$gap_slug  = preg_replace( '/^g[xy]?-/', '', $gap_raw );
+$gap_scale = array( '0' => '0', '1' => '.25rem', '2' => '.5rem', '3' => '1rem', '4' => '1.5rem', '5' => '3rem' );
+$gap_css   = isset( $gap_scale[ $gap_slug ] ) ? $gap_scale[ $gap_slug ] : '1.5rem';
+
+// Vertical alignment → a bare align-items value. Stored as "align-items-{start|center|end}".
+$valign_css = str_replace( 'align-items-', '', $vertical_align );
+if ( ! in_array( $valign_css, array( 'start', 'center', 'end', 'stretch' ), true ) ) {
+	$valign_css = 'center';
 }
 
-// Image / content split. New shape = a slider int (image column span 1–11, on a
-// 1–12 scale). Legacy shape = the old image-picker string "4-8".
-// Preferred shape = "n/d" (the image fraction; divider snaps to twelfths AND fifths).
-// Legacy shapes: a bare int span (out of 12) or the very old image-picker "4-8" string.
-// $image_col / $content_col are fw-col class SUFFIXES — a twelfth ("1".."11") or a fifth
-// ("15"/"25"/"35"/"45" = 1/5..4/5, matching fw-col-*-{15,25,35,45}).
+// Image / content split. Preferred shape = "n/d" (the image fraction; divider snaps
+// to twelfths AND fifths). Legacy shapes: a bare int span (out of 12) or the very old
+// image-picker "4-8" string.
+// $img_fr / $content_fr are the CSS grid column tracks (integer fr units). Fifths
+// stay on a /5 scale (1fr 4fr …); everything else resolves onto the /12 scale.
 $ratio_raw   = isset( $atts['column_ratio'] ) ? $atts['column_ratio'] : '1/3';
-$image_col   = '4';
-$content_col = '8';
+$img_fr      = 4;
+$content_fr  = 8;
 if ( is_string( $ratio_raw ) && strpos( $ratio_raw, '/' ) !== false ) {
 	$pp = explode( '/', $ratio_raw );
 	$rn = (int) $pp[0];
 	$rd = isset( $pp[1] ) ? (int) $pp[1] : 12;
 	if ( $rd === 5 ) {
-		$rn          = max( 1, min( 4, $rn ) );
-		$image_col   = $rn . '5';
-		$content_col = ( 5 - $rn ) . '5';
+		$rn         = max( 1, min( 4, $rn ) );
+		$img_fr     = $rn;
+		$content_fr = 5 - $rn;
 	} else {
-		$rd          = $rd > 0 ? $rd : 12;
-		$span        = max( 1, min( 11, (int) round( $rn * 12 / $rd ) ) );
-		$image_col   = (string) $span;
-		$content_col = (string) ( 12 - $span );
+		$rd         = $rd > 0 ? $rd : 12;
+		$span       = max( 1, min( 11, (int) round( $rn * 12 / $rd ) ) );
+		$img_fr     = $span;
+		$content_fr = 12 - $span;
 	}
 } elseif ( is_string( $ratio_raw ) && strpos( $ratio_raw, '-' ) !== false ) {
-	$parts       = explode( '-', $ratio_raw );
-	$span        = max( 1, min( 11, (int) $parts[0] ) );
-	$image_col   = (string) $span;
-	$content_col = (string) ( 12 - $span );
+	$parts      = explode( '-', $ratio_raw );
+	$span       = max( 1, min( 11, (int) $parts[0] ) );
+	$img_fr     = $span;
+	$content_fr = 12 - $span;
 } else {
-	$span        = max( 1, min( 11, (int) $ratio_raw ) );
-	$image_col   = (string) $span;
-	$content_col = (string) ( 12 - $span );
+	$span       = max( 1, min( 11, (int) $ratio_raw ) );
+	$img_fr     = $span;
+	$content_fr = 12 - $span;
 }
 
 // Image element ----------------------------------------------------------------
-$img_classes = [ 'img-fluid' ];
-if ( $image_radius !== 'rounded-0' ) {
-	$img_classes[] = $image_radius;
+// Self-contained: no .img-fluid / .rounded-* / .shadow-* / .w-100 utility classes.
+// Base sizing (max-width/height) is in the component stylesheet; radius, shadow and
+// width:100% (for cover / fixed-ratio) are emitted inline.
+$img_classes     = [ 'image-content__image' ];
+$img_style_parts = [];
+
+$radius_map = [ 'rounded-0' => '0', 'rounded-2' => '.375rem', 'rounded-3' => '.5rem', 'rounded-4' => '1rem', 'rounded-circle' => '50%' ];
+if ( isset( $radius_map[ $image_radius ] ) && $radius_map[ $image_radius ] !== '0' ) {
+	$img_style_parts[] = 'border-radius:' . $radius_map[ $image_radius ];
 }
-if ( ! empty( $image_shadow ) ) {
-	$img_classes[] = $image_shadow;
+$shadow_map = [
+	'shadow-sm' => '0 .125rem .25rem rgba(0,0,0,.075)',
+	'shadow'    => '0 .5rem 1rem rgba(0,0,0,.15)',
+	'shadow-lg' => '0 1rem 3rem rgba(0,0,0,.175)',
+];
+if ( ! empty( $image_shadow ) && isset( $shadow_map[ $image_shadow ] ) ) {
+	$img_style_parts[] = 'box-shadow:' . $shadow_map[ $image_shadow ];
 }
 
 $ratio_map   = [ '1x1' => '1 / 1', '4x3' => '4 / 3', '3x2' => '3 / 2', '16x9' => '16 / 9', '3x4' => '3 / 4' ];
 $image_ratio = ! empty( $atts['image_ratio'] ) && isset( $ratio_map[ $atts['image_ratio'] ] ) ? $atts['image_ratio'] : '';
 
-$img_style_parts = [];
 if ( $image_ratio !== '' ) {
-	$img_classes[]     = 'w-100';
+	$img_style_parts[] = 'width:100%';
 	$img_style_parts[] = 'aspect-ratio:' . $ratio_map[ $image_ratio ];
 	$img_style_parts[] = 'object-fit:' . ( $image_fit === 'contain' ? 'contain' : 'cover' );
 } elseif ( $image_fit === 'cover' ) {
-	$img_classes[]     = 'w-100';
+	$img_style_parts[] = 'width:100%';
 	$img_style_parts[] = 'object-fit:cover';
 	$img_style_parts[] = 'height:100%';
 }
@@ -178,51 +221,39 @@ if ( $layout === 'image-top' ) {
 		}
 	}
 	$stack_img_attr = $stack_img_styles ? ' style="' . esc_attr( implode( ';', $stack_img_styles ) ) . '"' : '';
-	?>
-	<div <?php echo fw_attr_to_html( $attr ); ?>>
-		<div class="image-content__stack fw-row<?php echo $gap_y_class ? ' ' . esc_attr( $gap_y_class ) : ''; ?>">
-			<?php if ( $image_html ) : ?>
-				<div class="the-image fw-col-12"<?php echo $stack_img_attr; ?>><?php echo $image_html; ?></div>
-			<?php endif; ?>
-			<div class="<?php echo esc_attr( $content_cls ); ?> fw-col-12"<?php echo $content_attr; ?>><?php echo $content_html; ?></div>
-		</div>
-	</div>
-	<?php
+
+	$cells = '';
+	if ( $image_html ) {
+		$cells .= '<div class="the-image image-content__media"' . $stack_img_attr . '>' . $image_html . '</div>';
+	}
+	$cells .= '<div class="' . esc_attr( $content_cls ) . ' image-content__body"' . $content_attr . '>' . $content_html . '</div>';
+
+	echo $ic_shell( 'image-content__stack', array(), '--ic-gap:' . $gap_css . ';', $cells ); // phpcs:ignore
 	return;
 }
 
 // ============================ SIDE BY SIDE (left / right) ========================
-$mobile_order          = ! empty( $atts['mobile_order'] ) ? $atts['mobile_order'] : 'image-first';
-$image_order_classes   = '';
-$content_order_classes = '';
+// CSS grid: the ratio, gap, vertical-align, breakpoint and source-order are carried
+// by data-attributes + custom properties (see static/css/styles.css). DOM order is
+// always image → content; the stylesheet reverses the columns for image-right and
+// applies the mobile Content-First swap.
+$mobile_order = ! empty( $atts['mobile_order'] ) ? $atts['mobile_order'] : 'image-first';
+$data_layout  = ( $layout === 'image-right' ) ? 'right' : 'left';
+// Emit the fr tracks WHOLE (fr is invalid inside calc()); --ic-cols-rev is the
+// reversed pair used for image-right.
+$grid_style   = sprintf(
+	'--ic-cols:%1$dfr %2$dfr;--ic-cols-rev:%2$dfr %1$dfr;--ic-gap:%3$s;--ic-valign:%4$s;',
+	$img_fr,
+	$content_fr,
+	$gap_css,
+	$valign_css
+);
 
-if ( $layout === 'image-left' ) {
-	if ( $mobile_order === 'content-first' ) {
-		$image_order_classes   = ' fw-order-2 fw-order-' . $bp . '-1';
-		$content_order_classes = ' fw-order-1 fw-order-' . $bp . '-2';
-	}
-} else { // image-right
-	if ( $mobile_order === 'content-first' ) {
-		$image_order_classes   = ' fw-order-2';
-		$content_order_classes = ' fw-order-1';
-	} else {
-		$image_order_classes   = ' fw-order-' . $bp . '-2';
-		$content_order_classes = ' fw-order-' . $bp . '-1';
-	}
-}
+$cells = '<div class="the-image image-content__media">' . $image_html . '</div>'
+	. '<div class="' . esc_attr( $content_cls ) . ' image-content__body"' . $content_attr . '>' . $content_html . '</div>';
 
-$row_class         = trim( 'fw-row ' . $vertical_align . ( $gap_class ? ' ' . $gap_class : '' ) );
-$image_col_class   = 'the-image fw-col-12 fw-col-' . $bp . '-' . $image_col . $image_order_classes;
-$content_col_class = $content_cls . ' fw-col-12 fw-col-' . $bp . '-' . $content_col . $content_order_classes;
-?>
-
-<div <?php echo fw_attr_to_html( $attr ); ?>>
-	<div class="<?php echo esc_attr( $row_class ); ?>">
-		<div class="<?php echo esc_attr( $image_col_class ); ?>">
-			<?php echo $image_html; ?>
-		</div>
-		<div class="<?php echo esc_attr( $content_col_class ); ?>"<?php echo $content_attr; ?>>
-			<?php echo $content_html; ?>
-		</div>
-	</div>
-</div>
+echo $ic_shell( 'image-content__grid', array(
+	'data-bp'     => $bp,
+	'data-layout' => $data_layout,
+	'data-mobile' => $mobile_order,
+), $grid_style, $cells ); // phpcs:ignore

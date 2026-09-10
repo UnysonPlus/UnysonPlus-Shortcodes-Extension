@@ -48,6 +48,13 @@ if ( ! function_exists( 'sc_bi_render' ) ) {
 		} elseif ( ! isset( $registry[ $design ] ) ) {
 			$design = 'card';
 		}
+		// Render-time enqueue of the resolved design's CSS (static/css/design[s]/<key>.css). The
+		// per-instance `fw_ext_shortcodes_enqueue_static:business_info` action is fired from a scan whose
+		// shortcode regex is NOT recursive, so on a deeply nested page-builder / Site-Converter tree it
+		// only reaches the outer elements — the action never fires for this one and the design CSS
+		// silently never loads, collapsing the design to an unstyled block stack. Deduped by handle.
+		if ( function_exists( 'fw_sc_design_enqueue_now' ) ) { fw_sc_design_enqueue_now( 'business_info', $design ); }
+
 
 		$day_labels = array(
 			'mon' => __( 'Monday', 'fw' ), 'tue' => __( 'Tuesday', 'fw' ), 'wed' => __( 'Wednesday', 'fw' ),

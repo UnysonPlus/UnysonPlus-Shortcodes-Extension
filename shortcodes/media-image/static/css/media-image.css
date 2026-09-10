@@ -1,0 +1,15 @@
+/* Media Image — self-contained styling. Just the responsive-image rule the
+   element needs (replaces the builder's global Bootstrap-style `.img-fluid`):
+   never overflow the column, keep the aspect ratio. */
+.media-image__img { display: block; max-width: 100%; height: auto; }
+
+/* Focal crop: when an Aspect Ratio is set, fw_image_tag adds inline
+   `aspect-ratio` + `object-fit` + `object-position` to the <img>. Nothing extra is
+   needed here — the inline style does the cropping — but a linked/lightbox image must
+   fill its anchor so the whole cropped box is clickable. */
+.media-image__lightbox { display: block; cursor: zoom-in; }
+
+/* Caption: a semantic <figure> that shrink-wraps to the image so the caption aligns to
+   the image's width (not the whole column), with a quiet caption line beneath. */
+.media-image__figure { margin: 0; width: -moz-fit-content; width: fit-content; max-width: 100%; }
+.media-image__caption { margin-top: .5rem; font-size: .875em; line-height: 1.45; color: #6b7280; }

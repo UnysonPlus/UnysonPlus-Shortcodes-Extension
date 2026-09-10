@@ -238,8 +238,8 @@ if ( ! function_exists( 'sc_render_card' ) ) {
         if ( $show_avatar && ! empty( $t['author_avatar']['url'] ) ) {
             $url = esc_url( $t['author_avatar']['url'] );
             // Center on mobile, normal flow desktop
-            $avatar_html = '<div class="testimonial-avatar text-center flex-shrink-0 mx-auto mb-3">'
-                . '<img src="' . $url . '" alt="' . esc_attr( $author_name ) . '" class="img-fluid '
+            $avatar_html = '<div class="testimonial-avatar">'
+                . '<img src="' . $url . '" alt="' . esc_attr( $author_name ) . '" loading="lazy" decoding="async" class="'
                 . esc_attr( $avatar_shape . ' ' . $avatar_size )
                 . '" style="width:' . $avatar_dim . 'px;height:' . $avatar_dim . 'px;object-fit:cover;" />'
                 . '</div>';
@@ -260,15 +260,15 @@ if ( ! function_exists( 'sc_render_card' ) ) {
         // Individual author pieces, built SEPARATELY so the Card Rows slot layout can place each one.
         $name_html = '';
         if ( $author_name ) {
-            $name_class = trim( 'testimonial-author fw-semibold ' . $author_name_color_class );
+            $name_class = trim( 'testimonial-author ' . $author_name_color_class );
             $name_html  = '<div class="' . esc_attr( $name_class ) . '"' . $maybe_style( $author_name_color_style ) . '>' . esc_html( $author_name ) . '</div>';
         }
         $role_html = $author_job
             ? '<span class="' . esc_attr( $job_class ) . '"' . $maybe_style( $author_job_color_style ) . '>' . esc_html( $author_job ) . '</span>'
             : '';
 
-        $quote_class = trim( 'testimonial-quote mb-3 ' . $quote_color_class );
-        $quote_only  = '<blockquote class="' . esc_attr( $quote_class ) . '"' . $maybe_style( $quote_color_style ) . '><p class="mb-0">'
+        $quote_class = trim( 'testimonial-quote ' . $quote_color_class );
+        $quote_only  = '<blockquote class="' . esc_attr( $quote_class ) . '"' . $maybe_style( $quote_color_style ) . '><p>'
             . sc_testimonial_quote_html( $content ) . '</p></blockquote>';
 
         // EXTRA TEXTS — optional stat/result rows (muted label + emphasized value) at the card footer, e.g.
@@ -333,7 +333,7 @@ if ( ! function_exists( 'sc_render_card' ) ) {
             : '';
         $author_block = $name_html . $author_meta;
         if ( $rating_html ) {
-            $author_block .= '<div class="mt-2">' . $rating_html . '</div>';
+            $author_block .= '<div class="testimonial-rating-row">' . $rating_html . '</div>';
         }
         $author_block .= $extra_html; // stat/result footer rows (no Card Rows layout → after the author block)
         $quote_html = $quote_only . $author_block;
@@ -345,7 +345,7 @@ if ( ! function_exists( 'sc_render_card' ) ) {
 
         // Stacked (top) or no avatar
         if ( ! $show_avatar || $avatar_position === 'top' ) {
-            echo '<div class="' . esc_attr( $classes ) . ' d-flex flex-column w-100 text-center">';
+            echo '<div class="' . esc_attr( $classes ) . ' testimonial-item--stacked">';
             if ( $show_avatar && $avatar_position === 'top' ) {
                 echo '<div>' . $avatar_html . '</div>';
             }
@@ -355,12 +355,12 @@ if ( ! function_exists( 'sc_render_card' ) ) {
         // Left / Right with mobile stacking
         elseif ( $avatar_position === 'left' || $avatar_position === 'right' ) {
             // Stack vertically on mobile (centered), horizontal from md up
-            $row_classes = 'd-flex flex-column flex-md-row align-items-start gap-3 w-100';
+            $row_classes = 'testimonial-item--split';
             if ( $avatar_position === 'right' ) {
-                $row_classes .= ' flex-md-row-reverse';
+                $row_classes .= ' testimonial-item--split-reverse';
             }
             // Body text centered on mobile, original alignment (or start) on md+
-            $body_text_classes = 'testimonial-body flex-grow-1 text-center text-md-start';
+            $body_text_classes = 'testimonial-body';
             echo '<div class="' . esc_attr( $classes ) . ' ' . $row_classes . '">';
             echo $avatar_html;
             echo '<div class="' . esc_attr( $body_text_classes ) . '">' . $quote_html . '</div>';

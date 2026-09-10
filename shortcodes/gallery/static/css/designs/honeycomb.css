@@ -1,30 +1,98 @@
-/* Gallery — Design: Honeycomb. Hexagon-clipped tiles in a responsive grid. */
+/* Gallery — Design: Honeycomb. Pointy-top hexagon tiles that truly interlock:
+   every other row is shifted by half a hexagon and the rows overlap vertically by
+   ~25% (the pointy top/bottom of each hex nests into the gap of the row above), so
+   it reads as a real honeycomb rather than a plain grid of hexagons.
+
+   How it works: the tiles are a flex-wrap flow sized to N per row (4 desktop /
+   3 tablet / 2 mobile). Each tile pulls the next row up by 1/4 of its height via a
+   negative margin-bottom (percentages resolve against the container width, and hex
+   height = width x 1.1547, so 1/4 height = 28.868% of width / N). Even-numbered rows
+   are shifted right by half a hex with translateX (visual only, so it never forces a
+   wrap); the container clips the half-hex overhang. */
+
 .fw-gallery.design-honeycomb .fw-gallery__honeycomb {
-	display: grid;
-	grid-template-columns: repeat(var(--hc-cols, 4), minmax(0, 1fr));
-	gap: var(--gal-gap, .5rem);
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 var(--gal-gap, .5rem);
+	/* Clip only the horizontal axis (the half-hex overhang of the shifted even rows);
+	   keep the vertical axis visible so a hover-enlarged tile in the bottom row can
+	   grow downward without its point being clipped. (overflow-x:clip pairs with
+	   overflow-y:visible; hidden would force the other axis to auto.) */
+	overflow-x: clip;
+	overflow-y: visible;
+	/* Reserve layout space for the LAST row's bottom points (their tiles carry the
+	   same negative margin-bottom that overlaps the rows) so the next element starts
+	   below them. */
+	padding-bottom: calc(28.868% / 4);
 }
+
 .fw-gallery.design-honeycomb .fw-gallery__item {
-	margin: 0;
+	/* top margin = the gap → a little vertical breathing room between the interlocked
+	   rows; bottom margin pulls the next row up by 1/4 hex height to interlock. */
+	margin: var(--gal-gap, .5rem) 0 calc(-28.868% / 4); /* desktop = 4 per row */
+	flex: 0 0 calc((100% - 3 * var(--gal-gap, .5rem)) / 4);
 	aspect-ratio: 1 / 1.1547; /* pointy-top hexagon */
 	-webkit-clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
 	clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
 	transition: transform .25s ease;
 }
-.fw-gallery.design-honeycomb .fw-gallery__item:hover { transform: scale(1.04); z-index: 2; }
 .fw-gallery.design-honeycomb .fw-gallery__media {
 	width: 100%;
 	height: 100%;
 	aspect-ratio: auto;
 	background: transparent;
 }
+.fw-gallery.design-honeycomb .fw-gallery__item:hover { transform: scale(1.04); z-index: 2; }
 
+/* Shift every even row right by half a hex. Desktop = 4 per row, so the 2nd row is
+   items 5-8, the 4th is 13-16, ... = the four indices 8n+5, 8n+6, 8n+7, 8n. */
+.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n+5),
+.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n+6),
+.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n+7),
+.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n) {
+	transform: translateX(calc(50% + var(--gal-gap, .5rem) / 2));
+}
+.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n+5):hover,
+.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n+6):hover,
+.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n+7):hover,
+.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n):hover {
+	transform: translateX(calc(50% + var(--gal-gap, .5rem) / 2)) scale(1.04);
+}
+
+/* Tablet: 3 per row. Even rows = items 4-6, 10-12, ... = 6n+4, 6n+5, 6n. */
 @media (max-width: 768px) {
-	.fw-gallery.design-honeycomb .fw-gallery__honeycomb { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+	.fw-gallery.design-honeycomb .fw-gallery__honeycomb { padding-bottom: calc(28.868% / 3); }
+	.fw-gallery.design-honeycomb .fw-gallery__item {
+		flex-basis: calc((100% - 2 * var(--gal-gap, .5rem)) / 3);
+		margin-bottom: calc(-28.868% / 3);
+	}
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n+5),
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n+6),
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n+7),
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(8n) { transform: none; }
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(6n+4),
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(6n+5),
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(6n) {
+		transform: translateX(calc(50% + var(--gal-gap, .5rem) / 2));
+	}
 }
+
+/* Mobile: 2 per row. Even rows = items 3-4, 7-8, ... = 4n+3, 4n. */
 @media (max-width: 480px) {
-	.fw-gallery.design-honeycomb .fw-gallery__honeycomb { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.fw-gallery.design-honeycomb .fw-gallery__honeycomb { padding-bottom: calc(28.868% / 2); }
+	.fw-gallery.design-honeycomb .fw-gallery__item {
+		flex-basis: calc((100% - var(--gal-gap, .5rem)) / 2);
+		margin-bottom: calc(-28.868% / 2);
+	}
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(6n+4),
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(6n+5),
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(6n) { transform: none; }
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(4n+3),
+	.fw-gallery.design-honeycomb .fw-gallery__item:nth-child(4n) {
+		transform: translateX(calc(50% + var(--gal-gap, .5rem) / 2));
+	}
 }
+
 @media (prefers-reduced-motion: reduce) {
 	.fw-gallery.design-honeycomb .fw-gallery__item { transition: none; }
 }
