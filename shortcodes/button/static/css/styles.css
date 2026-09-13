@@ -19,7 +19,6 @@
 	cursor: pointer;
 	user-select: none;
 	-webkit-user-select: none;
-	transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 /* Overridable APPEARANCE defaults at ZERO specificity (:where) so a Colour / Size / Shape
    Preset (`.btn-primary`, `.btn-lg`, … in the generated presets CSS) or a child theme ALWAYS
@@ -29,6 +28,9 @@
    a neutral outline border (so a preset with a transparent fill shows through, not a link),
    and compact sizing. */
 :where(.btn) {
+	/* transition lives here (zero specificity) so a Colour Preset's own transition — e.g. a converted
+	   source's .45s cubic-bezier lift — wins over this base easing regardless of load order. */
+	transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 	padding: 0.375rem 0.75rem;
 	font-size: 1rem;
 	border-radius: 0.375rem;
@@ -73,21 +75,21 @@
    preset and revert buttons to Bootstrap blue/grey. :where() removes that
    ordering hazard entirely. */
 :where(.btn-primary)   { color:#fff; background-color:#0d6efd; border-color:#0d6efd; }
-:where(.btn-primary):hover   { color:#fff; background-color:#0b5ed7; border-color:#0a58ca; }
+:where(.btn-primary:hover)   { color:#fff; background-color:#0b5ed7; border-color:#0a58ca; }
 :where(.btn-secondary) { color:#fff; background-color:#6c757d; border-color:#6c757d; }
-:where(.btn-secondary):hover { color:#fff; background-color:#5c636a; border-color:#565e64; }
+:where(.btn-secondary:hover) { color:#fff; background-color:#5c636a; border-color:#565e64; }
 :where(.btn-success)   { color:#fff; background-color:#198754; border-color:#198754; }
-:where(.btn-success):hover   { color:#fff; background-color:#157347; border-color:#146c43; }
+:where(.btn-success:hover)   { color:#fff; background-color:#157347; border-color:#146c43; }
 :where(.btn-danger)    { color:#fff; background-color:#dc3545; border-color:#dc3545; }
-:where(.btn-danger):hover    { color:#fff; background-color:#bb2d3b; border-color:#b02a37; }
+:where(.btn-danger:hover)    { color:#fff; background-color:#bb2d3b; border-color:#b02a37; }
 :where(.btn-warning)   { color:#000; background-color:#ffc107; border-color:#ffc107; }
-:where(.btn-warning):hover   { color:#000; background-color:#ffca2c; border-color:#ffc720; }
+:where(.btn-warning:hover)   { color:#000; background-color:#ffca2c; border-color:#ffc720; }
 :where(.btn-info)      { color:#000; background-color:#0dcaf0; border-color:#0dcaf0; }
-:where(.btn-info):hover      { color:#000; background-color:#31d2f2; border-color:#25cff2; }
+:where(.btn-info:hover)      { color:#000; background-color:#31d2f2; border-color:#25cff2; }
 :where(.btn-light)     { color:#000; background-color:#f8f9fa; border-color:#f8f9fa; }
-:where(.btn-light):hover     { color:#000; background-color:#d3d4d5; border-color:#c6c7c8; }
+:where(.btn-light:hover)     { color:#000; background-color:#d3d4d5; border-color:#c6c7c8; }
 :where(.btn-dark)      { color:#fff; background-color:#212529; border-color:#212529; }
-:where(.btn-dark):hover      { color:#fff; background-color:#1c1f23; border-color:#1a1e21; }
+:where(.btn-dark:hover)      { color:#fff; background-color:#1c1f23; border-color:#1a1e21; }
 .btn-link {
 	color:#0d6efd; background-color:transparent; border-color:transparent;
 	text-decoration:underline;
@@ -96,21 +98,21 @@
 
 /* --- Baseline outline variants ------------------------------------------ */
 :where(.btn-outline-primary)   { color:#0d6efd; border-color:#0d6efd; }
-:where(.btn-outline-primary):hover   { color:#fff; background-color:#0d6efd; border-color:#0d6efd; }
+:where(.btn-outline-primary:hover)   { color:#fff; background-color:#0d6efd; border-color:#0d6efd; }
 :where(.btn-outline-secondary) { color:#6c757d; border-color:#6c757d; }
-:where(.btn-outline-secondary):hover { color:#fff; background-color:#6c757d; border-color:#6c757d; }
+:where(.btn-outline-secondary:hover) { color:#fff; background-color:#6c757d; border-color:#6c757d; }
 :where(.btn-outline-success)   { color:#198754; border-color:#198754; }
-:where(.btn-outline-success):hover   { color:#fff; background-color:#198754; border-color:#198754; }
+:where(.btn-outline-success:hover)   { color:#fff; background-color:#198754; border-color:#198754; }
 :where(.btn-outline-danger)    { color:#dc3545; border-color:#dc3545; }
-:where(.btn-outline-danger):hover    { color:#fff; background-color:#dc3545; border-color:#dc3545; }
+:where(.btn-outline-danger:hover)    { color:#fff; background-color:#dc3545; border-color:#dc3545; }
 :where(.btn-outline-warning)   { color:#ffc107; border-color:#ffc107; }
-:where(.btn-outline-warning):hover   { color:#000; background-color:#ffc107; border-color:#ffc107; }
+:where(.btn-outline-warning:hover)   { color:#000; background-color:#ffc107; border-color:#ffc107; }
 :where(.btn-outline-info)      { color:#0dcaf0; border-color:#0dcaf0; }
-:where(.btn-outline-info):hover      { color:#000; background-color:#0dcaf0; border-color:#0dcaf0; }
+:where(.btn-outline-info:hover)      { color:#000; background-color:#0dcaf0; border-color:#0dcaf0; }
 :where(.btn-outline-light)     { color:#f8f9fa; border-color:#f8f9fa; }
-:where(.btn-outline-light):hover     { color:#000; background-color:#f8f9fa; border-color:#f8f9fa; }
+:where(.btn-outline-light:hover)     { color:#000; background-color:#f8f9fa; border-color:#f8f9fa; }
 :where(.btn-outline-dark)      { color:#212529; border-color:#212529; }
-:where(.btn-outline-dark):hover      { color:#fff; background-color:#212529; border-color:#212529; }
+:where(.btn-outline-dark:hover)      { color:#fff; background-color:#212529; border-color:#212529; }
 
 .btn-black {
 	background-color:#000;

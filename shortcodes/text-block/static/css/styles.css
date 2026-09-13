@@ -101,3 +101,12 @@
 	line-height: 0.86;
 	font-size: calc( ( var(--dc-lines, 3) * var(--fw-line, 1.6) - 0.15 ) / 1.03 * 1em );
 }
+
+/* --- Boxed text block (Styling → Box Style) — card-content rhythm ---------------
+   Inside a box the block's own padding IS the spacing; the first child's default
+   top margin (a paragraph's UA `margin-block-start: 1em`) and the last child's
+   bottom margin would otherwise add dead space inside the box and make its
+   padding read asymmetric (40px top vs 22px bottom). Scoped to boxed blocks only —
+   an unboxed text block keeps the normal document rhythm. */
+.text-block[class*="boxp-"] > :first-child { margin-top: 0; }
+.text-block[class*="boxp-"] > :last-child  { margin-bottom: 0; }

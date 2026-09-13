@@ -59,6 +59,21 @@ $options = [
                     ),
                 ],
             ],
+            'group_box' => [
+                'type'    => 'group',
+                'options' => [
+                    // A text block IS often a box in a real design: a glass callout around an intro paragraph,
+                    // a floating note / chip pinned over a hero, a bordered aside. The box is a reusable Box
+                    // Preset (Theme Settings → Components → Box Presets) — fill, border, corners, shadow, padding,
+                    // hover — stamped on the block wrapper as `boxp-{slug}`, exactly like a card's Box Style.
+                    'box_style' => function_exists( 'sc_card_box_style_field' )
+                        ? sc_card_box_style_field( array(
+                            'label' => __( 'Box Style', 'fw' ),
+                            'desc'  => __( 'Wrap this text in a reusable Box Preset — fill, border, corners, shadow, padding and hover effects (a callout, a glass card, a floating note). Manage presets in Theme Settings → Components → Box Presets.', 'fw' ),
+                        ) )
+                        : array( 'type' => 'hidden', 'value' => '' ),
+                ],
+            ],
             'group_layout' => [
                 'type'    => 'group',
                 'options' => [

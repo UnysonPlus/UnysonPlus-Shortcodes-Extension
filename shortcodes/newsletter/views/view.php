@@ -55,8 +55,7 @@ if ( ! function_exists( 'sc_nl_render' ) ) {
 			}
 			return '';
 		};
-		$style_var  = $var( 'accent_color', '--nl-accent' );
-		$style_var .= $var( 'field_bg', '--nl-field-bg' );
+		$style_var  = $var( 'field_bg', '--nl-field-bg' );
 		$style_var .= $var( 'bg_color', '--nl-bg' );
 		$style_var .= $var( 'text_color', '--nl-text' );
 
@@ -96,8 +95,29 @@ if ( ! function_exists( 'sc_nl_render' ) ) {
 		if ( $show_name ) {
 			echo '<input class="fw-nl__input fw-nl__input--name" type="text" name="name" placeholder="' . esc_attr( $name_ph ) . '" autocomplete="name" />';
 		}
+		// FIELD ICON — a glyph inside the email field. The input is wrapped so the icon can sit over its left inset
+		// (the wrapper is flex:1 like the input it replaces; the input pads past the glyph via CSS).
+		$field_icon = sc_get( 'field_icon', $atts, null );
+		$icon_html  = '';
+		if ( is_array( $field_icon ) && ! empty( $field_icon['type'] ) && 'none' !== $field_icon['type'] && function_exists( 'sc_icon_render' ) ) {
+			if ( 'icon-font' === $field_icon['type'] && isset( fw()->backend ) ) { $pt = fw()->backend->option_type( 'icon' ); if ( $pt && isset( $pt->packs_loader ) ) { $pt->packs_loader->enqueue_pack_for_icon( $field_icon ); } }
+			$icon_html = (string) sc_icon_render( $field_icon, array( 'class' => 'fw-nl__field-icon', 'aria_hidden' => true ) );
+		}
+		if ( '' !== $icon_html ) {
+			$ic = sc_get( 'field_icon_color', $atts, '' );
+			$ic_css = ( is_array( $ic ) && ! empty( $ic['custom'] ) ) ? ' style="--nl-icon:' . esc_attr( preg_replace( '/[^#0-9a-zA-Z(),.%s-]/', '', (string) $ic['custom'] ) ) . '"' : '';
+			echo '<span class="fw-nl__field fw-nl__field--icon"' . $ic_css . '>' . $icon_html;
+		}
 		echo '<input class="fw-nl__input fw-nl__input--email" type="email" name="email" required placeholder="' . esc_attr( $email_ph ) . '" autocomplete="email" />';
-		echo '<button class="fw-nl__btn" type="submit">' . esc_html( $btn ) . '</button>';
+		if ( '' !== $icon_html ) { echo '</span>'; }
+		// With a Button Preset the submit wears the theme's .btn classes and the preset owns its
+		// look; `fw-nl__btn--preset` tells this element's own CSS to stop painting it. The base
+		// `fw-nl__btn` class stays on in both cases — the layout rules and the loading-state
+		// spinner hang off it, and the JS finds the button by it.
+		$btn_preset = trim( (string) sc_get( 'button_preset', $atts, '' ) );
+		// The preset value may carry BOTH a colour preset and a size preset ('btn-silk btn-lg') — sanitize per token.
+		$btn_cls    = 'fw-nl__btn' . ( '' !== $btn_preset ? ' fw-nl__btn--preset btn ' . implode( ' ', array_filter( array_map( 'sanitize_html_class', preg_split( '/\s+/', $btn_preset ) ) ) ) : '' );
+		echo '<button class="' . esc_attr( $btn_cls ) . '" type="submit">' . esc_html( $btn ) . '</button>';
 		echo '</div>';
 
 		// Hidden fields: list id, source page, honeypot.

@@ -13,6 +13,11 @@
 .fw-nl__desc :last-child { margin-bottom: 0; }
 
 .fw-nl__fields { display: flex; gap: .55rem; }
+/* Field icon: the email input is wrapped so a glyph can sit over its left inset; the input pads past it. */
+.fw-nl__field--icon { position: relative; display: flex; flex: 1 1 auto; min-width: 0; }
+.fw-nl__field--icon > .fw-nl__input { flex: 1 1 auto; padding-left: 2.6em; }
+.fw-nl__field--icon > .fw-nl__field-icon { position: absolute; left: 1em; top: 50%; transform: translateY(-50%); width: 1.05em; height: 1.05em; font-size: 1em; line-height: 1; color: var(--nl-icon, currentColor); pointer-events: none; display: inline-flex; align-items: center; justify-content: center; }
+.fw-nl__field--icon > .fw-nl__field-icon svg, .fw-nl__field--icon > .fw-nl__field-icon img { width: 100%; height: 100%; }
 .fw-nl__input {
 	flex: 1 1 auto;
 	min-width: 0;
@@ -28,8 +33,18 @@
 	.fw-nl__input:focus { box-shadow: 0 0 0 3px rgba(74, 144, 217, .25); }
 }
 
+/* Layout + behaviour every submit button gets, preset or not. */
 .fw-nl__btn {
 	flex: 0 0 auto;
+	cursor: pointer;
+	transition: filter .2s ease, transform .2s ease;
+}
+/* The element's OWN paint — only when no Button Preset is chosen. With a preset the button
+ * carries the theme's `.btn .btn-<id>` classes and the preset owns colour, padding, radius
+ * and hover; these rules step aside via :not() rather than fighting on specificity, which
+ * is what would happen if they were overridden — a (0,3,0) reset would beat the theme's
+ * (0,2,0) `.btn.btn-primary` and strip the preset it was meant to reveal. */
+.fw-nl__btn:not(.fw-nl__btn--preset) {
 	padding: .8em 1.5em;
 	border: 0;
 	background: var(--nl-accent);
@@ -37,18 +52,17 @@
 	font: inherit;
 	font-weight: 600;
 	border-radius: .45rem;
-	cursor: pointer;
-	transition: filter .2s ease, transform .2s ease;
 }
-.fw-nl__btn:hover { filter: brightness(1.08); }
+.fw-nl__btn:not(.fw-nl__btn--preset):hover { filter: brightness(1.08); }
 .fw-nl__btn:disabled { opacity: .65; cursor: default; }
-.fw-nl__btn.is-loading { color: transparent; position: relative; }
+/* Specificity (0,3,0) so the loading state still hides the label under a preset's own colour. */
+.fw-nl .fw-nl__btn.is-loading { color: transparent; position: relative; }
 .fw-nl__btn.is-loading::after { content: ""; position: absolute; left: 50%; top: 50%; width: 1em; height: 1em; margin: -.5em 0 0 -.5em; border: 2px solid rgba(255, 255, 255, .4); border-top-color: #fff; border-radius: 50%; animation: fw-nl-spin .7s linear infinite; }
 @keyframes fw-nl-spin { to { transform: rotate(360deg); } }
 
 /* Roundness ---------------------------------------------------------------- */
-.fw-nl--round-rounded-0 .fw-nl__input, .fw-nl--round-rounded-0 .fw-nl__btn { border-radius: 0; }
-.fw-nl--round-pill .fw-nl__input, .fw-nl--round-pill .fw-nl__btn { border-radius: 2rem; }
+.fw-nl--round-rounded-0 .fw-nl__input, .fw-nl--round-rounded-0 .fw-nl__btn:not(.fw-nl__btn--preset) { border-radius: 0; }
+.fw-nl--round-pill .fw-nl__input, .fw-nl--round-pill .fw-nl__btn:not(.fw-nl__btn--preset) { border-radius: 2rem; }
 
 /* Honeypot — visually hidden. */
 .fw-nl__hp { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; opacity: 0; }
@@ -56,6 +70,8 @@
 .fw-nl__consent { margin-top: .6rem; font-size: .8rem; opacity: .75; }
 .fw-nl__consent a { color: var(--nl-accent); }
 .fw-nl__msg { margin-top: .7rem; font-weight: 600; min-height: 1.2em; }
+/* The live region takes no room until it has a message (a converted / laid-out form must measure like its source). */
+.fw-nl__msg:empty { display: none; }
 .fw-nl__msg.is-success { color: #2e9e5b; }
 .fw-nl__msg.is-error { color: #c0392b; }
 .fw-nl--text-center { text-align: center; }

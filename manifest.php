@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.14.93';
+$manifest['version'] = '1.15.9';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,32 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.7 - Newsletter: a Field Icon (icon-v2 picker) + Field Icon Color. A glyph rendered INSIDE the
+ *          email field before the placeholder (a mail envelope, a user mark), the input padded past it.
+ *          The Site Converter fills it from a converted signup form (an inline svg, a Lucide / FA id, or
+ *          a semantic fallback for another icon set). The submit's Button Preset value may now carry
+ *          a size preset too ("btn-silk btn-lg"), and the live-region message takes no room while
+ *          empty, so a converted form measures like its source.
+ *
+ * 1.15.4 - Newsletter: the "Button Color" picker is replaced by a Button Preset — the same
+ *          button-style-picker the Button element uses, sourced from Theme Settings → General →
+ *          Buttons — so the signup button matches the site's real buttons instead of wearing a
+ *          one-off colour. With a preset the submit carries `btn {preset}` and the preset owns
+ *          colour, padding, radius and hover; the element's own button CSS steps aside through
+ *          `:not(.fw-nl__btn--preset)` rather than an override, because a higher-specificity
+ *          reset would have beaten the theme's `.btn.btn-primary` and stripped the very preset it
+ *          was meant to reveal. None (the default) keeps the accent button on the theme's primary
+ *          colour. The old `accent_color` att is removed outright — the page builder re-derives
+ *          atts from the current options at render, so it simply no longer applies.
+ * 1.14.95 - Image Box: the "Button" call-to-action can now use the framework's Button Preset +
+ *          Size (the same pickers as the Button element, sourced from Theme Settings → General →
+ *          Buttons), so an Image Box CTA matches the site's real buttons. Style = Button now emits
+ *          `imgbox__btn btn {preset} {size}` (the base class only positions it; the `btn` classes
+ *          carry the look); Link / Arrow styles are unchanged. Also: fixed low-contrast paragraphs
+ *          on every dark/coloured design (overlay + split-panel now colour the <p> light, beating a
+ *          theme's `.entry-content p`), fixed the Split Panel layout (its row was missing
+ *          `display:flex`, so image + panel stacked instead of sitting side by side), and reorganised
+ *          the Styling tab into Presets / Colors / Typography / Spacing groups.
  * 1.14.93 - Media Image: three new capabilities. FOCAL CROP — an Aspect Ratio (1:1 … 9:16) drops the
  *          image into a ratio box and Fit (Cover/Contain) + Crop Position (a 9-point object-position,
  *          "like a background-image position") choose which part shows. CAPTION — an optional caption

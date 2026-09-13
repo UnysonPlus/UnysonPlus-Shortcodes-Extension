@@ -52,25 +52,4 @@ $options = array(
 		),
 		'template'        => '<span class="btn btn-size-preview-{{- id }}">{{- size_name }}</span>',
 	),
-	'button_animations' => array(
-		'label'           => __( 'Hover Animations', 'fw' ),
-		'type'            => 'addable-box',
-		'value'           => function_exists( 'unysonplus_default_custom_hover_animations' ) ? unysonplus_default_custom_hover_animations() : array(),
-		'desc'            => __( 'Add your own button hover effects with CSS. Use <code>{{BTN}}</code> for this button and <code>{{ANIM}}</code> for a unique keyframes name. Each entry appears in the Button shortcode\'s Hover Animation dropdown (as <code>.btnfx-c-{slug}</code>).', 'fw' ),
-		'sortable'        => true,
-		'add-button-text' => __( 'Add Animation', 'fw' ),
-		'box-options'     => array(
-			'id'   => array( 'type' => 'unique' ),
-			'name' => array( 'label' => __( 'Name', 'fw' ), 'type' => 'text', 'value' => '' ),
-			'css'  => array(
-				'label'       => __( 'CSS', 'fw' ),
-				'type'        => 'code-editor',
-				'mode'        => 'css',
-				'height'      => 160,
-				'placeholder' => "{{BTN}}:hover { animation: {{ANIM}} .6s ease; }\n@keyframes {{ANIM}} {\n  0%   { transform: scale(1); }\n  50%  { transform: scale(1.1); }\n  100% { transform: scale(1); }\n}",
-				'desc'        => __( '<code>{{BTN}}</code> = this button, <code>{{ANIM}}</code> = a unique keyframes name.', 'fw' ),
-			),
-		),
-		'template'        => '<span class="btn btn-primary btnfx-preview-{{- id }}">{{- name }}</span>',
-	),
 );

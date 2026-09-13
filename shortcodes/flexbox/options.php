@@ -851,16 +851,21 @@ $options = [
 							'luminosity'   => __( 'Luminosity', 'fw' ),
 						],
 					],
+					// Clip Shape / Edge Fade follow the SAME multi-picker shape as Content Width above:
+					// label:false on the wrapper + the real label/desc/help on the picker sub-option +
+					// show_borders:false, so they render as one aligned row (label | control) that lines
+					// up with Blend Mode and the rest — not a bordered box with a redundant inner label.
 					'clip_shape' => [
-						'type'   => 'multi-picker',
-						'label'  => __( 'Clip Shape', 'fw' ),
-						'desc'   => __( 'Cut the box to a shape instead of a rectangle.', 'fw' ),
-						'help'   => __( 'CSS clip-path. The named shapes cover the common cases (a circle avatar, a diagonal band edge, a chevron, a corner notch); Custom takes any clip-path value, e.g. polygon(0 0, 100% 0, 100% 85%, 0 100%). The clip applies to the box AND its background — content outside the shape is hidden, so keep padding generous on angled shapes.', 'fw' ),
-						'value'  => [ 'shape' => 'none' ],
-						'picker' => [
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'value'        => [ 'shape' => 'none' ],
+						'picker'       => [
 							'shape' => [
 								'type'    => 'select',
-								'label'   => __( 'Shape', 'fw' ),
+								'label'   => __( 'Clip Shape', 'fw' ),
+								'desc'    => __( 'Cut the box to a shape instead of a rectangle.', 'fw' ),
+								'help'    => __( 'CSS clip-path. The named shapes cover the common cases (a circle avatar, a diagonal band edge, a chevron, a corner notch); Custom takes any clip-path value, e.g. polygon(0 0, 100% 0, 100% 85%, 0 100%). The clip applies to the box AND its background — content outside the shape is hidden, so keep padding generous on angled shapes.', 'fw' ),
 								'value'   => 'none',
 								'choices' => [
 									'none'         => __( 'None', 'fw' ),
@@ -874,7 +879,7 @@ $options = [
 								],
 							],
 						],
-						'choices' => [
+						'choices'      => [
 							'custom' => [
 								'clip_custom' => [
 									'type'        => 'text',
@@ -885,17 +890,19 @@ $options = [
 								],
 							],
 						],
+						'show_borders' => false,
 					],
 					'mask_fade' => [
-						'type'   => 'multi-picker',
-						'label'  => __( 'Edge Fade', 'fw' ),
-						'desc'   => __( 'Dissolve the box into the background at its edges.', 'fw' ),
-						'help'   => __( 'CSS mask-image. Use for logo strips and scrolling rails that should fade out at the ends, or an image that should melt into the section below it. Fade Size is how far in from each edge the fade reaches.', 'fw' ),
-						'value'  => [ 'edges' => 'none' ],
-						'picker' => [
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'value'        => [ 'edges' => 'none' ],
+						'picker'       => [
 							'edges' => [
 								'type'    => 'select',
-								'label'   => __( 'Edges', 'fw' ),
+								'label'   => __( 'Edge Fade', 'fw' ),
+								'desc'    => __( 'Dissolve the box into the background at its edges.', 'fw' ),
+								'help'    => __( 'CSS mask-image. Use for logo strips and scrolling rails that should fade out at the ends, or an image that should melt into the section below it. Fade Size is how far in from each edge the fade reaches.', 'fw' ),
 								'value'   => 'none',
 								'choices' => [
 									'none'   => __( 'None', 'fw' ),
@@ -907,13 +914,14 @@ $options = [
 								],
 							],
 						],
-						'choices' => [
+						'choices'      => [
 							'x'      => [ 'mask_size_x' => $mask_size_field() ],
 							'y'      => [ 'mask_size_y' => $mask_size_field() ],
 							'top'    => [ 'mask_size_top' => $mask_size_field() ],
 							'bottom' => [ 'mask_size_bottom' => $mask_size_field() ],
 							'all'    => [ 'mask_size_all' => $mask_size_field() ],
 						],
+						'show_borders' => false,
 					],
 				],
 			],

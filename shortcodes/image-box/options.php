@@ -430,18 +430,28 @@ $options = [
         'title'   => __( 'Styling', 'fw' ),
         'type'    => 'tab',
         'options' => [
+            // ---- Presets: element / image / icon-badge design pickers ----
+            'group_presets' => [
+                'type'    => 'group',
+                'options' => [
+                    'box_style'         => sc_card_box_style_field(),
+                    'image_style'       => function_exists( 'sc_image_style_field' )
+                        ? sc_image_style_field()
+                        : [ 'type' => 'select', 'label' => __( 'Image Style', 'fw' ), 'value' => '', 'choices' => [ '' => __( 'None', 'fw' ) ] ],
+                    'icon_badge_preset' => sc_icon_badge_preset_field(),
+                ],
+            ],
+            // ---- Colors: surface + text + icon + accent ----
             'group_colors' => [
                 'type'    => 'group',
                 'options' => [
-                    'box_style'        => sc_card_box_style_field(),
-                    'image_style'      => function_exists( 'sc_image_style_field' )
-                        ? sc_image_style_field()
-                        : [ 'type' => 'select', 'label' => __( 'Image Style', 'fw' ), 'value' => '', 'choices' => [ '' => __( 'None', 'fw' ) ] ],
-                    'bg_color'         => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
-                    'font_size_preset' => sc_font_size_field( array(
-                        'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),
+                    'bg_color'       => sc_color_field_compact( array( 'label' => __( 'Background Color', 'fw' ), 'kind' => 'bg' ) ),
+                    'accent_color'   => sc_color_field_compact( array(
+                        'label' => __( 'Accent Color', 'fw' ),
+                        'kind'  => 'bg',
+                        'desc'  => __( 'Used for the button background, arrow link and frame / badge accents.', 'fw' ),
                     ) ),
-                    'title_color' => sc_color_field_compact( array(
+                    'title_color'    => sc_color_field_compact( array(
                         'label' => __( 'Title Color', 'fw' ),
                         'desc'  => __( 'Color applied to the title.', 'fw' ),
                     ) ),
@@ -449,22 +459,50 @@ $options = [
                         'label' => __( 'Eyebrow / Subtitle Color', 'fw' ),
                         'desc'  => __( 'Color applied to the small eyebrow line above the title.', 'fw' ),
                     ) ),
-                    'content_color' => sc_color_field_compact( array(
+                    'content_color'  => sc_color_field_compact( array(
                         'label' => __( 'Text Color', 'fw' ),
                         'desc'  => __( 'Color applied to the body text.', 'fw' ),
                     ) ),
-                    'icon_color' => sc_color_field_compact( array(
+                    'icon_color'     => sc_color_field_compact( array(
                         'label' => __( 'Icon Color', 'fw' ),
                         'desc'  => __( 'Color applied to the icon (font icons only).', 'fw' ),
                     ) ),
-                    'icon_badge_preset' => sc_icon_badge_preset_field(),
-                    'accent_color' => sc_color_field_compact( array(
-                        'label' => __( 'Accent Color', 'fw' ),
-                        'kind'  => 'bg',
-                        'desc'  => __( 'Used for the button background, arrow link and frame / badge accents.', 'fw' ),
+                ],
+            ],
+            // ---- Typography ----
+            'group_typography' => [
+                'type'    => 'group',
+                'options' => [
+                    'font_size_preset' => sc_font_size_field( array(
+                        'desc' => __( 'A named size from the framework presets. Customizable in Theme Settings on the official Unyson+ theme.', 'fw' ),
                     ) ),
                 ],
             ],
+            // ---- Button (framework preset + size) — used when Content tab's Button / Link Style = "Button" ----
+            'group_button_style' => [
+                'type'    => 'group',
+                'options' => [
+                    'button_preset' => [
+                        'type'         => 'button-style-picker',
+                        'label'        => __( 'Button Preset', 'fw' ),
+                        'desc'         => __( 'Applies when Button / Link Style (Design tab) is "Button". Sourced from Theme Settings → General → Buttons (includes the outline presets).', 'fw' ),
+                        'choices'      => function_exists( 'sc_get_button_style_choices' ) ? sc_get_button_style_choices() : array( '' => __( 'Default', 'fw' ) ),
+                        'value'        => function_exists( 'sc_get_button_style_default' ) ? sc_get_button_style_default() : '',
+                        'allow_none'   => false,
+                        'preview_text' => __( 'Button', 'fw' ),
+                    ],
+                    'button_size' => [
+                        'type'         => 'button-style-picker',
+                        'label'        => __( 'Button Size', 'fw' ),
+                        'desc'         => __( 'Applies when Button / Link Style (Design tab) is "Button". Sourced from Theme Settings → General → Buttons → Sizes.', 'fw' ),
+                        'choices'      => function_exists( 'sc_get_button_size_choices' ) ? sc_get_button_size_choices() : array( '' => __( 'Normal', 'fw' ) ),
+                        'value'        => '',
+                        'preview_text' => __( 'Button', 'fw' ),
+                        'preview_base' => 'btn btn-primary',
+                    ],
+                ],
+            ],
+            // ---- Spacing ----
             'group_spacings' => [
                 'type'    => 'group',
                 'options' => [

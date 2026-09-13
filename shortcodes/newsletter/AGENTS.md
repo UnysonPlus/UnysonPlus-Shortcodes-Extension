@@ -27,17 +27,19 @@ true to suppress the admin email).
 
 ## Options (atts)
 - **Content**: `title`, `description`, `show_name` (+ `name_placeholder`),
-  `email_placeholder`, `button_label`, `consent_text`, `success_message`,
+  `email_placeholder`, `field_icon` (icon, a glyph inside the email field) + `field_icon_color`, `button_label`, `consent_text`, `success_message`,
   `error_message`, `list_id` (passed to the hook).
 - **Design**: `design` (`inline|stacked|boxed`), `align`, `rounded`
   (`rounded-0|rounded|pill`).
-- **Styling**: `accent_color` (button), `field_bg`, `bg_color` (boxed),
+- **Styling**: `button_preset` (a Theme Settings → Buttons preset for the submit — may carry a size token too, "btn-silk btn-lg", sanitized per token; None = accent button on the theme primary colour), `field_bg`, `bg_color` (boxed),
   `text_color` (→ `--nl-*`), `font_size_preset`, `spacing`.
 
 ## Rendering
 `view.php` (`sc_nl_render`) outputs a `<form class="fw-nl__form" data-ajax
 data-nonce data-success data-error>` with the email (+ optional name) inputs, a
-submit button, hidden `list`/`source`/`fw_hp` fields, optional consent text, and a
+submit button, hidden `list`/`source`/`fw_hp` fields (with a `field_icon` the email input sits in a
+`.fw-nl__field--icon` wrapper with the rendered glyph absolutely placed at its left inset; `.fw-nl__msg` is
+`display:none` while empty), optional consent text, and a
 `.fw-nl__msg` live region. `scripts.js` posts via `fetch` to admin-ajax and shows
 the configured success/error message (button shows a spinner while submitting).
 

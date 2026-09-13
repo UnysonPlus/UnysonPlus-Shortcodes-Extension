@@ -365,10 +365,22 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
                a styled <span> so we never nest anchors. ---------------------- */
         $button_html = '';
         if ( $btn_style !== 'none' && ( $btn_label !== '' || $btn_style === 'arrow' ) ) {
-            $btn_cls = 'imgbox__btn imgbox__btn--' . sanitize_html_class( $btn_style );
-            $arrow   = $btn_style === 'arrow' || $btn_style === 'link'
-                ? ' <span class="imgbox__btn-arrow" aria-hidden="true">→</span>' : '';
-            $inner   = ( $btn_label !== '' ? esc_html( $btn_label ) : '' ) . ( $btn_style === 'arrow' && $btn_label === '' ? '<span class="imgbox__btn-arrow" aria-hidden="true">→</span>' : $arrow );
+            if ( $btn_style === 'button' ) {
+                // Framework button: use the Button-Style preset + Size (Theme Settings → General →
+                // Buttons), so the CTA matches the site's real buttons. `.imgbox__btn` (base only,
+                // no --button accent modifier) just positions it inside the card; `btn {preset}
+                // {size}` carries the styling. Falls back to a bare `.btn` when no preset is picked.
+                $btn_preset = function_exists( 'sc_sanitize_class' ) ? sc_sanitize_class( (string) sc_get( 'button_preset', $atts, '' ) ) : sanitize_html_class( (string) sc_get( 'button_preset', $atts, '' ) );
+                $btn_size   = function_exists( 'sc_sanitize_class' ) ? sc_sanitize_class( (string) sc_get( 'button_size', $atts, '' ) ) : sanitize_html_class( (string) sc_get( 'button_size', $atts, '' ) );
+                $btn_cls    = trim( 'imgbox__btn btn ' . $btn_preset . ' ' . $btn_size );
+                $btn_cls    = preg_replace( '/\s+/', ' ', $btn_cls );
+                $inner      = esc_html( $btn_label !== '' ? $btn_label : __( 'Read More', 'fw' ) );
+            } else {
+                $btn_cls = 'imgbox__btn imgbox__btn--' . sanitize_html_class( $btn_style );
+                $arrow   = $btn_style === 'arrow' || $btn_style === 'link'
+                    ? ' <span class="imgbox__btn-arrow" aria-hidden="true">→</span>' : '';
+                $inner   = ( $btn_label !== '' ? esc_html( $btn_label ) : '' ) . ( $btn_style === 'arrow' && $btn_label === '' ? '<span class="imgbox__btn-arrow" aria-hidden="true">→</span>' : $arrow );
+            }
 
             if ( $box_is_link ) {
                 $button_html = '<span class="' . esc_attr( $btn_cls ) . '">' . $inner . '</span>';
@@ -383,7 +395,9 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
             'imgbox',
             'imgbox--design-' . sanitize_html_class( $design ),
             'imgbox--part-' . sanitize_html_class( $part ),
-            'imgbox--ratio-' . sanitize_html_class( $ratio ),
+            // The option values are `ratio-16-9` / `ratio-4-3` / `original`; the stylesheet keys on `.imgbox--ratio-16-9`,
+            // so strip the value's own `ratio-` prefix (it produced `imgbox--ratio-ratio-16-9` = no crop ever applied).
+            'imgbox--ratio-' . sanitize_html_class( preg_replace( '/^ratio-/', '', (string) $ratio ) ),
             'imgbox--fx-' . sanitize_html_class( $hover_fx ),
             'imgbox--speed-' . sanitize_html_class( $speed ),
         );

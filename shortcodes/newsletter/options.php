@@ -45,6 +45,14 @@ $options = array(
 						'label' => __( 'Email Placeholder', 'fw' ),
 						'value' => __( 'Your email address', 'fw' ),
 					),
+					// A leading glyph INSIDE the email field (an envelope beside the placeholder) — the icon picker's
+					// packs / SVG / upload; rendered by sc_icon_render at the field's start, the input padded past it.
+					'field_icon' => array(
+						'type'  => 'icon',
+						'label' => __( 'Field Icon', 'fw' ),
+						'desc'  => __( 'Optional glyph shown inside the email field, before the placeholder.', 'fw' ),
+					),
+					'field_icon_color' => sc_color_field_compact( array( 'label' => __( 'Field Icon Color', 'fw' ), 'kind' => 'text' ) ),
 					'button_label' => array(
 						'type'  => 'text',
 						'label' => __( 'Button Label', 'fw' ),
@@ -140,7 +148,20 @@ $options = array(
 			'group_colors' => array(
 				'type'    => 'group',
 				'options' => array(
-					'accent_color' => sc_color_field_compact( array( 'label' => __( 'Button Color', 'fw' ), 'kind' => 'bg' ) ),
+					// Button Preset replaces the old free "Button Color" picker, so the form button
+					// wears the same Theme Settings → Buttons presets as every other button on the
+					// site instead of a one-off colour. None keeps the accent button, which follows
+					// the theme's primary colour.
+					'button_preset' => array(
+						'type'         => 'button-style-picker',
+						'label'        => __( 'Button Preset', 'fw' ),
+						'choices'      => function_exists( 'sc_get_button_style_choices' ) ? sc_get_button_style_choices() : array(),
+						'value'        => '',
+						'allow_none'   => true,
+						'preview_text' => __( 'Subscribe', 'fw' ),
+						'desc'         => __( 'Apply a themed Button Preset (Theme Settings → General → Buttons) to the submit button, so it matches the rest of the site. Leave as None for the accent button, which follows the primary colour of the theme.', 'fw' ),
+						'help'         => function_exists( 'sc_styling_help_text' ) ? sc_styling_help_text( 'button_style' ) : '',
+					),
 					'field_bg'     => sc_color_field_compact( array( 'label' => __( 'Field Background', 'fw' ), 'kind' => 'bg' ) ),
 					'bg_color'     => sc_color_field_compact( array( 'label' => __( 'Box Background (Boxed)', 'fw' ), 'kind' => 'bg' ) ),
 					'text_color'   => sc_color_field_compact( array( 'label' => __( 'Text Color', 'fw' ) ) ),

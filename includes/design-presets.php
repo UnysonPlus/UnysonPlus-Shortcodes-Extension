@@ -29,7 +29,9 @@ if ( ! function_exists( 'sc_design_enabled_shortcodes' ) ) :
 	 * a Design-Pack plugin could enable its own) without touching this file.
 	 */
 	function sc_design_enabled_shortcodes() {
-		return apply_filters( 'unysonplus_design_enabled_shortcodes', array( 'image_box' ) );
+		// Presets ("Element Designs") tab disabled for now — was only on image_box.
+		// Re-enable by putting the tag(s) back, e.g. array( 'image_box' ).
+		return apply_filters( 'unysonplus_design_enabled_shortcodes', array( /* 'image_box' */ ) );
 	}
 endif;
 

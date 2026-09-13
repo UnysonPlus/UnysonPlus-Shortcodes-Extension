@@ -10,6 +10,19 @@ wp_enqueue_style(
 	array(),
 	$ext->manifest->get_version()
 );
+
+// The Button Preset option renders the submit as a themed .btn preset — pull the [button]
+// shortcode's base CSS (display, padding, border, transitions) so it renders correctly. Colours
+// come from the theme's globally-output Button presets (Theme Settings → Buttons). Without this,
+// a page with a newsletter but no [button] element got the preset's colours over a browser-default
+// button box. A no-op when no preset is chosen. Same wiring as the Pricing Table.
+wp_enqueue_style(
+	'fw-shortcode-button',
+	fw_min_uri( $ext->get_declared_URI( '/shortcodes/button/static/css/styles.css' ) ),
+	array(),
+	$ext->manifest->get_version()
+);
+
 wp_enqueue_script(
 	'fw-shortcode-newsletter',
 	$ext->get_declared_URI( '/shortcodes/newsletter/static/js/scripts.js' ),

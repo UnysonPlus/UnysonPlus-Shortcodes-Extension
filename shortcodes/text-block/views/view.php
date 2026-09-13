@@ -153,6 +153,12 @@ if ( $dc_on ) {
     $layout[] = 'tb-dropcap--gap-' . $gap;
 }
 
+// Box Style → the Box Preset class on the wrapper (the preset's fill / border / radius / shadow / padding /
+// hover all ride on that class). A boxed block always wraps (the class forces the wrapper below).
+if ( function_exists( 'sc_card_box_style_class' ) ) {
+    $__boxp = sc_card_box_style_class( $atts );
+    if ( $__boxp !== '' ) { $layout[] = $__boxp; }
+}
 if ( $layout ) {
     $atts['css_class'] = trim( ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) . ' ' . implode( ' ', $layout ) );
 }

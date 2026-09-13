@@ -1241,7 +1241,8 @@ if ( ! function_exists( 'sc_get_hover_animation_choices' ) ) :
 			'btnfx-neon'           => __( 'Neon glow', 'fw' ),
 		);
 
-		// Append the user's custom hover animations (Theme Settings → Buttons).
+		// Append the user's custom hover animations — the SHARED library (Theme Settings → Components →
+		// Hover Animations), which Box Presets consume too.
 		if ( function_exists( 'unysonplus_get_custom_hover_animations' ) && function_exists( 'unysonplus_custom_hover_animation_slug_map' ) ) {
 			$slug_map = unysonplus_custom_hover_animation_slug_map();
 			foreach ( unysonplus_get_custom_hover_animations() as $ca ) {
@@ -2413,6 +2414,18 @@ if ( ! function_exists( 'sc_emit_button_size_preview_saved_css' ) ) :
 			$rad = $size_len( $bs['border_radius'] ?? '' );
 			if ( $rad !== '' ) { $parts[] = "border-radius:{$rad}"; }
 
+			// The preview must SIZE like the front-end `.btn-{slug}` rule (css-tokens.php) — line-height, the
+			// min/max widths, and above all a FIXED min-height with inline-flex centring. Without these a
+			// "Large" size that the source built as a 58px-tall pill with 10px type and no vertical padding
+			// previewed as a tiny sliver next to a padded "Medium" giant — the exact opposite of the real render.
+			if ( ! empty( $bs['line_height'] ) ) { $parts[] = 'line-height:' . preg_replace( '/[^0-9.a-z%]/i', '', (string) $bs['line_height'] ); }
+			$min_w = $size_len( $bs['min_width'] ?? '' );
+			if ( $min_w !== '' ) { $parts[] = "min-width:{$min_w}"; }
+			$max_w = $size_len( $bs['max_width'] ?? '' );
+			if ( $max_w !== '' ) { $parts[] = "max-width:{$max_w}"; }
+			$min_h = $size_len( $bs['min_height'] ?? '' );
+			if ( $min_h !== '' ) { $parts[] = "min-height:{$min_h}"; $parts[] = 'display:inline-flex'; $parts[] = 'align-items:center'; $parts[] = 'justify-content:center'; $parts[] = 'box-sizing:border-box'; }
+
 			// Default fill so the preview reads as a real button, not a transparent shape.
 			// Ride the brand PRIMARY preset (almost always present) with a hardcoded
 			// fallback, NOT a specific palette slug like `--color-blue` — a curated
@@ -2461,11 +2474,16 @@ if ( ! function_exists( 'sc_emit_button_hover_animation_preview_css' ) ) :
 			$css = preg_replace( '/javascript\s*:/i', '', $css );
 			$css = preg_replace( '/expression\s*\(/i', '', $css );
 
+			// {{SELECTOR}} is the library's token ({{BTN}} = legacy alias). Replacing only {{BTN}} left
+			// `{{SELECTOR}}:hover{…}` in the sheet — its braces split the rule into a BARE `:hover{animation…}`,
+			// a universal rule that hover-animated the entire wp-admin. Every token must resolve here.
 			$css = str_replace(
-				array( '{{BTN}}', '{{ANIM}}' ),
-				array( ".btnfx-preview-{$id}", "btnfxprev-{$id}" ),
+				array( '{{SELECTOR}}', '{{BTN}}', '{{ANIM}}' ),
+				array( ".btnfx-preview-{$id}", ".btnfx-preview-{$id}", "btnfxprev-{$id}" ),
 				$css
 			);
+			// Belt and braces: a rule whose selector is still a bare `:hover` / `{{…}}` leftover never ships.
+			if ( strpos( $css, '{{' ) !== false ) { continue; }
 
 			echo $css;
 		}

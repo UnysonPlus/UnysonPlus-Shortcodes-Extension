@@ -63,18 +63,23 @@ if ( ! function_exists( 'unysonplus_components_settings_options' ) ) :
 		// theme's own option files). The color presets feed the button / box / table
 		// color pickers; the gap-choices closure feeds the spacing selects.
 		/** Filters the Components settings tab definitions (Color Presets, Text Styles, Spacing, Buttons) for the theme settings UI. */
+		// Tab ORDER = the design-system cascade a site is built in: tokens (colour → type → spacing), then
+		// containers outer-to-inner (section → hover animations → box), then the components (most-restyled first: buttons, icon
+		// badges, images, tables), then decoration (patterns, dividers), and the composite Element Designs last.
 		return apply_filters( 'unysonplus_components_settings_options', array(
-			'tab_colors'     => $tab( __( 'Color Presets', 'fw' ), upw_ts_get_options( 'components-color' ) ),
-			'tab_typography' => $tab( __( 'Text Styles', 'fw' ), upw_ts_get_options( 'components-typography' ) ),
-			'tab_spacing'    => $tab( __( 'Spacing', 'fw' ), upw_ts_get_options( 'components-spacing', array( 'gap_choices' => $gap_choices ) ) ),
-			'tab_buttons'    => $tab( __( 'Buttons', 'fw' ), upw_ts_get_options( 'components-buttons', array( 'color_choices' => $color_choices ) ) ),
-			'tab_icon_badges' => $tab( __( 'Icon Badges', 'fw' ), upw_ts_get_options( 'components-icon-badges', array( 'color_choices' => $color_choices ) ) ),
-			'tab_borders'    => $tab( __( 'Box Presets', 'fw' ), upw_ts_get_options( 'components-box', array( 'color_choices' => $color_choices ) ) ),
-			'tab_tables'     => $tab( __( 'Tables', 'fw' ), upw_ts_get_options( 'components-table', array( 'color_choices' => $color_choices ) ) ),
-			'tab_patterns'   => $tab( __( 'Background Patterns', 'fw' ), upw_ts_get_options( 'components-patterns' ) ),
+			'tab_colors'         => $tab( __( 'Color Presets', 'fw' ), upw_ts_get_options( 'components-color' ) ),
+			'tab_typography'     => $tab( __( 'Text Styles', 'fw' ), upw_ts_get_options( 'components-typography' ) ),
+			'tab_spacing'        => $tab( __( 'Spacing', 'fw' ), upw_ts_get_options( 'components-spacing', array( 'gap_choices' => $gap_choices ) ) ),
+			'tab_sections'       => $tab( __( 'Section Styles', 'fw' ), upw_ts_get_options( 'components-section-styles', array( 'color_choices' => $color_choices ) ) ),
+			// ONE shared hover-effect library for boxes AND buttons (hover starts at the box — a section never hovers).
+			'tab_hover_animations' => $tab( __( 'Hover Animations', 'fw' ), upw_ts_get_options( 'components-hover-animations' ) ),
+			'tab_borders'        => $tab( __( 'Box Presets', 'fw' ), upw_ts_get_options( 'components-box', array( 'color_choices' => $color_choices ) ) ),
+			'tab_buttons'        => $tab( __( 'Buttons', 'fw' ), upw_ts_get_options( 'components-buttons', array( 'color_choices' => $color_choices ) ) ),
+			'tab_icon_badges'    => $tab( __( 'Icon Badges', 'fw' ), upw_ts_get_options( 'components-icon-badges', array( 'color_choices' => $color_choices ) ) ),
+			'tab_image_styles'   => $tab( __( 'Image Styles', 'fw' ), upw_ts_get_options( 'components-image-styles', array( 'color_choices' => $color_choices ) ) ),
+			'tab_tables'         => $tab( __( 'Tables', 'fw' ), upw_ts_get_options( 'components-table', array( 'color_choices' => $color_choices ) ) ),
+			'tab_patterns'       => $tab( __( 'Background Patterns', 'fw' ), upw_ts_get_options( 'components-patterns' ) ),
 			'tab_shape_dividers' => $tab( __( 'Shape Dividers', 'fw' ), upw_ts_get_options( 'components-shape-dividers' ) ),
-			'tab_image_styles' => $tab( __( 'Image Styles', 'fw' ), upw_ts_get_options( 'components-image-styles', array( 'color_choices' => $color_choices ) ) ),
-			'tab_sections'   => $tab( __( 'Section Styles', 'fw' ), upw_ts_get_options( 'components-section-styles', array( 'color_choices' => $color_choices ) ) ),
 			'tab_element_designs' => $tab( __( 'Element Designs', 'fw' ), upw_ts_get_options( 'components-element-designs' ) ),
 		) );
 	}

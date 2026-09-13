@@ -123,7 +123,22 @@
 .builder-item.fx-dir-col > .custom-flexbox > .builder-items:has(> .builder-item) {
 	display: flex;
 	flex-direction: column;
+	/* NEVER wrap a stacked column: the generic .fw-pb-flex-row canvas rule sets flex-wrap:wrap, and a
+	   wrapping COLUMN container spills its next item into a second column to the RIGHT once the
+	   stacked height is used up (a card's chip row landed outside the canvas and gave the whole
+	   editor a horizontal scrollbar). A column preview stacks downward, full stop. */
+	flex-wrap: nowrap;
 	gap: 8px;
+}
+.builder-item.fx-dir-col > .custom-flexbox > .builder-items:has(> .builder-item) > .builder-item {
+	/* A stacked child is content-HEIGHT. The generic row child rule `flex: 0 0 100%` is a flex-BASIS,
+	   and in a column container the basis is 100% of the column's HEIGHT — so the first child claimed
+	   the whole column and every later child (a card's chip row) rendered below the box, over the
+	   next section. Auto basis = each child takes its own height and the column grows to fit. */
+	flex: 0 0 auto;
+	width: auto;
+	max-width: 100%;
+	min-width: 0;
 }
 
 /* Cross-axis Align needs a little height to be visible while building. */
