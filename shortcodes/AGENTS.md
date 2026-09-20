@@ -296,6 +296,25 @@ worked example and `shortcodes/section/` as the canonical built-in. Key points:
 - **`static.php`** — frontend asset enqueues. Use
   `fw_ext('shortcodes')->get_uri(...)` for URI resolution and
   `manifest->get_version()` for cache-busting. See `hero-section/static.php`.
+  It runs at **enqueue time only** (`enqueue_static()` on render + the
+  `fw_ext_shortcodes_enqueue_static:<tag>` action), once **per render**, and is
+  **never executed when `options.php` is read** (builder popup, atts
+  re-derivation). So it may hold enqueue-time logic — conditional assets,
+  per-instance dynamic CSS from the atts (classic Unyson: a
+  `function_exists()`-guarded `_action_theme_shortcode_<tag>_enqueue_dynamic_css()`
+  hooked to that action) — but **never a helper that `options.php` calls**:
+  that is an "undefined function" fatal in wp-admin.
+- **Where the shortcode's own helper functions go: the class file.**
+  `class-fw-shortcode-{your_type}.php` is loaded **once, at registration,
+  before `options.php` / the view / `static.php`, in admin and front end**.
+  Put a self-contained shortcode's functions there (prefixed per shortcode,
+  e.g. `rt_*`) so `options.php` stays options-only and the folder can be
+  copied to another theme with no shared `inc/` library. `options.php` may
+  call them (`'options' => rt_source_options()`). Not in `options.php`
+  (needs guards + a load-from-view fallback), not in `static.php` (see above).
+  **Theme-shortcode gotcha:** a theme folder whose slug matches a *plugin*
+  shortcode is treated as an override (its `options.php`/`views` become
+  rewrite paths) and its class file is **never loaded** — use a distinct slug.
 - **`views/view.php`** — frontend HTML template. The variables `$atts` and
   `$content` are in scope. `$content` is the rendered inner rows / columns /
   simples after the items corrector and shortcode-rendering pass. Output a

@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.9';
+$manifest['version'] = '1.15.17';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,22 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.12 - Newsletter: a "Capsule" design. ONE pill — the field row takes the Field Background,
+ *          a hairline, a 6px inset and a 999px radius; the input rides transparent and borderless
+ *          inside it and the submit button sits inside the pill at its right edge (the hero
+ *          "enter your email → Open account" form). Registered in views/parts/registry.php with
+ *          its own static/css/design/capsule.css + thumb; the pill restyles through
+ *          `selector .fw-nl__fields{…}`. The Site Converter selects it when a source's skinned
+ *          field wrapper holds the button too.
+ *
+ * 1.15.11 - Icon Box: an "Overline" option (Content tab). A short eyebrow label rendered
+ *          ABOVE the title inside the same head slot, so every layout keeps it with the
+ *          title ("Digital Architecture" over a project tile title, "01" over a step).
+ *          Renders as <div class="icon-box__overline">, styled small / uppercase /
+ *          tracked / muted by default (.icon-box__overline in styles.css) and restyled
+ *          through the element's Advanced CSS. The Site Converter fills it from a card's
+ *          eyebrow (a short small or uppercase leaf before the heading). Empty = no markup.
+ *
  * 1.15.7 - Newsletter: a Field Icon (icon-v2 picker) + Field Icon Color. A glyph rendered INSIDE the
  *          email field before the placeholder (a mail envelope, a user mark), the input padded past it.
  *          The Site Converter fills it from a converted signup form (an inline svg, a Lucide / FA id, or

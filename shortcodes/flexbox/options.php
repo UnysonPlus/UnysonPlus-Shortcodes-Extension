@@ -395,6 +395,19 @@ $options = [
 						],
 						'show_borders' => false,
 					],
+					// Where a capped box sits in its parent: centred (the default), or pinned to the left / right edge — a
+					// hero's `max-w-3xl` text column sits LEFT inside a full-width band; centring it moved the whole hero.
+					'content_align' => [
+						'type'    => 'select',
+						'label'   => __( 'Content Width Alignment', 'fw' ),
+						'desc'    => __( 'Where the capped box sits when its Content Width is narrower than the parent.', 'fw' ),
+						'value'   => 'center',
+						'choices' => [
+							'center' => __( 'Center', 'fw' ),
+							'left'   => __( 'Left', 'fw' ),
+							'right'  => __( 'Right', 'fw' ),
+						],
+					],
 					'responsive_collapse' => [
 						'type'         => 'switch',
 						'label'        => __( 'Responsive Collapse', 'fw' ),

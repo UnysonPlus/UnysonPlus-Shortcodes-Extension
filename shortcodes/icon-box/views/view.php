@@ -34,6 +34,7 @@ $full_height    = ! empty( $atts['full_height'] );
 $custom_icon    = isset( $atts['custom_icon'] ) ? trim( (string) $atts['custom_icon'] ) : '';
 $picked_icon    = ! empty( $atts['icon'] ) ? $atts['icon'] : null;
 $title          = isset( $atts['title'] ) ? trim( (string) $atts['title'] ) : '';
+$overline       = isset( $atts['overline'] ) ? trim( (string) $atts['overline'] ) : '';
 $content        = isset( $atts['content'] ) ? (string) $atts['content'] : '';
 $has_content    = $content !== '' && trim( wp_strip_all_tags( $content ) ) !== '';
 $has_icon       = ( $custom_icon !== '' ) || ! empty( $picked_icon );
@@ -341,10 +342,14 @@ $icon_html = $has_icon
     : '';
 
 $title_html = '';
+// The OVERLINE (eyebrow label) sits above the title inside the same head slot, so every layout keeps it with the title.
+if ( $overline !== '' ) {
+    $title_html .= '<div class="icon-box__overline' . ( $title_align_class ? ' ' . esc_attr( $title_align_class ) : '' ) . '">' . wp_kses_post( $overline ) . '</div>';
+}
 if ( $title !== '' ) {
     $title_class      = trim( 'icon-box__title ' . implode( ' ', $title_extras ) . ( $title_align_class ? ' ' . $title_align_class : '' ) );
     $title_style_attr = $title_style !== '' ? ' style="' . esc_attr( $title_style ) . '"' : '';
-    $title_html       = sprintf(
+    $title_html      .= sprintf(
         '<%1$s class="%2$s"%3$s>%4$s</%1$s>',
         $title_tag,
         esc_attr( $title_class ),

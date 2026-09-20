@@ -1,0 +1,33 @@
+/* Design-specific CSS — loaded only when the "capsule" design is used.
+ * CAPSULE: the field row IS one pill — the input sits transparent inside it and the submit button rides inside the
+ * pill at its right edge (the "email + Open account" hero form). The pill takes the Field Background colour, a
+ * hairline and a small inset; the input loses its own box; the button keeps its preset / accent skin as a pill. */
+.fw-nl--design-capsule .fw-nl__fields {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	padding: var(--nl-capsule-pad, 6px);
+	border-radius: 999px;
+	background: var(--nl-field-bg);
+	border: 1px solid rgba(0, 0, 0, .12);
+	box-sizing: border-box;
+}
+.fw-nl--design-capsule .fw-nl__field--icon { flex: 1 1 auto; }
+.fw-nl--design-capsule .fw-nl__input {
+	flex: 1 1 auto;
+	min-width: 0;
+	background: transparent;
+	border: 0;
+	border-radius: 999px;
+	padding: .75em 1.5em;
+	box-shadow: none;
+}
+.fw-nl--design-capsule .fw-nl__input:focus { box-shadow: none; border-color: transparent; }
+.fw-nl--design-capsule .fw-nl__fields:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--nl-accent) 25%, transparent); }
+.fw-nl--design-capsule .fw-nl__btn { border-radius: 999px; flex: 0 0 auto; }
+.fw-nl--text-center.fw-nl--design-capsule .fw-nl__fields { margin-left: auto; margin-right: auto; justify-content: flex-start; }
+.fw-nl--text-right.fw-nl--design-capsule .fw-nl__fields { margin-left: auto; }
+@media (max-width: 540px) {
+	.fw-nl--design-capsule .fw-nl__fields { flex-direction: column; border-radius: 1.5rem; align-items: stretch; }
+	.fw-nl--design-capsule .fw-nl__btn { width: 100%; }
+}

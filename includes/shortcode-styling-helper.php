@@ -669,7 +669,7 @@ if ( ! function_exists( 'sc_normalize_color_value' ) ) :
 			// well-formed CSS color token. Allows hex, rgb()/rgba(), and
 			// named colors; blocks colons / semicolons / declarations
 			// injection.
-			$custom = preg_replace( '/[^A-Za-z0-9#\(\),.%\s]/', '', $custom );
+			$custom = preg_replace( '/[^A-Za-z0-9#\(\),.%\s\/-]/', '', $custom );
 			if ( $custom !== '' ) {
 				$out['style'] = $prop . ': ' . $custom;
 			}
@@ -708,7 +708,7 @@ if ( ! function_exists( 'sc_color_to_css' ) ) :
 			// A legacy plain-string value still lands in inline-style CSS, so it gets the SAME character
 			// allow-list as the custom-hex branch below — esc_attr won't neutralise `;:{}` that could
 			// inject extra CSS declarations.
-			$value = preg_replace( '/[^A-Za-z0-9#\(\),.%\s]/', '', $value );
+			$value = preg_replace( '/[^A-Za-z0-9#\(\),.%\s\/-]/', '', $value );
 			return $value !== '' ? $value : $fallback;
 		}
 		if ( ! is_array( $value ) ) {
@@ -731,7 +731,7 @@ if ( ! function_exists( 'sc_color_to_css' ) ) :
 		}
 
 		if ( $custom !== '' && $custom !== 'transparent' ) {
-			$custom = preg_replace( '/[^A-Za-z0-9#\(\),.%\s]/', '', $custom );
+			$custom = preg_replace( '/[^A-Za-z0-9#\(\),.%\s\/-]/', '', $custom );
 			return $custom !== '' ? $custom : $fallback;
 		}
 

@@ -16,9 +16,19 @@ if ( ! function_exists( 'fw_counter_typography_css' ) ) {
 		if ( ! empty( $t['family'] ) ) {
 			$css .= 'font-family:' . $t['family'] . ';';
 		}
-		if ( ! empty( $t['weight'] ) ) {
-			$css .= 'font-weight:' . $t['weight'] . ';';
+		// A Google family carries its weight as the `variation` ("regular" / "700" / "700italic") — the option type
+		// blanks `weight` for a Google font — so read the variation when no plain weight is set.
+		$weight = ! empty( $t['weight'] ) ? (string) $t['weight'] : '';
+		$italic = false;
+		if ( '' === $weight && ! empty( $t['variation'] ) && is_string( $t['variation'] ) ) {
+			$v = strtolower( trim( $t['variation'] ) ); $italic = false !== strpos( $v, 'italic' );
+			$v = str_replace( 'italic', '', $v ); $weight = ( 'regular' === $v || '' === $v ) ? '400' : $v;
+			if ( ! preg_match( '/^[1-9]00$/', $weight ) ) { $weight = ''; }
 		}
+		if ( '' !== $weight ) {
+			$css .= 'font-weight:' . $weight . ';';
+		}
+		if ( $italic ) { $css .= 'font-style:italic;'; }
 		if ( isset( $t['size'] ) && $t['size'] !== '' ) {
 			// Size is a unit-input ({value,unit}); resolve it (tolerating a legacy bare
 			// number → px). Only emit when there's a real length (skip an empty value).

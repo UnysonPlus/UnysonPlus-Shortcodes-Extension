@@ -177,7 +177,7 @@ $options = array(
 						'type'    => 'select',
 						'label'   => __( 'Columns', 'fw' ),
 						'value'   => '1',
-						'choices' => array( '1' => '1', '2' => '2', '3' => '3' ),
+						'choices' => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6' ),
 						'desc'    => __( 'Applies to the Vertical orientation only.', 'fw' ),
 					),
 					'dividers' => array(

@@ -74,7 +74,7 @@ if ( ! function_exists( 'sc_fl_render' ) ) {
 		$icon_badge_pre = function_exists( 'sc_icon_badge_preset_class' ) ? sc_icon_badge_preset_class( $atts ) : '';
 
 		$columns  = (int) sc_get( 'columns', $atts, 1 );
-		$columns  = max( 1, min( 3, $columns ) );
+		$columns  = max( 1, min( 6, $columns ) ); // 4–6 across: a stats strip (4 icon + value cells) is a feature list too
 		$dividers = sc_get( 'dividers', $atts, 'no' ) === 'yes';
 		$zebra    = sc_get( 'zebra', $atts, 'no' ) === 'yes';
 		$gap      = sc_get( 'spacing_size', $atts, 'md' );

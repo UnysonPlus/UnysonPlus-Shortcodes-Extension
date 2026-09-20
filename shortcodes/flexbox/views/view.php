@@ -684,7 +684,9 @@ if ( $full_width ) {
 	// A boxed content width → cap the box itself, but NEVER past the viewport minus the site gutter
 	// (min(cap, 100% - 2*gutter) keeps a gutter at every width with no extra padding). Per-element,
 	// so it rides the consolidated footer stylesheet; only a box with no fx- class falls back inline.
-	$cw_decl = 'max-width:min(' . $cw_css . ', calc(100% - 2 * var(--container-gutter, clamp(1.25rem, 3vw, 2rem))));margin-left:auto;margin-right:auto;';
+	$cw_align = isset( $atts['content_align'] ) ? (string) $atts['content_align'] : 'center';
+	$cw_marg  = ( 'left' === $cw_align ) ? 'margin-left:0;margin-right:auto;' : ( ( 'right' === $cw_align ) ? 'margin-left:auto;margin-right:0;' : 'margin-left:auto;margin-right:auto;' );
+	$cw_decl = 'max-width:min(' . $cw_css . ', calc(100% - 2 * var(--container-gutter, clamp(1.25rem, 3vw, 2rem))));' . $cw_marg;
 	if ( $fx_uid !== '' ) {
 		$w_custom_css .= $fx_uid . '{' . $cw_decl . '}';
 	} else {

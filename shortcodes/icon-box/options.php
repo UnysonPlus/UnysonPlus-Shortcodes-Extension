@@ -30,6 +30,12 @@ $options = [
                         'label' => false,
                     ],
 
+                    'overline' => [
+                        'type'  => 'text',
+                        'label' => __( 'Overline', 'fw' ),
+                        'help'  => __( 'A short eyebrow label rendered ABOVE the title (e.g. "Digital Architecture" over a project tile title). Small, uppercase, tracked and muted by default — style it via .icon-box__overline.', 'fw' ),
+                    ],
+
                     'title' => [
                         'type'  => 'text',
                         'label' => __( 'Title', 'fw' ),
@@ -219,9 +225,22 @@ $options = [
                     'icon_badge_preset' => sc_icon_badge_preset_field( array(
                         'desc' => __( 'Apply a reusable Icon Badge — a shaped tile (fill, border, corners, shadow) with its own icon colour + size and hover effects. Manage presets in Theme Settings → Components → Icon Badges.', 'fw' ),
                     ) ),
-                    // NOTE: "Icon Badge Color" was RETIRED from the UI alongside the simple
-                    // Icon Badge shape (both superseded by presets). The view still reads a
-                    // saved icon_badge_color for legacy pages; new work uses presets.
+                    // Retired: the simple Icon Badge shape + "Icon Badge Color" were
+                    // superseded by the presets above. Kept as HIDDEN options (like
+                    // custom_icon) because the page builder re-derives an item's atts
+                    // from these options on render - a key that is not declared here
+                    // is DROPPED before the view runs, so without these two entries a
+                    // badge saved on an older version silently vanished (white icon on
+                    // white). The view still reads them for legacy pages.
+                    'icon_badge' => [
+                        'type'  => 'hidden',
+                        'label' => false,
+                    ],
+                    'icon_badge_color' => [
+                        'type'       => 'hidden',
+                        'label'      => false,
+                        'keep_array' => true, // saved as {predefined, custom}
+                    ],
                 ],
             ],
             'group_spacings' => [
