@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.17';
+$manifest['version'] = '1.15.19';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,20 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.19 - Gallery: a "Corners" option (Style tab) — Square / Rounded 6px / Rounded large 12px —
+ *          replacing the undeclared internal `rounded` att, and square by default for the same
+ *          reason as the Image Box change below: the Image Style preset owns the corners, and a
+ *          shortcode default it cannot remove is a bug. Ignored when an Image Style is applied.
+ *          The Site Converter sets it from the source tile's measured radius.
+ *
+ * 1.15.18 - Image Box media corners default to square. The media frame's 6px `--imgbox-radius`
+ *          clipped every image, and because the Image Style preset renders INSIDE that frame a
+ *          preset with sharp corners could never remove it (larger radii showed; zero was
+ *          overruled). The base is now `--imgbox-radius: 0`, so the Image Style preset (Theme
+ *          Settings -> Components -> Image Styles) fully owns the corners; the `card` and `badge`
+ *          designs still read the variable, and a theme can set it in Custom CSS. Sites relying
+ *          on the old implicit 6px rounding get it back with a 6px Image Style preset.
+ *
  * 1.15.12 - Newsletter: a "Capsule" design. ONE pill — the field row takes the Field Background,
  *          a hairline, a 6px inset and a 999px radius; the input rides transparent and borderless
  *          inside it and the submit button sits inside the pill at its right edge (the hero

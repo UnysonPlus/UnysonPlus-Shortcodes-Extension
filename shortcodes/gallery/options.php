@@ -620,6 +620,20 @@ $options = array(
 						'value' => 'yes',
 						'desc'  => __( 'Gently scale each image when hovered.', 'fw' ),
 					),
+					// Tile corners when NO Image Style preset is set (a preset fully owns the shape). Square by
+					// default so the preset — not the shortcode — decides the radius; the converter sets it from
+					// the source tile's measured radius.
+					'rounded' => array(
+						'label'   => __( 'Corners', 'fw' ),
+						'type'    => 'select',
+						'value'   => 'rounded-0',
+						'choices' => array(
+							'rounded-0'  => __( 'Square', 'fw' ),
+							'rounded'    => __( 'Rounded (6px)', 'fw' ),
+							'rounded-lg' => __( 'Rounded large (12px)', 'fw' ),
+						),
+						'desc' => __( 'Tile corner radius. Ignored when an Image Style preset is applied — the preset owns the corners.', 'fw' ),
+					),
 				),
 			),
 			'group_colors' => array(

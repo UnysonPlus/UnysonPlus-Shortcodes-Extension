@@ -316,7 +316,7 @@ if ( ! function_exists( 'sc_gallery_render_tile' ) ) :
 			'group'          => '',
 			'captions'       => 'none',
 			'caption_source' => 'caption',
-			'rounded'        => 'rounded',
+			'rounded'        => 'rounded-0',
 			'hover_zoom'     => true,
 			'caption_class'  => '',
 			'caption_style'  => '',

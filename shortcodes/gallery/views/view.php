@@ -141,7 +141,7 @@ $caption_source = sc_get( 'caption_source', $atts, 'caption' );
 // read is a BACK-COMPAT shim: existing galleries keep their saved radius, new galleries
 // keep the pleasant default; when an Image Style is chosen it takes over the shape (the
 // tile renderer skips this class), so the two never fight.
-$rounded        = sc_get( 'rounded', $atts, 'rounded' );
+$rounded        = sc_get( 'rounded', $atts, 'rounded-0' );
 $hover_zoom      = sc_get( 'hover_zoom', $atts, 'yes' ) === 'yes';
 
 /* Unified card control (Style tab): a Box Preset class on each card <figure>. */

@@ -10,7 +10,7 @@
     --imgbox-ov-opacity: .6;
     --imgbox-ov-color: #11161d;
     --imgbox-accent: var(--color-primary, #2563eb);
-    --imgbox-radius: 6px;
+    --imgbox-radius: 0;
     position: relative;
     box-sizing: border-box;
 }
