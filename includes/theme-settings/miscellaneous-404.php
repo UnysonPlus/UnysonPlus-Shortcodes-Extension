@@ -35,6 +35,39 @@ $options = array(
 				'value'   => '',
 				'choices' => $pages_choices,
 			),
+			// The options below apply ONLY to the built-in 404 design (no page selected
+			// above) — the UnysonPlus theme's 404.php reads them for its fallback markup;
+			// they have no effect on other themes or on a selected replacement page.
+			'404_heading' => array(
+				'label' => __( 'Heading (default template only)', 'fw' ),
+				'desc'  => __( 'Heading shown on the built-in 404 design. Pre-filled with the default; edit it, or clear it to fall back to the default.', 'fw' ),
+				'type'  => 'text',
+				// Pre-filled with the theme's default copy so it's visible and editable.
+				'value' => __( 'This page wandered off.', 'fw' ),
+			),
+			'404_text' => array(
+				'label'           => __( 'Message (default template only)', 'fw' ),
+				'desc'            => __( 'Message shown under the heading. Add links, light formatting, or an image (Add Media). Clear it to fall back to the default.', 'fw' ),
+				'type'            => 'wp-editor',
+				'size'            => 'small',
+				'editor_height'   => 160,
+				'media_buttons'   => true,   // "Add Media" so an image can be inserted
+				'dynamic_content' => false,  // no dynamic-content picker needed on a 404 message
+				'shortcodes'      => false,
+				'value'           => __( 'The page you were looking for isn\'t here. It may have moved, or it never existed. Let\'s get you back on track.', 'fw' ),
+			),
+			'404_show_button' => array(
+				'label' => __( 'Show "Back to home" button (default template only)', 'fw' ),
+				'desc'  => __( 'Show a button that links to the homepage.', 'fw' ),
+				'type'  => 'switch',
+				'value' => 'yes',
+			),
+			'404_button_label' => array(
+				'label' => __( 'Button label (default template only)', 'fw' ),
+				'desc'  => __( 'Text for the homepage button. Pre-filled with the default; edit it, or clear it to fall back to the default.', 'fw' ),
+				'type'  => 'text',
+				'value' => __( 'Back to home', 'fw' ),
+			),
 			'404_show_search' => array(
 				'label' => __( 'Show search form (default template only)', 'fw' ),
 				'desc'  => __( 'Applies only when no page is selected above and the active theme uses its built-in 404 design.', 'fw' ),
