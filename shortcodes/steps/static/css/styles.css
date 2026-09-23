@@ -33,6 +33,9 @@
 .fw-steps__text > :last-child { margin-bottom: 0; }
 .fw-steps__text > :first-child { margin-top: 0; }
 .fw-steps__connector { display: none; }
+/* Connector: None — the per-design sheets turn the spine back on (vertical / alternating / horizontal),
+   so the option's own choice has to out-rank them. Without this, picking None still drew the line. */
+.fw-steps--connector-none .fw-steps__connector { display: none !important; }
 .fw-steps__empty { padding: 1.25rem; border: 1px dashed rgba(0,0,0,.2); border-radius: .5rem; color: #6c757d; text-align: center; }
 
 /* ---------- Responsive ---------- */
