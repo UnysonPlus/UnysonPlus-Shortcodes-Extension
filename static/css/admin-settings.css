@@ -392,3 +392,64 @@
 	color: #d63638 !important;
 	text-decoration: underline;
 }
+
+/* ---- Dark admin-skin support --------------------------------------------
+ * The cards/panels above are hardcoded light. Repaint them for the admin
+ * skin's dark mode via a flipping-variable palette: the LIGHT defaults
+ * reproduce the current look, and the two dark triggers
+ * (html[data-upa-mode="dark"] and system + prefers-dark) flip them — pulling
+ * admin-skin's OWN surface tokens (--upa-panel / --upa-border / --upa-text …)
+ * so the cards match the rest of wp-admin exactly, with dark fallbacks when a
+ * token is absent (admin-skin off). Light mode is unchanged. */
+.fw-sc-settings {
+	--sc-panel: #fff;
+	--sc-inset: #f6f7f7;
+	--sc-inset2: #f0f0f1;
+	--sc-border: #dcdcde;
+	--sc-border-dash: #c3c4c7;
+	--sc-ink: #1d2327;
+	--sc-mut: #646970;
+}
+html[data-upa-mode="dark"] body.upa .fw-sc-settings {
+	--sc-panel: var(--upa-panel, #1d1f24);
+	--sc-inset: var(--upa-panel2, #17181c);
+	--sc-inset2: var(--upa-panel2, #202228);
+	--sc-border: var(--upa-border, #35373f);
+	--sc-border-dash: var(--upa-border, #3f424a);
+	--sc-ink: var(--upa-text, #e5e7ec);
+	--sc-mut: var(--upa-text2, #a1a5ae);
+}
+@media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] body.upa .fw-sc-settings {
+		--sc-panel: var(--upa-panel, #1d1f24);
+		--sc-inset: var(--upa-panel2, #17181c);
+		--sc-inset2: var(--upa-panel2, #202228);
+		--sc-border: var(--upa-border, #35373f);
+		--sc-border-dash: var(--upa-border, #3f424a);
+		--sc-ink: var(--upa-text, #e5e7ec);
+		--sc-mut: var(--upa-text2, #a1a5ae);
+	}
+}
+/* Surfaces — scoped under .fw-sc-settings so they win over the bare rules
+   above; values flip with the palette (light defaults == the originals). */
+.fw-sc-settings .fw-sc-item,
+.fw-sc-settings .fw-sc-card,
+.fw-sc-settings .fw-sc-dcard,
+.fw-sc-settings #fw-sc-notice,
+.fw-sc-settings .fw-sc-designs-empty {
+	background: var(--sc-panel);
+	border-color: var(--sc-border);
+	color: var(--sc-ink);
+}
+/* Keep the "just added" green highlight (my card rule would otherwise win). */
+.fw-sc-settings .fw-sc-item-new { border-color: #00a32a; }
+.fw-sc-settings .fw-sc-dcard-off { background: var(--sc-inset); }
+.fw-sc-settings .fw-sc-dthumb { background: var(--sc-inset2); }
+.fw-sc-settings .fw-sc-section-title { border-bottom-color: var(--sc-border); }
+.fw-sc-settings .fw-sc-designs-empty { border-color: var(--sc-border-dash); }
+.fw-sc-settings .fw-sc-count,
+.fw-sc-settings .fw-sc-tag,
+.fw-sc-settings .fw-sc-dsub,
+.fw-sc-settings .fw-sc-dcount,
+.fw-sc-settings .fw-sc-dswitch,
+.fw-sc-settings .fw-sc-icon { color: var(--sc-mut); }
