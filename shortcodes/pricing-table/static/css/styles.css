@@ -223,3 +223,144 @@
 /* Button Preset — a themed .btn preset (Theme Settings → Buttons) owns the button's colours,
    padding and shape; the pricing table only makes it a full-width block CTA like .fw-pt__btn. */
 .fw-pt .fw-pt__btn-preset { display: block; width: 100%; box-sizing: border-box; text-align: center; }
+
+/* ==========================================================================
+   LIST layout — a price list / service menu. Lives in the BASE stylesheet rather than a gated
+   per-layout file: the rules are all scoped under .fw-pt__list so they cost nothing when the
+   layout is unused, and gating them meant reading the layout from the enqueue hook's atts, which
+   does not carry the builder's nested values — the stylesheet silently never loaded.
+   ========================================================================== */
+
+.fw-pt__list {
+	display: flex;
+	flex-direction: column;
+	/* Rows are spaced by a GAP, not by padding: a menu row's own box is usually flush (its height IS its
+	   text), and the air between rows belongs to the list. Padding stays available for a list whose rows
+	   really are padded boxes. */
+	gap: var(--pt-row-gap, 0px);
+}
+
+.fw-pt__row {
+	align-items: baseline;
+	display: flex;
+	gap: var(--pt-gap, 1.5rem);
+	justify-content: space-between;
+	padding: var(--pt-row-pad, 1rem) 0;
+}
+
+/* A hairline BETWEEN rows, not around them — the last row must not leave a trailing rule. */
+.fw-pt__row + .fw-pt__row {
+	border-top: 1px solid var(--pt-row-rule, rgba(128, 128, 128, .22));
+}
+
+.fw-pt__row-main {
+	flex: 1 1 auto;
+	min-width: 0; /* let a long description wrap instead of pushing the price off the row */
+}
+
+.fw-pt__row-head {
+	align-items: baseline;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .6em;
+}
+
+.fw-pt__list .fw-pt__name {
+	margin: 0;
+}
+
+.fw-pt__list .fw-pt__subtitle {
+	margin-top: .3rem;
+}
+
+.fw-pt__row-ribbon {
+	background: var(--pt-accent);
+	border-radius: 999px;
+	color: #fff;
+	font-size: .68rem;
+	font-weight: 700;
+	letter-spacing: .05em;
+	padding: .2em .7em;
+	text-transform: uppercase;
+}
+
+/* A row carrying a CTA is taller than its type: centre it so the button sits inside the row instead of
+   hanging across the divider below. */
+.fw-pt__row.has-cta {
+	align-items: center;
+}
+
+/* The price column hugs its content and never wraps mid-figure. */
+.fw-pt__row-price {
+	align-items: flex-end;
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
+	gap: .4rem;
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* The base stylesheet sizes the grid card's price for a card (3rem) — on a row it sits on the name's
+   baseline, so it takes the name's scale unless the instance overrides it. */
+.fw-pt__list .fw-pt__price {
+	margin: 0;
+}
+
+/* The row price's type is the INSTANCE's, not this stylesheet's opinion. A converted menu carries the
+   source's own size/weight/face here; a hand-built one gets these defaults. */
+.fw-pt__list .fw-pt__amount {
+	font-family: var(--pt-row-amount-font, inherit);
+	font-size: var(--pt-row-amount, 1.35rem);
+	font-weight: var(--pt-row-amount-weight, 600);
+}
+
+.fw-pt__list .fw-pt__currency {
+	font-family: var(--pt-row-amount-font, inherit);
+	font-size: .9em;
+	font-weight: var(--pt-row-amount-weight, 600);
+	margin-top: 0;
+}
+
+/* A feature list on a row reads as a caption, not as the card's ticked column. */
+.fw-pt__features--inline {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .2rem 1rem;
+	margin: .35rem 0 0;
+}
+
+.fw-pt__features--inline .fw-pt__feature {
+	border-bottom: 0;
+	font-size: .85rem;
+	padding: 0;
+}
+
+.fw-pt__btn--row {
+	padding: .45em 1.1em;
+	width: auto;
+}
+
+/* A featured row is marked by its ink and a rule, never by a lifted card — there is no card here. */
+.fw-pt__row.is-featured .fw-pt__name {
+	color: var(--pt-accent);
+}
+
+/* Phone: the price drops under the name rather than squeezing the description to nothing. */
+@media (max-width: 576px) {
+	.fw-pt__row {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: .5rem;
+	}
+
+	.fw-pt__row-price {
+		align-items: flex-start;
+		text-align: left;
+	}
+}
+
+/* Divider off — keep the rhythm, drop the rules. */
+.fw-pt__list--no-rule .fw-pt__row + .fw-pt__row {
+	border-top: 0;
+}

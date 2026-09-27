@@ -73,6 +73,13 @@
 .posts__card .posts__body > * + *,
 .posts__card .posts__overlay-body > * + * { margin-top: 0.6em; }
 
+/* A padded Box Preset already insets the whole card (image included), so the body's
+   own padding would push the text further in than the image. Keep only the gap
+   between the image and the text. */
+.posts__card--boxp-inset .posts__body { padding-left: 0; padding-right: 0; padding-bottom: 0; }
+.posts__card--boxp-inset .posts__body:first-child { padding-top: 0; }
+.posts__card--boxp-inset .posts__col--body { padding-top: 0; padding-bottom: 0; }
+
 /* Featured first-post span */
 .posts__card--span-2 { grid-column: span 2; }
 

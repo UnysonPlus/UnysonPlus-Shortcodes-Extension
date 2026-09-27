@@ -193,7 +193,11 @@ function sc_get_animation_fields() {
             'desc'         => __( 'Seconds before the animation starts after the element enters view. Decimals OK, e.g. 0.5, 1.25, 12.', 'fw' ),
             'value'        => 0,
             'min'          => 0,
-            'step'         => 0.1,
+            // step 'any': a decimal like 1.25 (which the description promises works,
+            // and which site conversions routinely produce) is NOT a multiple of 0.1,
+            // so a numeric step would make the browser reject it with a stepMismatch
+            // ("Please fix the highlighted field") on save. 'any' disables that check.
+            'step'         => 'any',
             'numeric_type' => 'float',
         ],
         'custom_duration' => [
@@ -202,7 +206,7 @@ function sc_get_animation_fields() {
             'desc'         => __( 'Override the animation length in seconds. Leave at 0 to use the Speed Preset.', 'fw' ),
             'value'        => 0,
             'min'          => 0,
-            'step'         => 0.1,
+            'step'         => 'any',
             'numeric_type' => 'float',
         ],
         'repeat_count' => [

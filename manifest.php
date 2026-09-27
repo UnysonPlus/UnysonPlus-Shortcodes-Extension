@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.28';
+$manifest['version'] = '1.15.33';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,18 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.31 - Pricing Table: LAYOUT is now its own option, separate from Design. Design (classic /
+ *          modern / minimal / ...) is a SKIN on one fixed card grid, so a price LIST — name and
+ *          description on the left, price on the right, a rule between rows, which is how a salon,
+ *          restaurant or trade writes its prices — could not be built at all. Layout picks the
+ *          STRUCTURE (Grid or List) and reveals only its own settings; the six designs stay exactly
+ *          as they are, as skins of the Grid layout, so nothing already saved changes. Columns also
+ *          gains "1" for a single centred plan (the renderer always clamped to 1; only the option
+ *          withheld it). Measured across the capture corpus, list-shaped pricing is a large share of
+ *          the priced sections a conversion meets, and the Site Converter now reads the source's own
+ *          geometry — layout, column count, the rule between rows, their spacing and the price's own
+ *          type — instead of guessing columns from the number of plans.
+ *
  * 1.15.19 - Gallery: a "Corners" option (Style tab) — Square / Rounded 6px / Rounded large 12px —
  *          replacing the undeclared internal `rounded` att, and square by default for the same
  *          reason as the Image Box change below: the Image Style preset owns the corners, and a

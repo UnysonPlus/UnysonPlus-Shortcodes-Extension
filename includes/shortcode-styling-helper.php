@@ -1560,6 +1560,35 @@ if ( ! function_exists( 'sc_card_box_style_class' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'sc_box_preset_has_padding' ) ) :
+	/**
+	 * Whether the Box Preset behind a `boxp-{slug}` class sets its own padding.
+	 * A padded preset insets the WHOLE card, so card elements whose body adds its
+	 * own padding (a flush-image card) use this to avoid stacking the two insets.
+	 *
+	 * @param string $boxp_class  a `boxp-{slug}` class (from sc_card_box_style_class()).
+	 * @return bool
+	 */
+	function sc_box_preset_has_padding( $boxp_class ) {
+		if ( ! is_string( $boxp_class ) || strpos( $boxp_class, 'boxp-' ) !== 0 ) { return false; }
+		if ( ! function_exists( 'unysonplus_get_border_presets' ) || ! function_exists( 'unysonplus_border_preset_slug_map' ) ) { return false; }
+		$slug = substr( $boxp_class, 5 );
+		$map  = unysonplus_border_preset_slug_map();
+		foreach ( unysonplus_get_border_presets() as $bp ) {
+			if ( ! is_array( $bp ) || empty( $bp['id'] ) ) { continue; }
+			$id = preg_replace( '/[^a-zA-Z0-9_-]/', '', (string) $bp['id'] );
+			if ( ( isset( $map[ $id ] ) ? $map[ $id ] : $id ) !== $slug ) { continue; }
+			$pad = ( isset( $bp['padding']['padding'] ) && is_array( $bp['padding']['padding'] ) ) ? $bp['padding']['padding'] : array();
+			foreach ( $pad as $v ) {
+				// Any padding class other than a zero step (p-0, pt-0, …) counts.
+				if ( is_string( $v ) && $v !== '' && ! preg_match( '/^p[trblxy]?-0$/', $v ) ) { return true; }
+			}
+			return false;
+		}
+		return false;
+	}
+endif;
+
 if ( ! function_exists( 'sc_card_rows_field' ) ) :
 	/**
 	 * The shared "Card Rows" slot designer — an addable, drag-sortable list of ROWS, each row a set of

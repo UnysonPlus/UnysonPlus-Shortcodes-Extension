@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 72" width="120" height="72" role="img" aria-label="Grid layout">
+  <rect width="120" height="72" fill="#fff"/>
+  <g fill="none" stroke="#c3c4c7" stroke-width="1.5">
+    <rect x="8"  y="12" width="32" height="48" rx="3"/>
+    <rect x="44" y="12" width="32" height="48" rx="3"/>
+    <rect x="80" y="12" width="32" height="48" rx="3"/>
+  </g>
+  <g fill="#8c8f94">
+    <rect x="14" y="19" width="20" height="3" rx="1.5"/><rect x="50" y="19" width="20" height="3" rx="1.5"/><rect x="86" y="19" width="20" height="3" rx="1.5"/>
+  </g>
+  <g fill="#3858e9">
+    <rect x="14" y="28" width="13" height="7" rx="1.5"/><rect x="50" y="28" width="13" height="7" rx="1.5"/><rect x="86" y="28" width="13" height="7" rx="1.5"/>
+  </g>
+</svg>

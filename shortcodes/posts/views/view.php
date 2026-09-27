@@ -796,6 +796,7 @@ if ( ! function_exists( 'sc_posts_render_cards' ) ) {
         $registry    = sc_posts_card_registry();
         $style_meta  = isset( $registry[ $card_style ] ) ? $registry[ $card_style ] : [];
         $__boxp      = function_exists( 'sc_card_box_style_class' ) ? sc_card_box_style_class( $atts ) : ''; // Box Style per post card
+        $__boxp_inset = ( $__boxp !== '' && function_exists( 'sc_box_preset_has_padding' ) ) ? sc_box_preset_has_padding( $__boxp ) : false;
         $out   = '';
         // $start_index keeps first-post treatments (hero-split / featured / zig-zag)
         // tied to the TRUE first post, so an AJAX page-2 append never re-applies them.
@@ -826,7 +827,12 @@ if ( ! function_exists( 'sc_posts_render_cards' ) ) {
                 $extra_card_class = ' posts__card--span-2 posts__card--featured';
             }
 
-            if ( $__boxp !== '' ) { $extra_card_class .= ' ' . $__boxp; }
+            if ( $__boxp !== '' ) {
+                $extra_card_class .= ' ' . $__boxp;
+                // A padded Box Preset insets the whole card; flag it so the body drops its own
+                // padding and the text lines up with the image instead of sitting further in.
+                if ( $__boxp_inset ) { $extra_card_class .= ' posts__card--boxp-inset'; }
+            }
             $card_html = sc_posts_render_card( $atts, $p->ID, $effective_style, $index );
             if ( $extra_card_class !== '' ) {
                 // splice class into the outermost article

@@ -229,11 +229,74 @@ $options = array(
 			'group_layout' => array(
 				'type'    => 'group',
 				'options' => array(
+					/* ------------------------------------------------------------------ *
+					 * LAYOUT — the plans' STRUCTURE, a separate axis from Design (their paint).
+					 *
+					 * Design (classic / modern / minimal / …) is a skin on one fixed card grid, so it can
+					 * never produce a price LIST — name and description left, price right — which is how a
+					 * service menu is written. Measured across the capture corpus, list-shaped pricing is
+					 * 43% of the priced groups a conversion meets, and none of it was expressible.
+					 *
+					 * A multi-picker so each layout shows only its OWN options (the gallery's design_settings
+					 * is the same pattern). `design_settings` is a NEW option id: the legacy scalar `design`
+					 * is left untouched, so a table saved before layouts existed never feeds a multi-picker
+					 * (no blank modal on an old save) and keeps rendering as the grid it has always been.
+					 * ------------------------------------------------------------------ */
+					'design_settings' => array(
+						'type'         => 'multi-picker',
+						'label'        => false,
+						'desc'         => false,
+						'show_borders' => false,
+						'picker'       => array(
+							'layout' => array(
+								'type'    => 'image-picker',
+								'label'   => __( 'Layout', 'fw' ),
+								'desc'    => __( 'How the plans are arranged. Their look — colours, borders, shadows — stays on the Design option above.', 'fw' ),
+								'help'    => __( 'Grid puts the plans side by side as cards. List is a price list / service menu: one full-width row per plan, name and description on the left, price on the right. ', 'fw' ),
+								'choices' => call_user_func( function () {
+									$reg = require dirname( __FILE__ ) . '/views/layouts/registry.php';
+									$uri = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/pricing-table/static/img/layouts' );
+									$out = array();
+									foreach ( (array) $reg as $key => $meta ) {
+										$label = isset( $meta['label'] ) ? $meta['label'] : $key;
+										$out[ $key ] = array(
+											'small' => array(
+												'src'    => $uri . '/' . ( isset( $meta['thumb'] ) ? $meta['thumb'] : $key . '.svg' ),
+												'height' => 60,
+												'title'  => $label,
+												'alt'    => $label,
+											),
+											'label' => $label,
+										);
+									}
+									return $out;
+								} ),
+								'value'   => 'grid',
+							),
+						),
+						'value'        => array( 'layout' => 'grid' ),
+						'choices'      => array(
+							'grid' => array(),
+							'list' => array(
+								'row_rule' => array(
+									'type'  => 'switch',
+									'label' => __( 'Divider between rows', 'fw' ),
+									'desc'  => __( 'A hairline between each row — the usual price-list rhythm. Turn off for plain spacing.', 'fw' ),
+									'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+									'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+									'value'        => 'yes',
+								),
+							),
+						),
+					),
 					'columns' => array(
 						'type'    => 'select',
 						'label'   => __( 'Columns (Desktop)', 'fw' ),
 						'value'   => '3',
-						'choices' => array( '2' => '2', '3' => '3', '4' => '4', '5' => '5' ),
+						// `1` is a real choice: a single, centered plan ("one simple price") is a common
+						// pricing page, and the renderer has always clamped to max(1, …) — only the option
+						// withheld it. Grid layout only; the List layout is one row per plan by definition.
+						'choices' => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5' ),
 						'desc'    => __( 'Plans per row on desktop.', 'fw' ),
 					),
 					'gap' => array(
