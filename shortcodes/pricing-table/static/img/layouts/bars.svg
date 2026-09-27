@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 72" width="120" height="72" role="img" aria-label="Bars layout">
+  <rect width="120" height="72" fill="#fff"/>
+  <!-- Three full-width BANDS. The outlined boxes are the whole point of the thumbnail: they are what
+       separates this from the List layout, whose rows are flush and divided by a hairline. -->
+  <g>
+    <rect x="8" y="8" width="104" height="17" rx="3" fill="#f6f7f7" stroke="#dcdcde" stroke-width="1"/>
+    <rect x="14" y="12" width="34" height="3.5" rx="1.75" fill="#8c8f94"/>
+    <rect x="14" y="19" width="48" height="2.5" rx="1.25" fill="#dcdcde"/>
+    <rect x="72" y="13" width="12" height="4" rx="1" fill="#8c8f94"/>
+    <rect x="90" y="12" width="16" height="7" rx="1.5" fill="#3858e9"/>
+  </g>
+  <g>
+    <rect x="8" y="28" width="104" height="17" rx="3" fill="#f6f7f7" stroke="#dcdcde" stroke-width="1"/>
+    <rect x="14" y="32" width="40" height="3.5" rx="1.75" fill="#8c8f94"/>
+    <rect x="14" y="39" width="44" height="2.5" rx="1.25" fill="#dcdcde"/>
+    <rect x="72" y="33" width="12" height="4" rx="1" fill="#8c8f94"/>
+    <rect x="90" y="32" width="16" height="7" rx="1.5" fill="#3858e9"/>
+  </g>
+  <g>
+    <rect x="8" y="48" width="104" height="17" rx="3" fill="#f6f7f7" stroke="#dcdcde" stroke-width="1"/>
+    <rect x="14" y="52" width="30" height="3.5" rx="1.75" fill="#8c8f94"/>
+    <rect x="14" y="59" width="52" height="2.5" rx="1.25" fill="#dcdcde"/>
+    <rect x="72" y="53" width="12" height="4" rx="1" fill="#8c8f94"/>
+    <rect x="90" y="52" width="16" height="7" rx="1.5" fill="#3858e9"/>
+  </g>
+</svg>

@@ -364,3 +364,123 @@
 .fw-pt__list--no-rule .fw-pt__row + .fw-pt__row {
 	border-top: 0;
 }
+
+
+/* ==========================================================================
+   BARS layout — a full-width band per plan: the list's reading order with the grid's card treatment.
+   In the BASE stylesheet for the same reason the list rules are (see the note above it): the enqueue
+   hook's atts do not carry the builder's nested values, so a per-layout file silently never loaded.
+   Everything is scoped under .fw-pt__bars, so it costs nothing when the layout is unused.
+   ========================================================================== */
+
+.fw-pt__bars {
+	display: flex;
+	flex-direction: column;
+	/* Bands are separated by the shared Gap option — unlike list rows, which are flush and divided by a
+	   hairline. The gap is what makes them read as discrete cards. */
+	gap: var(--pt-gap, 1.5rem);
+}
+
+/* .fw-pt__band also carries .fw-pt__plan, so the chosen DESIGN paints it exactly as it paints a grid
+   card — that shared skin is the whole point of the layout. Only the shape is restated here. */
+.fw-pt__band {
+	align-items: center;
+	display: flex;
+	flex-direction: row;
+	gap: var(--pt-gap, 1.5rem);
+	text-align: left;
+}
+
+.fw-pt__band-main {
+	flex: 1 1 auto;
+	min-width: 0; /* a long description wraps instead of pushing the price and button off the band */
+}
+
+.fw-pt__band-head {
+	align-items: baseline;
+	display: flex;
+	flex-wrap: wrap;
+	gap: .6em;
+}
+
+.fw-pt__bars .fw-pt__name {
+	margin: 0;
+}
+
+.fw-pt__bars .fw-pt__subtitle {
+	margin-top: .3rem;
+}
+
+/* The price hugs its content and never wraps mid-figure. */
+.fw-pt__band-price {
+	flex: 0 0 auto;
+	text-align: right;
+	white-space: nowrap;
+}
+
+.fw-pt__bars .fw-pt__price {
+	margin: 0;
+}
+
+/* A band is wide and short, so the card's 3rem display price is out of proportion here. */
+.fw-pt__bars .fw-pt__amount {
+	font-size: var(--pt-band-amount, 1.75rem);
+	font-weight: 700;
+	line-height: 1.1;
+}
+
+.fw-pt__bars .fw-pt__currency {
+	font-size: .85em;
+	margin-top: 0;
+}
+
+/* The button is the band's end-stop and gets its own cell, so every band's button lines up down the
+   right edge however tall its price is. */
+.fw-pt__band-cta {
+	flex: 0 0 auto;
+}
+
+.fw-pt__btn--band {
+	padding: .55em 1.4em;
+	white-space: nowrap;
+	width: auto;
+}
+
+/* A featured band is marked on the band itself — it IS a card, so unlike a list row it can carry the
+   accent border. The lift the grid uses is wrong here: a raised full-width band just looks misaligned. */
+.fw-pt__band.is-featured {
+	border-color: var(--pt-accent);
+	box-shadow: 0 0 0 1px var(--pt-accent) inset;
+}
+
+/* The grid's featured treatment is a LIFT: translateY + scale(1.04). On a card that reads as emphasis; on a
+   full-width band it overhangs its siblings on BOTH sides and pushes the button past the right margin --
+   measured at 936px against 900px, with the button 17px out.
+   Neutralise the two custom properties rather than the transform: `raise` and `enlarge` go to identity while
+   `highlight`, `glow`, `badge` and `accent_button` keep working, so the Featured Plan Emphasis option still
+   means something here. The selector carries the same (0,4,0) weight as the .fw-pt.fw-pt--feat-* rules it
+   has to beat -- see the note beside them -- and wins on source order. */
+.fw-pt .fw-pt__bars .fw-pt__plan.is-featured {
+	--pt-feat-scale: 1;
+	--pt-feat-y: 0;
+}
+
+/* Phone: the band unstacks into name → price → button, full width, because three columns in a phone's
+   width leaves the description a couple of words per line. */
+@media (max-width: 720px) {
+	.fw-pt__band {
+		align-items: stretch;
+		flex-direction: column;
+		gap: .75rem;
+	}
+
+	.fw-pt__band-price {
+		text-align: left;
+	}
+
+	.fw-pt__btn--band {
+		display: block;
+		text-align: center;
+		width: 100%;
+	}
+}

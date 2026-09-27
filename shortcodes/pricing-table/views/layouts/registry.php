@@ -16,9 +16,15 @@
  *   - view.php    → which designs/<key>.php partial to include
  *   - static.php  → which css/designs/<css> to enqueue
  *
- * NEXT: `bars` (a full-width band per plan, price + CTA right) — 5% of the measured corpus. Add the entry
- * here together with its partial, stylesheet and thumbnail; a registered layout with no partial would fall
- * back to the grid silently, which reads as a bug.
+ * A registered layout with no partial would fall back to the grid silently, which reads as a bug — so an
+ * entry here always ships with its partial, its rules and its thumbnail together.
+ *
+ * `bars` is deliberately NOT converter-detected. The conversion plan had guessed a `display:flex` row would
+ * mean bars, but a flex row IS cards side by side and already maps to `grid`; and re-measured across the
+ * capture corpus, priced groups whose plans are stacked SKINNED boxes came to 0 of 43 classifiable groups.
+ * There is no source population to detect, so adding a detector rule could only put the 31 correctly-gridded
+ * groups at risk. It exists for someone choosing it by hand — which is reason enough for a layout option,
+ * just not for a conversion rule.
  *
  * Keys (the saved value):
  *   label : shown in the picker tooltip
@@ -38,5 +44,10 @@ return array(
 		'label' => __( 'List — menu rows, price right', 'fw' ),
 		'thumb' => 'list.svg',
 		'css'   => null, // scoped under .fw-pt__list in the base stylesheet — see the note there
+	),
+	'bars' => array(
+		'label' => __( 'Bars — full-width bands, price + button right', 'fw' ),
+		'thumb' => 'bars.svg',
+		'css'   => null, // scoped under .fw-pt__bars in the base stylesheet, for the same reason as list
 	),
 );

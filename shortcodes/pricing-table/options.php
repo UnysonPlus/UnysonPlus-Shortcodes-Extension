@@ -252,7 +252,7 @@ $options = array(
 								'type'    => 'image-picker',
 								'label'   => __( 'Layout', 'fw' ),
 								'desc'    => __( 'How the plans are arranged. Their look — colours, borders, shadows — stays on the Design option above.', 'fw' ),
-								'help'    => __( 'Grid puts the plans side by side as cards. List is a price list / service menu: one full-width row per plan, name and description on the left, price on the right. ', 'fw' ),
+								'help'    => __( 'Grid puts the plans side by side as cards. List is a price list / service menu: one full-width row per plan, name and description on the left, price on the right, no card. Bars sits between the two — stacked full-width bands that are still cards, with the price and button on the right; it suits two or three plans with short feature lists, where side-by-side cards leave a lot of empty column. ', 'fw' ),
 								'choices' => call_user_func( function () {
 									$reg = require dirname( __FILE__ ) . '/views/layouts/registry.php';
 									$uri = fw_ext( 'shortcodes' )->get_declared_URI( '/shortcodes/pricing-table/static/img/layouts' );
@@ -277,6 +277,10 @@ $options = array(
 						'value'        => array( 'layout' => 'grid' ),
 						'choices'      => array(
 							'grid' => array(),
+							// `bars` has no options of its own: its band IS a plan card, so the Design skin,
+							// Gap and Featured Plan Emphasis already govern it. An empty entry is what keeps
+							// the multi-picker from showing another layout's options under it.
+							'bars' => array(),
 							'list' => array(
 								'row_rule' => array(
 									'type'  => 'switch',
@@ -295,7 +299,7 @@ $options = array(
 						'value'   => '3',
 						// `1` is a real choice: a single, centered plan ("one simple price") is a common
 						// pricing page, and the renderer has always clamped to max(1, …) — only the option
-						// withheld it. Grid layout only; the List layout is one row per plan by definition.
+						// withheld it. Grid layout only; List and Bars are one row per plan by definition.
 						'choices' => array( '1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5' ),
 						'desc'    => __( 'Plans per row on desktop.', 'fw' ),
 					),

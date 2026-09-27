@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.33';
+$manifest['version'] = '1.15.34';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -37,6 +37,22 @@ $manifest['requires_wp']  = '5.8';
 
 /**
  * Changelog
+ * -----------------------------------------------------------------------------
+ * 1.15.34 - Pricing Table: a third layout, BARS — stacked full-width bands that are still cards.
+ *          It sits between the two that existed: Grid compares plans side by side, List is a flush
+ *          price-list row with no card at all, and Bars takes the list's reading order with the
+ *          grid's card treatment — name and description left, price and button right, the Design
+ *          skin painting each band. It suits two or three plans with short feature lists, where
+ *          side-by-side cards leave a lot of empty column and a flush row is too plain for
+ *          something carrying a button. The featured band drops the grid's raise/enlarge (a lifted
+ *          full-width band overhangs its siblings and shoves its button past the right margin —
+ *          measured at 936px against 900px) and keeps the accent border instead; highlight, glow
+ *          and badge emphasis still apply. On a phone each band unstacks into name, price, then a
+ *          full-width button. Unlike Grid and List this layout is NOT auto-selected by the Site
+ *          Converter: re-measuring the capture corpus for stacked skinned-box pricing returned 0 of
+ *          43 classifiable groups, so there is no source population to detect and a detector rule
+ *          could only put the correctly-gridded ones at risk. It is a layout you choose by hand.
+ *
  * -----------------------------------------------------------------------------
  * 1.15.31 - Pricing Table: LAYOUT is now its own option, separate from Design. Design (classic /
  *          modern / minimal / ...) is a SKIN on one fixed card grid, so a price LIST — name and
