@@ -64,6 +64,11 @@
 		video.style.height = '100%';
 		video.style.objectFit = 'cover';
 
+		// An autoplaying backdrop is going to play the moment it can, so let the browser fetch it rather than
+		// stopping after the header and coming back -- on a slow host that pause is the whole blank hero. A
+		// backdrop that does NOT autoplay keeps the conservative default.
+		video.preload = ( opts.autoPlay !== false ) ? 'auto' : 'metadata';
+
 		[ 'webm', 'mp4', 'ogg' ].forEach( function ( type ) {
 			if ( opts.source[ type ] ) {
 				var s = document.createElement( 'source' );
