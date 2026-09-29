@@ -49,8 +49,13 @@ $options = array(
 				'value' => 'no',
 			),
 			'perf_disable_xmlrpc' => array(
-				'label' => __( 'Disable XML-RPC', 'fw' ),
-				'desc'  => __( 'Turns off the /xmlrpc.php endpoint. Disable only if no apps depend on it (Jetpack, mobile apps).', 'fw' ),
+				'label' => __( 'Disable XML-RPC logins', 'fw' ),
+				// Say what it does: WordPress's xmlrpc_enabled filter only turns off
+				// methods that need a login. /xmlrpc.php still answers, and pingbacks
+				// keep working. The Security extension owns the stronger modes.
+				'desc'  => ( function_exists( 'fw_ext' ) && fw_ext( 'security' ) && fw_ext( 'security' )->measure_running( 'xmlrpc_mode' ) )
+					? __( 'The Security extension is handling XML-RPC, which already covers this. Its settings are under Unyson+ → Security → Hardening.', 'fw' )
+					: __( 'Turns off XML-RPC methods that need a login (remote publishing, older mobile apps). /xmlrpc.php still answers and pingbacks keep working; to switch pingbacks off or block XML-RPC entirely, use the Security extension.', 'fw' ),
 				'type'  => 'switch',
 				'value' => 'no',
 			),
