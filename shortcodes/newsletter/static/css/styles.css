@@ -79,3 +79,37 @@
 
 	.fw-nl__btn { transition: none; }
 }
+
+/* FIELD LABELS (Show Field Labels). A source that names its fields lost those words entirely before the
+   option existed.
+
+   A labelled field is its OWN GROUP — label stacked over input, in one flex item. That matters because
+   `.fw-nl__fields` spaces its children with a single `gap`, which is the distance between one FIELD and
+   the next; while the label was a flat sibling of the input, that same gap also separated a label from
+   the very input it names, so a 6px caption gap rendered at the full field gap and the labels floated.
+   The group restores two independent distances: the row's `gap` between fields, and `--nl-label-gap`
+   between a label and its input.
+
+   The label's own type is expressed as variables so a converted source can carry its measured caption
+   style (size, tracking, weight, case, ink) without the base sheet dictating one. */
+.fw-nl__group {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+.fw-nl--design-stacked .fw-nl__group { width: 100%; }
+.fw-nl__group > .fw-nl__input,
+.fw-nl__group > .fw-nl__field { width: 100%; }
+.fw-nl__label {
+	display: block;
+	width: 100%;
+	margin: 0 0 var(--nl-label-gap, 6px);
+	font-size: var(--nl-label-size, 10px);
+	font-weight: var(--nl-label-weight, 700);
+	letter-spacing: var(--nl-label-tracking, .08em);
+	text-transform: var(--nl-label-transform, uppercase);
+	opacity: var(--nl-label-opacity, .65);
+	line-height: var(--nl-label-leading, 1.4);
+}
+.fw-nl--text-center .fw-nl__label { text-align: center; }

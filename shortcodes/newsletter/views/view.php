@@ -37,6 +37,13 @@ if ( ! function_exists( 'sc_nl_render' ) ) {
 		$show_name = sc_get( 'show_name', $atts, 'no' ) === 'yes';
 		$name_ph   = trim( (string) sc_get( 'name_placeholder', $atts, __( 'Your name', 'fw' ) ) );
 		$email_ph  = trim( (string) sc_get( 'email_placeholder', $atts, __( 'Your email address', 'fw' ) ) );
+		// FIELD LABELS -- a source that NAMES its fields ('Business Name') lost those words entirely before this,
+		// because the shortcode carried only placeholders. Each label is bound to its input with `for`/`id`, so it
+		// also gives the field a real accessible name instead of a placeholder standing in for one.
+		$show_labels = 'yes' === (string) sc_get( 'show_field_labels', $atts, 'no' );
+		$name_lbl    = trim( (string) sc_get( 'name_label', $atts, '' ) );
+		$email_lbl   = trim( (string) sc_get( 'email_label', $atts, '' ) );
+		$nl_uid      = 'fw-nl-' . substr( md5( (string) ( sc_get( 'unique_id', $atts, '' ) ) . $email_ph . $name_ph ), 0, 8 );
 		$btn       = trim( (string) sc_get( 'button_label', $atts, __( 'Subscribe', 'fw' ) ) );
 		$consent   = trim( (string) sc_get( 'consent_text', $atts, '' ) );
 		$success   = trim( (string) sc_get( 'success_message', $atts, __( 'Thanks for subscribing!', 'fw' ) ) );
@@ -92,8 +99,18 @@ if ( ! function_exists( 'sc_nl_render' ) ) {
 			. ' data-error="' . esc_attr( $error ) . '">';
 
 		echo '<div class="fw-nl__fields">';
+		// A LABELLED field is wrapped in its own group. Without the wrapper the label and the input are flat
+		// siblings of the flex row, so the row's `gap` — which is meant to space one FIELD from the next —
+		// also pushed every label away from the input it names: a 6px caption gap rendered at the field gap.
+		$group_open  = $show_labels ? '<div class="fw-nl__group">' : '';
+		$group_close = $show_labels ? '</div>' : '';
 		if ( $show_name ) {
-			echo '<input class="fw-nl__input fw-nl__input--name" type="text" name="name" placeholder="' . esc_attr( $name_ph ) . '" autocomplete="name" />';
+			echo $group_open;
+			if ( $show_labels && '' !== $name_lbl ) {
+				echo '<label class="fw-nl__label fw-nl__label--name" for="' . esc_attr( $nl_uid . '-name' ) . '">' . esc_html( $name_lbl ) . '</label>';
+			}
+			echo '<input id="' . esc_attr( $nl_uid . '-name' ) . '" class="fw-nl__input fw-nl__input--name" type="text" name="name" placeholder="' . esc_attr( $name_ph ) . '" autocomplete="name" />';
+			echo $group_close;
 		}
 		// FIELD ICON — a glyph inside the email field. The input is wrapped so the icon can sit over its left inset
 		// (the wrapper is flex:1 like the input it replaces; the input pads past the glyph via CSS).
@@ -103,13 +120,18 @@ if ( ! function_exists( 'sc_nl_render' ) ) {
 			if ( 'icon-font' === $field_icon['type'] && isset( fw()->backend ) ) { $pt = fw()->backend->option_type( 'icon' ); if ( $pt && isset( $pt->packs_loader ) ) { $pt->packs_loader->enqueue_pack_for_icon( $field_icon ); } }
 			$icon_html = (string) sc_icon_render( $field_icon, array( 'class' => 'fw-nl__field-icon', 'aria_hidden' => true ) );
 		}
+		echo $group_open;
+		if ( $show_labels && '' !== $email_lbl ) {
+			echo '<label class="fw-nl__label fw-nl__label--email" for="' . esc_attr( $nl_uid . '-email' ) . '">' . esc_html( $email_lbl ) . '</label>';
+		}
 		if ( '' !== $icon_html ) {
 			$ic = sc_get( 'field_icon_color', $atts, '' );
 			$ic_css = ( is_array( $ic ) && ! empty( $ic['custom'] ) ) ? ' style="--nl-icon:' . esc_attr( preg_replace( '/[^#0-9a-zA-Z(),.%s-]/', '', (string) $ic['custom'] ) ) . '"' : '';
 			echo '<span class="fw-nl__field fw-nl__field--icon"' . $ic_css . '>' . $icon_html;
 		}
-		echo '<input class="fw-nl__input fw-nl__input--email" type="email" name="email" required placeholder="' . esc_attr( $email_ph ) . '" autocomplete="email" />';
+		echo '<input id="' . esc_attr( $nl_uid . '-email' ) . '" class="fw-nl__input fw-nl__input--email" type="email" name="email" required placeholder="' . esc_attr( $email_ph ) . '" autocomplete="email" />';
 		if ( '' !== $icon_html ) { echo '</span>'; }
+		echo $group_close;
 		// With a Button Preset the submit wears the theme's .btn classes and the preset owns its
 		// look; `fw-nl__btn--preset` tells this element's own CSS to stop painting it. The base
 		// `fw-nl__btn` class stays on in both cases — the layout rules and the loading-state

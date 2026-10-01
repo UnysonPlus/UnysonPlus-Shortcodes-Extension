@@ -30,12 +30,6 @@ $options = [
                         'label' => false,
                     ],
 
-                    'overline' => [
-                        'type'  => 'text',
-                        'label' => __( 'Overline', 'fw' ),
-                        'help'  => __( 'A short eyebrow label rendered ABOVE the title (e.g. "Digital Architecture" over a project tile title). Small, uppercase, tracked and muted by default — style it via .icon-box__overline.', 'fw' ),
-                    ],
-
                     'title' => [
                         'type'  => 'text',
                         'label' => __( 'Title', 'fw' ),

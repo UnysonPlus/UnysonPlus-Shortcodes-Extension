@@ -686,7 +686,14 @@ if ( $full_width ) {
 	// so it rides the consolidated footer stylesheet; only a box with no fx- class falls back inline.
 	$cw_align = isset( $atts['content_align'] ) ? (string) $atts['content_align'] : 'center';
 	$cw_marg  = ( 'left' === $cw_align ) ? 'margin-left:0;margin-right:auto;' : ( ( 'right' === $cw_align ) ? 'margin-left:auto;margin-right:0;' : 'margin-left:auto;margin-right:auto;' );
-	$cw_decl = 'max-width:min(' . $cw_css . ', calc(100% - 2 * var(--container-gutter, clamp(1.25rem, 3vw, 2rem))));' . $cw_marg;
+	// The `100% - 2*gutter` term is a VIEWPORT safety gutter, so it must be measured against the viewport —
+	// not against a parent that has already applied the site container AND its gutter. Inside the page-builder
+	// wrapper it was doing the latter: the wrapper is already the container (1368px at x=36 on a 1440 viewport,
+	// matching the source exactly), and this cap then took `100% - 2*gutter` OF THAT — 1336px at x=52. Every
+	// body section came out 2*gutter narrower than the header and footer, which use `.fw-container` and get it
+	// right, so the page body sat visibly inset from its own chrome on every section of every converted site.
+	// `--fw-inner-gutter` is 0 under an already-contained wrapper and unset (so the gutter applies) elsewhere.
+	$cw_decl = 'max-width:min(' . $cw_css . ', calc(100% - 2 * var(--fw-inner-gutter, var(--container-gutter, clamp(1.25rem, 3vw, 2rem)))));' . $cw_marg;
 	if ( $fx_uid !== '' ) {
 		$w_custom_css .= $fx_uid . '{' . $cw_decl . '}';
 	} else {

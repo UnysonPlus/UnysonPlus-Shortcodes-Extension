@@ -2959,7 +2959,21 @@ if ( ! function_exists( 'sc_icon_render' ) ) :
 				$value['icon-class'] = $icon_class;
 			}
 
-			if ( $args['enqueue'] ) { sc_icon_enqueue_pack( $value ); }
+			if ( $args['enqueue'] ) {
+				// Font Awesome is enqueued HERE — where a font icon actually renders — and nowhere else.
+				// `icon`, `icon-box` and `notification` used to name it as a hard CSS dependency, so its 24 KB
+				// stylesheet and its five `@font-face` rules shipped on every page carrying one of those
+				// shortcodes, whatever the icon turned out to be. A converted site draws its glyphs as inline
+				// SVG, so the common case was: Font Awesome fully loaded, ZERO elements using it. Measured on a
+				// real conversion — 0 `fa-*` elements against 11 inline SVGs — and the cost is not only the
+				// bytes: those faces declare `font-display: block`, which WITHHOLDS text paint until the font
+				// resolves, so an unused font was also moving the page.
+				// Gated on the class really being Font Awesome; another pack enqueues its own below.
+				if ( preg_match( '/(?:^|\s)(?:fa[bdlrs]?|fa-[a-z0-9-]+)(?:\s|$)/i', $icon_class ) ) {
+					wp_enqueue_style( 'font-awesome' );
+				}
+				sc_icon_enqueue_pack( $value );
+			}
 
 			$cls  = sc_icon_join_classes( array( $icon_class, $args['font_class'], $args['class'] ) );
 			$aria = $args['aria_hidden'] ? ' aria-hidden="true"' : '';

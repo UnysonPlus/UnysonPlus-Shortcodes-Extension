@@ -44,14 +44,20 @@
 /* --------------------------------------------------------------------------
    Linked variant — anchor wraps the whole box
    -------------------------------------------------------------------------- */
-.icon-box__link {
+/* The wrapper is in the selector ON PURPOSE. A bare `.icon-box__link` is specificity (0,1,0), and the
+   commonest theme link rule there is — `a:not(.btn) { color: var(--color-primary) }` — is (0,1,1), so the
+   theme won and a box with a Box Link painted its TITLE AND BODY COPY in the link colour. Measured on a
+   converted services grid: the card descriptions rendered blue against the source's near-black. Qualifying
+   with the wrapper (and the element) makes this (0,2,1), which beats that rule without reaching for
+   `!important` — so a theme that deliberately styles `.icon-box__link` can still override it. */
+.icon-box__wrapper a.icon-box__link {
     display: block;
     color: inherit;
     text-decoration: none;
 }
 
-.icon-box__link:hover,
-.icon-box__link:focus {
+.icon-box__wrapper a.icon-box__link:hover,
+.icon-box__wrapper a.icon-box__link:focus {
     color: inherit;
     text-decoration: none;
 }
@@ -141,7 +147,6 @@
    Title & content
    -------------------------------------------------------------------------- */
 /* Overline — a short eyebrow label above the title (the "label → title → text" card pattern). */
-.icon-box__overline { font-size: .6875rem; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; opacity: .7; margin: 0 0 .5rem; line-height: 1.3; }
 .icon-box__title {
     margin: 0 0 0.5rem;
     font-size: 1.25rem;

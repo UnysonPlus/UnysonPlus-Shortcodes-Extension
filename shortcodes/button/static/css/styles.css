@@ -52,6 +52,10 @@
 
 /* Full-width modifier (Button "Width → Full Width") */
 .btn.w-100 { width: 100%; }
+/* A Full Width button must also make its alignment wrapper claim the line: as a flex item under a
+   column with align-items:center the wrapper shrinks to the label, and the button's own width:100%
+   then resolves against that shrunken box instead of against the container. */
+.sc-btn-align--full { width: 100%; }
 
 /* Icon buttons: lay text + icon out as a flex row with a real gap (not a margin) so
    spacing is symmetric and the icon centres on the text baseline — matches the common

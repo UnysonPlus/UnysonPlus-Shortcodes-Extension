@@ -216,7 +216,11 @@ $button_content = '';
 if ($icon_html && $icon_position === 'before') {
     $button_content .= $icon_html . ' ';
 }
-$button_content .= $label_output;
+// The label rides in its own span so a preset can style the TEXT independently of the button box.
+// A button whose skin already uses `background-image` (a gradient border, say) cannot also clip a
+// gradient to its own text — one element carries one background-clip — so gradient-text labels need
+// an inner element to land on. Icons stay siblings, so the flex row and its gap are unchanged.
+$button_content .= '' !== trim($label_output) ? '<span class="btn__label">' . $label_output . '</span>' : $label_output;
 if ($icon_html && $icon_position === 'after') {
     $button_content .= ' ' . $icon_html;
 }
@@ -234,7 +238,12 @@ $align       = !empty($atts['alignment']) ? (string) $atts['alignment'] : '';
 $align_open  = '';
 $align_close = '';
 if (in_array($align, array('left', 'center', 'right'), true)) {
-    $align_open  = '<div class="sc-btn-align" style="text-align: ' . esc_attr($align) . ';">';
+    // …except that the wrapper is NOT moot on Full Width: as a flex item under a column with
+    // `align-items:center` it shrinks to the button's label, and the button's own width:100% then
+    // resolves against that shrunken box — so Full Width rendered at content width. The wrapper has
+    // to claim the line itself for the button to span it.
+    $align_cls = 'sc-btn-align' . ($width_mode === 'w-100' ? ' sc-btn-align--full' : '');
+    $align_open  = '<div class="' . esc_attr($align_cls) . '" style="text-align: ' . esc_attr($align) . ';">';
     $align_close = '</div>';
 }
 
@@ -242,7 +251,17 @@ if (in_array($align, array('left', 'center', 'right'), true)) {
 // style preset can otherwise repeat 'btn' (e.g. "btn btn-primary btn bt-1234").
 $classes = array_values(array_unique(array_filter($classes)));
 ?>
+<?php
+// A BUTTON WITH NO DESTINATION IS A <button>, NOT A LINK TO NOWHERE. This view always emitted an anchor, so a
+// control with an empty Link came out as `<a href="#">` — announced as a link by assistive tech, and jumping
+// the page to the top when activated. A source that correctly uses `<button>` (a consent control, a "load the
+// map" trigger, anything driven by script) was converted into exactly that anti-pattern.
+// `type="button"` so it never submits a form it happens to sit inside.
+$btn_link = trim( (string) $atts['link'] );
+$is_link  = ( '' !== $btn_link && '#' !== $btn_link );
+?>
 <?php echo $align_open; ?>
+<?php if ( $is_link ) : ?>
 <a href="<?php echo esc_url($atts['link']); ?>"
    target="<?php echo esc_attr($target); ?>"
    class="<?php echo esc_attr(implode(' ', $classes)); ?>"
@@ -250,4 +269,12 @@ $classes = array_values(array_unique(array_filter($classes)));
    <?php echo fw_attr_to_html($attr); ?>>
     <?php echo $button_content; ?>
 </a>
+<?php else : ?>
+<button type="button"
+   class="<?php echo esc_attr(implode(' ', $classes)); ?>"
+   <?php echo $disabled_attr; ?>
+   <?php echo fw_attr_to_html($attr); ?>>
+    <?php echo $button_content; ?>
+</button>
+<?php endif; ?>
 <?php echo $align_close; ?>

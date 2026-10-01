@@ -35,6 +35,27 @@ $options = array(
 						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
 						'value' => 'no',
 					),
+					// FIELD LABELS. The shortcode offered only placeholders, so a source that NAMES its fields
+					// ('Business Name', 'Email Address') lost those words entirely on conversion -- the converted
+					// form showed nothing but ghost placeholder text, and the labels were simply gone from the page.
+					'show_field_labels' => array(
+						'type'  => 'switch',
+						'label' => __( 'Show Field Labels', 'fw' ),
+						'desc'  => __( 'Render a small label above each field, in addition to its placeholder.', 'fw' ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+						'value' => 'no',
+					),
+					'name_label' => array(
+						'type'  => 'text',
+						'label' => __( 'Name Label', 'fw' ),
+						'value' => '',
+					),
+					'email_label' => array(
+						'type'  => 'text',
+						'label' => __( 'Email Label', 'fw' ),
+						'value' => '',
+					),
 					'name_placeholder' => array(
 						'type'  => 'text',
 						'label' => __( 'Name Placeholder', 'fw' ),

@@ -52,7 +52,12 @@
 
 /* ---- Link styling — color is gated by .tb-linkcolor so the theme link color is
    untouched unless one is picked; underline behavior is independent. ---- */
-.text-block.tb-linkcolor a { color: var(--tb-link); }
+/* The second selector is not redundant: inside post content the theme's own prose-link default
+   `.entry-content :is(p, li) a:not([class])` scores (0,2,2) and out-ranks this rule's (0,2,1), so a
+   Link Color set on the block was silently ignored everywhere it matters. Repeating the class puts
+   it at (0,3,1), which wins without resorting to !important (that would block a child theme). */
+.text-block.tb-linkcolor a,
+.tb-linkcolor.text-block.tb-linkcolor a { color: var(--tb-link); }
 .text-block.tb-links-always a       { text-decoration: underline; }
 .text-block.tb-links-none a         { text-decoration: none; }
 .text-block.tb-links-hover a        { text-decoration: none; }

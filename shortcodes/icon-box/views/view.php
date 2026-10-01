@@ -34,7 +34,6 @@ $full_height    = ! empty( $atts['full_height'] );
 $custom_icon    = isset( $atts['custom_icon'] ) ? trim( (string) $atts['custom_icon'] ) : '';
 $picked_icon    = ! empty( $atts['icon'] ) ? $atts['icon'] : null;
 $title          = isset( $atts['title'] ) ? trim( (string) $atts['title'] ) : '';
-$overline       = isset( $atts['overline'] ) ? trim( (string) $atts['overline'] ) : '';
 $content        = isset( $atts['content'] ) ? (string) $atts['content'] : '';
 $has_content    = $content !== '' && trim( wp_strip_all_tags( $content ) ) !== '';
 $has_icon       = ( $custom_icon !== '' ) || ! empty( $picked_icon );
@@ -342,10 +341,6 @@ $icon_html = $has_icon
     : '';
 
 $title_html = '';
-// The OVERLINE (eyebrow label) sits above the title inside the same head slot, so every layout keeps it with the title.
-if ( $overline !== '' ) {
-    $title_html .= '<div class="icon-box__overline' . ( $title_align_class ? ' ' . esc_attr( $title_align_class ) : '' ) . '">' . wp_kses_post( $overline ) . '</div>';
-}
 if ( $title !== '' ) {
     $title_class      = trim( 'icon-box__title ' . implode( ' ', $title_extras ) . ( $title_align_class ? ' ' . $title_align_class : '' ) );
     $title_style_attr = $title_style !== '' ? ' style="' . esc_attr( $title_style ) . '"' : '';
@@ -362,7 +357,12 @@ $content_html = '';
 if ( $has_content ) {
     $content_class      = trim( 'icon-box__content ' . implode( ' ', $content_extras ) . ( $content_align_class ? ' ' . $content_align_class : '' ) );
     $content_style_attr = $content_style !== '' ? ' style="' . esc_attr( $content_style ) . '"' : '';
-    $content_html       = '<div class="' . esc_attr( $content_class ) . '"' . $content_style_attr . '>' . wp_kses_post( $content ) . '</div>';
+    // sc_kses_svg (not wp_kses_post) so an inline <svg> in the body survives — parity with special-heading's
+    // title. wp_kses_post has no <svg> in its allow-list, so a card whose body carries a small affordance
+    // glyph ("Learn more →") rendered the words and silently dropped the arrow. Same guarded fallback as
+    // special-heading uses, so the view still works if the shortcodes styling helper is not loaded.
+    $content_html       = '<div class="' . esc_attr( $content_class ) . '"' . $content_style_attr . '>'
+        . ( function_exists( 'sc_kses_svg' ) ? sc_kses_svg( $content ) : wp_kses_post( $content ) ) . '</div>';
 }
 
 /*

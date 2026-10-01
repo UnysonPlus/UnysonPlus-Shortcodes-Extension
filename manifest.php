@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.37';
+$manifest['version'] = '1.15.47';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,15 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.47 - Icon Box: the "Overline" option is REMOVED (BREAKING). The element no longer has an
+ *          eyebrow slot: the option is gone from the Content tab, the view no longer renders
+ *          <div class="icon-box__overline">, and the default .icon-box__overline rule is dropped
+ *          from styles.css. A page with a saved overline value keeps the value in the database but
+ *          renders nothing for it; use the Title, or a Special Heading above the box, instead.
+ *          The Site Converter stops filling it on both twins — a card's eyebrow is now DROPPED,
+ *          not folded into the body copy (goldens pin the non-leak). Measured before removal: 6 of
+ *          122 converted icon boxes across 57 captures carried one.
+ *
  * 1.15.34 - Pricing Table: a third layout, BARS — stacked full-width bands that are still cards.
  *          It sits between the two that existed: Grid compares plans side by side, List is a flush
  *          price-list row with no card at all, and Bars takes the list's reading order with the
