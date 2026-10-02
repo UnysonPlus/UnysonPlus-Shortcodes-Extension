@@ -838,11 +838,22 @@ add_action( 'wp_footer', function () {
     // Shared base (CSS vars, .animate__animated, speed / delay / repeat / infinite utilities,
     // reduced-motion guard). Carries the .sc-anim-pending visibility helpers as inline CSS.
     wp_enqueue_style( 'animate-css-base', $base_uri . '/base.min.css', [], $fmt( '/base.min.css' ) );
-    $inline_css = '.sc-anim-pending{visibility:hidden;}'
-                . '.sc-anim-pending.animate__animated{visibility:visible;}'
+    // OPACITY, NOT VISIBILITY. Both hide a pending element and both keep it out of axe's contrast pass, but
+    // `visibility:hidden` also removes the text from the rendered text layer: document.innerText omits it,
+    // and so does anything that reads a page without scrolling it -- search-engine renderers, AI crawlers,
+    // in-page find. Measured on a converted page with entrance animations on: every service name, section
+    // heading and body phrase below the fold was absent from innerText, and present again the moment
+    // reduced-motion forced the elements visible. A page whose content only exists after a scroll is a bad
+    // trade for a reveal effect. `opacity:0` keeps the text in the DOM text layer and in the accessibility
+    // tree while still hiding it visually, so nothing is lost to a reader that does not scroll.
+    //
+    // pointer-events:none goes with it: an invisible element must not swallow clicks the way a 0-opacity
+    // overlay would. Keyboard focus can still reach one, which scrolls it into view and fires its reveal.
+    $inline_css = '.sc-anim-pending{opacity:0;pointer-events:none;}'
+                . '.sc-anim-pending.animate__animated{opacity:1;pointer-events:auto;}'
                 . '@media (prefers-reduced-motion: reduce){'
                 .   '.animate__animated{animation:none !important;}'
-                .   '.sc-anim-pending{visibility:visible !important;}'
+                .   '.sc-anim-pending{opacity:1 !important;pointer-events:auto !important;}'
                 . '}';
     wp_add_inline_style( 'animate-css-base', $inline_css );
 
