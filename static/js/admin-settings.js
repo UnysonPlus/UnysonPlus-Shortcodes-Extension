@@ -323,6 +323,57 @@
 		$( '#fw-sc-install-zip' ).on( 'click', function () { installZip(); } );
 		$( '#fw-sc-install-github' ).on( 'click', function () { installGithub(); } );
 
+		// Theme overrides tab: keep an element the theme removes outright. Saves
+		// immediately; reverts the checkbox if the save fails. A reload is needed
+		// before the element reappears, because the disable list is read once when
+		// the shortcodes load.
+		$( document ).on( 'change', '.fw-sc-restore-toggle', function () {
+			var $input = $( this );
+			var $row   = $input.closest( 'tr' );
+			var keep   = $input.prop( 'checked' );
+
+			post( 'fw_ext_shortcodes_restore_shortcode', {
+				tag:  $input.data( 'tag' ),
+				keep: keep ? 1 : 0
+			}, function ( res ) {
+				if ( res && res.success ) {
+					$row.addClass( 'fw-sc-override-saved' );
+					setTimeout( function () { $row.removeClass( 'fw-sc-override-saved' ); }, 1200 );
+					notify( i18n.overrideSaved || 'Saved. Reload this page to see the change.' );
+				} else {
+					$input.prop( 'checked', ! keep );
+					notify( ( res && res.data && res.data.message ) || i18n.genericError, true );
+				}
+			} );
+		} );
+
+		// Theme overrides tab: choose the theme's copy of an element or the
+		// framework's. Saves immediately (one radio = one decision); on failure the
+		// previous choice is restored so the UI never claims a change that didn't save.
+		$( document ).on( 'change', '.fw-sc-override-radio', function () {
+			var $input = $( this );
+			var $row   = $input.closest( 'tr' );
+			var tag    = $input.data( 'tag' );
+			var use    = $input.val();
+
+			post( 'fw_ext_shortcodes_override_toggle', {
+				tag: tag,
+				use: use
+			}, function ( res ) {
+				if ( res && res.success ) {
+					$row.addClass( 'fw-sc-override-saved' );
+					setTimeout( function () { $row.removeClass( 'fw-sc-override-saved' ); }, 1200 );
+					notify( i18n.overrideSaved || 'Saved. Reload the page builder to see the change.' );
+				} else {
+					$row.find( '.fw-sc-override-radio' ).each( function () {
+						var $r = $( this );
+						$r.prop( 'checked', $r.val() !== use );
+					} );
+					notify( ( res && res.data && res.data.message ) || i18n.genericError, true );
+				}
+			} );
+		} );
+
 		// Tabs (native WP nav-tabs).
 		$( '.fw-sc-nav-tabs .nav-tab' ).on( 'click', function ( e ) {
 			e.preventDefault();

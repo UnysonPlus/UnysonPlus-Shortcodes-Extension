@@ -56,6 +56,8 @@ class FW_Ext_Shortcodes_Settings_Page {
 
 		// Design-pack management (Design packs tab): enable/disable + delete.
 		add_action( 'wp_ajax_fw_ext_shortcodes_design_toggle', array( $this, '_ajax_design_toggle' ) );
+		add_action( 'wp_ajax_fw_ext_shortcodes_override_toggle', array( $this, '_ajax_override_toggle' ) );
+		add_action( 'wp_ajax_fw_ext_shortcodes_restore_shortcode', array( $this, '_ajax_restore_shortcode' ) );
 		add_action( 'wp_ajax_fw_ext_shortcodes_design_delete', array( $this, '_ajax_design_delete' ) );
 
 		// Surface a "Settings" link on the WordPress Shortcodes extension card
@@ -800,6 +802,36 @@ class FW_Ext_Shortcodes_Settings_Page {
 				<?php if ( function_exists( 'upw_sc_lib_items' ) ) : ?>
 					<a href="#library" class="nav-tab" data-tab="library"><?php esc_html_e( 'Library', 'fw' ); ?></a>
 				<?php endif; ?>
+				<?php
+				// Only shown when the active theme actually overrides something — on a
+				// normal site the tab would be an empty screen, and on an affected site
+				// it is the first place the admin notice sends the user.
+				$fw_upw_overrides = function_exists( 'fw_upw_theme_shortcode_overrides' )
+					? fw_upw_theme_shortcode_overrides()
+					: array();
+				$fw_upw_removed = function_exists( 'fw_upw_theme_disabled_shortcodes' )
+					? fw_upw_theme_disabled_shortcodes()
+					: array();
+				if ( ! empty( $fw_upw_overrides ) || ! empty( $fw_upw_removed ) ) :
+					$fw_upw_stale_count = 0;
+					foreach ( $fw_upw_overrides as $fw_upw_o ) {
+						if ( $fw_upw_o['stale'] ) {
+							$fw_upw_stale_count ++;
+						}
+					}
+					// A removed element counts toward the badge too: it is the more
+					// serious of the two, since it breaks pages that already use it.
+					$fw_upw_stale_count += count(
+						array_diff_key( $fw_upw_removed, fw_upw_restored_shortcodes() )
+					);
+					?>
+					<a href="#theme-overrides" class="nav-tab" data-tab="theme-overrides">
+						<?php esc_html_e( 'Theme overrides', 'fw' ); ?>
+						<?php if ( $fw_upw_stale_count ) : ?>
+							<span class="fw-sc-tab-badge"><?php echo esc_html( $fw_upw_stale_count ); ?></span>
+						<?php endif; ?>
+					</a>
+				<?php endif; ?>
 			</h2>
 
 			<div class="fw-sc-notice fw-sc-notice-hidden" id="fw-sc-notice"></div>
@@ -874,6 +906,12 @@ class FW_Ext_Shortcodes_Settings_Page {
 			</div><!-- /.fw-sc-panel[library] -->
 			<?php endif; ?>
 
+			<?php if ( ! empty( $fw_upw_overrides ) || ! empty( $fw_upw_removed ) ) : ?>
+			<div class="fw-sc-panel fw-sc-panel-hidden" data-panel="theme-overrides" id="theme-overrides">
+				<?php $this->render_overrides_panel( $fw_upw_overrides, $fw_upw_removed ); ?>
+			</div><!-- /.fw-sc-panel[theme-overrides] -->
+			<?php endif; ?>
+
 			<h2 class="fw-sc-section-title"><?php esc_html_e( 'Add a shortcode or design pack', 'fw' ); ?></h2>
 			<p class="description fw-sc-trust">
 				<?php esc_html_e( 'Shortcodes and design packs are executable PHP. Only install from sources you trust — the same level of trust as installing a plugin.', 'fw' ); ?>
@@ -904,6 +942,237 @@ class FW_Ext_Shortcodes_Settings_Page {
 	 * installer payload in _action_enqueue). Downloaded shortcodes install into the theme's
 	 * framework-customizations and auto-register in the Page Builder.
 	 */
+	/**
+	 * The "Theme overrides" tab body.
+	 *
+	 * An active theme may replace a framework shortcode by shipping its own copy at
+	 * framework-customizations/extensions/shortcodes/shortcodes/<name>/ — a deliberate
+	 * and supported customization. It stops being deliberate when the theme was written
+	 * for the predecessor framework: those views never call sc_build_wrapper_attr(), so
+	 * everything that rides on the wrapper (responsive "Hide on <device>", animation
+	 * hooks, preset classes) is dropped without an error.
+	 *
+	 * Each row lets the user keep the theme's version (default — nothing changes for
+	 * anyone relying on it) or switch to the framework's. Switching is per element, and
+	 * it is flagged as content-affecting because a page built with the theme's version
+	 * of that element will re-render with different markup.
+	 *
+	 * @param array $overrides From fw_upw_theme_shortcode_overrides().
+	 * @param array $removed   From fw_upw_theme_disabled_shortcodes().
+	 */
+	private function render_overrides_panel( array $overrides, array $removed = array() ) {
+		$disabled = function_exists( 'fw_upw_disabled_theme_overrides' )
+			? fw_upw_disabled_theme_overrides()
+			: array();
+		$restored = function_exists( 'fw_upw_restored_shortcodes' )
+			? fw_upw_restored_shortcodes()
+			: array();
+		// Layout primitives whose tab the theme tried to move and which were pinned
+		// back — shown inline so the user understands why Section is still where the
+		// docs say it is rather than where their theme filed it.
+		$relocated = function_exists( 'fw_upw_relocated_layout_tags' )
+			? fw_upw_relocated_layout_tags()
+			: array();
+		$theme     = wp_get_theme();
+
+		if ( ! empty( $removed ) ) :
+			?>
+			<div class="fw-sc-overrides fw-sc-overrides--removed" style="margin-bottom:2.4em">
+				<h2 style="margin:.2em 0 .4em"><?php esc_html_e( 'Removed by your theme', 'fw' ); ?></h2>
+				<p class="description" style="margin:0 0 1em">
+					<?php esc_html_e( 'The active theme removes these elements from the builder entirely, using the framework\'s public filter for that. Themes do this to hide elements they ship their own equivalents of. Any page that already uses one shows “shortcode not found” until you restore it here.', 'fw' ); ?>
+				</p>
+
+				<table class="widefat striped">
+					<thead>
+					<tr>
+						<th scope="col"><?php esc_html_e( 'Element', 'fw' ); ?></th>
+						<th scope="col"><?php esc_html_e( 'Status', 'fw' ); ?></th>
+					</tr>
+					</thead>
+					<tbody>
+					<?php foreach ( array_keys( $removed ) as $tag ) :
+						$on = ! empty( $restored[ $tag ] );
+						?>
+						<tr data-tag="<?php echo esc_attr( $tag ); ?>">
+							<td>
+								<strong><?php echo esc_html( ucwords( str_replace( '_', ' ', $tag ) ) ); ?></strong>
+								<code style="margin-left:.5em">[<?php echo esc_html( $tag ); ?>]</code>
+							</td>
+							<td>
+								<label>
+									<input type="checkbox" class="fw-sc-restore-toggle"
+										data-tag="<?php echo esc_attr( $tag ); ?>" <?php checked( $on ); ?> />
+									<?php esc_html_e( 'Keep this element available', 'fw' ); ?>
+								</label>
+							</td>
+						</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+
+				<p class="description" style="margin-top:1em">
+					<?php esc_html_e( 'Restoring an element brings back the framework\'s version of it. If your theme provides its own equivalent, you may end up with both in the builder — that is expected, and you can disable whichever you do not want on the Shortcodes tab.', 'fw' ); ?>
+				</p>
+			</div>
+			<?php
+		endif;
+
+		if ( empty( $overrides ) ) {
+			return;
+		}
+		?>
+		<div class="fw-sc-overrides">
+			<p class="description" style="margin:.2em 0 1em">
+				<?php
+				printf(
+					/* translators: %s: active theme name */
+					esc_html__( 'The active theme (%s) ships its own version of the elements below, and its version is used instead of the framework\'s. That is normal for a theme that deliberately customizes an element.', 'fw' ),
+					'<strong>' . esc_html( $theme ? $theme->get( 'Name' ) : '' ) . '</strong>'
+				);
+				?>
+			</p>
+			<p class="description" style="margin:0 0 1.4em">
+				<?php esc_html_e( 'Elements marked “Outdated” use a view written for an older framework. Per-element settings added since — including “Hide on Desktop / Tablet / Mobile” — save correctly but never reach the page for those elements. Switch one to the framework version to get those settings working again.', 'fw' ); ?>
+			</p>
+
+			<table class="widefat striped fw-sc-overrides__table">
+				<thead>
+				<tr>
+					<th scope="col"><?php esc_html_e( 'Element', 'fw' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Status', 'fw' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Renders with', 'fw' ); ?></th>
+				</tr>
+				</thead>
+				<tbody>
+				<?php foreach ( $overrides as $tag => $info ) :
+					$off = ! empty( $disabled[ $tag ] );
+					?>
+					<tr data-tag="<?php echo esc_attr( $tag ); ?>">
+						<td>
+							<strong><?php echo esc_html( $info['title'] ); ?></strong>
+							<code style="margin-left:.5em">[<?php echo esc_html( $tag ); ?>]</code>
+							<?php if ( isset( $relocated[ $tag ] ) ) : ?>
+								<br />
+								<span class="description" style="font-size:12px">
+									<?php
+									printf(
+										/* translators: 1: tab the theme asked for, 2: tab it is pinned to */
+										esc_html__( 'Your theme files this under “%1$s”; kept in “%2$s” so it stays where the documentation says.', 'fw' ),
+										esc_html( $relocated[ $tag ]['theme_tab'] ),
+										esc_html( $relocated[ $tag ]['framework_tab'] )
+									);
+									?>
+								</span>
+							<?php endif; ?>
+						</td>
+						<td>
+							<?php if ( $info['stale'] ) : ?>
+								<span class="fw-sc-override-flag fw-sc-override-flag--stale"><?php esc_html_e( 'Outdated', 'fw' ); ?></span>
+							<?php else : ?>
+								<span class="fw-sc-override-flag"><?php esc_html_e( 'Current', 'fw' ); ?></span>
+							<?php endif; ?>
+						</td>
+						<td>
+							<label>
+								<input type="radio" name="fw-sc-override-<?php echo esc_attr( $tag ); ?>"
+									value="theme" <?php checked( ! $off ); ?>
+									data-tag="<?php echo esc_attr( $tag ); ?>" class="fw-sc-override-radio" />
+								<?php esc_html_e( 'Theme version', 'fw' ); ?>
+							</label>
+							<label style="margin-left:1.2em">
+								<input type="radio" name="fw-sc-override-<?php echo esc_attr( $tag ); ?>"
+									value="framework" <?php checked( $off ); ?>
+									data-tag="<?php echo esc_attr( $tag ); ?>" class="fw-sc-override-radio" />
+								<?php esc_html_e( 'Framework version', 'fw' ); ?>
+							</label>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+
+			<p class="description" style="margin-top:1.2em">
+				<?php esc_html_e( 'Changing this affects existing content: a page built with the theme\'s version of an element will re-render using the framework\'s markup and styling. Review those pages after switching.', 'fw' ); ?>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * @internal
+	 * Toggle one shortcode between the theme's override and the framework's own files.
+	 */
+	public function _ajax_override_toggle() {
+		$this->guard();
+
+		if ( ! function_exists( 'fw_upw_disabled_theme_overrides' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Override detection is unavailable.', 'fw' ) ) );
+		}
+
+		$tag = isset( $_POST['tag'] ) ? sanitize_key( wp_unslash( $_POST['tag'] ) ) : '';
+		// "theme" = keep the override (default). "framework" = ignore it.
+		$use_framework = isset( $_POST['use'] ) && 'framework' === $_POST['use'];
+
+		if ( '' === $tag ) {
+			wp_send_json_error( array( 'message' => __( 'Missing element.', 'fw' ) ) );
+		}
+
+		$overrides = fw_upw_theme_shortcode_overrides();
+		if ( ! isset( $overrides[ $tag ] ) ) {
+			wp_send_json_error( array( 'message' => __( 'That element is not overridden by the active theme.', 'fw' ) ) );
+		}
+
+		$disabled = fw_upw_disabled_theme_overrides();
+
+		if ( $use_framework ) {
+			$disabled[ $tag ] = true;
+		} else {
+			unset( $disabled[ $tag ] );
+		}
+
+		fw_upw_set_disabled_theme_overrides( array_keys( $disabled ) );
+
+		wp_send_json_success( array( 'tag' => $tag, 'use' => $use_framework ? 'framework' : 'theme' ) );
+	}
+
+	/**
+	 * @internal
+	 * Keep (or stop keeping) an element the active theme removes via the
+	 * fw_ext_shortcodes_disable_shortcodes filter.
+	 */
+	public function _ajax_restore_shortcode() {
+		$this->guard();
+
+		if ( ! function_exists( 'fw_upw_restored_shortcodes' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Override detection is unavailable.', 'fw' ) ) );
+		}
+
+		$tag  = isset( $_POST['tag'] ) ? sanitize_key( wp_unslash( $_POST['tag'] ) ) : '';
+		$keep = ! empty( $_POST['keep'] );
+
+		if ( '' === $tag ) {
+			wp_send_json_error( array( 'message' => __( 'Missing element.', 'fw' ) ) );
+		}
+
+		$removed = fw_upw_theme_disabled_shortcodes();
+		if ( ! isset( $removed[ $tag ] ) ) {
+			wp_send_json_error( array( 'message' => __( 'That element is not removed by the active theme.', 'fw' ) ) );
+		}
+
+		$restored = fw_upw_restored_shortcodes();
+
+		if ( $keep ) {
+			$restored[ $tag ] = true;
+		} else {
+			unset( $restored[ $tag ] );
+		}
+
+		fw_upw_set_restored_shortcodes( array_keys( $restored ) );
+
+		wp_send_json_success( array( 'tag' => $tag, 'keep' => $keep ) );
+	}
+
 	private function render_library_panel() {
 		?>
 		<div class="upw-scl">

@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.48';
+$manifest['version'] = '1.15.53';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,76 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.53 - Theme-override choices are now scoped to the THEME they were made about. Both stores
+ *          (the per-element "use the framework version" choice, and the list of elements kept
+ *          after a theme removed them) were a flat tag list, so switching themes silently applied
+ *          one theme's decisions to the next: a choice about the old theme's Section quietly
+ *          governed the new theme's, with no notice and nothing in the UI to reveal it. Each is
+ *          now keyed by stylesheet, so switching themes re-asks, switching back remembers, and no
+ *          decision leaks between themes. A flat map found on read is attributed to the active
+ *          theme -- the only theme it could have been made about -- and rewritten in place, so
+ *          existing sites keep their settings with no action needed.
+ *
+ * 1.15.52 - Layout elements are PINNED to their framework tab, and a new `fw_shortcode_get_config`
+ *          filter makes that possible. A theme's override supplies the whole config, including
+ *          which page-builder tab the element appears under, so a predecessor-era theme filing
+ *          its Section under its own tab left Classic Layout looking empty -- and every tutorial,
+ *          screenshot and doc page that says "open Classic Layout and pick a Section" wrong, with
+ *          nothing naming the cause. The three layout primitives (`section`, `column`,
+ *          `container`) now keep the tab the framework declares; only the `tab` key is touched,
+ *          so the theme keeps every other config choice, and it is independent of whose view
+ *          renders -- "where do I find it" and "whose markup does it emit" are separate questions
+ *          with separate controls. The line is deliberately narrow: where a theme files its
+ *          buttons, headings, media or its own elements is the theme's business and is left
+ *          alone. The pinned set is filterable via `fw_upw_pinned_layout_tags`, and the framework
+ *          tab is READ from the framework's own config.php rather than hardcoded, so it stays
+ *          correct and translated. The Theme overrides tab notes any element that was pinned
+ *          back, naming the tab the theme asked for, so the behaviour is visible rather than
+ *          mysterious. (`column` is in the set for completeness but is a no-op: its width tiles
+ *          register via Page_Builder_Column_Item, not from config.)
+ *
+ *          NEW FILTER: `fw_shortcode_get_config( $config, $tag )` -- mirrors the existing
+ *          `fw_shortcode_get_options`, letting code adjust a shortcode's config after it is read
+ *          from config.php.
+ *
+ * 1.15.51 - Theme overrides: the tab now also covers elements a theme REMOVES, not just ones it
+ *          replaces. A theme can call the public `fw_ext_shortcodes_disable_shortcodes` filter to
+ *          drop framework elements from the builder entirely -- predecessor-era themes do this
+ *          routinely, to hide elements they ship their own equivalents of. That is the more
+ *          damaging of the two: an override changes how an element renders, but a removal makes
+ *          it cease to exist, so every page already using it renders "shortcode not found" with
+ *          nothing in the UI naming the cause. The tab gains a "Removed by your theme" section
+ *          listing each one with a "Keep this element available" toggle, and the notice reports
+ *          removals FIRST because broken content outranks a dropped setting. Attribution is
+ *          deliberate: the framework hooks that same filter twice itself (the Shortcodes settings
+ *          screen, and the Theme Builder element scoping), so each callback is traced via
+ *          Reflection to the file that declared it and only callbacks living inside the active
+ *          theme are run to see what they contribute -- the framework's own removals are never
+ *          reported as the theme's doing. Restoring is a filter at priority 9999 that strips the
+ *          user's chosen tags back out, late enough to see everything regardless of registration
+ *          order, and matching both the hyphenated and underscored spellings since themes use
+ *          them interchangeably.
+ *
+ * 1.15.50 - Shortcodes settings: a "Theme overrides" tab, shown only when the active theme
+ *          replaces framework elements. An active theme may ship its own copy of an element at
+ *          framework-customizations/extensions/shortcodes/shortcodes/<name>/ and its files win --
+ *          a deliberate, supported customization. It stops being deliberate when the theme was
+ *          written for the predecessor framework: those themes ship whole folders under names
+ *          this framework also uses (section, button, column, accordion and more), and their
+ *          views predate the wrapper API, so they never call sc_build_wrapper_attr(). Everything
+ *          riding on the wrapper -- the responsive "Hide on <device>" classes above all -- is
+ *          then dropped with no error at all: the option saves, and simply never reaches the
+ *          page. The new tab lists every override the active theme supplies, flags the ones
+ *          whose view lacks the wrapper call as "Outdated", and lets the user switch an
+ *          individual element to the framework's version. Switching drops that shortcode's
+ *          rewrite paths in the loader, so locate_path() falls through to the framework's own
+ *          files. Default is unchanged -- the theme keeps winning until the user says otherwise,
+ *          so deliberate child-theme overrides are untouched. Detection lives in core
+ *          (framework/includes/theme-overrides.php), is filesystem-only, and is cached against a
+ *          fingerprint of the active theme plus its version, so switching or updating a theme
+ *          re-scans. A dismissible admin notice announces only the outdated overrides, because
+ *          warning about a current, intentional one would be noise.
+ *
  * 1.15.47 - Icon Box: the "Overline" option is REMOVED (BREAKING). The element no longer has an
  *          eyebrow slot: the option is gone from the Content tab, the view no longer renders
  *          <div class="icon-box__overline">, and the default .icon-box__overline rule is dropped

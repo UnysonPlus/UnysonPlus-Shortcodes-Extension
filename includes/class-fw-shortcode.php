@@ -117,9 +117,16 @@ class FW_Shortcode {
 
 		if ( ! is_array( $this->config ) ) {
 			return null;
-		} else {
-			return $key === null ? $this->config : fw_akg( $key, $this->config );
 		}
+
+		/** Filters a shortcode's config after it is loaded from config.php, keyed by tag, letting code adjust it (e.g. pin a layout element's page-builder tab). */
+		$config = apply_filters( 'fw_shortcode_get_config', $this->config, $this->tag );
+
+		if ( ! is_array( $config ) ) {
+			return null;
+		}
+
+		return $key === null ? $config : fw_akg( $key, $config );
 	}
 
 	public function get_options() {

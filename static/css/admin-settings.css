@@ -453,3 +453,41 @@ html[data-upa-mode="dark"] body.upa .fw-sc-settings {
 .fw-sc-settings .fw-sc-dcount,
 .fw-sc-settings .fw-sc-dswitch,
 .fw-sc-settings .fw-sc-icon { color: var(--sc-mut); }
+
+/* ── Theme overrides tab ───────────────────────────────────────────────────
+ * Listed when the active theme ships its own copy of a framework element. The
+ * "Outdated" flag marks an override whose view predates the wrapper API, which
+ * is the case that silently drops per-element settings. */
+.fw-sc-settings .fw-sc-tab-badge {
+	display: inline-block;
+	min-width: 18px;
+	margin-left: 6px;
+	padding: 0 5px;
+	border-radius: 9px;
+	background: #d63638;
+	color: #fff;
+	font-size: 11px;
+	line-height: 18px;
+	text-align: center;
+}
+
+.fw-sc-settings .fw-sc-overrides__table { margin-top: .4em; }
+
+.fw-sc-settings .fw-sc-override-flag {
+	display: inline-block;
+	padding: 1px 8px;
+	border-radius: 10px;
+	background: var(--sc-inset2, #f0f0f1);
+	color: var(--sc-mut, #646970);
+	font-size: 12px;
+}
+
+.fw-sc-settings .fw-sc-override-flag--stale {
+	background: #fcf0f1;
+	color: #b32d2e;
+}
+
+.fw-sc-settings .fw-sc-override-saved > td {
+	transition: background-color .4s ease;
+	background-color: #edfaef;
+}

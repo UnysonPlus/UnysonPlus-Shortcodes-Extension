@@ -236,6 +236,24 @@ class _FW_Shortcodes_Loader
 			);
 
 			// shortcode rewrite paths
+			//
+			// A theme written for the predecessor framework ships whole shortcode
+			// folders under names this framework also uses, and its views predate
+			// the wrapper API -- so features that ride on the wrapper (responsive
+			// "Hide on <device>", animation hooks, preset classes) silently stop
+			// working for those elements. Shortcodes > Theme overrides lets the
+			// user switch an individual override off; doing so drops the theme
+			// paths here, so locate_path() falls through to the framework's own
+			// files. Deliberate child-theme overrides are untouched by default.
+			if (
+				function_exists('fw_upw_theme_override_disabled')
+				&& fw_upw_theme_override_disabled($shortcode_tag)
+			) {
+				self::$shortcodes[$shortcode_tag] = self::load_shortcode($shortcode_data);
+				self::$extension_shortcodes[$ext_name][$shortcode_tag] = true;
+				continue;
+			}
+
 			if (isset($cleared_rewrite_paths)) {
 				$shortcode_rewrite_paths = $cleared_rewrite_paths;
 				$shortcode_rewrite_uris  = $cleared_rewrite_uris;
