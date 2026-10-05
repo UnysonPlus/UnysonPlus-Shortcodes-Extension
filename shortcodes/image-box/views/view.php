@@ -86,6 +86,109 @@ if ( ! function_exists( 'sc_imgbox_sanitize_svg' ) ) {
         return trim( $svg );
     }
 }
+if ( ! function_exists( 'sc_imgbox_attachment_id_from_url' ) ) {
+    /**
+     * Attachment ID for an image URL, tolerating the forms that defeat
+     * attachment_url_to_postid() outright.
+     *
+     * That function matches the stored URL character for character, so a
+     * protocol-relative `//host/path` (what the Site Converter emits) or an
+     * http/https mismatch finds nothing - and the caller is then left with no
+     * width, height or srcset to work with. Both are normalised here first.
+     *
+     * Memoised per request: this is a DB query, and one page can render the
+     * same image several times.
+     *
+     * @param string $url
+     * @return int 0 when the URL is not an attachment in this library.
+     */
+    function sc_imgbox_attachment_id_from_url( $url ) {
+        static $cache = array();
+        $url = trim( (string) $url );
+        if ( $url === '' ) {
+            return 0;
+        }
+        if ( isset( $cache[ $url ] ) ) {
+            return $cache[ $url ];
+        }
+        $try = $url;
+        if ( strpos( $try, '//' ) === 0 ) {
+            $try = ( is_ssl() ? 'https:' : 'http:' ) . $try;
+        }
+        $id = (int) attachment_url_to_postid( $try );
+        if ( ! $id ) {
+            // Same file, other scheme - common when a site moved to https after upload.
+            if ( stripos( $try, 'https://' ) === 0 ) {
+                $id = (int) attachment_url_to_postid( 'http://' . substr( $try, 8 ) );
+            } elseif ( stripos( $try, 'http://' ) === 0 ) {
+                $id = (int) attachment_url_to_postid( 'https://' . substr( $try, 7 ) );
+            }
+        }
+        $cache[ $url ] = $id;
+        return $id;
+    }
+}
+if ( ! function_exists( 'sc_imgbox_img_dimension_atts' ) ) {
+    /**
+     * width / height / srcset / sizes for the rendered <img>, from the attachment.
+     *
+     * Why this exists: the tag used to carry only src, alt, class, loading and
+     * decoding, so it had no intrinsic size for the browser to reserve space
+     * with and no smaller file to choose from. Lighthouse reports the first as
+     * "Image elements do not have explicit width and height".
+     *
+     * Be accurate about the CLS benefit, which is situational and was NOT
+     * reproducible on the page this was written against: measured there, layout
+     * shift was 0.1577 both with and without these attributes, because the
+     * design's own CSS already pins the media box to a fixed height, so the
+     * space was reserved either way. It is the designs that let the image size
+     * itself that stand to gain. The attributes are correct to emit regardless -
+     * they are right, they silence the audit, and they help wherever CSS is not
+     * already doing the job - but do not expect a CLS number to move on a page
+     * whose box is already fixed.
+     *
+     * The srcset is likewise only as good as the sizes that exist: an
+     * attachment registering just `medium` and `thumbnail` offers the browser a
+     * 300w and the full-size original and nothing in between, so a 1024px slot
+     * still takes the original. The gain arrives when the intermediate sizes
+     * are present.
+     *
+     * The width/height pair only has to carry the right ASPECT RATIO: the
+     * shortcode's own CSS sizes the image (width:100%;height:100%), so these
+     * are a hint for reserving space, never a constraint that fights the layout
+     * (verified: with width="1440" height="611" the image still rendered at the
+     * CSS-driven 1024x434).
+     *
+     * @param int    $att_id    Attachment ID from the image option, 0 if unknown.
+     * @param string $image_url Used to recover the ID when the option has none.
+     * @return array Attribute map; empty for an image outside the media library
+     *               (an external URL, which cannot be measured server-side).
+     */
+    function sc_imgbox_img_dimension_atts( $att_id, $image_url ) {
+        $att_id = (int) $att_id;
+        if ( $att_id <= 0 ) {
+            $att_id = sc_imgbox_attachment_id_from_url( $image_url );
+        }
+        if ( $att_id <= 0 ) {
+            return array();
+        }
+        $src = wp_get_attachment_image_src( $att_id, 'full' );
+        if ( ! is_array( $src ) || empty( $src[1] ) || empty( $src[2] ) ) {
+            return array();
+        }
+        $out = array( 'width' => (int) $src[1], 'height' => (int) $src[2] );
+
+        $srcset = wp_get_attachment_image_srcset( $att_id, 'full' );
+        if ( $srcset ) {
+            $out['srcset'] = $srcset;
+            $sizes = wp_get_attachment_image_sizes( $att_id, 'full' );
+            if ( $sizes ) {
+                $out['sizes'] = $sizes;
+            }
+        }
+        return $out;
+    }
+}
 if ( ! function_exists( 'sc_imgbox_sanitize_clip' ) ) {
     /** Sanitizes an image-box custom clip-path value, rejecting url()/expression/js and disallowed characters. */
     function sc_imgbox_sanitize_clip( $clip ) {
@@ -295,6 +398,9 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
                 'loading'  => 'lazy',
                 'decoding' => 'async',
             );
+            // Intrinsic size + srcset, so the browser can reserve the box before
+            // the image arrives and pick a file that suits the slot.
+            $img_attr = array_merge( $img_attr, sc_imgbox_img_dimension_atts( $att_id, $image_url ) );
             $img_html = fw_html_tag( 'img', $img_attr );
         }
 
