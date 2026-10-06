@@ -216,14 +216,21 @@
 		render();
 	}
 
-	function boot() {
-		Array.prototype.forEach.call( document.querySelectorAll( 'table.fw-datatable' ), init );
+	function boot( scope ) {
+		Array.prototype.forEach.call( ( scope || document ).querySelectorAll( 'table.fw-datatable' ), function ( t ) { init( t ); } );
 	}
 
 	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', boot );
+		document.addEventListener( 'DOMContentLoaded', function () { boot(); } );
 	} else {
 		boot();
 	}
+
+	/* Re-init hook for surfaces that insert this element's markup after page load (the
+	   block editor's preview, the Elementor editor's re-renders): they call every
+	   window.fwShortcodeInit entry with the document or element holding the new markup.
+	   init() skips what it has already initialised, so repeated calls are safe. */
+	window.fwShortcodeInit = window.fwShortcodeInit || [];
+	window.fwShortcodeInit.push( boot );
 
 }() );

@@ -73,8 +73,22 @@
 		var candidates = [
 			'.fw-main-content', '.entry-content', '.post-content',
 			'article .container', 'main', 'article', '#content',
-			'#primary', '.site-main', '.content-area'
+			'#primary', '.site-main', '.content-area',
+			// A page built in Elementor: its document wrapper is the content area.
+			'.elementor[data-elementor-type="wp-page"]', '.elementor[data-elementor-type="wp-post"]'
 		];
+
+		// First choice: a content area that CONTAINS this TOC. Taking the first match in the
+		// document picked a posts grid card's `.entry-content` (one heading) on a page with no
+		// theme content wrapper, and the TOC hid itself for too few headings.
+		for ( var c = 0; c < candidates.length; c++ ) {
+			var matches = document.querySelectorAll( candidates[ c ] );
+			for ( var m = 0; m < matches.length; m++ ) {
+				if ( matches[ m ].contains( nav ) && matches[ m ].querySelector( HEADING_TAGS ) ) { return matches[ m ]; }
+			}
+		}
+
+		// Otherwise (a TOC in a sidebar, outside the content): the first that holds headings.
 		for ( var i = 0; i < candidates.length; i++ ) {
 			var el = document.querySelector( candidates[ i ] );
 			if ( el && el.querySelector( HEADING_TAGS ) ) { return el; }
@@ -358,16 +372,23 @@
 		}
 	}
 
-	function init() {
-		var navs = document.querySelectorAll( '.sc-toc' );
+	function init( scope ) {
+		var navs = ( scope && scope.querySelectorAll ? scope : document ).querySelectorAll( '.sc-toc' );
 		for ( var i = 0; i < navs.length; i++ ) { initOne( navs[ i ] ); }
 	}
 
 	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', init );
+		document.addEventListener( 'DOMContentLoaded', function () { init(); } );
 	} else {
 		init();
 	}
+
+	/* Re-init hook for surfaces that insert this element's markup after page load (the
+	   block editor's preview, the Elementor editor's re-renders): they call every
+	   window.fwShortcodeInit entry with the document or element holding the new markup.
+	   init() skips what it has already initialised, so repeated calls are safe. */
+	window.fwShortcodeInit = window.fwShortcodeInit || [];
+	window.fwShortcodeInit.push( init );
 
 	// Re-scan if other scripts inject content late (best-effort, debounced).
 	window.addEventListener( 'load', function () {

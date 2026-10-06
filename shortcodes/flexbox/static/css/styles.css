@@ -44,3 +44,24 @@
 	position: relative;
 	z-index: 2;
 }
+
+/* Box Link (stretched link) — the WHOLE box clickable without nesting <a> in <a>: one empty link covers
+   the box; being absolutely positioned it takes no flex slot / grid cell. The box's own interactive
+   children are lifted above it so they keep working. An explicit Position (Advanced tab) still wins. */
+.fw-flexbox--linked {
+	position: relative;
+}
+.fw-flexbox > .fw-flexbox__link {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	min-width: 0;
+}
+.fw-flexbox--linked :where(a, button, input, select, textarea, label, [tabindex]):not(.fw-flexbox__link) {
+	position: relative;
+	z-index: 2;
+}
+.fw-flexbox > .fw-flexbox__link:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}

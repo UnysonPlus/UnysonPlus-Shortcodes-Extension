@@ -4,10 +4,21 @@
 .fw-nl {
 	--nl-accent: var(--color-primary, #4a90d9);
 	--nl-field-bg: #ffffff;
-	--nl-bg: #f3f5f8;
+	/* The field is white by default, so its text is dark by default — inheriting the page's
+	   colour put white text in a white field on a dark theme. */
+	--nl-field-text: #1f2937;
+	/* The Boxed panel is a light tint of the text colour rather than a fixed light grey: the
+	   same soft panel on a light theme, and on a dark theme a panel the theme's own (light)
+	   heading and text colours stay readable on. */
+	--nl-bg: color-mix(in srgb, currentColor 5%, transparent);
 	--nl-text: inherit;
 	color: var(--nl-text);
 }
+@supports not (background: color-mix(in srgb, red 5%, transparent)) {
+	.fw-nl { --nl-bg: #f3f5f8; }
+}
+/* A custom field background (set inline by the view) gets the inherited text colour back. */
+.fw-nl[style*="--nl-field-bg"] { --nl-field-text: inherit; }
 .fw-nl__title { margin: 0 0 .4rem; }
 .fw-nl__desc { margin: 0 0 1rem; opacity: .9; }
 .fw-nl__desc :last-child { margin-bottom: 0; }
@@ -24,7 +35,7 @@
 	padding: .8em 1em;
 	border: 1px solid rgba(0, 0, 0, .15);
 	background: var(--nl-field-bg);
-	color: inherit;
+	color: var(--nl-field-text);
 	font: inherit;
 	border-radius: .45rem;
 }

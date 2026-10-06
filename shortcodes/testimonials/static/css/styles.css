@@ -148,13 +148,15 @@
    markup carries semantic .testimonial-* classes instead). ------------------------ */
 .testimonial-avatar { text-align: center; flex-shrink: 0; margin: 0 auto 1rem; }
 .testimonial-author { font-weight: 600; }
-.testimonial-quote  { margin-bottom: 1rem; }
+/* A <blockquote> carries the browser's own margin (1em 40px); reset all four sides rather than only
+   the bottom, or the quote sits 40px in from the card edge wherever no global reset happens to load. */
+.testimonial-quote  { margin: 0 0 1rem; }
 .testimonial-quote p { margin-bottom: 0; }
 /* Slotted cards space via Card Rows, so the quote carries NO margin of its own — including the one the
    browser gives a <blockquote> by default (margin: 1em 40px). Only margin-bottom was zeroed, so that UA
    top margin stacked on the row's own .75rem and every slotted card ran 16px taller than its rows asked
    for (measured on a converted page: a 221px source card rendered 252px). */
-.testimonial-item--slotted .testimonial-quote { margin-top: 0; margin-bottom: 0; }
+.testimonial-item--slotted .testimonial-quote { margin: 0; }
 .testimonial-rating-row { margin-top: .5rem; }
 
 /* Legacy (non-Card-Rows) card layouts. */

@@ -189,8 +189,11 @@
         } );
     }
 
-    function init() {
-        Array.prototype.forEach.call( document.querySelectorAll( '.posts' ), function ( wrap ) {
+    function init( scope ) {
+        Array.prototype.forEach.call( ( scope || document ).querySelectorAll( '.posts' ), function ( wrap ) {
+            // initLoadMore / initFilters bind listeners — a second pass would double them.
+            if ( wrap.__fwPostsReady ) { return; }
+            wrap.__fwPostsReady = true;
             if ( wrap.classList.contains( 'posts--mode-slider' ) ) initSlider( wrap );
             initLoadMore( wrap );
             initInfinite( wrap );
@@ -199,9 +202,16 @@
     }
 
     if ( document.readyState === 'loading' ) {
-        document.addEventListener( 'DOMContentLoaded', init );
+        document.addEventListener( 'DOMContentLoaded', function () { init(); } );
     } else {
         init();
     }
+
+    /* Re-init hook for surfaces that insert this element's markup after page load (the
+       block editor's preview, the Elementor editor's re-renders): they call every
+       window.fwShortcodeInit entry with the document or element holding the new markup.
+       init() skips what it has already initialised, so repeated calls are safe. */
+    window.fwShortcodeInit = window.fwShortcodeInit || [];
+    window.fwShortcodeInit.push( init );
 
 } )();

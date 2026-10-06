@@ -29,7 +29,7 @@ options.php (picker), view.php (`fw-tl--design-<key>`), static.php.
 - **Animations + Advanced**: standard.
 
 ## Rendering
-`view.php` (`sc_tl_render`) emits `.fw-tl[--design / --marker-* / --card-*]` →
+`view.php` (`sc_timeline_render`) emits `.fw-tl[--design / --marker-* / --card-*]` →
 optional `<h3>` + `.fw-tl__track` of `.fw-tl__item`s, each a `.fw-tl__marker`
 (dot / number = 1-based index / icon) + `.fw-tl__content > .fw-tl__card`
 (image, date, title, text, link). The vertical line is a `::before` on

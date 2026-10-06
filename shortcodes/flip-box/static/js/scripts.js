@@ -12,8 +12,8 @@
 		card.setAttribute('aria-pressed', on ? 'true' : 'false');
 	}
 
-	function initClick() {
-		var nodes = document.querySelectorAll(
+	function initClick(scope) {
+		var nodes = (scope || document).querySelectorAll(
 			'.fw-fb--click:not(.fw-fb-click-ready), .fw-fb--both:not(.fw-fb-click-ready)'
 		);
 		Array.prototype.forEach.call(nodes, function (el) {
@@ -32,8 +32,8 @@
 		});
 	}
 
-	function initFlipBtn() {
-		var btns = document.querySelectorAll('.fw-fb__flip-btn:not(.fw-fb-fbtn-ready)');
+	function initFlipBtn(scope) {
+		var btns = (scope || document).querySelectorAll('.fw-fb__flip-btn:not(.fw-fb-fbtn-ready)');
 		Array.prototype.forEach.call(btns, function (btn) {
 			btn.classList.add('fw-fb-fbtn-ready');
 			btn.addEventListener('click', function () {
@@ -43,11 +43,18 @@
 		});
 	}
 
-	function init() { initClick(); initFlipBtn(); }
+	function init(scope) { initClick(scope); initFlipBtn(scope); }
 
 	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', init);
+		document.addEventListener('DOMContentLoaded', function () { init(); });
 	} else {
 		init();
 	}
+
+	/* Re-init hook for surfaces that insert this element's markup after page load (the
+	   block editor's preview, the Elementor editor's re-renders): they call every
+	   window.fwShortcodeInit entry with the document or element holding the new markup.
+	   init() skips what it has already initialised, so repeated calls are safe. */
+	window.fwShortcodeInit = window.fwShortcodeInit || [];
+	window.fwShortcodeInit.push(init);
 })();

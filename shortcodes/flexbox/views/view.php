@@ -580,6 +580,68 @@ if ( $fx_uid !== '' ) {
 	};
 	$w_custom_css .= $fx_axis_gap( 'row-gap', $fx_resp( 'row_gap' ) );
 	$w_custom_css .= $fx_axis_gap( 'column-gap', $fx_resp( 'col_gap' ) );
+
+	// Custom Gap (per-device unit-input): an exact gap the spacing scale does not have. Emitted AFTER the
+	// preset classes and keyed to this box, so it overrides the Gap preset; the per-axis Row / Column Gap
+	// presets above still win on their own axis (they are more specific intent).
+	$gc_raw = fw_akg( 'gap_custom', $atts, array() );
+	if ( is_array( $gc_raw ) ) {
+		foreach ( $fx_layers as $layer => $infix ) {
+			$L = isset( $gc_raw[ $layer ] ) ? $gc_raw[ $layer ] : array();
+			if ( ! is_array( $L ) || ! isset( $L['value'] ) || trim( (string) $L['value'] ) === '' ) { continue; }
+			$v = preg_replace( '/[^0-9.]/', '', (string) $L['value'] );
+			$u = ( isset( $L['unit'] ) && in_array( $L['unit'], array( 'px', 'rem', 'em', '%', 'vw' ), true ) ) ? $L['unit'] : 'px';
+			if ( $v === '' ) { continue; }
+			$rule = $fx_uid . '{gap:' . $v . $u . ';}';
+			if ( $infix === '' )        { $w_custom_css .= $rule; }
+			elseif ( $infix === '-md' ) { $w_custom_css .= '@media (min-width:768px){' . $rule . '}'; }
+			elseif ( $infix === '-lg' ) { $w_custom_css .= '@media (min-width:992px){' . $rule . '}'; }
+		}
+	}
+
+	// Grid Column Span / Row Start / Row Span (per-device) — this box's placement inside a Grid parent.
+	// Keyed `.fw-grid > .fx-*` (same specificity as the shared `.fw-grid > .fw-col-N` width spans, printed
+	// later, so an explicit span wins over a fraction Width). Inert in a Flex / Block parent. A collapsing
+	// grid resets every span with !important (frontend-grid.css), so stacking on phones still works.
+	// Written as ONE `grid-column` / `grid-row` shorthand per device from the EFFECTIVE values (a blank device
+	// inherits the smaller one), so an explicit span composes with Column Start and replaces — rather than
+	// half-overrides — the `grid-column: span N` a fraction Width sets.
+	$gp_keys = array( 'col_start', 'col_span', 'row_start', 'row_span' );
+	$gp_raw  = array();
+	foreach ( $gp_keys as $k ) { $gp_raw[ $k ] = $fx_resp( $k ); }
+	$gp_eff  = array();
+	$gp_prev = array_fill_keys( $gp_keys, '' );
+	foreach ( $fx_layers as $layer => $infix ) {
+		$own = false;
+		foreach ( $gp_keys as $k ) {
+			$v = isset( $gp_raw[ $k ][ $layer ] ) ? (string) $gp_raw[ $k ][ $layer ] : '';
+			if ( $v !== '' ) { $gp_prev[ $k ] = $v; if ( 'col_start' !== $k ) { $own = true; } }
+		}
+		$gp_eff[ $layer ] = array( 'own' => $own, 'v' => $gp_prev );
+	}
+	$gp_int = function ( $v, $max ) { return ( ctype_digit( (string) $v ) && (int) $v >= 1 && (int) $v <= $max ) ? (int) $v : 0; };
+	foreach ( $fx_layers as $layer => $infix ) {
+		if ( ! $gp_eff[ $layer ]['own'] ) { continue; } // only where this device sets a span / row placement
+		$e    = $gp_eff[ $layer ]['v'];
+		$decl = '';
+		$cs   = $gp_int( $e['col_start'], 12 );
+		$cspn = $gp_int( $e['col_span'], 12 );
+		if ( 'full' === $e['col_span'] ) {
+			$decl .= 'grid-column:1/-1;';
+		} elseif ( $cspn ) {
+			$decl .= 'grid-column:' . ( $cs ? $cs : 'auto' ) . '/span ' . $cspn . ';';
+		}
+		$rs   = $gp_int( $e['row_start'], 12 );
+		$rspn = $gp_int( $e['row_span'], 6 );
+		if ( $rs || $rspn ) {
+			$decl .= 'grid-row:' . ( $rs ? $rs : 'auto' ) . '/' . ( $rspn ? 'span ' . $rspn : 'auto' ) . ';';
+		}
+		if ( $decl === '' ) { continue; }
+		$rule = '.fw-grid>' . $fx_uid . '{' . $decl . '}';
+		if ( $infix === '' )        { $w_custom_css .= $rule; }
+		elseif ( $infix === '-md' ) { $w_custom_css .= '@media (min-width:768px){' . $rule . '}'; }
+		elseif ( $infix === '-lg' ) { $w_custom_css .= '@media (min-width:992px){' . $rule . '}'; }
+	}
 }
 
 // Background video (background-pro): merge its data-attrs + flag class; the theme's
@@ -620,6 +682,22 @@ if ( $display === 'grid' ) {
 	}
 	if ( ! empty( $grid_classes ) ) {
 		$attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' ' . implode( ' ', $grid_classes ) );
+	}
+	// Grid Rows (a count or a raw grid-template-rows) + Row Height (grid-auto-rows) — the row tracks a
+	// bento needs so a Row Span 2 tile has fixed rows to span.
+	$gr = isset( $atts['grid_rows'] ) ? trim( (string) $atts['grid_rows'] ) : '';
+	if ( $gr !== '' ) {
+		if ( ctype_digit( $gr ) && (int) $gr >= 1 ) {
+			$display_inline .= 'grid-template-rows:repeat(' . min( 24, (int) $gr ) . ',minmax(0,1fr));';
+		} elseif ( preg_match( '#^[0-9a-zA-Z%.,()/\\s_-]+$#', $gr ) ) {
+			$display_inline .= 'grid-template-rows:' . $gr . ';';
+		}
+	}
+	$grh = ( isset( $atts['grid_row_height'] ) && is_array( $atts['grid_row_height'] ) ) ? $atts['grid_row_height'] : array();
+	$grv = isset( $grh['value'] ) ? preg_replace( '/[^0-9.]/', '', (string) $grh['value'] ) : '';
+	if ( $grv !== '' ) {
+		$gru = ( isset( $grh['unit'] ) && in_array( $grh['unit'], array( 'px', 'rem', 'em', 'vh' ), true ) ) ? $grh['unit'] : 'px';
+		$display_inline .= 'grid-auto-rows:' . $grv . $gru . ';';
 	}
 }
 // Block Div: emit NO inline display — a div / section is block by default, and leaving the
@@ -872,12 +950,30 @@ if ( trim( (string) $content ) === '' && isset( $attr['class'] ) && $attr['class
 	$attr['class'] = implode( ' ', $fx_kept );
 	// The inline grid template (its display:grid rode on the now-removed fw-grid class) is inert too.
 	if ( isset( $attr['style'] ) && $attr['style'] !== '' ) {
-		$attr['style'] = trim( preg_replace( '/grid-template-columns:[^;]*;?/', '', (string) $attr['style'] ) );
+		$attr['style'] = trim( preg_replace( '/grid-(?:template-columns|template-rows|auto-rows):[^;]*;?/', '', (string) $attr['style'] ) );
 		if ( $attr['style'] === '' ) { unset( $attr['style'] ); }
 	}
 }
 
+// Box Link — the whole box clickable, as a STRETCHED link: one empty <a> covering the box (styles.css), so
+// the box's own links and buttons stay valid HTML (no <a> inside <a>) and stay clickable above it. The
+// accessible name is the Link Label, else the box's first heading, else the URL.
+$fx_link_html = '';
+$fx_link_url  = isset( $atts['link_url'] ) ? trim( (string) $atts['link_url'] ) : '';
+if ( $fx_link_url !== '' ) {
+	$fx_link_lbl = isset( $atts['link_label'] ) ? trim( (string) $atts['link_label'] ) : '';
+	if ( $fx_link_lbl === '' && preg_match( '#<h[1-6][^>]*>(.*?)</h[1-6]>#is', (string) do_shortcode( (string) $content ), $fx_hm ) ) {
+		$fx_link_lbl = trim( wp_strip_all_tags( $fx_hm[1] ) );
+	}
+	if ( $fx_link_lbl === '' ) { $fx_link_lbl = $fx_link_url; }
+	$fx_new_tab   = ( isset( $atts['link_new_tab'] ) && 'yes' === $atts['link_new_tab'] );
+	$fx_link_html = '<a class="fw-flexbox__link" href="' . esc_url( $fx_link_url ) . '" aria-label="' . esc_attr( $fx_link_lbl ) . '"'
+		. ( $fx_new_tab ? ' target="_blank" rel="noopener"' : '' ) . '></a>';
+	$attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' fw-flexbox--linked' );
+}
+
 echo '<' . $tag . ' ' . fw_attr_to_html( $attr ) . '>';
+echo $fx_link_html;        // phpcs:ignore WordPress.Security.EscapeOutput — built + escaped above
 // Decorative layers first (pattern behind content, then the shaped edges), then the children.
 echo $fx_pattern_html;     // phpcs:ignore WordPress.Security.EscapeOutput — admin-authored, scoped + script-stripped
 echo $fx_divider_top_html; // phpcs:ignore WordPress.Security.EscapeOutput — built + value-sanitized above

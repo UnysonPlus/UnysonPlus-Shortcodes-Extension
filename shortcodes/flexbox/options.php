@@ -336,6 +336,22 @@ $options = [
 						'units' => [ 'px', 'rem', 'em', '%' ],
 						'value' => [ 'value' => '240', 'unit' => 'px' ],
 					],
+					'grid_rows' => [
+						'type'        => 'text',
+						'label'       => __( 'Grid Rows', 'fw' ),
+						'desc'        => __( 'Optional row tracks (Display = Grid).', 'fw' ),
+						'help'        => __( 'Leave empty for automatic rows. A number (e.g. 2 = two equal rows) or a raw grid-template-rows value (e.g. 240px auto). Combine with each cell\'s Row Span for bento layouts where a tile is two rows tall.', 'fw' ),
+						'value'       => '',
+						'placeholder' => __( 'Auto', 'fw' ),
+					],
+					'grid_row_height' => [
+						'type'  => 'unit-input',
+						'label' => __( 'Row Height', 'fw' ),
+						'desc'  => __( 'Height of each automatic row (Display = Grid).', 'fw' ),
+						'help'  => __( 'grid-auto-rows — every row the grid creates on its own gets this height, so spanned tiles line up (e.g. 200px rows: a Row Span 2 tile is 400px plus the gap). Leave empty to size rows to their content.', 'fw' ),
+						'units' => [ 'px', 'rem', 'em', 'vh' ],
+						'value' => [ 'value' => '', 'unit' => 'px' ],
+					],
 					'grid_dense' => [
 						'type'         => 'switch',
 						'label'        => __( 'Dense Packing', 'fw' ),
@@ -481,6 +497,18 @@ $options = [
 							'choices' => function_exists( 'sc_get_gap_select_choices' )
 								? sc_get_gap_select_choices( __( 'None', 'fw' ) )
 								: array( '' => __( 'None', 'fw' ) ),
+						],
+					],
+					'gap_custom' => [
+						'type'  => 'responsive',
+						'label' => __( 'Custom Gap', 'fw' ),
+						'desc'  => __( 'An exact gap that overrides the Gap preset above.', 'fw' ),
+						'help'  => __( 'For a spacing the scale does not have (e.g. 18px, 2.5rem, 3vw). Leave empty to use the Gap preset. Per-device via the Phone / Tablet / Desktop tabs (a blank device inherits the smaller one).', 'fw' ),
+						'value' => [ 'base' => [ 'value' => '', 'unit' => 'px' ], 'md' => [ 'value' => '', 'unit' => 'px' ], 'lg' => [ 'value' => '', 'unit' => 'px' ] ],
+						'inner' => [
+							'type'  => 'unit-input',
+							'units' => [ 'px', 'rem', 'em', '%', 'vw' ],
+							'value' => [ 'value' => '', 'unit' => 'px' ],
 						],
 					],
 					'row_gap' => [
@@ -704,6 +732,79 @@ $options = [
 								'7' => '7', '8' => '8', '9' => '9', '10' => '10', '11' => '11', '12' => '12',
 							],
 						],
+					],
+					'col_span' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Grid Column Span', 'fw' ),
+						'desc'    => __( 'How many grid columns this box covers.', 'fw' ),
+						'help'    => __( 'Only inside a Grid parent. Works with any column count — e.g. Span 2 in a 3-column grid makes a double-width tile. "Full row" stretches across every column. Overrides a fraction Width Override span. Per-device via the Phone / Tablet / Desktop tabs; a grid with Responsive Collapse resets spans when it collapses.', 'fw' ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'short-select',
+							'choices' => [
+								''     => __( 'Auto', 'fw' ),
+								'1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6',
+								'7' => '7', '8' => '8', '9' => '9', '10' => '10', '11' => '11', '12' => '12',
+								'full' => __( 'Full row', 'fw' ),
+							],
+						],
+					],
+					'row_start' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Grid Row Start', 'fw' ),
+						'desc'    => __( 'Which grid row this box begins at.', 'fw' ),
+						'help'    => __( 'Only inside a Grid parent. Pins the box to an exact row; Auto lets the grid flow it into the next free cell. Per-device via the Phone / Tablet / Desktop tabs.', 'fw' ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'short-select',
+							'choices' => [
+								''  => __( 'Auto', 'fw' ),
+								'1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6',
+								'7' => '7', '8' => '8', '9' => '9', '10' => '10', '11' => '11', '12' => '12',
+							],
+						],
+					],
+					'row_span' => [
+						'type'    => 'responsive',
+						'label'   => __( 'Grid Row Span', 'fw' ),
+						'desc'    => __( 'How many grid rows this box covers.', 'fw' ),
+						'help'    => __( 'Only inside a Grid parent. Span 2 makes a tall bento tile beside two stacked ones. Pair with the parent\'s Row Height so rows have a fixed size to span. Per-device via the Phone / Tablet / Desktop tabs.', 'fw' ),
+						'value'   => [ 'base' => '', 'md' => '', 'lg' => '' ],
+						'inner'   => [
+							'type'    => 'short-select',
+							'choices' => [
+								''  => __( 'Auto', 'fw' ),
+								'1' => '1', '2' => '2', '3' => '3', '4' => '4', '5' => '5', '6' => '6',
+							],
+						],
+					],
+				],
+			],
+			// --- Link: make the WHOLE box clickable (a card, a tile). Rendered as a stretched link — one
+			// <a> covering the box — so links and buttons inside stay valid and stay clickable on top.
+			'group_link' => [
+				'type'    => 'group',
+				'options' => [
+					'link_url' => [
+						'type'  => 'text',
+						'label' => __( 'Box Link', 'fw' ),
+						'desc'  => __( 'Make the whole box clickable (e.g. a card).', 'fw' ),
+						'help'  => __( 'A URL, a #anchor or a relative path. The box gets one link that covers it; buttons and links inside the box keep working and sit above it.', 'fw' ),
+						'value' => '',
+					],
+					'link_label' => [
+						'type'  => 'text',
+						'label' => __( 'Link Label', 'fw' ),
+						'desc'  => __( 'What screen readers announce for the box link.', 'fw' ),
+						'help'  => __( 'Describe where the link goes, e.g. "Read the case study". Leave empty to use the box\'s first heading.', 'fw' ),
+						'value' => '',
+					],
+					'link_new_tab' => [
+						'type'         => 'switch',
+						'label'        => __( 'Open in New Tab', 'fw' ),
+						'value'        => 'no',
+						'left-choice'  => [ 'value' => 'no',  'label' => __( 'No', 'fw' ) ],
+						'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
 					],
 				],
 			],

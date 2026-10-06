@@ -97,6 +97,10 @@
 	border: 2px solid var(--pt-accent);
 	transition: filter .2s ease, transform .2s ease;
 }
+/* The button is an <a>: a theme link colour such as `a:not(.btn)` (0,1,1) outranks the single
+   class above and paints the label in the accent — invisible on the accent fill. Scoped (0,2,0)
+   so it wins; the hover / outline / design rules below are equal or higher and still apply. */
+.fw-pt .fw-pt__btn { color: #fff; }
 .fw-pt__btn:hover { filter: brightness(1.08); transform: translateY(-1px); color: #fff; }
 
 /* Outline button style (regular plans) — a featured plan's "Accent button" emphasis

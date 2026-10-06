@@ -3,9 +3,12 @@
  * ========================================================================== */
 .fw-ct {
 	--ct-accent: var(--color-primary, #4a90d9);
+	/* The header band is its own white surface, so it carries its own dark text; the body
+	   sits on the page and takes the page's text colour — a fixed dark grey there was
+	   unreadable on a dark theme. */
 	--ct-head-bg: #ffffff;
-	--ct-head-text: inherit;
-	--ct-text: #374151;
+	--ct-head-text: #1f2937;
+	--ct-text: inherit;
 	--ct-border: #e6eaf0;
 	--ct-muted: #9aa7b4;
 }
@@ -50,7 +53,9 @@
 
 /* Highlighted (featured) column */
 .fw-ct--highlight .is-featured { background: color-mix(in srgb, var(--ct-accent) 6%, transparent); }
-.fw-ct--highlight thead .is-featured { box-shadow: inset 0 3px 0 var(--ct-accent); }
+/* In the header the tint goes over the header's own surface, not the page — over
+   `transparent` it let a dark page through under the header's dark text. */
+.fw-ct--highlight thead .is-featured { background: color-mix(in srgb, var(--ct-accent) 6%, var(--ct-head-bg)); box-shadow: inset 0 3px 0 var(--ct-accent); }
 @supports not (background: color-mix(in srgb, red 6%, white)) {
 	.fw-ct--highlight .is-featured { background: rgba(74, 144, 217, .06); }
 }

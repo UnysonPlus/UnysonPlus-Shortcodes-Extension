@@ -8,8 +8,10 @@
  */
 
 .sc-toc {
-	--sc-toc-bg: #f8f9fa;
-	--sc-toc-border: #e6e8eb;
+	/* Tints of the text colour rather than a fixed light grey: the same soft panel on a light
+	   theme, and one the theme's own light text stays readable on with a dark theme. */
+	--sc-toc-bg: color-mix(in srgb, currentColor 4%, transparent);
+	--sc-toc-border: color-mix(in srgb, currentColor 14%, transparent);
 	--sc-toc-title-color: inherit;
 	--sc-toc-link: var(--color-primary, #2c6ecb);
 	--sc-toc-link-hover: color-mix(in srgb, var(--color-primary, #174a99) 82%, #000);
@@ -152,4 +154,10 @@
 		margin-right: 0;
 	}
 	.sc-toc--sticky { position: static; }
+}
+
+/* Without color-mix(): the original fixed panel. After the main rule — a custom property
+   accepts any value, so an earlier fallback would be overridden by the unsupported one. */
+@supports not (background: color-mix(in srgb, red 4%, transparent)) {
+	.sc-toc { --sc-toc-bg: #f8f9fa; --sc-toc-border: #e6e8eb; }
 }

@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.54';
+$manifest['version'] = '1.15.58';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,18 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.57 - Flexbox: grid spans, row tracks, an exact gap and a whole-box link. A Grid
+ *          could set its columns and an item's column START, but not how many rows or
+ *          columns an item covers, so a bento layout (a 2x2 tile beside two stacked
+ *          ones) needed custom CSS. Grid items now have Grid Column Span (1-12 or Full
+ *          row), Grid Row Start and Grid Row Span, all per device and composed into one
+ *          grid-column / grid-row rule with Column Start; the Grid gains Grid Rows (a
+ *          count or a raw template) and Row Height (grid-auto-rows). Custom Gap takes an
+ *          exact length the spacing scale lacks. Box Link makes the whole box clickable
+ *          as a stretched link (one covering <a>), so links and buttons inside stay
+ *          valid and clickable. A collapsing grid resets row spans as well as column
+ *          spans on phones (frontend-grid.css, builder 1.3.12).
+ *
  * 1.15.53 - Theme-override choices are now scoped to the THEME they were made about. Both stores
  *          (the per-element "use the framework version" choice, and the list of elements kept
  *          after a theme removed them) were a flat tag list, so switching themes silently applied

@@ -38,8 +38,10 @@
 		} );
 	}
 
-	function init() {
-		[].forEach.call( document.querySelectorAll( '.fw-progress' ), function ( wrap ) {
+	function init( scope ) {
+		[].forEach.call( ( scope || document ).querySelectorAll( '.fw-progress' ), function ( wrap ) {
+			if ( wrap.__fwProgressSeen ) { return; }
+			wrap.__fwProgressSeen = true;
 			// Animation disabled → items already carry their final state inline.
 			if ( wrap.getAttribute( 'data-animate' ) === '0' || ! ( 'IntersectionObserver' in window ) ) {
 				fill( wrap );
@@ -57,6 +59,13 @@
 	if ( document.readyState !== 'loading' ) {
 		init();
 	} else {
-		document.addEventListener( 'DOMContentLoaded', init );
+		document.addEventListener( 'DOMContentLoaded', function () { init(); } );
 	}
+
+	/* Re-init hook for surfaces that insert this element's markup after page load (the
+	   block editor's preview, the Elementor editor's re-renders): they call every
+	   window.fwShortcodeInit entry with the document or element holding the new markup.
+	   init() skips what it has already initialised, so repeated calls are safe. */
+	window.fwShortcodeInit = window.fwShortcodeInit || [];
+	window.fwShortcodeInit.push( init );
 } )();

@@ -5,13 +5,15 @@
 ( function () {
 	'use strict';
 
-	function init() {
+	function init( scope ) {
 		if ( typeof window.Splide === 'undefined' ) {
 			return;
 		}
-		var els = [].slice.call( document.querySelectorAll( '.testimonials-splide' ) );
+		var els = [].slice.call( ( scope || document ).querySelectorAll( '.testimonials-splide' ) );
 		els.forEach( function ( el ) {
-			if ( el.classList.contains( 'is-initialized' ) || el.splide ) {
+			// The Thumbnail Nav design mounts its own main slider (designs/thumbnav.js),
+			// synced to its thumbnails; mounting it here as well would double it.
+			if ( el.classList.contains( 'is-initialized' ) || el.splide || el.closest( '.ts-thumbnav' ) ) {
 				return;
 			}
 			try {
@@ -23,6 +25,13 @@
 	if ( document.readyState !== 'loading' ) {
 		init();
 	} else {
-		document.addEventListener( 'DOMContentLoaded', init );
+		document.addEventListener( 'DOMContentLoaded', function () { init(); } );
 	}
+
+	/* Re-init hook for surfaces that insert this element's markup after page load (the
+	   block editor's preview, the Elementor editor's re-renders): they call every
+	   window.fwShortcodeInit entry with the document or element holding the new markup.
+	   init() skips what it has already initialised, so repeated calls are safe. */
+	window.fwShortcodeInit = window.fwShortcodeInit || [];
+	window.fwShortcodeInit.push( init );
 } )();

@@ -35,8 +35,8 @@ if ( ! function_exists( 'sc_tl_icon' ) ) {
 	}
 }
 
-if ( ! function_exists( 'sc_tl_render' ) ) {
-	function sc_tl_render( $atts ) {
+if ( ! function_exists( 'sc_timeline_render' ) ) {
+	function sc_timeline_render( $atts ) {
 		if ( function_exists( 'fw_sc_design_resolve' ) ) {
 			$design = fw_sc_design_resolve( 'timeline', $atts, 'alternating' );
 		} else {
@@ -167,4 +167,4 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 	}
 }
 
-echo sc_tl_render( $atts );
+echo sc_timeline_render( $atts );

@@ -4,9 +4,9 @@
 
 /** @var array $atts */
 
-if ( ! function_exists( 'sc_tl_render' ) ) {
+if ( ! function_exists( 'sc_taglist_render' ) ) {
 	/** Renders the tag-list shortcode, parsing one item per line (with optional "Label | URL" links) into linked tags. */
-	function sc_tl_render( $atts ) {
+	function sc_taglist_render( $atts ) {
 		$get = function ( $k, $d = '' ) use ( $atts ) {
 			if ( function_exists( 'fw_akg' ) ) { $v = fw_akg( $k, $atts, null ); if ( $v !== null ) { return $v; } }
 			return isset( $atts[ $k ] ) ? $atts[ $k ] : $d;
@@ -101,4 +101,4 @@ if ( ! function_exists( 'sc_tl_render' ) ) {
 	}
 }
 
-echo sc_tl_render( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+echo sc_taglist_render( $atts ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

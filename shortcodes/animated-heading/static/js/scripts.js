@@ -116,13 +116,20 @@
 		}
 	}
 
-	function init() {
-		Array.prototype.forEach.call(document.querySelectorAll('[data-ah-words]'), initOne);
+	function init(scope) {
+		Array.prototype.forEach.call((scope || document).querySelectorAll('[data-ah-words]'), initOne);
 	}
 
 	if (document.readyState === 'loading') {
-		document.addEventListener('DOMContentLoaded', init);
+		document.addEventListener('DOMContentLoaded', function () { init(); });
 	} else {
 		init();
 	}
+
+	/* Re-init hook for surfaces that insert this element's markup after page load (the
+	   block editor's preview, the Elementor editor's re-renders): they call every
+	   window.fwShortcodeInit entry with the document or element holding the new markup.
+	   init() skips what it has already initialised, so repeated calls are safe. */
+	window.fwShortcodeInit = window.fwShortcodeInit || [];
+	window.fwShortcodeInit.push(init);
 })();
