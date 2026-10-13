@@ -154,9 +154,10 @@
 				var resolveResponsive = function (v, d) {
 					if (v == null) { return ''; }
 					if (typeof v === 'string') { return v; }
-					var b = v.base || '', m = v.md || '', l = v.lg || '';
+					var b = v.base || '', m = v.md || '', l = v.lg || '', x = v.xl || '';
 					if (d === 'sm') { return b; }
 					if (d === 'md') { return m || b; }
+					if (d === 'xl') { return x || l || m || b; }
 					return l || m || b;
 				};
 
@@ -167,9 +168,11 @@
 				var w_phone   = ( cw && typeof cw === 'object' ) ? ( cw.base || '' ) : ( atts.w_phone || '' );
 				var w_tablet  = ( cw && typeof cw === 'object' ) ? ( cw.md   || '' ) : ( atts.w_tablet || '' );
 				var w_desktop = ( cw && typeof cw === 'object' ) ? ( cw.lg   || '' ) : ( atts.w_desktop || '' );
+				var w_xl      = ( cw && typeof cw === 'object' ) ? ( cw.xl   || '' ) : '';
 				var o_phone   = ( co && typeof co === 'object' ) ? ( co.base || '' ) : ( atts.offset_phone || '' );
 				var o_tablet  = ( co && typeof co === 'object' ) ? ( co.md   || '' ) : ( atts.offset_tablet || '' );
 				var o_desktop = ( co && typeof co === 'object' ) ? ( co.lg   || '' ) : ( atts.offset_desktop || '' );
+				var o_xl      = ( co && typeof co === 'object' ) ? ( co.xl   || '' ) : '';
 
 				// Effective width for the active device (mirrors the frontend cascade):
 				//   sm (phone, xs): w_phone, else full-width (the xs base is fw-col-12)
@@ -194,6 +197,11 @@
 					w = (w_phone && w_phone !== 'default') ? String(w_phone) : (baseIsAuto ? 'auto' : '12');
 				} else if (device === 'md') {
 					if (w_tablet && w_tablet !== 'default') { w = String(w_tablet); }
+					else if (baseIsAuto) { w = 'auto'; }
+				} else if (device === 'xl') {
+					if (w_xl && w_xl !== 'default') { w = String(w_xl); }
+					else if (w_desktop && w_desktop !== 'default') { w = String(w_desktop); }
+					else if (w_tablet && w_tablet !== 'default') { w = String(w_tablet); }
 					else if (baseIsAuto) { w = 'auto'; }
 				} else {
 					if (w_desktop && w_desktop !== 'default') { w = String(w_desktop); }
@@ -258,6 +266,10 @@
 					off = (o_phone && o_phone !== 'none') ? String(o_phone) : '';
 				} else if (device === 'md') {
 					off = (o_tablet && o_tablet !== 'none') ? String(o_tablet) : '';
+				} else if (device === 'xl') {
+					if (o_xl && o_xl !== 'none') { off = String(o_xl); }
+					else if (o_desktop && o_desktop !== 'none') { off = String(o_desktop); }
+					else if (o_tablet && o_tablet !== 'none') { off = String(o_tablet); }
 				} else {
 					if (o_desktop && o_desktop !== 'none') { off = String(o_desktop); }
 					else if (o_tablet && o_tablet !== 'none') { off = String(o_tablet); }
@@ -322,7 +334,7 @@
 				} else {
 					var order = co || '';
 					reverse = ( order === 'all' )
-						|| ( order === 'tablet' && dev !== 'lg' )
+						|| ( order === 'tablet' && ( dev === 'sm' || dev === 'md' ) )
 						|| ( order === 'mobile' && dev === 'sm' );
 				}
 

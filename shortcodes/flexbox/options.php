@@ -233,21 +233,19 @@ foreach ( $fx_fifths as $k => $f )  { $fx_width_summary[ $k ] = $f[2]; }
 foreach ( $fx_content as $k => $c ) { $fx_width_summary[ $k ] = $c[1]; }
 
 // HTML Tag choices — context-aware. In the Theme Builder (Header / Body / Footer part editors)
-// the full semantic set is offered (that is what page chrome is built from); on normal pages /
-// posts only the content-appropriate tags — div / section / article / aside — with no
-// header / footer / main / nav (those are page landmarks, not content boxes).
+// the full semantic set is offered (that is what page chrome is built from). On normal pages / posts
+// the content tags PLUS header / footer / nav — those three are valid when SCOPED inside a section /
+// article (a section header, a card footer, a local nav) and may legitimately repeat, so they are
+// offered; only <main> stays Theme-Builder-only (a page has exactly one). `figure` (media + caption)
+// and a sanitized `custom` tag round out the list.
 $fx_in_tb       = function_exists( 'up_theme_builder_current_admin_post_type' )
 	&& in_array( up_theme_builder_current_admin_post_type(), array( 'up_header', 'up_body', 'up_footer' ), true );
 $fx_tag_choices = $fx_in_tb
-	? array( 'div' => 'div', 'section' => 'section', 'main' => 'main', 'article' => 'article', 'header' => 'header', 'footer' => 'footer', 'aside' => 'aside', 'nav' => 'nav' )
-	// On a Page only the content-appropriate tags — div / section / article / aside. The landmark /
-	// chrome elements (header, footer, nav, main) are OMITTED here: a page has exactly one <main>, and
-	// its <header> / <footer> / <nav> landmarks are built in the Theme / Header-Footer Builder — dropping
-	// duplicates of them inside page-body content produces invalid, a11y-hostile markup. They remain
-	// available in the Theme Builder branch above (where site chrome is actually authored). Existing
-	// boxes saved with one of the omitted tags still RENDER (view.php keeps the broad allowed_tags set);
-	// they simply aren't offered for new page content.
-	: array( 'div' => 'div', 'section' => 'section', 'article' => 'article', 'aside' => 'aside' );
+	? array( 'div' => 'div', 'section' => 'section', 'main' => 'main', 'article' => 'article', 'header' => 'header', 'footer' => 'footer', 'aside' => 'aside', 'nav' => 'nav', 'figure' => 'figure', 'custom' => __( 'Custom', 'fw' ) )
+	// On a Page: content tags + header / footer / nav (valid when nested in a section / article) +
+	// figure + Custom. <main> is Theme-Builder-only (one per page). Existing boxes saved with any tag
+	// still RENDER (view.php keeps the broad allowed_tags set).
+	: array( 'div' => 'div', 'section' => 'section', 'article' => 'article', 'aside' => 'aside', 'header' => 'header', 'footer' => 'footer', 'nav' => 'nav', 'figure' => 'figure', 'custom' => __( 'Custom', 'fw' ) );
 
 // Shape-divider / pattern / section-style sources (shared with the classic Section). The shape,
 // pattern and style choice/reveal maps come from the Theme-Settings preset libraries, so user-added
@@ -290,7 +288,7 @@ $options = [
 						'type'    => 'select',
 						'label'   => __( 'HTML Tag', 'fw' ),
 						'desc'    => __( 'The semantic HTML element this box outputs.', 'fw' ),
-						'help'    => __( 'div = plain layout, section = a titled content band, article = self-contained repeatable content (cards, posts), aside = complementary content (callouts, pull-quotes).', 'fw' ),
+						'help'    => __( 'div = plain layout, section = a titled content band, article = self-contained repeatable content (cards, posts), aside = complementary content (callouts, pull-quotes), header / footer / nav = landmarks scoped inside a section or article (a section header, a card footer, a local nav), figure = media + caption. Custom = type any safe tag below.', 'fw' ),
 						'value'   => 'div',
 						'choices' => $fx_tag_choices,
 					],
@@ -301,10 +299,27 @@ $options = [
 						'help'    => __( 'Flex lays children on one axis (rows / columns). Grid arranges them in a two-axis grid (set Grid Columns below). Block is normal document flow. Direction / Justify / Align + Gap apply to Flex and Grid; Grid also uses the Columns settings.', 'fw' ),
 						'value'   => 'flex',
 						'choices' => [
-							'flex'  => __( 'Flex', 'fw' ),
-							'grid'  => __( 'Grid', 'fw' ),
-							'block' => __( 'Block', 'fw' ),
+							'flex'         => __( 'Flex', 'fw' ),
+							'inline-flex'  => __( 'Inline Flex', 'fw' ),
+							'grid'         => __( 'Grid', 'fw' ),
+							'block'        => __( 'Block', 'fw' ),
+							'inline-block' => __( 'Inline Block', 'fw' ),
+							'inline'       => __( 'Inline', 'fw' ),
+							'none'         => __( 'None (hidden)', 'fw' ),
 						],
+					],
+				],
+			],
+			'group_custom_tag' => [
+				'type'    => 'group',
+				'options' => [
+					'custom_tag' => [
+						'type'        => 'text',
+						'label'       => __( 'Custom Tag', 'fw' ),
+						'desc'        => __( 'The HTML element name to output.', 'fw' ),
+						'help'        => __( 'Used only when HTML Tag = Custom. A bare tag name (e.g. figure, blockquote, details). Sanitized to a safe container-tag whitelist; anything unknown or unsafe falls back to div.', 'fw' ),
+						'value'       => '',
+						'placeholder' => 'div',
 					],
 				],
 			],
@@ -471,7 +486,7 @@ $options = [
 						'label'   => __( 'Reverse Order', 'fw' ),
 						'desc'    => __( 'Reverse the visual order of children.', 'fw' ),
 						'help'    => __( 'row-reverse / column-reverse, without changing the markup. Per-device, e.g. image-above-text on phone, text-above-image on desktop.', 'fw' ),
-						'value'   => [ 'base' => 'no', 'md' => '', 'lg' => '' ],
+						'value'   => [ 'base' => 'no', 'md' => '', 'lg' => '', 'xl' => '' ],
 						'inner'   => [
 							'type'         => 'switch',
 							'left-choice'  => [ 'value' => 'no',  'label' => __( 'Default', 'fw' ) ],
@@ -641,7 +656,7 @@ $options = [
 						'type'    => 'responsive',
 						'label'   => __( 'Grow to Fill', 'fw' ),
 						'desc'    => __( 'Let this box grow to fill leftover space in the row.', 'fw' ),
-						'help'    => __( 'flex-grow; overrides a fixed Width when there is room to grow. Per-device via the Phone / Tablet / Desktop tabs (a blank device inherits the smaller one).', 'fw' ),
+						'help'    => __( 'flex-grow; overrides a fixed Width when there is room to grow. Per-device via the Phone / Tablet / Desktop / Large Desktop tabs (a blank device inherits the smaller one).', 'fw' ),
 						'value'   => [ 'base' => 'no', 'md' => '', 'lg' => '' ],
 						'inner'   => [
 							'type'         => 'switch',
@@ -649,14 +664,33 @@ $options = [
 							'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
 						],
 					],
+					'flex_grow_num' => [
+						'type'        => 'text',
+						'label'       => __( 'Grow Factor', 'fw' ),
+						'desc'        => __( 'Advanced: an exact flex-grow value.', 'fw' ),
+						'help'        => __( 'A number (e.g. 2 to grow twice as fast as a factor-1 sibling). Overrides the Grow to Fill switch when set, and applies at all breakpoints. Leave blank to use the switch.', 'fw' ),
+						'value'       => '',
+						'placeholder' => '0',
+					],
 					'no_shrink' => [
-						'type'         => 'switch',
-						'label'        => __( 'Prevent Shrinking', 'fw' ),
-						'desc'         => __( 'Stop this box shrinking in a Flex row.', 'fw' ),
-						'help'         => __( 'flex-shrink: 0; good for a fixed-width sidebar or a logo beside a flexible area. Only applies inside a Flex parent.', 'fw' ),
-						'value'        => 'no',
-						'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
-						'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
+						'type'    => 'responsive',
+						'label'   => __( 'Prevent Shrinking', 'fw' ),
+						'desc'    => __( 'Stop this box shrinking in a Flex row.', 'fw' ),
+						'help'    => __( 'flex-shrink: 0; good for a fixed-width sidebar or a logo beside a flexible area. Only applies inside a Flex parent. Per-device via the Phone / Tablet / Desktop / Large Desktop tabs (a blank device inherits the smaller one).', 'fw' ),
+						'value'   => [ 'base' => 'no', 'md' => '', 'lg' => '', 'xl' => '' ],
+						'inner'   => [
+							'type'         => 'switch',
+							'left-choice'  => [ 'value' => 'no',  'label' => __( 'Off', 'fw' ) ],
+							'right-choice' => [ 'value' => 'yes', 'label' => __( 'On', 'fw' ) ],
+						],
+					],
+					'flex_shrink_num' => [
+						'type'        => 'text',
+						'label'       => __( 'Shrink Factor', 'fw' ),
+						'desc'        => __( 'Advanced: an exact flex-shrink value.', 'fw' ),
+						'help'        => __( 'A number (0 = never shrink, 1 = default, 2 = shrink twice as fast). Overrides Prevent Shrinking when set, and applies at all breakpoints. Leave blank to use the switch.', 'fw' ),
+						'value'       => '',
+						'placeholder' => '1',
 					],
 					'flex_basis' => [
 						'type'  => 'responsive',
@@ -936,6 +970,42 @@ $options = [
 						'help'        => __( 'e.g. 16 / 9, 4 / 3, or 1 for a square. Empty = natural height. Pairs well with a background image / media, or a Grid cell you want kept square.', 'fw' ),
 						'value'       => '',
 						'placeholder' => '16 / 9',
+					],
+					'height' => [
+						'type'  => 'responsive',
+						'label' => __( 'Height', 'fw' ),
+						'desc'  => __( 'A fixed height for this box.', 'fw' ),
+						'help'  => __( 'CSS height. Empty = fit content (the usual case; prefer Min Height for a hero band so content can still push it taller). Per-device via the Phone / Tablet / Desktop / Large Desktop tabs (a blank device inherits the smaller one).', 'fw' ),
+						'value' => [ 'base' => [ 'value' => '', 'unit' => 'px' ], 'md' => [ 'value' => '', 'unit' => 'px' ], 'lg' => [ 'value' => '', 'unit' => 'px' ], 'xl' => [ 'value' => '', 'unit' => 'px' ] ],
+						'inner' => [
+							'type'  => 'unit-input',
+							'units' => [ 'px', 'rem', 'vh', '%' ],
+							'value' => [ 'value' => '', 'unit' => 'px' ],
+						],
+					],
+					'max_width' => [
+						'type'  => 'responsive',
+						'label' => __( 'Max Width', 'fw' ),
+						'desc'  => __( 'Cap how wide this box can get.', 'fw' ),
+						'help'  => __( 'CSS max-width. Useful to stop a full-width box from stretching text too wide (e.g. 65ch for a readable column), independent of the Width Override. Per-device via the Phone / Tablet / Desktop / Large Desktop tabs (a blank device inherits the smaller one).', 'fw' ),
+						'value' => [ 'base' => [ 'value' => '', 'unit' => 'px' ], 'md' => [ 'value' => '', 'unit' => 'px' ], 'lg' => [ 'value' => '', 'unit' => 'px' ], 'xl' => [ 'value' => '', 'unit' => 'px' ] ],
+						'inner' => [
+							'type'  => 'unit-input',
+							'units' => [ 'px', 'rem', 'ch', '%', 'vw' ],
+							'value' => [ 'value' => '', 'unit' => 'px' ],
+						],
+					],
+					'max_height' => [
+						'type'  => 'responsive',
+						'label' => __( 'Max Height', 'fw' ),
+						'desc'  => __( 'Cap how tall this box can get.', 'fw' ),
+						'help'  => __( 'CSS max-height. Pair with Overflow (Advanced tab) = Auto to make an over-tall box scroll instead of growing. Per-device via the Phone / Tablet / Desktop / Large Desktop tabs (a blank device inherits the smaller one).', 'fw' ),
+						'value' => [ 'base' => [ 'value' => '', 'unit' => 'px' ], 'md' => [ 'value' => '', 'unit' => 'px' ], 'lg' => [ 'value' => '', 'unit' => 'px' ], 'xl' => [ 'value' => '', 'unit' => 'px' ] ],
+						'inner' => [
+							'type'  => 'unit-input',
+							'units' => [ 'px', 'rem', 'vh', '%' ],
+							'value' => [ 'value' => '', 'unit' => 'px' ],
+						],
 					],
 					// --- Compositing: how this box blends with, is clipped by, or fades into what
 					// sits behind it. All three are single scoped declarations keyed to the box's

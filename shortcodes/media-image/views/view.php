@@ -42,6 +42,22 @@ $should_wrap = function_exists( 'sc_needs_wrapper' )
 	? sc_needs_wrapper( $atts )
 	: ( ! empty( $atts['css_id'] ) || ! empty( $atts['css_class'] ) );
 
+// Screen Preview: turn the wrapper into a fixed-height, overflow-clipped viewport with an optional
+// frame. The frame is CSS-only chrome (border + pseudo-elements), NOT DOM content — so an attached
+// Marquee (which replaces the element's innerHTML with a scrolling track) scrolls only the image,
+// while the browser bar / dots stay put. A tall image fills the frame width and scrolls within it.
+$sp_on = ( isset( $atts['sp_enable'] ) && 'yes' === $atts['sp_enable'] );
+if ( $sp_on ) {
+	$should_wrap = true;
+	$sp_frame = ( isset( $atts['sp_frame'] ) && in_array( $atts['sp_frame'], array( 'none', 'card', 'browser' ), true ) ) ? $atts['sp_frame'] : 'browser';
+	$sp_h = '660px';
+	if ( isset( $atts['sp_height'] ) && is_array( $atts['sp_height'] ) && '' !== $atts['sp_height']['value'] && null !== $atts['sp_height']['value'] ) {
+		$sp_h = $atts['sp_height']['value'] . ( isset( $atts['sp_height']['unit'] ) ? $atts['sp_height']['unit'] : 'px' );
+	}
+	$attr['class'] = trim( ( isset( $attr['class'] ) ? $attr['class'] : '' ) . ' media-image--sp media-image--sp-' . $sp_frame );
+	$attr['style'] = ( isset( $attr['style'] ) && '' !== $attr['style'] ? rtrim( $attr['style'], ';' ) . ';' : '' ) . '--sp-h:' . $sp_h . ';';
+}
+
 $css_id = isset( $attr['id'] ) ? $attr['id'] : '';
 
 // Class placement: with a wrapper, the <div> owns base/unique/styling classes

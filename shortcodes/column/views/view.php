@@ -31,11 +31,13 @@ if ( ! is_array( $cw ) ) {
         'base' => (string) fw_akg( 'w_phone', $atts, '' ),
         'md'   => (string) fw_akg( 'w_tablet', $atts, '' ),
         'lg'   => (string) fw_akg( 'w_desktop', $atts, '' ),
+        'xl'   => '',
     );
 }
 $w_phone   = (string) ( isset( $cw['base'] ) ? $cw['base'] : '' );
 $w_tablet  = (string) ( isset( $cw['md'] )   ? $cw['md']   : '' );
 $w_desktop = (string) ( isset( $cw['lg'] )   ? $cw['lg']   : '' );
+$w_xl      = (string) ( isset( $cw['xl'] )   ? $cw['xl']   : '' );
 
 $w_tokens = array_values( array_filter( preg_split( '/\s+/', trim( (string) $width_class ) ) ) );
 
@@ -48,6 +50,7 @@ if ( in_array( $w_phone, $rw_valid, true ) ) {
 }
 if ( in_array( $w_tablet, $rw_valid, true ) )  { $w_tokens[] = $col_token( 'md', $w_tablet ); }
 if ( in_array( $w_desktop, $rw_valid, true ) ) { $w_tokens[] = $col_token( 'lg', $w_desktop ); }
+if ( in_array( $w_xl, $rw_valid, true ) )      { $w_tokens[] = $col_token( 'xl', $w_xl ); }
 
 $width_class = implode( ' ', $w_tokens );
 
@@ -139,7 +142,7 @@ if ( ! is_array( $order_resp ) ) {
 }
 $order_valid   = array( 'first', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', 'last' );
 $order_classes = array();
-foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg', 'xl' => '-xl' ) as $layer => $infix ) {
     $ov = isset( $order_resp[ $layer ] ) ? (string) $order_resp[ $layer ] : '';
     if ( in_array( $ov, $order_valid, true ) ) {
         $order_classes[] = 'fw-order' . $infix . '-' . $ov;
@@ -168,14 +171,17 @@ if ( ! is_array( $co ) ) {
         'base' => (string) fw_akg( 'offset_phone', $atts, '' ),
         'md'   => (string) fw_akg( 'offset_tablet', $atts, '' ),
         'lg'   => (string) fw_akg( 'offset_desktop', $atts, '' ),
+        'xl'   => '',
     );
 }
 $o_phone = (string) ( isset( $co['base'] ) ? $co['base'] : '' );
 $o_tab   = (string) ( isset( $co['md'] )   ? $co['md']   : '' );
 $o_desk  = (string) ( isset( $co['lg'] )   ? $co['lg']   : '' );
+$o_xl    = (string) ( isset( $co['xl'] )   ? $co['xl']   : '' );
 if ( in_array( $o_phone, $offset_valid, true ) ) { $outer_extra[] = 'fw-offset-' . $o_phone; }
 if ( in_array( $o_tab, $offset_valid, true ) )   { $outer_extra[] = 'fw-offset-md-' . $o_tab; }
 if ( in_array( $o_desk, $offset_valid, true ) )  { $outer_extra[] = 'fw-offset-lg-' . $o_desk; }
+if ( in_array( $o_xl, $offset_valid, true ) )    { $outer_extra[] = 'fw-offset-xl-' . $o_xl; }
 
 // Column self vertical alignment within the row — now per-device: array( base, md, lg ).
 // Each set layer emits align-self{-bp}-{v}. 'default' maps to no class (natural stretch).
@@ -204,11 +210,13 @@ $content_h_resp = fw_sc_resp_value( $atts, 'content_h' ); // shared responsive r
 $content_h = isset( $content_h_resp['base'] ) ? (string) $content_h_resp['base'] : '';
 $ch_md     = isset( $content_h_resp['md'] )   ? (string) $content_h_resp['md']   : '';
 $ch_lg     = isset( $content_h_resp['lg'] )   ? (string) $content_h_resp['lg']   : '';
+$ch_xl     = isset( $content_h_resp['xl'] )   ? (string) $content_h_resp['xl']   : '';
 
 $content_v_resp = fw_sc_resp_value( $atts, 'content_v' ); // shared responsive reader
 $content_v = isset( $content_v_resp['base'] ) ? (string) $content_v_resp['base'] : '';
 $cv_md     = isset( $content_v_resp['md'] )   ? (string) $content_v_resp['md']   : '';
 $cv_lg     = isset( $content_v_resp['lg'] )   ? (string) $content_v_resp['lg']   : '';
+$cv_xl     = isset( $content_v_resp['xl'] )   ? (string) $content_v_resp['xl']   : '';
 $direction = (string) fw_akg( 'content_direction', $atts, 'column' );
 $is_row    = ( $direction === 'row' );
 // Content Order — reverse the elements. Adapts to the direction below.
@@ -227,9 +235,11 @@ if ( ! is_array( $order_raw ) ) {
 $rev_base  = ( isset( $order_raw['base'] ) && $order_raw['base'] === 'yes' );
 $rev_md_st = ( isset( $order_raw['md'] ) && $order_raw['md'] !== '' );
 $rev_lg_st = ( isset( $order_raw['lg'] ) && $order_raw['lg'] !== '' );
+$rev_xl_st = ( isset( $order_raw['xl'] ) && $order_raw['xl'] !== '' );
 $rev_md    = $rev_md_st ? ( $order_raw['md'] === 'yes' ) : $rev_base;
 $rev_lg    = $rev_lg_st ? ( $order_raw['lg'] === 'yes' ) : $rev_md;
-$order_ok  = ( $rev_base || $rev_md_st || $rev_lg_st ); // any Reverse layer set
+$rev_xl    = $rev_xl_st ? ( $order_raw['xl'] === 'yes' ) : $rev_lg;
+$order_ok  = ( $rev_base || $rev_md_st || $rev_lg_st || $rev_xl_st ); // any Reverse layer set
 // Cross-axis values (align-items) accept only start/center/end; main-axis values
 // (justify-content) additionally accept the distribute set (between/around/evenly).
 $cv_ok      = in_array( $content_v, array( 'start','center','end','between','around','evenly' ), true ); // content_v on main axis (column)
@@ -247,11 +257,12 @@ if ( ! is_array( $gap_resp ) ) { $gap_resp = array( 'base' => (string) $gap_resp
 $gap_base = preg_replace( '/[^a-z0-9_-]/i', '', (string) ( isset( $gap_resp['base'] ) ? $gap_resp['base'] : '' ) );
 $gap_md   = preg_replace( '/[^a-z0-9_-]/i', '', (string) ( isset( $gap_resp['md'] )   ? $gap_resp['md']   : '' ) );
 $gap_lg   = preg_replace( '/[^a-z0-9_-]/i', '', (string) ( isset( $gap_resp['lg'] )   ? $gap_resp['lg']   : '' ) );
-$gap_ok   = ( $gap_base !== '' || $gap_md !== '' || $gap_lg !== '' );
+$gap_xl   = preg_replace( '/[^a-z0-9_-]/i', '', (string) ( isset( $gap_resp['xl'] )   ? $gap_resp['xl']   : '' ) );
+$gap_ok   = ( $gap_base !== '' || $gap_md !== '' || $gap_lg !== '' || $gap_xl !== '' );
 
 $content_align_tokens = array();
 $content_align_style  = '';
-if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $ch_lg !== '' || $cv_md !== '' || $cv_lg !== '' ) {
+if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $ch_lg !== '' || $ch_xl !== '' || $cv_md !== '' || $cv_lg !== '' || $cv_xl !== '' ) {
     $content_align_tokens[] = 'fw-flex';
 
     // Direction + Reverse (Content Order). Direction is a single value; Reverse is now a
@@ -264,6 +275,9 @@ if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $
     }
     if ( $rev_lg !== $rev_md ) {
         $content_align_tokens[] = $rev_lg ? 'fw-flex-lg-' . $dir . '-reverse' : 'fw-flex-lg-' . $dir;
+    }
+    if ( $rev_xl !== $rev_lg ) {
+        $content_align_tokens[] = $rev_xl ? 'fw-flex-xl-' . $dir . '-reverse' : 'fw-flex-xl-' . $dir;
     }
 
     if ( $is_row ) { $content_align_tokens[] = 'fw-flex-wrap'; }
@@ -309,12 +323,12 @@ if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $
         $ok = in_array( $token, array( 'start', 'center', 'end', 'between', 'around', 'evenly' ), true );
         return $ok ? 'fw-justify' . $infix . '-' . $token : '';
     };
-    foreach ( array( 'md' => $ch_md, 'lg' => $ch_lg ) as $bp => $tok ) {
+    foreach ( array( 'md' => $ch_md, 'lg' => $ch_lg, 'xl' => $ch_xl ) as $bp => $tok ) {
         if ( $tok === '' ) { continue; }
         $cls = $ch_emit( $tok, $bp );
         if ( $cls !== '' ) { $content_align_tokens[] = $cls; }
     }
-    foreach ( array( 'md' => $cv_md, 'lg' => $cv_lg ) as $bp => $tok ) {
+    foreach ( array( 'md' => $cv_md, 'lg' => $cv_lg, 'xl' => $cv_xl ) as $bp => $tok ) {
         if ( $tok === '' ) { continue; }
         $cls = $cv_emit( $tok, $bp );
         if ( $cls !== '' ) { $content_align_tokens[] = $cls; }
@@ -325,6 +339,7 @@ if ( $cv_ok || $ch_main || $is_row || $gap_ok || $order_ok || $ch_md !== '' || $
     if ( $gap_base !== '' ) { $content_align_tokens[] = 'fw-gap-' . $gap_base; }
     if ( $gap_md !== '' )   { $content_align_tokens[] = 'fw-gap-md-' . $gap_md; }
     if ( $gap_lg !== '' )   { $content_align_tokens[] = 'fw-gap-lg-' . $gap_lg; }
+    if ( $gap_xl !== '' )   { $content_align_tokens[] = 'fw-gap-xl-' . $gap_xl; }
 }
 
 // Position + Z-Index now come from the shared Advanced-tab control (element_position),
@@ -446,7 +461,7 @@ if ( ! empty( $content_align_tokens ) ) {
     // a Desktop-only "Middle" (justify-content-lg-center) needs the fill just as much as
     // a base one, and without it the wrapper stays at content height and never centres.
     $cv_dist  = array( 'start', 'center', 'end', 'between', 'around', 'evenly' );
-    $cv_any   = $cv_ok || in_array( $cv_md, $cv_dist, true ) || in_array( $cv_lg, $cv_dist, true );
+    $cv_any   = $cv_ok || in_array( $cv_md, $cv_dist, true ) || in_array( $cv_lg, $cv_dist, true ) || in_array( $cv_xl, $cv_dist, true );
     if ( $cv_any && ! $is_row ) { $content_align_tokens[] = 'h-100'; }
     if ( $needs_inner ) {
         $inner_class = trim( $inner_class . ' ' . implode( ' ', $content_align_tokens ) );

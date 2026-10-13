@@ -84,13 +84,45 @@ $options = [
                     ],
                 ],
             ],
+            'screen_preview' => [
+                'type'    => 'group',
+                'options' => [
+                    'sp_enable' => [
+                        'type'         => 'switch',
+                        'label'        => __( 'Screen Preview', 'fw' ),
+                        'desc'         => __( 'Show the image like a screen: frame it and clip a tall image to a fixed viewport. Pair with Animations → Marquee (direction Up, Gap 0) to auto-scroll a long screenshot through the frame.', 'fw' ),
+                        'help'         => __( 'Great for long page / app screenshots. The image fills the frame width; anything taller than the Viewport Height below is clipped and (with a Marquee) scrolls on a loop.', 'fw' ),
+                        'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                        'left-choice'  => [ 'value' => 'no',  'label' => __( 'No', 'fw' ) ],
+                        'value'        => 'no',
+                    ],
+                    'sp_frame' => [
+                        'type'    => 'select',
+                        'label'   => __( 'Frame', 'fw' ),
+                        'desc'    => __( 'Wrap the preview in a frame.', 'fw' ),
+                        'value'   => 'browser',
+                        'choices' => [
+                            'none'    => __( 'None', 'fw' ),
+                            'card'    => __( 'Rounded card', 'fw' ),
+                            'browser' => __( 'Browser window', 'fw' ),
+                        ],
+                    ],
+                    'sp_height' => [
+                        'type'  => 'unit-input',
+                        'label' => __( 'Viewport Height', 'fw' ),
+                        'desc'  => __( 'Height of the visible window the image is clipped to (a taller image scrolls within it).', 'fw' ),
+                        'value' => [ 'value' => 660, 'unit' => 'px' ],
+                        'units' => [ 'px', 'vh', 'rem' ],
+                    ],
+                ],
+            ],
             'caption_group' => [
                 'type'    => 'group',
                 'options' => [
                     'caption' => [
                         'type'  => 'text',
                         'label' => __( 'Caption', 'fw' ),
-                        'desc'  => __( 'Optional caption shown beneath the image (wraps it in a semantic <figure>). Leave blank for none.', 'fw' ),
+                        'desc'  => __( 'Optional caption shown beneath the image (wraps it in a semantic figure element). Leave blank for none.', 'fw' ),
                     ],
                 ],
             ],

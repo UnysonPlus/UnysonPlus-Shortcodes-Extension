@@ -150,6 +150,7 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 		$classes[] = 'fw-pt--btn-' . $btn_style;
 		if ( $align_cls ) { $classes[] = 'fw-pt--' . $align_cls; }
 		if ( sc_get( 'feature_dividers', $atts, 'yes' ) === 'no' ) { $classes[] = 'fw-pt--no-dividers'; }
+		if ( sc_get( 'feature_block_center', $atts, 'no' ) === 'yes' ) { $classes[] = 'fw-pt--feat-center-block'; }
 		if ( $billing_active ) {
 			$classes[] = 'fw-pt--has-billing';
 			if ( $billing_default === 'yearly' ) { $classes[] = 'is-yearly'; }

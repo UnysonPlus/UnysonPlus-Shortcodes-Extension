@@ -106,6 +106,7 @@
 					nw.base = base;
 					if (typeof nw.md === 'undefined') { nw.md = { preset: 'none' }; }
 					if (typeof nw.lg === 'undefined') { nw.lg = { preset: 'none' }; }
+					if (typeof nw.xl === 'undefined') { nw.xl = { preset: 'none' }; }
 					a.width = nw;
 					this.model.set('atts', a);
 				}
@@ -241,14 +242,15 @@
 				// never sizes itself to a fraction on the canvas.
 				var fxIsSection = ( fxAtts.html_tag === 'section' );
 
-				// Resolve a per-device value { base, md, lg } with the mobile-first cascade
-				// (sm->base, md->md||base, lg->lg||md||base); tolerates a legacy scalar.
+				// Resolve a per-device value { base, md, lg, xl } with the mobile-first cascade
+				// (sm->base, md->md||base, lg->lg||md||base, xl->xl||lg||md||base); tolerates a legacy scalar.
 				var fxResolve = function (v, d) {
 					if (v == null) { return ''; }
 					if (typeof v === 'string') { return v; }
-					var b = v.base || '', m = v.md || '', l = v.lg || '';
+					var b = v.base || '', m = v.md || '', l = v.lg || '', x = v.xl || '';
 					if (d === 'sm') { return b; }
 					if (d === 'md') { return m || b; }
+					if (d === 'xl') { return x || l || m || b; }
 					return l || m || b;
 				};
 
@@ -283,6 +285,7 @@
 						var b = lay(wr.base);
 						if (device === 'sm')      { fxWidthObj = b; }
 						else if (device === 'md') { fxWidthObj = setP(wr.md) ? lay(wr.md) : b; }
+						else if (device === 'xl') { fxWidthObj = setP(wr.xl) ? lay(wr.xl) : (setP(wr.lg) ? lay(wr.lg) : (setP(wr.md) ? lay(wr.md) : b)); }
 						else                      { fxWidthObj = setP(wr.lg) ? lay(wr.lg) : (setP(wr.md) ? lay(wr.md) : b); }
 					} else {
 						fxWidthObj = (wr && typeof wr === 'object') ? wr : {};
@@ -303,7 +306,7 @@
 
 				if (fxIsSection) {
 					this.$el.css({ 'flex': '', 'max-width': '', 'width': '' });
-				} else if (fxResolve(fxAtts.flex_grow, device) === 'yes' && !fxParentCol) {
+				} else if ((fxResolve(fxAtts.flex_grow, device) === 'yes' || parseFloat(fxAtts.flex_grow_num) > 0) && !fxParentCol) {
 					this.$el.css({ 'flex': '1 1 0', 'max-width': '' });
 				} else if (fxWidthCss && fxParentCol) {
 					this.$el.css({ 'flex': '', 'max-width': fxWidthCss });
@@ -735,7 +738,7 @@
 		values = values || {};
 		var display    = values.display || 'flex';
 		var isGrid     = ( display === 'grid' );
-		var isFlex     = ( display === 'flex' );
+		var isFlex     = ( display === 'flex' || display === 'inline-flex' );
 		var isFlexGrid = ( isFlex || isGrid );
 		var isSection  = ( values.html_tag === 'section' );
 		// Scope the lookups to the open modal when we have it (defensive against a second
@@ -755,6 +758,7 @@
 		toggle( find( '#fw-backend-options-group-group_section_style' ), isSection );
 		toggle( find( '#fw-backend-options-group-group_dividers' ),      isSection );
 		toggle( find( '#fw-backend-options-group-group_placement' ),     !isSection );
+		toggle( find( '#fw-backend-options-group-group_custom_tag' ),    values.html_tag === 'custom' );
 		// Lone options that sit among always-shown ones → target by id suffix (the modal prefixes
 		// option ids, so match the tail).
 		find( '[id^="fw-backend-option-"][id$="full_width"]' ).each( function () {

@@ -146,7 +146,7 @@ if ( $valign === 'stretch' ) {
 $halign_resp = fw_akg( 'column_halign', $atts, array() );
 if ( ! is_array( $halign_resp ) ) { $halign_resp = array( 'base' => (string) $halign_resp ); }
 $halign_valid = array( 'center', 'right', 'between', 'around', 'evenly' );
-foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ) as $layer => $infix ) {
+foreach ( array( 'base' => '', 'md' => '-md', 'lg' => '-lg', 'xl' => '-xl' ) as $layer => $infix ) {
 	$hv = isset( $halign_resp[ $layer ] ) ? (string) $halign_resp[ $layer ] : '';
 	if ( in_array( $hv, $halign_valid, true ) ) {
 		$section_extra_classes .= ' section--cols' . $infix . '-' . $hv;
@@ -170,9 +170,11 @@ if ( ! is_array( $rev_raw ) ) {
 $rb = ( isset( $rev_raw['base'] ) && $rev_raw['base'] === 'yes' );
 $rm = ( isset( $rev_raw['md'] ) && $rev_raw['md'] !== '' ) ? ( $rev_raw['md'] === 'yes' ) : $rb;
 $rl = ( isset( $rev_raw['lg'] ) && $rev_raw['lg'] !== '' ) ? ( $rev_raw['lg'] === 'yes' ) : $rm;
+$rx = ( isset( $rev_raw['xl'] ) && $rev_raw['xl'] !== '' ) ? ( $rev_raw['xl'] === 'yes' ) : $rl;
 if ( $rb ) { $section_extra_classes .= ' section--rev'; }
 if ( $rm !== $rb ) { $section_extra_classes .= $rm ? ' section--rev-md-on' : ' section--rev-md-off'; }
 if ( $rl !== $rm ) { $section_extra_classes .= $rl ? ' section--rev-lg-on' : ' section--rev-lg-off'; }
+if ( $rx !== $rl ) { $section_extra_classes .= $rx ? ' section--rev-xl-on' : ' section--rev-xl-off'; }
 
 // Text Alignment (id: text_align) — the CSS `text-align` for ALL content in this
 // section, applied as a Bootstrap `text-*` utility on the section wrapper. Inherited

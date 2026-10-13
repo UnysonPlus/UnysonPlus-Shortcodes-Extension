@@ -351,6 +351,14 @@ $options = array(
 						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
 						'value'        => 'yes',
 					),
+					'feature_block_center' => array(
+						'type'         => 'switch',
+						'label'        => __( 'Center Feature List', 'fw' ),
+						'desc'         => __( "Left-align each feature's text but center the whole list on its widest item — the list shrink-wraps to the longest feature and that block sits centered in the card (dividers hug the list). The title, price and button still follow Text Alignment above. Best paired with centered Text Alignment.", 'fw' ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'left-choice'  => array( 'value' => 'no',  'label' => __( 'No', 'fw' ) ),
+						'value'        => 'no',
+					),
 					'product_schema' => array(
 						'type'         => 'switch',
 						'label'        => __( 'Product Schema (JSON-LD)', 'fw' ),

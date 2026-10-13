@@ -11,13 +11,31 @@
 $atts['base_class']       = 'fw-flexbox';
 $atts['unique_id_prefix'] = 'fx-';
 
-$allowed_tags = array( 'div', 'section', 'header', 'main', 'article', 'aside', 'footer', 'nav' );
-$tag = ( isset( $atts['html_tag'] ) && in_array( $atts['html_tag'], $allowed_tags, true ) ) ? $atts['html_tag'] : 'div';
+$allowed_tags = array( 'div', 'section', 'header', 'main', 'article', 'aside', 'footer', 'nav', 'figure' );
+// Custom-tag escape hatch (html_tag = 'custom' + the typed custom_tag): sanitized to a whitelist of
+// safe FLOW / sectioning / grouping container tags only — no script / style / iframe / interactive
+// (<a>) or document-structure tags, so a user-typed value can never inject an unsafe element. An
+// empty / unknown / disallowed value falls back to div.
+$fx_custom_tag_whitelist = array(
+	'div', 'section', 'article', 'aside', 'header', 'footer', 'nav', 'main', 'figure', 'figcaption',
+	'details', 'summary', 'span', 'p', 'blockquote', 'address', 'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+	'picture', 'time', 'mark', 'fieldset', 'hgroup',
+);
+$html_tag_raw = isset( $atts['html_tag'] ) ? (string) $atts['html_tag'] : 'div';
+if ( $html_tag_raw === 'custom' ) {
+	$ct  = preg_replace( '/[^a-z0-9]/', '', strtolower( trim( (string) fw_akg( 'custom_tag', $atts, '' ) ) ) );
+	$tag = in_array( $ct, $fx_custom_tag_whitelist, true ) ? $ct : 'div';
+} else {
+	$tag = in_array( $html_tag_raw, $allowed_tags, true ) ? $html_tag_raw : 'div';
+}
 
 // Display mode: Flex (default) / Grid / Block. Flex keeps the d-flex utility class; Grid and
 // Block set their display (+ grid template-columns) via a scoped rule keyed to the fx- class
 // (below), so existing flexboxes are unchanged and the flex utility classes stay inert on them.
-$display  = ( isset( $atts['display'] ) && in_array( $atts['display'], array( 'flex', 'grid', 'block' ), true ) ) ? $atts['display'] : 'flex';
+$display  = ( isset( $atts['display'] ) && in_array( $atts['display'], array( 'flex', 'inline-flex', 'grid', 'block', 'inline-block', 'inline', 'none' ), true ) ) ? $atts['display'] : 'flex';
+// `inline-flex` is a flex container too — it takes every flex arrangement class (direction / wrap /
+// justify / align), just inline-level. Treat it as flex throughout, only the base class differs.
+$is_flex  = ( $display === 'flex' || $display === 'inline-flex' );
 
 // Is THIS box a direct child of a Grid Div? A parent flexbox pushes its display onto this stack
 // before rendering its children (see the render at the end), so the top is our immediate parent's
@@ -28,7 +46,9 @@ $parent_is_grid = ( ! empty( $GLOBALS['_fw_flex_stack'] ) && end( $GLOBALS['_fw_
 // Only a Flex Div carries the flex utility classes (d-flex + direction/wrap below); a Grid
 // Div carries the `fw-grid` marker (its children's fw-col-* map to grid spans via CSS); a
 // Block Div carries neither — keeping its markup clean instead of littered with inert classes.
-$classes = ( $display === 'flex' ) ? array( 'fw-flex' ) : ( ( $display === 'grid' ) ? array( 'fw-grid' ) : array() );
+$classes = ( $display === 'flex' ) ? array( 'fw-flex' )
+	: ( ( $display === 'inline-flex' ) ? array( 'fw-inline-flex' )
+	: ( ( $display === 'grid' ) ? array( 'fw-grid' ) : array() ) );
 
 // --- Responsive helper: read a { base, md, lg } value (tolerating a legacy scalar).
 // The parsing lives in the shared fw_sc_resp_value() (shortcodes helpers.php) so
@@ -37,9 +57,9 @@ $classes = ( $display === 'flex' ) ? array( 'fw-flex' ) : ( ( $display === 'grid
 $fx_resp   = function ( $key ) use ( $atts ) { return fw_sc_resp_value( $atts, $key ); };
 $fx_layers = fw_sc_bp_layers();
 
-// --- Effective mobile-first cascade for a per-device switch { base, md, lg } (each
+// --- Effective mobile-first cascade for a per-device switch { base, md, lg, xl } (each
 // 'yes'/'no'/''; a blank device inherits the smaller one). Tolerates a legacy scalar.
-// Returns array( base, md, lg ) fully resolved to 'yes'/'no'. ---
+// Returns array( base, md, lg, xl ) fully resolved to 'yes'/'no'. ---
 $fx_switch_eff = function ( $key, $default ) use ( $atts ) {
 	$v = fw_akg( $key, $atts, null );
 	if ( is_array( $v ) ) {
@@ -47,13 +67,14 @@ $fx_switch_eff = function ( $key, $default ) use ( $atts ) {
 			'base' => isset( $v['base'] ) ? (string) $v['base'] : $default,
 			'md'   => isset( $v['md'] )   ? (string) $v['md']   : '',
 			'lg'   => isset( $v['lg'] )   ? (string) $v['lg']   : '',
+			'xl'   => isset( $v['xl'] )   ? (string) $v['xl']   : '',
 		);
 	} else {
-		$resp = array( 'base' => in_array( (string) $v, array( 'yes', 'no' ), true ) ? (string) $v : $default, 'md' => '', 'lg' => '' );
+		$resp = array( 'base' => in_array( (string) $v, array( 'yes', 'no' ), true ) ? (string) $v : $default, 'md' => '', 'lg' => '', 'xl' => '' );
 	}
 	$out  = array();
 	$prev = $default;
-	foreach ( array( 'base', 'md', 'lg' ) as $L ) {
+	foreach ( array( 'base', 'md', 'lg', 'xl' ) as $L ) {
 		$x = in_array( $resp[ $L ], array( 'yes', 'no' ), true ) ? $resp[ $L ] : ( $L === 'base' ? $default : $prev );
 		$out[ $L ] = $x;
 		$prev = $x;
@@ -71,6 +92,7 @@ if ( is_array( $dir_v ) ) {
 		'base' => isset( $dir_v['base'] ) ? (string) $dir_v['base'] : 'row',
 		'md'   => isset( $dir_v['md'] )   ? (string) $dir_v['md']   : '',
 		'lg'   => isset( $dir_v['lg'] )   ? (string) $dir_v['lg']   : '',
+		'xl'   => isset( $dir_v['xl'] )   ? (string) $dir_v['xl']   : '',
 	);
 } else {
 	$d_base = ( $dir_v === 'column' ) ? 'column' : 'row';
@@ -80,6 +102,7 @@ if ( is_array( $dir_v ) ) {
 		'base' => in_array( $d_mob, array( 'row', 'column' ), true ) ? $d_mob : $d_base,
 		'md'   => in_array( $d_tab, array( 'row', 'column' ), true ) ? $d_tab : $d_base,
 		'lg'   => $d_base,
+		'xl'   => '',
 	);
 }
 $rev_v = fw_akg( 'reverse', $atts, null );
@@ -88,15 +111,16 @@ if ( is_array( $rev_v ) ) {
 		'base' => isset( $rev_v['base'] ) ? (string) $rev_v['base'] : 'no',
 		'md'   => isset( $rev_v['md'] )   ? (string) $rev_v['md']   : '',
 		'lg'   => isset( $rev_v['lg'] )   ? (string) $rev_v['lg']   : '',
+		'xl'   => isset( $rev_v['xl'] )   ? (string) $rev_v['xl']   : '',
 	);
 } else {
-	$rev_resp = array( 'base' => ( $rev_v === 'yes' ) ? 'yes' : 'no', 'md' => '', 'lg' => '' );
+	$rev_resp = array( 'base' => ( $rev_v === 'yes' ) ? 'yes' : 'no', 'md' => '', 'lg' => '', 'xl' => '' );
 }
 $dir_eff = array();
 $rev_eff = array();
 $prev_d  = 'row';
 $prev_r  = 'no';
-foreach ( array( 'base', 'md', 'lg' ) as $layer ) {
+foreach ( array( 'base', 'md', 'lg', 'xl' ) as $layer ) {
 	$d = in_array( $dir_resp[ $layer ], array( 'row', 'column' ), true ) ? $dir_resp[ $layer ] : ( $layer === 'base' ? 'row' : $prev_d );
 	$r = in_array( $rev_resp[ $layer ], array( 'yes', 'no' ), true )      ? $rev_resp[ $layer ] : ( $layer === 'base' ? 'no'  : $prev_r );
 	$dir_eff[ $layer ] = $d;
@@ -109,25 +133,27 @@ $fx_dir_class = function ( $bp, $d, $r ) {
 };
 // flex-direction / -reverse are flex-only container props — emit them just for a Flex Div
 // (inert under grid / block, so we leave them off there to keep the markup clean).
-if ( $display === 'flex' ) {
+if ( $is_flex ) {
 	// Skip the base class for plain `row` — flex-direction:row is already the CSS default, so the
 	// class would be noise on every default Div. Emit only a non-default base (column / reverse)
 	// and any per-device override.
 	if ( $dir_eff['base'] !== 'row' || $rev_eff['base'] !== 'no' ) { $classes[] = $fx_dir_class( '', $dir_eff['base'], $rev_eff['base'] ); }
 	if ( $dir_eff['md'] !== $dir_eff['base'] || $rev_eff['md'] !== $rev_eff['base'] ) { $classes[] = $fx_dir_class( 'md', $dir_eff['md'], $rev_eff['md'] ); }
 	if ( $dir_eff['lg'] !== $dir_eff['md']  || $rev_eff['lg'] !== $rev_eff['md'] )  { $classes[] = $fx_dir_class( 'lg', $dir_eff['lg'], $rev_eff['lg'] ); }
+	if ( $dir_eff['xl'] !== $dir_eff['lg']  || $rev_eff['xl'] !== $rev_eff['lg'] )  { $classes[] = $fx_dir_class( 'xl', $dir_eff['xl'], $rev_eff['xl'] ); }
 }
 
 // Wrap (per-device switch, default on). Emit a class at base always, and at md/lg
 // only when it differs from the device below (flex-{bp}-wrap / flex-{bp}-nowrap).
 $wrap_eff = $fx_switch_eff( 'wrap', 'yes' );
 $wrap_cls = function ( $bp, $w ) { return 'fw-flex-' . ( $bp === '' ? '' : $bp . '-' ) . ( $w === 'no' ? 'nowrap' : 'wrap' ); };
-if ( $display === 'flex' ) {
+if ( $is_flex ) {
 	// The base `.fw-flex` class already sets flex-wrap:wrap (the Div's default), so emit a base
 	// class ONLY to turn wrapping OFF (fw-flex-nowrap); a per-device change still emits its class.
 	if ( $wrap_eff['base'] === 'no' ) { $classes[] = $wrap_cls( '', 'no' ); }
 	if ( $wrap_eff['md'] !== $wrap_eff['base'] ) { $classes[] = $wrap_cls( 'md', $wrap_eff['md'] ); }
 	if ( $wrap_eff['lg'] !== $wrap_eff['md'] )  { $classes[] = $wrap_cls( 'lg', $wrap_eff['lg'] ); }
+	if ( $wrap_eff['xl'] !== $wrap_eff['lg'] )  { $classes[] = $wrap_cls( 'xl', $wrap_eff['xl'] ); }
 }
 
 // Gap (per-device): a spacing-preset slug → sc-cgap-{slug} utility (which sets the
@@ -148,6 +174,7 @@ if ( is_array( $jc_v ) ) {
 		'base' => isset( $jc_v['base'] ) ? (string) $jc_v['base'] : '',
 		'md'   => isset( $jc_v['md'] )   ? (string) $jc_v['md']   : '',
 		'lg'   => isset( $jc_v['lg'] )   ? (string) $jc_v['lg']   : '',
+		'xl'   => isset( $jc_v['xl'] )   ? (string) $jc_v['xl']   : '',
 	);
 } else {
 	$j_base = (string) $jc_v;
@@ -159,9 +186,10 @@ if ( is_array( $jc_v ) ) {
 			'base' => $norm( in_array( $j_mob, $jc_valid, true ) ? $j_mob : $j_base ),
 			'md'   => $norm( in_array( $j_tab, $jc_valid, true ) ? $j_tab : $j_base ),
 			'lg'   => $norm( $j_base ),
+			'xl'   => '',
 		);
 	} else {
-		$jc_resp = array( 'base' => $j_base, 'md' => '', 'lg' => '' );
+		$jc_resp = array( 'base' => $j_base, 'md' => '', 'lg' => '', 'xl' => '' );
 	}
 }
 foreach ( $fx_layers as $layer => $infix ) {
@@ -205,17 +233,38 @@ foreach ( $fx_layers as $layer => $infix ) {
 	if ( in_array( $cs_r[ $layer ], $cs_valid, true ) ) { $classes[] = 'fw-col-start' . $infix . '-' . $cs_r[ $layer ]; }
 }
 
-// Grow to Fill (per-device switch, default off). Base emits only when on; md/lg emit
-// (flex-grow-{bp}-1 / -0) only when they differ from the device below.
-$grow_eff = $fx_switch_eff( 'flex_grow', 'no' );
-$grow_cls = function ( $bp, $g ) { return 'fw-grow-' . ( $bp === '' ? '' : $bp . '-' ) . ( $g === 'yes' ? '1' : '0' ); };
-if ( $grow_eff['base'] === 'yes' ) { $classes[] = $grow_cls( '', 'yes' ); }
-if ( $grow_eff['md'] !== $grow_eff['base'] ) { $classes[] = $grow_cls( 'md', $grow_eff['md'] ); }
-if ( $grow_eff['lg'] !== $grow_eff['md'] )  { $classes[] = $grow_cls( 'lg', $grow_eff['lg'] ); }
+// Exact numeric Flex Grow / Flex Shrink (advanced overrides). A non-negative number here wins over
+// the on/off switch and emits an exact scoped `flex-grow` / `flex-shrink` on the box's fx-* class
+// (below, where the scoped CSS is built). Blank = use the switch. Validated to a plain number.
+$grow_num   = trim( (string) fw_akg( 'flex_grow_num', $atts, '' ) );
+$shrink_num = trim( (string) fw_akg( 'flex_shrink_num', $atts, '' ) );
+$grow_num   = preg_match( '/^\d{1,3}(?:\.\d{1,3})?$/', $grow_num )   ? $grow_num   : '';
+$shrink_num = preg_match( '/^\d{1,3}(?:\.\d{1,3})?$/', $shrink_num ) ? $shrink_num : '';
 
-// Prevent Shrinking (switch, default off). On -> flex-shrink-0 so the box keeps its size
-// in a Flex row instead of being squeezed (a fixed sidebar / logo beside a flexible area).
-if ( (string) fw_akg( 'no_shrink', $atts, 'no' ) === 'yes' ) { $classes[] = 'fw-shrink-0'; }
+// Grow to Fill (per-device switch, default off). Base emits only when on; md/lg emit
+// (flex-grow-{bp}-1 / -0) only when they differ from the device below. Skipped when an exact Grow
+// Factor is set (the scoped numeric rule takes over).
+if ( $grow_num === '' ) {
+	$grow_eff = $fx_switch_eff( 'flex_grow', 'no' );
+	$grow_cls = function ( $bp, $g ) { return 'fw-grow-' . ( $bp === '' ? '' : $bp . '-' ) . ( $g === 'yes' ? '1' : '0' ); };
+	if ( $grow_eff['base'] === 'yes' ) { $classes[] = $grow_cls( '', 'yes' ); }
+	if ( $grow_eff['md'] !== $grow_eff['base'] ) { $classes[] = $grow_cls( 'md', $grow_eff['md'] ); }
+	if ( $grow_eff['lg'] !== $grow_eff['md'] )  { $classes[] = $grow_cls( 'lg', $grow_eff['lg'] ); }
+	if ( $grow_eff['xl'] !== $grow_eff['lg'] )  { $classes[] = $grow_cls( 'xl', $grow_eff['xl'] ); }
+}
+
+// Prevent Shrinking (per-device switch, default off). On -> flex-shrink-0 so the box keeps its
+// size in a Flex row instead of being squeezed (a fixed sidebar / logo beside a flexible area).
+// Base emits only when on (fw-shrink-0); md/lg/xl emit (fw-shrink-{bp}-0 to lock / -1 to re-enable
+// shrinking) only when they differ from the device below. Skipped when an exact Shrink Factor is set.
+if ( $shrink_num === '' ) {
+	$shrink_eff = $fx_switch_eff( 'no_shrink', 'no' );
+	$shrink_cls = function ( $bp, $s ) { return 'fw-shrink-' . ( $bp === '' ? '' : $bp . '-' ) . ( $s === 'yes' ? '0' : '1' ); };
+	if ( $shrink_eff['base'] === 'yes' ) { $classes[] = 'fw-shrink-0'; }
+	if ( $shrink_eff['md'] !== $shrink_eff['base'] ) { $classes[] = $shrink_cls( 'md', $shrink_eff['md'] ); }
+	if ( $shrink_eff['lg'] !== $shrink_eff['md'] )  { $classes[] = $shrink_cls( 'lg', $shrink_eff['lg'] ); }
+	if ( $shrink_eff['xl'] !== $shrink_eff['lg'] )  { $classes[] = $shrink_cls( 'xl', $shrink_eff['xl'] ); }
+}
 
 // Border / Box Style preset (border + corners + shadow + bg fill). The boxp-* CSS
 // is generated globally from the saved border presets, so we just add the class.
@@ -276,11 +325,12 @@ $w_raw = fw_akg( 'width', $atts, null );
 // Width so it can never render narrower / left-aligned. Constrain its content with Content Width
 // (which centres a full-width band) instead. The Width control is also hidden in the editor.
 if ( $tag === 'section' ) { $w_raw = null; }
-if ( is_array( $w_raw ) && ( isset( $w_raw['base'] ) || isset( $w_raw['md'] ) || isset( $w_raw['lg'] ) ) ) {
+if ( is_array( $w_raw ) && ( isset( $w_raw['base'] ) || isset( $w_raw['md'] ) || isset( $w_raw['lg'] ) || isset( $w_raw['xl'] ) ) ) {
 	$wl = array(
 		'base' => $fx_w_layer( isset( $w_raw['base'] ) ? $w_raw['base'] : array() ),
 		'md'   => $fx_w_layer( isset( $w_raw['md'] )   ? $w_raw['md']   : array() ),
 		'lg'   => $fx_w_layer( isset( $w_raw['lg'] )   ? $w_raw['lg']   : array() ),
+		'xl'   => $fx_w_layer( isset( $w_raw['xl'] )   ? $w_raw['xl']   : array() ),
 	);
 } else {
 	// Legacy flat width{preset,custom} applied tablet-up (md); width_phone → base.
@@ -290,6 +340,7 @@ if ( is_array( $w_raw ) && ( isset( $w_raw['base'] ) || isset( $w_raw['md'] ) ||
 		'base' => array( 'preset' => in_array( $wp, $fx_frac, true ) ? $wp : '', 'custom' => '', 'fifth' => '', 'keyword' => '' ),
 		'md'   => $flat,
 		'lg'   => array( 'preset' => '', 'custom' => '', 'fifth' => '', 'keyword' => '' ),
+		'xl'   => array( 'preset' => '', 'custom' => '', 'fifth' => '', 'keyword' => '' ),
 	);
 }
 // Grid cell: the parent's tracks size it, so drop any width that would be a redundant per-element
@@ -297,9 +348,9 @@ if ( is_array( $w_raw ) && ( isset( $w_raw['base'] ) || isset( $w_raw['md'] ) ||
 // on EXISTING pages with no data change; a twelfths preset survives and becomes the grid-column
 // span via its fw-span class.
 if ( $parent_is_grid ) {
-	$wl['base']['custom']  = $wl['md']['custom']  = $wl['lg']['custom']  = '';
-	$wl['base']['fifth']   = $wl['md']['fifth']   = $wl['lg']['fifth']   = '';
-	$wl['base']['keyword'] = $wl['md']['keyword'] = $wl['lg']['keyword'] = '';
+	$wl['base']['custom']  = $wl['md']['custom']  = $wl['lg']['custom']  = $wl['xl']['custom']  = '';
+	$wl['base']['fifth']   = $wl['md']['fifth']   = $wl['lg']['fifth']   = $wl['xl']['fifth']   = '';
+	$wl['base']['keyword'] = $wl['md']['keyword'] = $wl['lg']['keyword'] = $wl['xl']['keyword'] = '';
 }
 $w_is_set = function ( $L ) use ( $fx_frac ) {
 	// A twelfths fw-span, a fifth (fw-fifth), a content keyword (fw-w-*), OR a scoped custom value.
@@ -362,14 +413,15 @@ $fx_mh_layer = function ( $L ) {
 	return '';
 };
 $mh_raw = fw_akg( 'min_height', $atts, null );
-if ( is_array( $mh_raw ) && ( isset( $mh_raw['base'] ) || isset( $mh_raw['md'] ) || isset( $mh_raw['lg'] ) ) ) {
+if ( is_array( $mh_raw ) && ( isset( $mh_raw['base'] ) || isset( $mh_raw['md'] ) || isset( $mh_raw['lg'] ) || isset( $mh_raw['xl'] ) ) ) {
 	$mh = array(
 		'base' => $fx_mh_layer( isset( $mh_raw['base'] ) ? $mh_raw['base'] : array() ),
 		'md'   => $fx_mh_layer( isset( $mh_raw['md'] )   ? $mh_raw['md']   : array() ),
 		'lg'   => $fx_mh_layer( isset( $mh_raw['lg'] )   ? $mh_raw['lg']   : array() ),
+		'xl'   => $fx_mh_layer( isset( $mh_raw['xl'] )   ? $mh_raw['xl']   : array() ),
 	);
 } else {
-	$mh = array( 'base' => $fx_mh_layer( is_array( $mh_raw ) ? $mh_raw : array() ), 'md' => '', 'lg' => '' );
+	$mh = array( 'base' => $fx_mh_layer( is_array( $mh_raw ) ? $mh_raw : array() ), 'md' => '', 'lg' => '', 'xl' => '' );
 }
 
 // Background-pro layers (color / gradient / image) — sits UNDER gap/width/min-height so it
@@ -379,7 +431,10 @@ $bg_style = function_exists( 'sc_bg_pro_style' ) ? sc_bg_pro_style( $bgv ) : '';
 // (Flex gap rides on sc-cgap-* classes; width fractions on fw-col-* classes; Custom
 // width + per-device Min Height are scoped @media rules below, since they can't be
 // utility classes.)
-$extra_style = $bg_style;
+// Display = inline-block / inline / none has no fw-flex/fw-grid class (those are flex/grid only)
+// and no default rule, so emit it as an inline declaration. (block is the element's natural default.)
+$disp_style  = in_array( $display, array( 'inline-block', 'inline', 'none' ), true ) ? ( 'display:' . $display . ';' ) : '';
+$extra_style = $disp_style . $bg_style;
 if ( $extra_style !== '' ) {
 	$existing      = isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . '; ' : '';
 	$attr['style'] = $existing . $extra_style;
@@ -391,11 +446,12 @@ if ( $extra_style !== '' ) {
 $w_custom_css = '';
 $fx_uid = ( isset( $attr['class'] ) && preg_match( '/\bfx-[a-z0-9]+\b/i', (string) $attr['class'], $um ) ) ? '.' . $um[0] : '';
 if ( $fx_uid !== ''
-     && ( $wl['base']['custom'] !== '' || $wl['md']['custom'] !== '' || $wl['lg']['custom'] !== ''
-       || $mh['base'] !== '' || $mh['md'] !== '' || $mh['lg'] !== '' ) ) {
+     && ( $wl['base']['custom'] !== '' || $wl['md']['custom'] !== '' || $wl['lg']['custom'] !== '' || $wl['xl']['custom'] !== ''
+       || $mh['base'] !== '' || $mh['md'] !== '' || $mh['lg'] !== '' || $mh['xl'] !== '' ) ) {
 	$uid    = $fx_uid;
 	$md_set = $w_is_set( $wl['md'] );
 	$lg_set = $w_is_set( $wl['lg'] );
+	$xl_set = $w_is_set( $wl['xl'] );
 	$decl   = function ( $v ) {
 		// Content keywords size the box to its content — set `width` and release the fixed-basis
 		// cap; everything else (a %, px, rem, vw, or a fifth) is a fixed flex-basis + max-width.
@@ -407,19 +463,26 @@ if ( $fx_uid !== ''
 	if ( $wl['base']['custom'] !== '' ) {
 		if ( $md_set )     { $w_custom_css .= '@media (max-width:767.98px){' . $uid . '{' . $decl( $wl['base']['custom'] ) . '}}'; }
 		elseif ( $lg_set ) { $w_custom_css .= '@media (max-width:991.98px){' . $uid . '{' . $decl( $wl['base']['custom'] ) . '}}'; }
+		elseif ( $xl_set ) { $w_custom_css .= '@media (max-width:1199.98px){' . $uid . '{' . $decl( $wl['base']['custom'] ) . '}}'; }
 		else               { $w_custom_css .= $uid . '{' . $decl( $wl['base']['custom'] ) . '}'; }
 	}
 	if ( $wl['md']['custom'] !== '' ) {
-		$w_custom_css .= $lg_set
-			? '@media (min-width:768px) and (max-width:991.98px){' . $uid . '{' . $decl( $wl['md']['custom'] ) . '}}'
-			: '@media (min-width:768px){' . $uid . '{' . $decl( $wl['md']['custom'] ) . '}}';
+		if ( $lg_set )      { $w_custom_css .= '@media (min-width:768px) and (max-width:991.98px){' . $uid . '{' . $decl( $wl['md']['custom'] ) . '}}'; }
+		elseif ( $xl_set )  { $w_custom_css .= '@media (min-width:768px) and (max-width:1199.98px){' . $uid . '{' . $decl( $wl['md']['custom'] ) . '}}'; }
+		else                { $w_custom_css .= '@media (min-width:768px){' . $uid . '{' . $decl( $wl['md']['custom'] ) . '}}'; }
 	}
 	if ( $wl['lg']['custom'] !== '' ) {
-		$w_custom_css .= '@media (min-width:992px){' . $uid . '{' . $decl( $wl['lg']['custom'] ) . '}}';
+		$w_custom_css .= $xl_set
+			? '@media (min-width:992px) and (max-width:1199.98px){' . $uid . '{' . $decl( $wl['lg']['custom'] ) . '}}'
+			: '@media (min-width:992px){' . $uid . '{' . $decl( $wl['lg']['custom'] ) . '}}';
+	}
+	if ( $wl['xl']['custom'] !== '' ) {
+		$w_custom_css .= '@media (min-width:1200px){' . $uid . '{' . $decl( $wl['xl']['custom'] ) . '}}';
 	}
 	if ( $mh['base'] !== '' ) { $w_custom_css .= $uid . '{min-height:' . $mh['base'] . ';}'; }
 	if ( $mh['md'] !== '' )   { $w_custom_css .= '@media (min-width:768px){' . $uid . '{min-height:' . $mh['md'] . ';}}'; }
 	if ( $mh['lg'] !== '' )   { $w_custom_css .= '@media (min-width:992px){' . $uid . '{min-height:' . $mh['lg'] . ';}}'; }
+	if ( $mh['xl'] !== '' )   { $w_custom_css .= '@media (min-width:1200px){' . $uid . '{min-height:' . $mh['xl'] . ';}}'; }
 }
 
 // ----- Flex Basis + Min Width (per-device unit-inputs) → scoped @media rules on this box's fx-* class.
@@ -437,9 +500,8 @@ if ( $fx_uid !== '' ) {
 	};
 	// Read the RAW responsive value (not fw_sc_resp_value, which casts each layer to string and
 	// would mangle a unit-input's {value,unit} array — same reason min_height reads it raw).
-	$fx_len_prop = function ( $key, $prop ) use ( $fx_uid, $atts, $fx_layers, $fx_len ) {
+	$fx_len_prop = function ( $key, $prop, $units = array( 'px', 'rem', '%', 'vw' ) ) use ( $fx_uid, $atts, $fx_layers, $fx_len ) {
 		$css   = '';
-		$units = array( 'px', 'rem', '%', 'vw' );
 		$raw   = fw_akg( $key, $atts, array() );
 		if ( ! is_array( $raw ) ) { return ''; }
 		foreach ( $fx_layers as $layer => $infix ) {
@@ -449,11 +511,19 @@ if ( $fx_uid !== '' ) {
 			if ( $infix === '' )        { $css .= $rule; }
 			elseif ( $infix === '-md' ) { $css .= '@media (min-width:768px){' . $rule . '}'; }
 			elseif ( $infix === '-lg' ) { $css .= '@media (min-width:992px){' . $rule . '}'; }
+			elseif ( $infix === '-xl' ) { $css .= '@media (min-width:1200px){' . $rule . '}'; }
 		}
 		return $css;
 	};
 	$w_custom_css .= $fx_len_prop( 'flex_basis', 'flex-basis' );
 	$w_custom_css .= $fx_len_prop( 'min_width', 'min-width' );
+	$w_custom_css .= $fx_len_prop( 'height', 'height', array( 'px', 'rem', 'vh', '%' ) );
+	$w_custom_css .= $fx_len_prop( 'max_width', 'max-width', array( 'px', 'rem', 'ch', '%', 'vw' ) );
+	$w_custom_css .= $fx_len_prop( 'max_height', 'max-height', array( 'px', 'rem', 'vh', '%' ) );
+	// Exact numeric Flex Grow / Flex Shrink overrides (advanced) — a scoped value that wins over the
+	// fw-grow-* / fw-shrink-* switch classes (which are suppressed above when a number is set).
+	if ( $grow_num !== '' )   { $w_custom_css .= $fx_uid . '{flex-grow:' . $grow_num . ' !important;}'; }
+	if ( $shrink_num !== '' ) { $w_custom_css .= $fx_uid . '{flex-shrink:' . $shrink_num . ' !important;}'; }
 }
 
 // ----- Backdrop Blur (Glass): a frosted-glass effect on the box. Emits backdrop-filter (+ -webkit- for
@@ -575,6 +645,7 @@ if ( $fx_uid !== '' ) {
 			if ( $infix === '' )        { $css .= $rule; }
 			elseif ( $infix === '-md' ) { $css .= '@media (min-width:768px){' . $rule . '}'; }
 			elseif ( $infix === '-lg' ) { $css .= '@media (min-width:992px){' . $rule . '}'; }
+			elseif ( $infix === '-xl' ) { $css .= '@media (min-width:1200px){' . $rule . '}'; }
 		}
 		return $css;
 	};
@@ -596,6 +667,7 @@ if ( $fx_uid !== '' ) {
 			if ( $infix === '' )        { $w_custom_css .= $rule; }
 			elseif ( $infix === '-md' ) { $w_custom_css .= '@media (min-width:768px){' . $rule . '}'; }
 			elseif ( $infix === '-lg' ) { $w_custom_css .= '@media (min-width:992px){' . $rule . '}'; }
+			elseif ( $infix === '-xl' ) { $w_custom_css .= '@media (min-width:1200px){' . $rule . '}'; }
 		}
 	}
 
@@ -641,6 +713,7 @@ if ( $fx_uid !== '' ) {
 		if ( $infix === '' )        { $w_custom_css .= $rule; }
 		elseif ( $infix === '-md' ) { $w_custom_css .= '@media (min-width:768px){' . $rule . '}'; }
 		elseif ( $infix === '-lg' ) { $w_custom_css .= '@media (min-width:992px){' . $rule . '}'; }
+		elseif ( $infix === '-xl' ) { $w_custom_css .= '@media (min-width:1200px){' . $rule . '}'; }
 	}
 }
 
@@ -807,7 +880,7 @@ if ( (string) fw_akg( 'responsive_collapse', $atts, 'yes' ) === 'yes' ) {
 		// else (a 2-col grid, a 12-track spanning grid, or a raw template) just stacks to one column
 		// on phones (fw-grid-collapse-1, which also clears any child spans).
 		$collapse_class = ( ctype_digit( $gcn ) && (int) $gcn >= 3 && (int) $gcn <= 8 ) ? 'fw-grid-collapse' : 'fw-grid-collapse-1';
-	} elseif ( $display === 'flex' ) {
+	} elseif ( $is_flex ) {
 		$collapse_class = 'fw-collapse';
 	}
 	if ( $collapse_class !== '' ) {

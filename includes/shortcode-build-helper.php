@@ -145,9 +145,36 @@ endif;
  * @param array $atts shortcode atts
  * @return string e.g. "position:absolute;top:20px;right:0;z-index:5;" or '' when Default/Static-less.
  */
-if ( ! function_exists( 'sc_position_style' ) ) :
-function sc_position_style( $atts ) {
-    $mp = isset( $atts['element_position'] ) ? $atts['element_position'] : null;
+if ( ! function_exists( 'sc_position_mp_layer' ) ) :
+/**
+ * Extract one device layer's multi-picker value from the (now responsive) element_position att.
+ * Tolerates the legacy FLAT multi-picker shape ({ position, relative:{…} }) by treating it as the
+ * `base` layer, so elements positioned before this control went responsive still render.
+ *
+ * @param mixed  $mp    The element_position att (responsive { base, md, lg, xl } or legacy flat).
+ * @param string $layer base|md|lg|xl
+ * @return array The multi-picker value for that layer (possibly empty).
+ */
+function sc_position_mp_layer( $mp, $layer ) {
+    if ( ! is_array( $mp ) ) { return array(); }
+    // Legacy flat value (has a top-level 'position' key, no device keys) → it IS the base layer.
+    if ( isset( $mp['position'] ) ) {
+        return ( $layer === 'base' ) ? $mp : array();
+    }
+    return ( isset( $mp[ $layer ] ) && is_array( $mp[ $layer ] ) ) ? $mp[ $layer ] : array();
+}
+endif;
+
+if ( ! function_exists( 'sc_position_decls' ) ) :
+/**
+ * Build the position + offsets + z-index CSS declarations for ONE multi-picker value (one device
+ * layer). Returns e.g. "position:sticky;top:20px;z-index:5;" or '' for Default / an unpositioned
+ * value. Offsets + z-index are omitted for `static` (they do nothing there).
+ *
+ * @param array $mp A single-layer multi-picker value { position, <pos>:{ pos_offsets, element_zindex } }.
+ * @return string
+ */
+function sc_position_decls( $mp ) {
     if ( ! is_array( $mp ) ) { return ''; }
     $pos = isset( $mp['position'] ) ? (string) $mp['position'] : 'default';
     if ( ! in_array( $pos, [ 'static', 'relative', 'absolute', 'fixed', 'sticky' ], true ) ) { return ''; }
@@ -188,6 +215,79 @@ function sc_position_style( $atts ) {
 }
 endif;
 
+if ( ! function_exists( 'sc_overflow_layer' ) ) :
+/** One device layer's overflow value from the (responsive) element_overflow att; '' if unset/invalid. */
+function sc_overflow_layer( $atts, $layer ) {
+    $ov = isset( $atts['element_overflow'] ) ? $atts['element_overflow'] : '';
+    if ( is_array( $ov ) ) {
+        // Legacy flat shape would be a scalar, so an array here is the responsive { base, md, lg, xl }.
+        $v = isset( $ov[ $layer ] ) ? (string) $ov[ $layer ] : '';
+    } else {
+        $v = ( $layer === 'base' ) ? (string) $ov : '';
+    }
+    return in_array( $v, array( 'hidden', 'auto', 'scroll', 'clip' ), true ) ? $v : '';
+}
+endif;
+
+if ( ! function_exists( 'sc_position_style' ) ) :
+/**
+ * Inline style for the BASE layer of position/offsets/z-index + overflow — applies at all widths,
+ * exactly as before this control went responsive (so existing output is byte-identical). The md/lg/xl
+ * overrides are emitted as scoped @media CSS by sc_position_responsive_css() (per-page dynamic CSS).
+ */
+function sc_position_style( $atts ) {
+    $mp    = isset( $atts['element_position'] ) ? $atts['element_position'] : null;
+    $style = sc_position_decls( sc_position_mp_layer( $mp, 'base' ) );
+    $ov    = sc_overflow_layer( $atts, 'base' );
+    if ( $ov !== '' ) { $style .= 'overflow:' . $ov . ';'; }
+    return $style;
+}
+endif;
+
+if ( ! function_exists( 'sc_position_responsive_css' ) ) :
+/**
+ * Scoped per-device CSS for the Position / Overflow controls' md/lg/xl layers, keyed to the element's
+ * `.u{hash}` scope class so it rides the per-page dynamic CSS file (dynamic-css.php) — the base layer
+ * stays inline (sc_position_style). Returns '' when no md/lg/xl override is set (the ~everything case),
+ * so it is a no-op for elements that aren't positioned responsively. Mirrors sc_section_dynamic_css()'s
+ * "called by BOTH the view and the aggregator" contract.
+ *
+ * @param array  $atts  element atts (expects element_position / element_overflow / unique_id)
+ * @param string $scope element scope class (sc_element_scope_class), no leading dot
+ * @return string CSS (no <style> tag)
+ */
+function sc_position_responsive_css( $atts, $scope ) {
+    $scope = trim( (string) $scope );
+    if ( $scope === '' || ! is_array( $atts ) ) { return ''; }
+    $mp  = isset( $atts['element_position'] ) ? $atts['element_position'] : null;
+    $bp  = array( 'md' => 768, 'lg' => 992, 'xl' => 1200 );
+    $css = '';
+    foreach ( $bp as $layer => $minw ) {
+        $decls = sc_position_decls( sc_position_mp_layer( $mp, $layer ) );
+        $ov    = sc_overflow_layer( $atts, $layer );
+        if ( $ov !== '' ) { $decls .= 'overflow:' . $ov . ';'; }
+        if ( $decls !== '' ) {
+            $css .= '@media (min-width:' . $minw . 'px){.' . $scope . '{' . $decls . '}}';
+        }
+    }
+    return $css;
+}
+endif;
+
+if ( ! function_exists( 'sc_has_responsive_position' ) ) :
+/** True when element_position / element_overflow set any md/lg/xl override (so the wrapper needs the
+ *  scope class for sc_position_responsive_css()'s @media rules to target). */
+function sc_has_responsive_position( $atts ) {
+    if ( ! is_array( $atts ) ) { return false; }
+    $mp = isset( $atts['element_position'] ) ? $atts['element_position'] : null;
+    foreach ( array( 'md', 'lg', 'xl' ) as $layer ) {
+        if ( sc_position_decls( sc_position_mp_layer( $mp, $layer ) ) !== '' ) { return true; }
+        if ( sc_overflow_layer( $atts, $layer ) !== '' ) { return true; }
+    }
+    return false;
+}
+endif;
+
 /** Builds the outer wrapper attributes (base class, unique id, extra attrs) for a shortcode. */
 function sc_build_wrapper_attr( $atts ) {
 
@@ -221,10 +321,11 @@ function sc_build_wrapper_attr( $atts ) {
         $classes[] = $unique_class;
     }
 
-    // Add the prefix-independent scope class only when this element carries
-    // per-element Custom CSS, so the CSS aggregator's `.u{hash}` rules have a
-    // matching target. Markup stays clean for elements without custom CSS.
-    if ( ! empty( $atts['custom_css'] ) ) {
+    // Add the prefix-independent scope class when this element carries per-element Custom CSS OR a
+    // responsive Position/Overflow override, so the CSS aggregator's `.u{hash}` rules have a matching
+    // target. Markup stays clean for every other element.
+    if ( ! empty( $atts['custom_css'] )
+         || ( function_exists( 'sc_has_responsive_position' ) && sc_has_responsive_position( $atts ) ) ) {
         $scope_class = sc_element_scope_class( $atts );
         if ( $scope_class !== '' ) {
             $classes[] = $scope_class;
@@ -254,16 +355,12 @@ function sc_build_wrapper_attr( $atts ) {
         $attr['style'] = esc_attr( $atts['css_style'] );
     }
 
-    // Position + Z-Index (shared Advanced tab → element_position) → merge onto the wrapper style.
+    // Position + Z-Index + Overflow (shared Advanced tab) → BASE layer merged onto the wrapper style
+    // (applies at all widths, byte-identical to the pre-responsive behaviour). The md/lg/xl overrides
+    // ride the per-page scoped CSS via sc_position_responsive_css() (collected in dynamic-css.php).
     $pos_style = function_exists( 'sc_position_style' ) ? sc_position_style( $atts ) : '';
     if ( $pos_style !== '' ) {
         $attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . ';' : '' ) . $pos_style;
-    }
-
-    // Overflow (shared Advanced tab → element_overflow) → inline style, value whitelisted.
-    $ov = isset( $atts['element_overflow'] ) ? (string) $atts['element_overflow'] : '';
-    if ( in_array( $ov, array( 'hidden', 'auto', 'scroll', 'clip' ), true ) ) {
-        $attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . ';' : '' ) . 'overflow:' . $ov . ';';
     }
 
     // Add class attribute if classes exist (de-duplicated — e.g. a base_class of

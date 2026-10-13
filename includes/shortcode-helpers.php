@@ -1,6 +1,6 @@
 <?php if ( ! defined( 'ABSPATH' ) ) { die( 'Direct access forbidden.' ); }
 
-//if(!function_exists('c_get_option')) :
+if ( ! function_exists( 'c_get_option' ) ) :
 /**
 * Get options value
 * if framework is missing , load defaults
@@ -13,7 +13,7 @@ function c_get_option($id, $default = NULL){
         return $default;
     }
 }
-//endif;
+endif;
 
 // I'll be removing the c_get_option function
 if(!function_exists('sc_get_option')) :

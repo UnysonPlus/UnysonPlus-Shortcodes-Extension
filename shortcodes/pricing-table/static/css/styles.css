@@ -78,6 +78,12 @@
 .fw-pt__feature:last-child { border-bottom: 0; }
 /* Divider-less feature list — spacing only (no line between features). */
 .fw-pt--no-dividers .fw-pt__feature { border-bottom: 0; padding: .3rem 0; }
+/* Centered feature list: each feature's text is left-aligned, but the whole list shrink-wraps to
+   its widest item and sits centered in the card. The <ul> keeps flex:1 1 auto (so the button is
+   still pushed to the card bottom) while width:fit-content + align-self:center size it to the
+   longest feature and center it; dividers then hug the list because each row fills that width. */
+.fw-pt--feat-center-block .fw-pt__features { width: fit-content; max-width: 100%; align-self: center; }
+.fw-pt--feat-center-block .fw-pt__feature { justify-content: flex-start; text-align: left; }
 .fw-pt__tick { color: var(--pt-accent); font-weight: 700; flex: 0 0 auto; }
 .fw-pt__feature.is-off { opacity: .55; text-decoration: line-through; }
 .fw-pt__feature.is-off .fw-pt__tick { color: #c0392b; text-decoration: none; }
@@ -101,7 +107,11 @@
    class above and paints the label in the accent — invisible on the accent fill. Scoped (0,2,0)
    so it wins; the hover / outline / design rules below are equal or higher and still apply. */
 .fw-pt .fw-pt__btn { color: #fff; }
-.fw-pt__btn:hover { filter: brightness(1.08); transform: translateY(-1px); color: #fff; }
+/* Same `.fw-pt`-scoped (0,3,0) guard on HOVER: the theme's `a:not(.btn):hover` (0,2,1) repaints the
+   label in the link-hover colour (the brand accent) — identical to the button fill, so the text
+   vanished on hover. A bare `.fw-pt__btn:hover` (0,2,0) lost to it; scoping wins. (Outline/featured
+   hovers below are ≥ this and still apply.) */
+.fw-pt .fw-pt__btn:hover { filter: brightness(1.08); transform: translateY(-1px); color: #fff; }
 
 /* Outline button style (regular plans) — a featured plan's "Accent button" emphasis
    re-fills it via a higher-specificity rule below. Neutral border + inherited text. */

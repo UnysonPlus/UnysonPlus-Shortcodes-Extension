@@ -31,11 +31,22 @@ if ( ! $post_id ) {
 	return;
 }
 
-$value = get_post_meta( $post_id, $key, true );
-if ( is_array( $value ) ) {
-	$value = implode( ', ', array_map( 'strval', $value ) );
+// Custom Fields stores its values with the post's Unyson+ options, not as separate post meta, so
+// read there first, then fall back to plain post meta (fields saved by code or other plugins).
+$value = function_exists( 'fw_get_db_post_option' ) ? fw_get_db_post_option( $post_id, $key, null ) : null;
+if ( $value === null || $value === '' || $value === array() ) {
+	$value = get_post_meta( $post_id, $key, true );
 }
-$value = (string) $value;
+if ( is_array( $value ) ) {
+	if ( isset( $value['value'] ) && ! is_array( $value['value'] ) ) {
+		// A measurement field: { value, unit }.
+		$value = trim( $value['value'] . ' ' . ( isset( $value['unit'] ) && ! is_array( $value['unit'] ) ? $value['unit'] : '' ) );
+	} else {
+		// A list or choice field: show the plain values, skip nested data such as uploads.
+		$value = implode( ', ', array_filter( array_map( function ( $v ) { return is_scalar( $v ) ? (string) $v : ''; }, $value ), 'strlen' ) );
+	}
+}
+$value = is_scalar( $value ) ? (string) $value : '';
 if ( trim( $value ) === '' ) {
 	return;
 }

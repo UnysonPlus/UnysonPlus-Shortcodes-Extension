@@ -25,7 +25,7 @@ function sc_get_advanced_tab() {
         ],
         'element_zindex' => [ 'type' => 'number', 'label' => __( 'Z-Index', 'fw' ), 'desc' => __( 'Stacking order — a higher value sits on top of lower ones. Integer.', 'fw' ), 'value' => '', 'step' => 1 ],
     ];
-    return [
+    $tab = [
         // 'unique' is Unyson's auto-generated, immutable ID — renders as a
         // hidden input, no label/desc shown to the user.
         'unique_id' => [
@@ -63,46 +63,60 @@ function sc_get_advanced_tab() {
         'group_position' => [
             'type'    => 'group',
             'options' => [
+                // Position is RESPONSIVE: the Phone / Tablet / Desktop / Large Desktop tabs let an
+                // element be, e.g., sticky on desktop and static on phone. The base layer renders as an
+                // inline style (works everywhere, unchanged from before); md/lg/xl overrides ride the
+                // per-page scoped CSS (sc_position_responsive_css → dynamic-css.php). A value saved
+                // before this went responsive is a flat multi-picker array that the responsive type
+                // folds into `base`, so existing positioned elements are preserved.
                 'element_position' => [
-                    'type'         => 'multi-picker',
-                    'label'        => false,
-                    'desc'         => false,
-                    'value'        => [ 'position' => 'default' ],
-                    'picker'       => [
-                        'position' => [
-                            'type'    => 'select',
-                            'label'   => __( 'Position', 'fw' ),
-                            'desc'    => __( 'Take this element out of the normal flow. Relative nudges it from its own spot; Absolute / Fixed / Sticky position it against a positioned ancestor or the viewport. The Offset row + Z-Index appear once you pick a positioned value.', 'fw' ),
-                            'help'    => __( 'Absolute needs a positioned ancestor — set the containing Section or Column to Relative for that. Z-Index and the offsets have no effect on Default / Static.', 'fw' ),
-                            'choices' => [
-                                'default'  => __( 'Default', 'fw' ),
-                                'static'   => __( 'Static', 'fw' ),
-                                'relative' => __( 'Relative', 'fw' ),
-                                'absolute' => __( 'Absolute', 'fw' ),
-                                'fixed'    => __( 'Fixed', 'fw' ),
-                                'sticky'   => __( 'Sticky', 'fw' ),
+                    'type'  => 'responsive',
+                    'label' => false,
+                    'desc'  => false,
+                    'value' => [ 'base' => [ 'position' => 'default' ], 'md' => '', 'lg' => '', 'xl' => '' ],
+                    'inner' => [
+                        'type'         => 'multi-picker',
+                        'value'        => [ 'position' => 'default' ],
+                        'picker'       => [
+                            'position' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Position', 'fw' ),
+                                'desc'    => __( 'Take this element out of the normal flow. Relative nudges it from its own spot; Absolute / Fixed / Sticky position it against a positioned ancestor or the viewport. The Offset row + Z-Index appear once you pick a positioned value.', 'fw' ),
+                                'help'    => __( 'Absolute needs a positioned ancestor — set the containing Section or Column to Relative for that. Z-Index and the offsets have no effect on Default / Static. Per-device via the tabs above (a blank device inherits the smaller one).', 'fw' ),
+                                'choices' => [
+                                    'default'  => __( 'Default', 'fw' ),
+                                    'static'   => __( 'Static', 'fw' ),
+                                    'relative' => __( 'Relative', 'fw' ),
+                                    'absolute' => __( 'Absolute', 'fw' ),
+                                    'fixed'    => __( 'Fixed', 'fw' ),
+                                    'sticky'   => __( 'Sticky', 'fw' ),
+                                ],
                             ],
                         ],
+                        'choices'      => [
+                            'relative' => $pos_fields,
+                            'absolute' => $pos_fields,
+                            'fixed'    => $pos_fields,
+                            'sticky'   => $pos_fields,
+                        ],
+                        'show_borders' => false,
                     ],
-                    'choices'      => [
-                        'relative' => $pos_fields,
-                        'absolute' => $pos_fields,
-                        'fixed'    => $pos_fields,
-                        'sticky'   => $pos_fields,
-                    ],
-                    'show_borders' => false,
                 ],
                 'element_overflow' => [
-                    'type'    => 'select',
-                    'label'   => __( 'Overflow', 'fw' ),
-                    'desc'    => __( 'How content that spills outside this element is handled. "Hidden" clips it; "Auto" adds scrollbars only when needed; "Scroll" always shows them; "Clip" clips without a scroll container.', 'fw' ),
-                    'value'   => '',
-                    'choices' => [
-                        ''       => __( 'Default (visible)', 'fw' ),
-                        'hidden' => __( 'Hidden', 'fw' ),
-                        'auto'   => __( 'Auto (scroll if needed)', 'fw' ),
-                        'scroll' => __( 'Scroll', 'fw' ),
-                        'clip'   => __( 'Clip', 'fw' ),
+                    'type'  => 'responsive',
+                    'label' => __( 'Overflow', 'fw' ),
+                    'desc'  => __( 'How content that spills outside this element is handled. "Hidden" clips it; "Auto" adds scrollbars only when needed; "Scroll" always shows them; "Clip" clips without a scroll container. Per-device via the tabs (a blank device inherits the smaller one).', 'fw' ),
+                    'value' => [ 'base' => '', 'md' => '', 'lg' => '', 'xl' => '' ],
+                    'inner' => [
+                        'type'    => 'select',
+                        'value'   => '',
+                        'choices' => [
+                            ''       => __( 'Default (visible)', 'fw' ),
+                            'hidden' => __( 'Hidden', 'fw' ),
+                            'auto'   => __( 'Auto (scroll if needed)', 'fw' ),
+                            'scroll' => __( 'Scroll', 'fw' ),
+                            'clip'   => __( 'Clip', 'fw' ),
+                        ],
                     ],
                 ],
             ],
@@ -186,6 +200,15 @@ function sc_get_advanced_tab() {
             ],
         ],
     ];
+
+    /**
+     * Filters the shared Advanced tab every element uses, so an extension can add
+     * a per-element field (e.g. Visitor Insights' "Track as goal") without editing
+     * each shortcode's options.
+     *
+     * @param array $tab Option definitions of the Advanced tab.
+     */
+    return (array) apply_filters( 'sc_advanced_tab_options', $tab );
 }
 endif;
 

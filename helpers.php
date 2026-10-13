@@ -132,32 +132,34 @@ function fw_flexbox_alias_for_depth( $depth ) {
 
 /**
  * The responsive breakpoint → class-infix map every structural shortcode iterates
- * to emit per-device utility classes: base = no infix, md = "-md", lg = "-lg".
- * Centralised so section / flexbox / column share ONE definition instead of each
- * re-declaring the literal array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ).
+ * to emit per-device utility classes: base = no infix, md = "-md", lg = "-lg",
+ * xl = "-xl". Centralised so section / flexbox / column share ONE definition instead
+ * of each re-declaring the literal array( 'base' => '', 'md' => '-md', 'lg' => '-lg' ).
  *
- * @return array{base:string,md:string,lg:string}
+ * @return array{base:string,md:string,lg:string,xl:string}
  * @since 3.0.x
  */
 function fw_sc_bp_layers() {
-	return array( 'base' => '', 'md' => '-md', 'lg' => '-lg' );
+	return array( 'base' => '', 'md' => '-md', 'lg' => '-lg', 'xl' => '-xl' );
 }
 
 /**
- * Read a responsive { base, md, lg } option value from a shortcode's $atts,
- * tolerating a legacy flat scalar (which folds into `base`; md/lg blank). The
+ * Read a responsive { base, md, lg, xl } option value from a shortcode's $atts,
+ * tolerating a legacy flat scalar (which folds into `base`; md/lg/xl blank). The
  * structural shortcodes (section / flexbox / column) all store their per-device
  * controls this way, so this is the single reader they share — replacing the
  * per-view `$fx_resp` closure and the repeated
  * `if ( ! is_array( $v ) ) { $v = array( 'base' => (string) $v ); }` blocks.
  *
- * Each layer is returned cast to string. A missing md/lg is '' (blank = inherit
- * the smaller device, which each caller resolves in its own cascade).
+ * Each layer is returned cast to string. A missing md/lg/xl is '' (blank = inherit
+ * the smaller device, which each caller resolves in its own cascade). The `xl`
+ * (≥1200px) layer is additive: values stored before xl existed simply have a blank
+ * xl that inherits lg, so no migration is needed.
  *
  * @param array  $atts    Shortcode atts.
  * @param string $key     Option key to read.
- * @param string $default Value for `base` when nothing is set (md/lg stay '').
- * @return array{base:string,md:string,lg:string}
+ * @param string $default Value for `base` when nothing is set (md/lg/xl stay '').
+ * @return array{base:string,md:string,lg:string,xl:string}
  * @since 3.0.x
  */
 function fw_sc_resp_value( $atts, $key, $default = '' ) {
@@ -167,11 +169,13 @@ function fw_sc_resp_value( $atts, $key, $default = '' ) {
 			'base' => isset( $v['base'] ) ? (string) $v['base'] : $default,
 			'md'   => isset( $v['md'] )   ? (string) $v['md']   : '',
 			'lg'   => isset( $v['lg'] )   ? (string) $v['lg']   : '',
+			'xl'   => isset( $v['xl'] )   ? (string) $v['xl']   : '',
 		);
 	}
 	return array(
 		'base' => ( $v === null || $v === '' ) ? $default : (string) $v,
 		'md'   => '',
 		'lg'   => '',
+		'xl'   => '',
 	);
 }

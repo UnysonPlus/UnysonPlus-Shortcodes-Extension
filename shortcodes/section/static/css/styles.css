@@ -99,6 +99,13 @@
 	.section--cols-lg-around .row,  .section--cols-lg-around .fw-row  { justify-content: space-around !important; }
 	.section--cols-lg-evenly .row,  .section--cols-lg-evenly .fw-row  { justify-content: space-evenly !important; }
 }
+@media (min-width: 1200px) {
+	.section--cols-xl-center .row,  .section--cols-xl-center .fw-row  { justify-content: center !important; }
+	.section--cols-xl-right .row,   .section--cols-xl-right .fw-row   { justify-content: flex-end !important; }
+	.section--cols-xl-between .row, .section--cols-xl-between .fw-row { justify-content: space-between !important; }
+	.section--cols-xl-around .row,  .section--cols-xl-around .fw-row  { justify-content: space-around !important; }
+	.section--cols-xl-evenly .row,  .section--cols-xl-evenly .fw-row  { justify-content: space-evenly !important; }
+}
 
 /* Columns Vertical Alignment = "Default / Stretched" — the columns fill a taller
    (min-height) section. The section becomes a flex column and the container + row
@@ -178,6 +185,10 @@
 @media (min-width: 992px) {
 	.section--rev-lg-on .row,  .section--rev-lg-on .fw-row  { flex-direction: row-reverse !important; }
 	.section--rev-lg-off .row, .section--rev-lg-off .fw-row { flex-direction: row !important; }
+}
+@media (min-width: 1200px) {
+	.section--rev-xl-on .row,  .section--rev-xl-on .fw-row  { flex-direction: row-reverse !important; }
+	.section--rev-xl-off .row, .section--rev-xl-off .fw-row { flex-direction: row !important; }
 }
 
 /* Shape Dividers — an SVG-shaped edge at the section's top and/or bottom. The band is

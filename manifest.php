@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.58';
+$manifest['version'] = '1.15.69';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,35 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.63 - New filter `sc_advanced_tab_options` on the shared Advanced tab
+ *          (sc_get_advanced_tab()), so an extension can add a field to every
+ *          element at once without editing each shortcode's options. Visitor
+ *          Insights uses it for "Track as goal". No change when nothing hooks it.
+ *
+ * 1.15.62 - Flexbox: more HTML tags + a sanitized Custom tag. The HTML Tag list adds
+ *          figure, and promotes header / footer / nav to page content (valid when scoped
+ *          inside a section / article — a section header, a card footer, a local nav; main
+ *          stays Theme-Builder-only). A new Custom option reveals a tag-name field that
+ *          accepts any tag from a safe container whitelist (figure, blockquote, details, ul,
+ *          …) and falls back to div for anything unknown or unsafe (script / iframe / etc.).
+ *
+ * 1.15.61 - Flexbox: Inline Flex display + exact Grow / Shrink factors. Display adds
+ *          inline-flex (an inline-level flex container via the new fw-inline-flex class, with
+ *          every flex arrangement control still applying). Grow to Fill / Prevent Shrinking
+ *          gain optional Grow Factor / Shrink Factor number fields for an exact flex-grow /
+ *          flex-shrink (e.g. grow 2) that override the on/off switch and emit a scoped value.
+ *
+ * 1.15.60 - A fourth responsive tier + more Flexbox layout controls. Every responsive
+ *          control (Flexbox / Section / Column layout, Spacing, the shared Advanced tab)
+ *          gains a Large Desktop (>= 1200px) layer alongside Phone / Tablet / Desktop, with
+ *          a matching 4th device in the builder's preview toolbar; a blank xl inherits the
+ *          desktop value, so nothing stored before this needs migrating. Flexbox adds the
+ *          Display values inline-block / inline / none, direct Height / Max Width / Max
+ *          Height (per device), and makes Prevent Shrinking per device. Position, Z-Index and
+ *          Overflow on the shared Advanced tab are now per device too (e.g. sticky on desktop,
+ *          static on phone): the base layer stays an inline style while the per-device overrides
+ *          ride the page's scoped CSS; a value saved before this folds into the base layer.
+ *
  * 1.15.57 - Flexbox: grid spans, row tracks, an exact gap and a whole-box link. A Grid
  *          could set its columns and an item's column START, but not how many rows or
  *          columns an item covers, so a bento layout (a 2x2 tile beside two stacked
