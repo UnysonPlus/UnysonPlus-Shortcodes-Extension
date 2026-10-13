@@ -94,7 +94,7 @@ class FW_Shortcode_Posts extends FW_Shortcode {
 
 		// Exclude Current — is_singular() is false during AJAX, so honour it via the
 		// current post id captured at render time.
-		if ( ! empty( $data['current_id'] ) && sc_get( 'exclude_current', $atts, 'yes' ) === 'yes' ) {
+		if ( ! empty( $data['current_id'] ) && in_array( sc_get( 'exclude_current', $atts, 'yes' ), array( 'yes', true ), true ) ) {
 			$ex   = isset( $args['post__not_in'] ) ? (array) $args['post__not_in'] : array();
 			$ex[] = (int) $data['current_id'];
 			$args['post__not_in'] = array_values( array_unique( $ex ) );

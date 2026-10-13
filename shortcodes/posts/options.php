@@ -176,7 +176,7 @@ $sc_opt_col_gap = [ 'label' => __( 'Column Gap', 'fw' ), 'type' => 'select', 'va
 $sc_opt_row_gap = [ 'label' => __( 'Row Gap', 'fw' ),    'type' => 'select', 'value' => '', 'choices' => $sc_gap_choices ];
 $sc_opt_equal_height = [
     'label' => __( 'Equal Card Heights', 'fw' ),
-    'type'  => 'switch', 'value' => 'yes',
+    'type'  => 'switch', 'value' => 'yes', 'left-choice' => [ 'value' => 'no', 'label' => __( 'No', 'fw' ) ], 'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
     'desc'  => __( 'Force cards in a row to match height.', 'fw' ),
 ];
 $sc_opt_featured = [
@@ -226,9 +226,9 @@ $sc_opt_slider_dots = [
     'type'    => 'select', 'value' => 'below',
     'choices' => [ 'below' => __( 'Below', 'fw' ), 'overlay-bottom' => __( 'Overlay', 'fw' ), 'hidden' => __( 'Hidden', 'fw' ) ],
 ];
-$sc_opt_slider_autoplay = [ 'label' => __( 'Autoplay', 'fw' ), 'type' => 'switch', 'value' => 'no' ];
+$sc_opt_slider_autoplay = [ 'label' => __( 'Autoplay', 'fw' ), 'type' => 'switch', 'value' => 'no', 'left-choice' => [ 'value' => 'no', 'label' => __( 'No', 'fw' ) ], 'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ] ];
 $sc_opt_slider_interval = [ 'label' => __( 'Autoplay Interval (ms)', 'fw' ), 'type' => 'short-text', 'value' => '5000' ];
-$sc_opt_slider_loop     = [ 'label' => __( 'Loop', 'fw' ), 'type' => 'switch', 'value' => 'yes' ];
+$sc_opt_slider_loop     = [ 'label' => __( 'Loop', 'fw' ), 'type' => 'switch', 'value' => 'yes', 'left-choice' => [ 'value' => 'no', 'label' => __( 'No', 'fw' ) ], 'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ] ];
 
 /* Pagination sub-controls */
 $sc_opt_pag_position = [
@@ -388,6 +388,8 @@ $options = [
                         'desc'  => __( 'Useful for "Related Posts".', 'fw' ),
                         'type'  => 'switch',
                         'value' => 'yes',
+                        'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                        'left-choice'  => [ 'value' => 'no',  'label' => __( 'No', 'fw' ) ],
                     ],
                     'sticky_handling' => [
                         'label'   => __( 'Sticky Post Handling', 'fw' ),
@@ -792,6 +794,8 @@ $options = [
                         'desc'  => __( 'Show category chips that filter posts without a page reload.', 'fw' ),
                         'type'  => 'switch',
                         'value' => 'no',
+                        'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                        'left-choice'  => [ 'value' => 'no',  'label' => __( 'No', 'fw' ) ],
                     ],
                     'filters_position' => [
                         'label'   => __( 'Filter Bar Position', 'fw' ),
@@ -813,6 +817,8 @@ $options = [
                         'desc'  => __( 'Cache rendered HTML. Auto-flushed when any post is saved. Avoid with Random order or AJAX pagination.', 'fw' ),
                         'type'  => 'switch',
                         'value' => 'no',
+                        'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                        'left-choice'  => [ 'value' => 'no',  'label' => __( 'No', 'fw' ) ],
                     ],
                     'cache_hours' => [
                         'label'   => __( 'Cache Lifespan', 'fw' ),

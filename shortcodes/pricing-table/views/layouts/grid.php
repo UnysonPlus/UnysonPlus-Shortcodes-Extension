@@ -56,7 +56,7 @@
 				echo '<span class="fw-pt__icon' . ( $icon_badge_pre !== '' ? ' ' . $icon_badge_pre : '' ) . '" aria-hidden="true">' . $icon . '</span>'; // phpcs:ignore
 			}
 			if ( $pname !== '' ) {
-				echo '<h4 class="fw-pt__name">' . esc_html( $pname ) . '</h4>';
+				echo '<' . $pt_name_tag . ' class="fw-pt__name">' . esc_html( $pname ) . '</' . $pt_name_tag . '>';
 			}
 			if ( $subtitle !== '' ) {
 				echo '<div class="fw-pt__subtitle">' . esc_html( $subtitle ) . '</div>';

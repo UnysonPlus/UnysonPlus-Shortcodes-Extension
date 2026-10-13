@@ -164,6 +164,8 @@ if ( ! function_exists( 'sc_posts_card_registry' ) ) {
 if ( ! function_exists( 'sc_posts_normalize_atts' ) ) {
     /** Resolves picker-moved options (design/card/pagination/readmore groups) back to flat att keys and derives responsive column counts. */
     function sc_posts_normalize_atts( $atts ) {
+        $atts = sc_posts_switch_atts( $atts );
+
         /* Layout mode (was `layout_mode` → now `design/mode`). */
         $mode = sc_get( 'design/mode', $atts, sc_get( 'layout_mode', $atts, 'grid' ) );
         $atts['layout_mode'] = $mode;
@@ -226,7 +228,7 @@ if ( ! function_exists( 'sc_posts_normalize_atts' ) ) {
         // Every value the per-instance static action would have needed is resolved by here.
         sc_posts_enqueue_now( $style, $mode, $ptype, ( isset( $atts['live_filters'] ) && $atts['live_filters'] === 'yes' ) );
 
-        return $atts;
+        return sc_posts_switch_atts( $atts ); // again: the slider switches were just flattened from design/slider
     }
 }
 
@@ -257,9 +259,26 @@ if ( ! function_exists( 'sc_posts_locate_part' ) ) {
 | Helper: build the WP_Query args from shortcode atts
 |--------------------------------------------------------------------------
 */
+if ( ! function_exists( 'sc_posts_switch_atts' ) ) {
+    /** The on/off switches had no yes/no choices before Shortcodes 1.15.70, so a saved value may be
+        true/false while every read compares against 'yes'. Turn those into 'yes'/'no'. */
+    function sc_posts_switch_atts( $atts ) {
+        if ( ! is_array( $atts ) ) {
+            return $atts;
+        }
+        foreach ( array( 'exclude_current', 'equal_height', 'slider_autoplay', 'slider_loop', 'live_filters', 'cache_output' ) as $k ) {
+            if ( isset( $atts[ $k ] ) && is_bool( $atts[ $k ] ) ) {
+                $atts[ $k ] = $atts[ $k ] ? 'yes' : 'no';
+            }
+        }
+        return $atts;
+    }
+}
+
 if ( ! function_exists( 'sc_posts_build_query_args' ) ) {
     /** Builds the WP_Query args for the posts shortcode from its atts and the current page number. */
     function sc_posts_build_query_args( $atts, $paged = 1 ) {
+        $atts = sc_posts_switch_atts( $atts );
 
         $post_type = sc_get( 'post_type', $atts, 'post' );
         $ppp       = (int) sc_get( 'posts_per_page', $atts, 6 );
@@ -299,7 +318,10 @@ if ( ! function_exists( 'sc_posts_build_query_args' ) ) {
             $args['orderby']  = 'post__in';
         }
         if ( sc_get( 'exclude_current', $atts, 'yes' ) === 'yes' && is_singular() ) {
+            // Inside a Theme Builder layout get_the_ID() is the layout itself, so also exclude the
+            // post being viewed (otherwise "Similar jobs" lists the job you are reading).
             $exclude[] = get_the_ID();
+            $exclude[] = (int) get_queried_object_id();
         }
         if ( ! empty( $exclude ) ) {
             $args['post__not_in'] = array_values( array_unique( $exclude ) );
@@ -957,7 +979,7 @@ if ( ! function_exists( 'sc_posts_render' ) ) {
                 'use_current' => $use_current,
                 'main_qv'     => ( $use_current && isset( $GLOBALS['wp_query'] ) ) ? $GLOBALS['wp_query']->query_vars : null,
                 'ppp'         => $ppp_attr,
-                'current_id'  => is_singular() ? (int) get_the_ID() : 0, // for Exclude Current (is_singular() is false in AJAX)
+                'current_id'  => is_singular() ? (int) ( get_queried_object_id() ?: get_the_ID() ) : 0, // for Exclude Current (is_singular() is false in AJAX); the viewed post, not a Theme Builder layout
             ], WEEK_IN_SECONDS );
         }
 
@@ -1163,6 +1185,7 @@ if ( ! function_exists( 'sc_posts_render_filter_bar' ) ) {
    set). The AJAX handler require_once's this file purely for its sc_posts_* helpers,
    with no $atts — the guard stops the render/echo from firing in that context. */
 if ( isset( $atts ) ) {
+    $atts      = sc_posts_switch_atts( $atts );
     $do_cache  = sc_get( 'cache_output', $atts, 'no' ) === 'yes';
     $cache_key = '';
     if ( $do_cache ) {

@@ -3298,7 +3298,8 @@ if ( ! function_exists( 'sc_svg_upload_mimes' ) ) :
 	// for the duration of its own call; the sanitiser below still runs, so safety is unchanged.
 	/** The role slugs permitted to upload SVGs, from Page Builder settings (default: administrator only). */
 	function sc_svg_upload_roles() {
-		$roles = function_exists( 'fw_get_db_ext_settings_option' )
+		// Page Builder may be inactive (Shortcodes runs without it); reading its settings would then warn.
+		$roles = function_exists( 'fw_get_db_ext_settings_option' ) && fw_ext( 'page-builder' )
 			? fw_get_db_ext_settings_option( 'page-builder', 'svg_upload_roles', array( 'administrator' => true ) )
 			: array( 'administrator' => true );
 		if ( ! is_array( $roles ) || empty( $roles ) ) {

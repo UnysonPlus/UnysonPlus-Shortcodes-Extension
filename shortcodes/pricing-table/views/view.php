@@ -201,6 +201,8 @@ if ( ! function_exists( 'sc_pt_render' ) ) {
 		if ( ! is_string( $pt_layout ) || $pt_layout === '' ) { $pt_layout = 'grid'; }
 		$pt_partial = __DIR__ . '/layouts/' . preg_replace( '/[^a-z0-9_-]/', '', strtolower( $pt_layout ) ) . '.php';
 		if ( ! file_exists( $pt_partial ) ) { $pt_layout = 'grid'; $pt_partial = __DIR__ . '/layouts/grid.php'; }
+		$pt_name_tag = sc_get( 'plan_title_tag', $atts, 'h4' );
+		if ( ! in_array( $pt_name_tag, array( 'h2', 'h3', 'h4', 'h5', 'h6', 'div' ), true ) ) { $pt_name_tag = 'h4'; }
 		include $pt_partial;
 
 		echo '</div>'; // .fw-pt wrapper (the layout partial closed its own container)

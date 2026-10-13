@@ -224,6 +224,13 @@ $options = array(
 							'choices' => $choices,
 						);
 					} ),
+					'plan_title_tag' => array(
+						'type'    => 'select',
+						'label'   => __( 'Plan Title Tag', 'fw' ),
+						'desc'    => __( 'The heading level of each plan name. Pick the level that fits the page outline.', 'fw' ),
+						'value'   => 'h4',
+						'choices' => array( 'h2' => 'H2', 'h3' => 'H3', 'h4' => 'H4', 'h5' => 'H5', 'h6' => 'H6', 'div' => 'div' ),
+					),
 				),
 			),
 			'group_layout' => array(

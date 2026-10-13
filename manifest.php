@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.69';
+$manifest['version'] = '1.15.71';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,9 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.70 - Pricing Table gains a Plan Title Tag option (Design tab, default H4) so plan
+ *          names can sit at the right level of the page outline.
+ *
  * 1.15.63 - New filter `sc_advanced_tab_options` on the shared Advanced tab
  *          (sc_get_advanced_tab()), so an extension can add a field to every
  *          element at once without editing each shortcode's options. Visitor

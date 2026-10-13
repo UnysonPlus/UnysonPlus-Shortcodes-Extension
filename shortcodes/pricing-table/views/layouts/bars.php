@@ -61,7 +61,7 @@ foreach ( $plans as $p ) {
 
 		echo '<div class="fw-pt__band-main">';
 			echo '<div class="fw-pt__band-head">';
-				if ( $pname !== '' ) { echo '<h4 class="fw-pt__name">' . esc_html( $pname ) . '</h4>'; }
+				if ( $pname !== '' ) { echo '<' . $pt_name_tag . ' class="fw-pt__name">' . esc_html( $pname ) . '</' . $pt_name_tag . '>'; }
 				if ( $ribbon !== '' ) { echo '<span class="fw-pt__row-ribbon">' . esc_html( $ribbon ) . '</span>'; }
 			echo '</div>';
 			if ( $subtitle !== '' ) { echo '<div class="fw-pt__subtitle">' . esc_html( $subtitle ) . '</div>'; }
