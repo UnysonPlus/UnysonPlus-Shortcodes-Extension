@@ -156,6 +156,16 @@ $options = array(
 						'value'   => 'rounded',
 						'choices' => array( 'rounded-0' => __( 'Square', 'fw' ), 'rounded' => __( 'Rounded', 'fw' ), 'pill' => __( 'Pill', 'fw' ) ),
 					),
+					// The same Form Styles presets the Contact Form element uses (Theme Settings → Components →
+					// Form Styles), so a newsletter box can match every other form on the site. Only offered
+					// while Forms is active; empty keeps the design's own fields.
+					'form_style' => class_exists( 'FW_Forms_Style_Presets' ) ? array(
+						'type'    => 'select',
+						'label'   => __( 'Form Style', 'fw' ),
+						'desc'    => __( 'Give the fields the same look as the site\'s other forms (Theme Settings → Components → Form Styles).', 'fw' ),
+						'value'   => '',
+						'choices' => array( '' => __( 'The design\'s own fields', 'fw' ), 'default' => __( 'The site\'s default form style', 'fw' ) ) + array_diff_key( FW_Forms_Style_Presets::choices(), array( '' => true ) ),
+					) : array( 'type' => 'hidden', 'value' => '' ),
 				),
 			),
 		),

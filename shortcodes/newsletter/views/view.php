@@ -73,6 +73,9 @@ if ( ! function_exists( 'sc_nl_render' ) ) {
 			'fw-nl--round-' . sanitize_html_class( $rounded ),
 		);
 		if ( $align_cls ) { $classes[] = $align_cls; }
+		// A Form Styles preset (Forms) styles the fields like the site's other forms.
+		$form_style = class_exists( 'FW_Forms_Style_Presets' ) ? FW_Forms_Style_Presets::resolve( (string) sc_get( 'form_style', $atts, '' ) ) : '';
+		if ( '' !== $form_style ) { $classes[] = $form_style; $classes[] = 'fw-nl--form-style'; }
 
 		$atts['base_class']       = 'newsletter';
 		$atts['unique_id_prefix'] = 'nl-';

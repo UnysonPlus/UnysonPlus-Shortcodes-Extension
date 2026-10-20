@@ -2911,6 +2911,70 @@ if ( ! function_exists( 'sc_icon_join_classes' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'sc_icon_img_dims_attr' ) ) {
+	/**
+	 * width / height attributes for an icon rendered as <img>, so the browser reserves its box
+	 * before the file loads (no layout shift; Lighthouse "explicit width and height"). The size
+	 * comes from the attachment's metadata, or for an SVG without it from the file's own
+	 * width / height / viewBox. With $args['img_size'] the pair is scaled to that width (ratio
+	 * kept). CSS still sizes the icon; the attributes only give the ratio and a fallback size.
+	 *
+	 * @param array  $value Icon value (may carry 'attachment-id').
+	 * @param string $url   Image URL.
+	 * @param array  $args  sc_icon_render() args.
+	 * @return string ' width="…" height="…"' or ''.
+	 */
+	function sc_icon_img_dims_attr( $value, $url, $args = array() ) {
+		static $cache = array();
+		$id  = isset( $value['attachment-id'] ) ? (int) $value['attachment-id'] : 0;
+		$key = $id . '|' . $url;
+		if ( ! isset( $cache[ $key ] ) ) {
+			$w = 0;
+			$h = 0;
+			if ( $id ) {
+				$meta = wp_get_attachment_metadata( $id );
+				if ( is_array( $meta ) && ! empty( $meta['width'] ) && ! empty( $meta['height'] ) ) {
+					$w = (float) $meta['width'];
+					$h = (float) $meta['height'];
+				}
+			}
+			if ( ! $w && preg_match( '/\.svgz?(?:$|\?)/i', $url ) ) {
+				$up   = wp_get_upload_dir();
+				$path = '';
+				if ( ! empty( $up['baseurl'] ) && 0 === strpos( set_url_scheme( $url, 'http' ), set_url_scheme( $up['baseurl'], 'http' ) ) ) {
+					$path = $up['basedir'] . substr( set_url_scheme( $url, 'http' ), strlen( set_url_scheme( $up['baseurl'], 'http' ) ) );
+					$path = preg_replace( '/\?.*$/', '', $path );
+				} elseif ( $id ) {
+					$path = (string) get_attached_file( $id );
+				}
+				if ( $path && is_readable( $path ) ) {
+					$head = (string) file_get_contents( $path, false, null, 0, 4096 );
+					if ( preg_match( '/<svg\b[^>]*>/i', $head, $tag ) ) {
+						if ( preg_match( '/\bviewBox\s*=\s*["\']\s*[-\d.]+[\s,]+[-\d.]+[\s,]+([\d.]+)[\s,]+([\d.]+)/i', $tag[0], $vb ) ) {
+							$w = (float) $vb[1];
+							$h = (float) $vb[2];
+						} elseif ( preg_match( '/\swidth\s*=\s*["\']([\d.]+)(?:px)?["\']/i', $tag[0], $mw ) && preg_match( '/\sheight\s*=\s*["\']([\d.]+)(?:px)?["\']/i', $tag[0], $mh ) ) {
+							$w = (float) $mw[1];
+							$h = (float) $mh[1];
+						}
+					}
+				}
+			}
+			$cache[ $key ] = ( $w > 0 && $h > 0 ) ? array( $w, $h ) : null;
+		}
+		if ( ! $cache[ $key ] ) {
+			return '';
+		}
+		list( $w, $h ) = $cache[ $key ];
+		$size = isset( $args['img_size'] ) ? (int) $args['img_size'] : 0;
+		if ( $size > 0 ) {
+			$h = $h * $size / $w;
+			$w = $size;
+		}
+		return ' width="' . max( 1, (int) round( $w ) ) . '" height="' . max( 1, (int) round( $h ) ) . '"';
+	}
+}
+
 if ( ! function_exists( 'sc_icon_render' ) ) :
 	/** Renders an icon value (font, SVG, emoji, or upload) into markup, the central single-source icon renderer. */
 	function sc_icon_render( $value, $args = array() ) {
@@ -2924,6 +2988,7 @@ if ( ! function_exists( 'sc_icon_render' ) ) :
 			'img_loading' => 'lazy',
 			'enqueue'     => true,
 			'attr'        => array(),
+			'img_size'    => 0, // px: scale the emitted width/height to this width (0 = intrinsic size)
 		), $args );
 
 		// Legacy bare-string value → treat as a font icon class (or nothing).
@@ -2993,7 +3058,7 @@ if ( ! function_exists( 'sc_icon_render' ) ) :
 			$cls_attr = ( $cls !== '' ) ? ' class="' . esc_attr( $cls ) . '"' : '';
 			$load     = ( $args['img_loading'] !== '' ) ? ' loading="' . esc_attr( $args['img_loading'] ) . '"' : '';
 
-			return '<img src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '"' . $cls_attr . $extra . $load . '>';
+			return '<img src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '"' . $cls_attr . sc_icon_img_dims_attr( $value, $url, $args ) . $extra . $load . '>';
 		}
 
 		if ( $type === 'emoji' ) {
@@ -3041,7 +3106,7 @@ if ( ! function_exists( 'sc_icon_render' ) ) :
 				$cls      = sc_icon_join_classes( array( $args['img_class'], $args['class'] ) );
 				$cls_attr = ( $cls !== '' ) ? ' class="' . esc_attr( $cls ) . '"' : '';
 				$load     = ( $args['img_loading'] !== '' ) ? ' loading="' . esc_attr( $args['img_loading'] ) . '"' : '';
-				return '<img src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '"' . $cls_attr . $extra . $load . '>';
+				return '<img src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '"' . $cls_attr . sc_icon_img_dims_attr( $value, $url, $args ) . $extra . $load . '>';
 			}
 
 			return '';
