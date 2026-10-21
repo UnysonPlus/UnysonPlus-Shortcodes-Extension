@@ -295,7 +295,12 @@ if ( ! empty( $atts['title'] ) ) {
 }
 
 if ( ! empty( $atts['subtitle'] ) ) {
-    echo '<p class="' . esc_attr( implode( ' ', $subtitle_classes ) ) . '"' . $subtitle_style_attr . '>' . wp_kses_post( trim( (string) $atts['subtitle'] ) ) . '</p>';
+    // The subtitle is a rich-text field, so it usually arrives wrapped in its own <p>. A <p> can't hold a
+    // <p>: the browser closed the wrapper at once, leaving the text in a bare paragraph without the
+    // alignment / size classes (a centred subtitle rendered left-aligned). Block content gets a <div>.
+    $subtitle_html = wp_kses_post( trim( (string) $atts['subtitle'] ) );
+    $subtitle_tag  = preg_match( '/<(p|div|ul|ol|h[1-6]|blockquote|table|figure)[\s>]/i', $subtitle_html ) ? 'div' : 'p';
+    echo '<' . $subtitle_tag . ' class="' . esc_attr( implode( ' ', $subtitle_classes ) ) . '"' . $subtitle_style_attr . '>' . $subtitle_html . '</' . $subtitle_tag . '>';
 }
 ?>
 
