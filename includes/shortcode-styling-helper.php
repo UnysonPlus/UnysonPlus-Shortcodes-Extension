@@ -2645,6 +2645,16 @@ if ( ! function_exists( 'sc_bg_pro_style' ) ) :
 			if ( ! empty( $cv['custom'] ) )         { $color = (string) $cv['custom']; }
 			elseif ( ! empty( $cv['predefined'] ) ) { $color = (string) $cv['predefined']; }
 		}
+		// A palette SLUG ("ink", "bg-primary") rather than a concrete colour — what a preset or an AI
+		// stores — is a Color Preset: emit its variable, never the bare word (an invalid colour).
+		$color = trim( $color );
+		if ( $color !== '' && ! preg_match( '/^(#|rgba?\(|hsla?\(|var\(|transparent$|currentcolor$|inherit$)/i', $color ) && function_exists( 'sc_color_to_css' ) ) {
+			$slug = preg_replace( '/[^a-z0-9\-]/', '', preg_replace( '/^(text|bg)-/', '', strtolower( $color ) ) );
+			$map  = function_exists( 'unysonplus_color_preset_slug_map' ) ? (array) unysonplus_color_preset_slug_map() : array();
+			if ( ! $map || isset( $map[ $slug ] ) ) { // a CSS colour name ("white") that is not a palette slug stays as it is
+				$color = sc_color_to_css( array( 'predefined' => $color ) );
+			}
+		}
 		if ( $color !== '' ) {
 			$style .= 'background-color:' . esc_attr( $color ) . ';';
 		}

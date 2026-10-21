@@ -75,6 +75,11 @@ if ( ! function_exists( 'sc_steps_render' ) ) {
 				$hex = preg_replace( '/[^#0-9a-zA-Z(),.%\s-]/', '', (string) $raw['custom'] );
 				if ( $hex !== '' ) { return $name . ':' . $hex . ';'; }
 			}
+			// A Color Preset pick: link to its live token, so editing the preset recolours the steps.
+			if ( is_array( $raw ) && ! empty( $raw['predefined'] ) ) {
+				$slug = sanitize_html_class( (string) $raw['predefined'] );
+				if ( $slug !== '' ) { return $name . ':var(--color-' . $slug . ');'; }
+			}
 			return '';
 		};
 		$style_var  = '--st-count:' . count( $steps ) . ';';

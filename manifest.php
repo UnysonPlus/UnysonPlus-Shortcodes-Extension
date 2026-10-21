@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.73';
+$manifest['version'] = '1.15.77';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,23 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.15.74 - Pricing Table gains LAYOUTS — the plans' structure is now its own option, separate
+ *          from the Design skin. Design (classic / modern / minimal / gradient / dark / outline) was
+ *          only ever a CSS class on one fixed card-grid markup, so a price LIST — a service menu with
+ *          the name and sub-label left, the price right and a hairline between rows — could not be
+ *          expressed at all, however it was skinned. A new `design_settings` multi-picker (Design tab)
+ *          chooses Grid (cards side by side, the default), List (full-width rows, no card) or Bars
+ *          (stacked full-width bands that are still cards, price and button right); List adds a
+ *          Divider Between Rows switch of its own. Each layout owns a render partial under
+ *          views/layouts/ and a thumbnail, registered in views/layouts/registry.php. Columns (Desktop)
+ *          also gains `1` for a single centred plan — the renderer always clamped to max(1, ...), only
+ *          the option withheld it. Back-compat is by construction: the layout lives under a NEW option
+ *          id, so the legacy scalar `design` is untouched, a table saved before this never feeds a
+ *          multi-picker, and with no layout saved it falls back to Grid and renders exactly as before.
+ *          The Site Converter reads the layout and the column count from the source container's
+ *          measured geometry instead of counting plans, so a four-item list stops arriving as a
+ *          four-across grid. The billing Monthly / Yearly toggle works in every layout.
+ *
  * 1.15.70 - Pricing Table gains a Plan Title Tag option (Design tab, default H4) so plan
  *          names can sit at the right level of the page outline.
  *

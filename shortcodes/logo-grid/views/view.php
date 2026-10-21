@@ -37,7 +37,14 @@ if ( ! function_exists( 'sc_lg_item' ) ) {
 		if ( $mark === '' ) {
 			$img = ( isset( $logo['image'] ) && is_array( $logo['image'] ) && ! empty( $logo['image']['url'] ) ) ? $logo['image']['url'] : '';
 			if ( $img !== '' ) {
-				$mark = '<img class="fw-lg__img" src="' . esc_url( $img ) . '" alt="' . esc_attr( $name ) . '" loading="lazy" decoding="async" />';
+				// width / height from the attachment, so the browser reserves the logo's box (no layout shift).
+				$dims = '';
+				$aid  = ! empty( $logo['image']['attachment_id'] ) ? (int) $logo['image']['attachment_id'] : 0;
+				$meta = $aid ? wp_get_attachment_metadata( $aid ) : null;
+				if ( is_array( $meta ) && ! empty( $meta['width'] ) && ! empty( $meta['height'] ) ) {
+					$dims = ' width="' . (int) $meta['width'] . '" height="' . (int) $meta['height'] . '"';
+				}
+				$mark = '<img class="fw-lg__img" src="' . esc_url( $img ) . '" alt="' . esc_attr( $name ) . '"' . $dims . ' loading="lazy" decoding="async" />';
 			}
 		}
 

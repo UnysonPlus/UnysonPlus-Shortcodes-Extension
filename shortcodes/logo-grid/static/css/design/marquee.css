@@ -13,7 +13,11 @@
 }
 .fw-lg--design-marquee .fw-lg__marquee--right .fw-lg__track { animation-direction: reverse; }
 .fw-lg--design-marquee .fw-lg__marquee:hover .fw-lg__track { animation-play-state: paused; }
-.fw-lg--design-marquee .fw-lg__item { flex: 0 0 auto; }@media (prefers-reduced-motion: reduce) {
+.fw-lg--design-marquee .fw-lg__item { flex: 0 0 auto;
+	/* The Gap setting. A trailing margin (not flex gap) so both copies of the logo set are the same
+	   width and the -50% loop stays seamless. */
+	margin-right: var(--lg-gap, 1.5rem);
+}@media (prefers-reduced-motion: reduce) {
 
 	.fw-lg--design-marquee .fw-lg__track { animation: none; }
 }

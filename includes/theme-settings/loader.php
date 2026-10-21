@@ -235,8 +235,17 @@ add_action( 'admin_enqueue_scripts', function () {
 add_filter( 'fw_settings_options', function ( $options ) {
 
 	// --- Components (gated by the styling-presets "bare" mode) ---
+	// Element Designs is pulled out of the Components libraries below and re-homed as its
+	// own top-level tab (after Icons). It is a MANAGER for installable per-element design
+	// packs — not an addable-box preset library like the rest of Components — so it belongs
+	// beside the Icons pack-manager tab, and moving it declutters the Components tab strip.
+	$eldesigns_lib = null;
 	if ( unysonplus_presets_in_theme_settings_enabled() && function_exists( 'unysonplus_components_settings_options' ) ) {
 		$libraries = unysonplus_components_settings_options();
+		if ( is_array( $libraries ) && isset( $libraries['tab_element_designs'] ) ) {
+			$eldesigns_lib = $libraries['tab_element_designs'];
+			unset( $libraries['tab_element_designs'] );
+		}
 		if ( is_array( $libraries ) && $libraries ) {
 			// Structure mirrors the theme's own settings sections (tab -> box -> tab ->
 			// box -> fields) — the only nesting Unyson reliably renders AND persists.
@@ -303,6 +312,30 @@ add_filter( 'fw_settings_options', function ( $options ) {
 			array_splice( $options, 3, 0, array( $icons_section ) );
 		} elseif ( is_array( $options ) ) {
 			$options[] = $icons_section;
+		}
+	}
+
+	// --- Element Designs (its own top-level tab — the per-element design-pack manager,
+	//     re-homed out of Components; see the note at the Components block above). ---
+	if ( is_array( $eldesigns_lib ) && ! empty( $eldesigns_lib['options'] ) ) {
+		$eldesigns_section = array(
+			'element_designs_container' => array(
+				'title'   => __( 'Element Designs', 'fw' ),
+				'type'    => 'tab',
+				'options' => array(
+					'element_designs' => array(
+						'title'   => __( 'Element Designs', 'fw' ),
+						'type'    => 'box',
+						'options' => $eldesigns_lib['options'],
+					),
+				),
+			),
+		);
+		// Place right after Icons → General, Header, Components, Icons, Element Designs, …
+		if ( is_array( $options ) && count( $options ) >= 4 ) {
+			array_splice( $options, 4, 0, array( $eldesigns_section ) );
+		} elseif ( is_array( $options ) ) {
+			$options[] = $eldesigns_section;
 		}
 	}
 
