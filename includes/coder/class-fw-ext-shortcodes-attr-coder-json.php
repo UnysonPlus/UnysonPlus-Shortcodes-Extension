@@ -44,13 +44,15 @@ class FW_Ext_Shortcodes_Attr_Coder_JSON implements FW_Ext_Shortcodes_Attr_Coder 
 	private function encode_value($value) {
 		/**
 		 * Replace '[' and ']' to fix http://bit.ly/1HoHVhl
-		 * Replace new lines to fix http://bit.ly/1J887Om
+		 * Replace new lines to fix http://bit.ly/1J887Om — every kind, not only "\r\n": the builder's
+		 * values (from a textarea / code editor) use bare "\n", and a raw newline left in the shortcode
+		 * text lets wpautop turn a pasted <script> or <style> into <p> and <br> before it renders.
 		 *
 		 * http://www.degraeve.com/reference/specialcharacters.php
 		 */
 		return str_replace(
-			array('[',     ']',     "\r\n",   '\\'),
-			array('&#91;', '&#93;', '&#010;', '&#92;'),
+			array('[',     ']',     "\r\n",   "\n",     "\r",     '\\'),
+			array('&#91;', '&#93;', '&#010;', '&#010;', '&#010;', '&#92;'),
 			htmlentities($value, ENT_QUOTES, 'UTF-8')
 		);
 	}
