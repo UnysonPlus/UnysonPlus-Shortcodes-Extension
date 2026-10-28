@@ -38,21 +38,6 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
- * 1.15.81 - Post Date gains a Prefix ("Last updated:", "Published"), matching Post Author's. A byline
- *          built from Theme Builder elements needed a label in front of the date and had to put it in
- *          a separate text block that did not wrap with the date. The prefix sits inside the element,
- *          outside the post link. Pairs with the new {{author_meta|key=…}} Dynamic Content tag (core),
- *          which prints any field of the author's profile — e.g. a role badge in the same byline.
- *
- * 1.15.80 - Author Box reads more of the user's profile. A site that keeps its author details in
- *          its own profile fields could only get the name and photo from a chosen user; the role,
- *          the bio (when it lives outside Biographical Info) and the links had to be retyped on
- *          every box. New "From the user's profile" options: Role from a named profile field
- *          (e.g. title), Bio from a chosen field (default description, e.g. full_bio), an
- *          optional email line with its own label ("Feedback -"), and Links from the profile —
- *          the Website plus any field named after a network (twitter, linkedin …), with an
- *          optional email icon — added ahead of hand-entered links. Typed values still win.
- *
  * 1.15.74 - Pricing Table gains LAYOUTS — the plans' structure is now its own option, separate
  *          from the Design skin. Design (classic / modern / minimal / gradient / dark / outline) was
  *          only ever a CSS class on one fixed card-grid markup, so a price LIST — a service menu with
