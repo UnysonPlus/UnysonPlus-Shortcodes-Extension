@@ -2484,6 +2484,9 @@ if ( ! function_exists( 'sc_emit_button_hover_animation_preview_css' ) ) :
 	 */
 	function sc_emit_button_hover_animation_preview_css() {
 		if ( ! function_exists( 'unysonplus_get_custom_hover_animations' ) ) { return; }
+		// Only the Theme Settings screen shows these preview rows; nothing else in wp-admin needs the sheet.
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( $screen && false === strpos( (string) $screen->id, 'fw-settings' ) ) { return; }
 		$anims = unysonplus_get_custom_hover_animations();
 		if ( empty( $anims ) ) { return; }
 
@@ -2506,11 +2509,9 @@ if ( ! function_exists( 'sc_emit_button_hover_animation_preview_css' ) ) :
 			// {{SELECTOR}} is the library's token ({{BTN}} = legacy alias). Replacing only {{BTN}} left
 			// `{{SELECTOR}}:hover{…}` in the sheet — its braces split the rule into a BARE `:hover{animation…}`,
 			// a universal rule that hover-animated the entire wp-admin. Every token must resolve here.
-			$css = str_replace(
-				array( '{{SELECTOR}}', '{{BTN}}', '{{ANIM}}' ),
-				array( ".btnfx-preview-{$id}", ".btnfx-preview-{$id}", "btnfxprev-{$id}" ),
-				$css
-			);
+			$css = function_exists( 'unysonplus_scope_preset_css' )
+				? unysonplus_scope_preset_css( $css, ".btnfx-preview-{$id}", array( '{{ANIM}}' => "btnfxprev-{$id}" ) )
+				: str_replace( array( '{{SELECTOR}}', '{{BTN}}', '{{ANIM}}' ), array( ".btnfx-preview-{$id}", ".btnfx-preview-{$id}", "btnfxprev-{$id}" ), $css );
 			// Belt and braces: a rule whose selector is still a bare `:hover` / `{{…}}` leftover never ships.
 			if ( strpos( $css, '{{' ) !== false ) { continue; }
 
