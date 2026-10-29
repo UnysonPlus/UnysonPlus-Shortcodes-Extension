@@ -53,7 +53,14 @@ if ( ! function_exists( 'sc_ab_render' ) ) {
 		if ( $name === '' && $user ) { $name = $user->display_name; }
 		$role = trim( (string) sc_get( 'role', $atts, '' ) );
 		$bio  = trim( (string) sc_get( 'bio', $atts, '' ) );
-		if ( $bio === '' && $user ) { $bio = (string) get_the_author_meta( 'description', $uid ); }
+
+		// From the user's profile: the role from a named field, the bio from a chosen field (a site may
+		// keep a longer bio than Biographical Info), and the email for the optional email line.
+		$role_key = sanitize_key( (string) sc_get( 'profile_role_key', $atts, '' ) );
+		$bio_key  = sanitize_key( (string) sc_get( 'profile_bio_key', $atts, 'description' ) );
+		if ( $role === '' && $user && $role_key !== '' ) { $role = trim( (string) get_the_author_meta( $role_key, $uid ) ); }
+		if ( $bio === '' && $user ) { $bio = (string) get_the_author_meta( $bio_key !== '' ? $bio_key : 'description', $uid ); }
+		$email = ( $user && sc_get( 'show_email', $atts, 'no' ) === 'yes' ) ? (string) $user->user_email : '';
 
 		$avatar_raw = sc_get( 'avatar', $atts, array() );
 		$avatar_url = ( is_array( $avatar_raw ) && ! empty( $avatar_raw['url'] ) ) ? $avatar_raw['url'] : '';
@@ -72,6 +79,23 @@ if ( ! function_exists( 'sc_ab_render' ) ) {
 
 		$socials = sc_get( 'socials', $atts, array() );
 		if ( ! is_array( $socials ) ) { $socials = array(); }
+
+		// Links from the profile: the user's Website, plus any profile field named after a network in the
+		// catalog (twitter, linkedin …), ahead of the hand-entered links. Duplicates of a hand-entered URL
+		// are skipped.
+		if ( $user && sc_get( 'profile_socials', $atts, 'no' ) === 'yes' ) {
+			$from_profile = array();
+			if ( sc_get( 'profile_email_icon', $atts, 'no' ) === 'yes' && $user->user_email ) {
+				$from_profile[] = array( 'network' => 'email', 'url' => $user->user_email );
+			}
+			foreach ( array_keys( $catalog ) as $net ) {
+				if ( 'email' === $net ) { continue; }
+				$url = 'website' === $net ? $user->user_url : (string) get_the_author_meta( $net, $uid );
+				if ( trim( (string) $url ) !== '' ) { $from_profile[] = array( 'network' => $net, 'url' => trim( (string) $url ) ); }
+			}
+			$given   = wp_list_pluck( $socials, 'url' );
+			$socials = array_merge( array_filter( $from_profile, function ( $s ) use ( $given ) { return ! in_array( $s['url'], $given, true ); } ), $socials );
+		}
 
 		$var = function ( $key, $name ) use ( $atts ) {
 			$raw = sc_get( $key, $atts, '' );
@@ -114,6 +138,11 @@ if ( ! function_exists( 'sc_ab_render' ) ) {
 		}
 		if ( $role !== '' ) { echo '<div class="fw-ab__role">' . esc_html( $role ) . '</div>'; }
 		if ( $bio !== '' ) { echo '<div class="fw-ab__bio">' . wp_kses_post( wpautop( $bio ) ) . '</div>'; }
+		if ( $email !== '' ) {
+			$label = trim( (string) sc_get( 'email_label', $atts, '' ) );
+			echo '<p class="fw-ab__email">' . ( $label !== '' ? esc_html( $label ) . ' ' : '' )
+				. '<a href="mailto:' . esc_attr( antispambot( $email ) ) . '">' . esc_html( antispambot( $email ) ) . '</a></p>';
+		}
 
 		if ( ! empty( $socials ) || $show_posts ) {
 			echo '<div class="fw-ab__footer">';

@@ -9,6 +9,12 @@ $options = [
 			'group_content' => [
 				'type'    => 'group',
 				'options' => [
+					'date_prefix' => [
+						'type'  => 'text',
+						'label' => __( 'Prefix', 'fw' ),
+						'desc'  => __( 'Text before the date, e.g. "Last updated:" or "Published".', 'fw' ),
+						'value' => '',
+					],
 					'date_type' => [
 						'type'    => 'select',
 						'label'   => __( 'Date', 'fw' ),

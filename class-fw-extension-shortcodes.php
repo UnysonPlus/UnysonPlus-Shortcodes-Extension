@@ -142,6 +142,14 @@ class FW_Extension_Shortcodes extends FW_Extension
 			array( $this, '_filter_theme_builder_fallback_scope' )
 		);
 
+		// Palette scoping must never break content that already uses a scoped element:
+		// runs last, after every scoping filter, and keeps those elements registered.
+		add_filter(
+			'fw_ext_shortcodes_disable_shortcodes',
+			array( $this, '_filter_keep_scoped_elements_in_use' ),
+			PHP_INT_MAX
+		);
+
 		// Surface the plugin's built-in Theme Settings sections (Component Presets,
 		// and later the ported Miscellaneous features) inside Appearance -> Theme
 		// Settings under any active theme. Registered always — the fw_settings_options
@@ -411,6 +419,68 @@ class FW_Extension_Shortcodes extends FW_Extension
 		);
 
 		return array_values( array_unique( array_merge( (array) $disabled, $tags ) ) );
+	}
+
+	/**
+	 * Keeps palette-scoped elements usable where content already contains them.
+	 *
+	 * The Theme Builder's Dynamic Content / Structure / chrome elements are disabled in
+	 * the admin outside its part editors so they stay off the palette. Disabling also
+	 * unregisters them in the editor, so a page that already holds one (placed by an
+	 * import, a template or the AI Assistant) opened with "The shortcode … not found"
+	 * and risked losing it on save. So, in the admin:
+	 * - AJAX requests (option modals, previews, saves) get every element back — no
+	 *   palette is built there;
+	 * - the edit screen gets back the disabled elements the edited post already uses.
+	 * Only elements disabled by the scoping are restored; the list is otherwise untouched.
+	 *
+	 * @internal
+	 * @param array $disabled
+	 * @return array
+	 */
+	public function _filter_keep_scoped_elements_in_use( $disabled )
+	{
+		if ( ! is_admin() || empty( $disabled ) ) {
+			return $disabled;
+		}
+
+		$scoped = array(
+			'post_title', 'post_content', 'post_excerpt', 'featured_image',
+			'post_author', 'post_date', 'post_terms', 'post_meta',
+			'menu_toggle', 'nav_menu', 'site_search', 'site_logo',
+		);
+		if ( function_exists( 'apply_filters' ) ) {
+			$scoped = array_merge(
+				$scoped,
+				(array) apply_filters( 'fw_theme_builder_dynamic_elements', array() ),
+				(array) apply_filters( 'fw_theme_builder_structure_elements', array() )
+			);
+		}
+
+		if ( wp_doing_ajax() ) {
+			return array_values( array_diff( (array) $disabled, $scoped ) );
+		}
+
+		// phpcs:disable WordPress.Security.NonceVerification
+		$post_id = ! empty( $_GET['post'] ) ? (int) $_GET['post'] : ( ! empty( $_REQUEST['post_ID'] ) ? (int) $_REQUEST['post_ID'] : 0 );
+		// phpcs:enable
+		if ( ! $post_id ) {
+			return $disabled;
+		}
+
+		$json = (string) get_post_meta( $post_id, 'fw:opt:ext:pb:page-builder:json', true );
+		if ( '' === $json ) {
+			return $disabled;
+		}
+
+		$keep = array();
+		foreach ( array_intersect( (array) $disabled, $scoped ) as $tag ) {
+			if ( false !== strpos( $json, '"' . $tag . '"' ) ) {
+				$keep[] = $tag;
+			}
+		}
+
+		return $keep ? array_values( array_diff( (array) $disabled, $keep ) ) : $disabled;
 	}
 
 	/**

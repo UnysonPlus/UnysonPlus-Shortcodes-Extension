@@ -69,6 +69,52 @@ $options = array(
 					),
 				),
 			),
+			'group_profile' => array(
+				'type'    => 'group',
+				'title'   => __( 'From the user\'s profile', 'fw' ),
+				'options' => array(
+					'profile_role_key' => array(
+						'type'  => 'text',
+						'label' => __( 'Role from profile field', 'fw' ),
+						'desc'  => __( 'A user profile field holding the role or job title, e.g. title. Used when Role / Tagline above is empty. Leave empty for none.', 'fw' ),
+					),
+					'profile_bio_key' => array(
+						'type'  => 'text',
+						'label' => __( 'Bio profile field', 'fw' ),
+						'value' => 'description',
+						'desc'  => __( 'Which profile field holds the bio. "description" is WordPress\'s Biographical Info; a site may keep a longer bio in its own field (e.g. full_bio).', 'fw' ),
+					),
+					'show_email' => array(
+						'type'  => 'switch',
+						'label' => __( 'Show email line', 'fw' ),
+						'value' => 'no',
+						'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'desc'  => __( 'A line with the user\'s email address as a mailto link, under the bio.', 'fw' ),
+					),
+					'email_label' => array(
+						'type'  => 'text',
+						'label' => __( 'Email line label', 'fw' ),
+						'desc'  => __( 'Text before the address, e.g. "Feedback -" or "Contact:". Leave empty for the address alone.', 'fw' ),
+					),
+					'profile_socials' => array(
+						'type'  => 'switch',
+						'label' => __( 'Links from the profile', 'fw' ),
+						'value' => 'no',
+						'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'desc'  => __( 'Add the user\'s Website and any profile fields named after a network (facebook, twitter, instagram, linkedin, youtube, github, dribbble) as link icons, before the links listed below.', 'fw' ),
+					),
+					'profile_email_icon' => array(
+						'type'  => 'switch',
+						'label' => __( 'Email icon from the profile', 'fw' ),
+						'value' => 'no',
+						'left-choice'  => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ),
+						'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ),
+						'desc'  => __( 'With "Links from the profile": also an email icon for the user\'s address.', 'fw' ),
+					),
+				),
+			),
 			'group_socials' => array(
 				'type'    => 'group',
 				'options' => array(

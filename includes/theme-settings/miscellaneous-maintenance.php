@@ -49,6 +49,11 @@ $options = array(
 				'type'  => 'upload',
 				'value' => '',
 			),
+			'maintenance_background' => array(
+				'label' => __( 'Background', 'fw' ),
+				'desc'  => __( 'Full-page background behind the splash — color, gradient, image and overlay layers (they stack: overlay over image over gradient over color). The image covers the viewport. (A video layer needs the site\'s player, so it won\'t show on this standalone page — use an image.)', 'fw' ),
+				'type'  => 'background-pro',
+			),
 			'maintenance_allowed_roles' => array(
 				'label'      => __( 'Roles that bypass the splash', 'fw' ),
 				'desc'       => __( 'Logged-in users with any of these roles see the live site as normal.', 'fw' ),

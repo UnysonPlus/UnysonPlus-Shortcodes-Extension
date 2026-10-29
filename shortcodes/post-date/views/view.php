@@ -33,6 +33,11 @@ if ( isset( $atts['link_to_post'] ) && $atts['link_to_post'] === 'yes' ) {
 	$inner = '<a href="' . esc_url( get_permalink( $post_id ) ) . '">' . $inner . '</a>';
 }
 
+// Optional label before the date ("Last updated:"), outside the link — same as Post Author's prefix.
+$prefix = isset( $atts['date_prefix'] ) ? trim( (string) $atts['date_prefix'] ) : '';
+if ( $prefix !== '' ) {
+	$inner = '<span class="post-date__prefix">' . esc_html( $prefix ) . '</span> ' . $inner;
+}
 $align_map = array( 'left' => 'text-start', 'center' => 'text-center', 'right' => 'text-end' );
 $al        = isset( $atts['text_align'] ) ? (string) $atts['text_align'] : '';
 if ( isset( $align_map[ $al ] ) ) {

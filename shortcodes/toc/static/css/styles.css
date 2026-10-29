@@ -104,6 +104,13 @@
 	font-variant-numeric: tabular-nums;
 }
 
+/* Flat lists: a fixed, right-aligned slot for the number, so "9." and "10." end at the same
+   point and every title (and its wrapped second line) starts in one column. */
+.sc-toc:not(.sc-toc--nested) .sc-toc__num {
+	min-width: 3ch;
+	text-align: right;
+}
+
 /* Bullets variant — show real list markers, drop the number spans. */
 .sc-toc--bullets .sc-toc__list,
 .sc-toc--bullets .sc-toc__sublist {

@@ -18,7 +18,9 @@ designs. **Content Elements** tab.
 
 ## Options (atts)
 - **Content**: `source` (`current|user|custom`), `user_id` (select), overrides
-  `name`/`role`/`bio`/`avatar` (upload), `socials` (`addable-popup`: network + url).
+  `name`/`role`/`bio`/`avatar` (upload), From the user's profile (`profile_role_key`,
+  `profile_bio_key` default `description`, `show_email` + `email_label`, `profile_socials` +
+  `profile_email_icon`), `socials` (`addable-popup`: network + url).
 - **Design**: `design`, `avatar_shape` (`circle|rounded|square`), `avatar_size`
   (slider px → `--ab-avatar`), `show_posts` (author-archive link; skipped for
   custom).

@@ -24,6 +24,8 @@
 .fw-ab__role { color: var(--ab-accent); font-size: .9rem; font-weight: 600; margin-top: .1rem; }
 .fw-ab__bio { color: var(--ab-text); margin-top: .5rem; line-height: 1.6; }
 .fw-ab__bio :last-child { margin-bottom: 0; }
+.fw-ab__email { color: var(--ab-text); font-size: .9rem; margin: .5rem 0 0; }
+.fw-ab__email a { color: var(--ab-accent); }
 
 .fw-ab__footer { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: .85rem; }
 .fw-ab__socials { display: flex; gap: .4rem; }

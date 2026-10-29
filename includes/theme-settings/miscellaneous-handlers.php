@@ -264,6 +264,10 @@ add_action( 'template_redirect', function () {
 	$logo     = upw_ts_setting( 'misc_maintenance', 'maintenance_logo', '' );
 	$logo_url = ( is_array( $logo ) && ! empty( $logo['url'] ) ) ? $logo['url'] : '';
 
+	// Background Pro → inline CSS for the full-page body (color / gradient / image / overlay).
+	$bg       = upw_ts_setting( 'misc_maintenance', 'maintenance_background', array() );
+	$bg_style = function_exists( 'sc_bg_pro_style' ) ? trim( (string) sc_bg_pro_style( $bg ) ) : '';
+
 	nocache_headers();
 	status_header( 503 );
 	header( 'Retry-After: 3600' );
@@ -278,7 +282,7 @@ add_action( 'template_redirect', function () {
 	<title><?php echo esc_html( $title ); ?> &mdash; <?php bloginfo( 'name' ); ?></title>
 	<style>
 		html,body{margin:0;padding:0;height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#f5f5f5;color:#212529;}
-		body{display:flex;align-items:center;justify-content:center;padding:2rem;}
+		body{display:flex;align-items:center;justify-content:center;padding:2rem;background-size:cover;background-position:center center;background-repeat:no-repeat;}
 		.maintenance-page{max-width:600px;width:100%;background:#fff;border-radius:8px;padding:2.5rem;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.08);}
 		.maintenance-page__logo{max-width:200px;height:auto;margin:0 auto 1.5rem;display:block;}
 		.maintenance-page__title{margin:0 0 1rem;font-size:1.75rem;}
@@ -286,7 +290,7 @@ add_action( 'template_redirect', function () {
 		.maintenance-page__body :last-child{margin-bottom:0;}
 	</style>
 </head>
-<body>
+<body<?php echo $bg_style ? ' style="' . esc_attr( $bg_style ) . '"' : ''; ?>>
 	<main class="maintenance-page" role="main">
 		<?php if ( $logo_url ) : ?>
 			<img class="maintenance-page__logo" src="<?php echo esc_url( $logo_url ); ?>" alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
