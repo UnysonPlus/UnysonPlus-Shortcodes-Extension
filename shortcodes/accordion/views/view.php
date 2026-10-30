@@ -492,6 +492,9 @@ $accordion_id = $attr['id'];
         // becomes a Question, its content (shortcodes expanded, tags stripped)
         // the accepted Answer. Skipped on empty Q/A pairs.
         $faq_schema = ( ! empty( $atts['faq_schema'] ) && $atts['faq_schema'] === 'yes' );
+        // The SEO extension, when active, puts these questions in the page's one
+        // structured-data graph and returns false here, so they are not published twice.
+        $faq_schema = $faq_schema && apply_filters( 'fw_sc_accordion_faq_inline', true, $atts );
         if ( $faq_schema ) :
             $faq_entities = array();
             foreach ( $tabs as $tab ) {

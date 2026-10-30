@@ -70,6 +70,20 @@ if ( ! function_exists( 'sc_bi_render' ) ) {
 		$website = trim( (string) sc_get( 'website', $atts, '' ) );
 		$map     = trim( (string) sc_get( 'map_link', $atts, '' ) );
 
+		// Fields left empty here fall back to the site's own business details (the
+		// SEO extension's Structured data screen), so the element and the
+		// structured data never disagree.
+		$site = (array) apply_filters( 'fw_business_info_site_details', array() );
+		if ( $site ) {
+			$name    = '' !== $name ? $name : trim( (string) ( $site['biz_name'] ?? '' ) );
+			$address = '' !== $address ? $address : trim( (string) ( $site['address'] ?? '' ) );
+			$phone   = '' !== $phone ? $phone : trim( (string) ( $site['phone'] ?? '' ) );
+			$email   = '' !== $email ? $email : trim( (string) ( $site['email'] ?? '' ) );
+			if ( empty( $hours ) && ! empty( $site['hours'] ) ) {
+				$hours = (array) $site['hours'];
+			}
+		}
+
 		$has_contact = ( $address . $phone . $email . $website . $map ) !== '';
 		if ( empty( $hours ) && ! $has_contact && $name === '' ) {
 			if ( fw_is_editor_context() ) {
