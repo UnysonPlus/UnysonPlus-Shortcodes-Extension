@@ -366,3 +366,35 @@
 .posts__card .posts-a-center { align-items: center; }
 .posts__card .posts-a-end { align-items: flex-end; }
 .posts__card .posts-a-stretch { align-items: stretch; }
+
+/* ---------------- DENSITY vs STRUCTURAL SPACING ---------------------------
+   `--posts-card-pad` (the Card Padding / Density option) was doing two
+   unrelated jobs, and "None (edge-to-edge)" exposed the conflict:
+
+   1. INNER CARD PADDING — insetting the text from the card's own background
+      or border. Decorative: on a card with no chrome the horizontal part
+      only pushes the text out of line with a full-bleed image above it,
+      which is exactly what "None" is chosen to remove.
+
+   2. STRUCTURAL GUTTER — in a SIDE card the body's inner edge is not padding
+      at all, it is the gap between the image column and the text; in an
+      OVERLAY card the padding is what keeps the text off the edges of the
+      picture it sits on. Neither is decorative and neither can go to zero,
+      or the text runs straight into the image.
+
+   So density zeroes (1) but never (2): a side or overlay card falls back to
+   the grid's own column gap instead.
+   -------------------------------------------------------------------------- */
+.posts[data-density="none"] .posts__card--side-left  .posts__col--body { padding-left:  var(--posts-col-gap); }
+.posts[data-density="none"] .posts__card--side-right .posts__col--body { padding-right: var(--posts-col-gap); }
+.posts[data-density="none"] .posts__card--overlay .posts__overlay-body { padding: var(--posts-col-gap); }
+
+@media (max-width: 782px) {
+  /* A side card flattened to image-above-text is a STANDARD card again, so
+     its gutter becomes the same misaligning indent density was asked to
+     remove. Drop it back to zero once it has stacked. */
+  .posts[data-mobile-layout="standard"][data-density="none"] .posts__card--side .posts__col--body {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
