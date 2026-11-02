@@ -267,12 +267,21 @@
     .posts__grid              { grid-template-columns: repeat(var(--posts-cols-m), minmax(0, 1fr)); }
     /* mode-masonry / mode-slider mobile overrides live in their mode CSS files. */
 
-    /* Mobile layout overrides flatten side cards to image-top by default. */
-    .posts[data-mobile-layout="standard"] .posts__card--side {
+    /*
+     * A side card stacks image-over-text on a phone.
+     *
+     * This used to apply only to data-mobile-layout="standard", but the Mobile
+     * Card Style Override defaults to "inherit" -- so by default a side card
+     * kept its 40/60 split at 390px and the text was squeezed into a column a
+     * few words wide. Stacking is now the default for every mobile layout
+     * EXCEPT "side-left", which is the setting that explicitly asks to keep
+     * the image beside the text.
+     */
+    .posts:not([data-mobile-layout="side-left"]) .posts__card--side {
         flex-direction: column;
     }
-    .posts[data-mobile-layout="standard"] .posts__card--side .posts__col--image,
-    .posts[data-mobile-layout="standard"] .posts__card--side .posts__col--body {
+    .posts:not([data-mobile-layout="side-left"]) .posts__card--side .posts__col--image,
+    .posts:not([data-mobile-layout="side-left"]) .posts__card--side .posts__col--body {
         flex-basis: auto; width: 100%;
     }
     .posts[data-mobile-layout="side-left"] .posts__card--standard,
@@ -393,7 +402,7 @@
   /* A side card flattened to image-above-text is a STANDARD card again, so
      its gutter becomes the same misaligning indent density was asked to
      remove. Drop it back to zero once it has stacked. */
-  .posts[data-mobile-layout="standard"][data-density="none"] .posts__card--side .posts__col--body {
+  .posts:not([data-mobile-layout="side-left"])[data-density="none"] .posts__card--side .posts__col--body {
     padding-left: 0;
     padding-right: 0;
   }

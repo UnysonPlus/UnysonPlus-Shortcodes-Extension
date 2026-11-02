@@ -78,7 +78,8 @@
 }
 
 .sc-toc__item {
-	margin: 0.2em 0;
+	/* 0.2em left adjacent links closer than the 24px Lighthouse asks for. */
+	margin: 0.35em 0;
 }
 
 .sc-toc__link {
@@ -87,6 +88,14 @@
 	gap: 0.4em;
 	color: var(--sc-toc-link);
 	text-decoration: none;
+	/* A tap target has to be at least 24x24 CSS px with 24px between targets,
+	   or Lighthouse's "Touch targets do not have sufficient size or spacing"
+	   audit fails and the links are genuinely hard to hit on a phone. These
+	   are inline links in a dense list, so the height came from the line box
+	   alone -- about 23px -- and every entry failed. The padding buys the
+	   height; the item margin below buys the spacing. */
+	min-height: 24px;
+	padding-block: 2px;
 }
 .sc-toc__link:hover,
 .sc-toc__link:focus {
@@ -110,6 +119,39 @@
 	min-width: 3ch;
 	text-align: right;
 }
+
+/* ---- rules that survive a CSS purge --------------------------------------
+   The list is built in JavaScript, so .sc-toc__item / __link / __num never
+   appear in the server-rendered HTML. A CSS optimiser that purges unused
+   selectors by scanning that HTML therefore deletes every rule above -- the
+   links fall back to plain inline text (21px tall, failing the 24px tap-target
+   minimum) and the numbers run into the titles.
+
+   .sc-toc IS in the HTML, so the same styling is restated through it with
+   element selectors, which the purge keeps. Equal specificity and later in the
+   file, so these simply reinforce the rules above when both survive.
+   -------------------------------------------------------------------------- */
+.sc-toc a {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.4em;
+	min-height: 24px;
+	padding-block: 2px;
+	text-decoration: none;
+}
+.sc-toc li { margin: 0.35em 0; }
+.sc-toc a > span:first-child {
+	flex: none;
+	opacity: 0.8;
+	font-variant-numeric: tabular-nums;
+}
+/* Flat lists get the fixed, right-aligned number slot so "9" and "10" end on
+   the same edge; nested lists indent instead and are left alone. */
+.sc-toc:not(.sc-toc--nested) a > span:first-child {
+	min-width: 3ch;
+	text-align: right;
+}
+.sc-toc a > span:last-child { flex: 1 1 auto; min-width: 0; }
 
 /* Bullets variant — show real list markers, drop the number spans. */
 .sc-toc--bullets .sc-toc__list,

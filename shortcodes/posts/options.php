@@ -535,7 +535,7 @@ $options = [
                     ) ),
                     'mobile_layout_override' => [
                         'label'   => __( 'Mobile Card Style Override', 'fw' ),
-                        'desc'    => __( 'Switch card style on mobile (≤ 782px) regardless of desktop choice.', 'fw' ),
+                        'desc'    => __( 'Switch card style on mobile (≤ 782px) regardless of desktop choice. A side card stacks image-over-text on a phone unless you pick "Side — image left".', 'fw' ),
                         'type'    => 'select',
                         'value'   => 'inherit',
                         'choices' => [

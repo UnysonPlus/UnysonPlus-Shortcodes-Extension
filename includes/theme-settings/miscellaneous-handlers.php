@@ -19,7 +19,7 @@ if ( ! function_exists( 'fw_admin_safe_custom_css' ) ) :
 	 * which the page builder ALSO loads in wp-admin (canvas WYSIWYG) — so an unscoped top-level `body` /
 	 * `html` rule (background, overflow, …) would repaint the EDITOR chrome ("the front end leaked into
 	 * the backend"). This rewrites those global selectors to front-end-only variants
-	 * (`body:not(.wp-admin)`, `html:not(:has(.wp-admin))`) so a global rule can never leak into the admin,
+	 * (`body:where(:not(.wp-admin))`, `html:where(:not(:has(.wp-admin)))`) so a global rule can never leak into the admin,
 	 * while class/id/descendant rules (`.pb-*`, `.upwc-*`, `#x`) are left untouched so they still skin the
 	 * builder canvas. Applies to ALL Custom CSS — hand-written OR emitted by the Site Converter — so this
 	 * cannot recur regardless of who wrote the CSS. Already-scoped selectors are left alone (idempotent).
@@ -46,12 +46,21 @@ if ( ! function_exists( 'fw_admin_safe_custom_css' ) ) :
 					$t    = ltrim( $p );
 					$lead = substr( $p, 0, strlen( $p ) - strlen( $t ) ); // keep original leading whitespace
 					if ( preg_match( '/^html\b/i', $t ) ) {
-						if ( false === strpos( $t, ':has(' ) ) {
-							$t = preg_replace( '/^html\b/i', 'html:not(:has(.wp-admin))', $t, 1 );
+						// Normalise the LEGACY scope first. CSS that already carries
+						// `html:not(:has(.wp-admin))` - the Site Converter emits that form
+						// directly, and so did this function before the :where() change -
+						// would otherwise be scoped a SECOND time, leaving
+						// `html:where(...):not(:has(.wp-admin))`. That still matches the
+						// right documents, but the trailing bare :not() keeps contributing
+						// specificity, which is the exact bug :where() was adopted to end.
+						$t = preg_replace( '/^html:not\(:has\(\.wp-admin\)\)/i', 'html:where(:not(:has(.wp-admin)))', $t, 1 );
+						if ( false === strpos( $t, ':where(:not(:has(.wp-admin)))' ) ) {
+							$t = preg_replace( '/^html\b/i', 'html:where(:not(:has(.wp-admin)))', $t, 1 );
 						}
 					} elseif ( preg_match( '/^body\b/i', $t ) ) {
-						if ( false === strpos( $t, ':not(.wp-admin)' ) ) {
-							$t = preg_replace( '/^body\b/i', 'body:not(.wp-admin)', $t, 1 );
+						$t = preg_replace( '/^body:not\(\.wp-admin\)/i', 'body:where(:not(.wp-admin))', $t, 1 );
+						if ( false === strpos( $t, ':where(:not(.wp-admin))' ) ) {
+							$t = preg_replace( '/^body\b/i', 'body:where(:not(.wp-admin))', $t, 1 );
 						}
 					}
 					$p = $lead . $t;
