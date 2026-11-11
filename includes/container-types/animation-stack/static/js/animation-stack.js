@@ -105,6 +105,12 @@
 
 		// Best-effort: keep the image-picker tile highlight in sync with the <select> value.
 		var $sel = $card.find('.picker-group select').first();
+		// A card with a starting value (data-anim-add — e.g. Exit → "Reverse the entrance") picks it
+		// right away when added, so it works without opening the picker.
+		var addVal = $card.attr('data-anim-add');
+		if (addVal && $sel.length && String($sel.val()) === String($card.data('anim-off'))) {
+			$sel.val(addVal).trigger('change');
+		}
 		if ($sel.length) {
 			var picker = $sel.data('picker');
 			if (picker && typeof picker.sync_picker_with_select === 'function') {
@@ -119,6 +125,19 @@
 			$card[0].scrollIntoView({ block: 'nearest' });
 		}
 	}
+
+	// "+ Add a matching exit" (inside the Entrance card) — adds the Exit card, which starts on
+	// "Reverse the entrance". If it is already added, just bring it into view.
+	$(document).on('click', '.upw-anim-add-exit', function (e) {
+		e.preventDefault();
+		var $stack = $(this).closest('.upw-anim-stack');
+		var id = $(this).attr('data-exit-target') || 'exit_animation';
+		$(this).closest('.fw-mp-pop').removeClass('is-open');
+		var $tile = $stack.find('.upw-anim-tile[data-target="' + id + '"]').first();
+		if ($tile.length && !$tile.hasClass('is-added')) { $tile.trigger('click'); return; }
+		var $card = $stack.find('.upw-anim-card[data-anim-id="' + id + '"]').first();
+		if ($card.length && $card[0].scrollIntoView) { $card[0].scrollIntoView({ block: 'nearest' }); }
+	});
 
 	// Remove — reset the picker to "off" and tuck the card away.
 	$(document).on('click', '.upw-anim-card-remove', function (e) {

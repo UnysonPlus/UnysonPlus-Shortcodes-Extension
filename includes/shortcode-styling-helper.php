@@ -435,6 +435,9 @@ if ( ! function_exists( 'sc_flatten_spacing_value' ) ) :
 			foreach ( array( 'margin', 'padding' ) as $section ) {
 				if ( empty( $layer[ $section ] ) || ! is_array( $layer[ $section ] ) ) { continue; }
 				foreach ( $layer[ $section ] as $slot_value ) {
+					// Slots hold class names; anything else (a { value, unit } size saved by an older AI
+					// call) is skipped rather than cast, which printed "Array to string conversion".
+					if ( ! is_scalar( $slot_value ) ) { continue; }
 					$cls = sc_sanitize_class( (string) $slot_value );
 					if ( $cls !== '' ) { $out[] = $cls; }
 				}
@@ -1927,6 +1930,10 @@ if ( ! function_exists( 'sc_needs_wrapper' ) ) :
 
 		// Animations tab — an entrance effect is chosen when animation.effect is set & not 'none'.
 		if ( isset( $atts['animation']['effect'] ) && $atts['animation']['effect'] !== 'none' && $atts['animation']['effect'] !== '' ) {
+			return true;
+		}
+		// … and an Exit Animation needs the wrapper too (it carries the data-sc-exit attributes).
+		if ( isset( $atts['exit_animation']['effect'] ) && $atts['exit_animation']['effect'] !== 'none' && $atts['exit_animation']['effect'] !== '' ) {
 			return true;
 		}
 

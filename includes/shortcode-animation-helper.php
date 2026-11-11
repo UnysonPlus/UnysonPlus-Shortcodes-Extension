@@ -34,6 +34,91 @@ require_once __DIR__ . '/shortcode-easing-helper.php';
  *         'options' => sc_get_animation_fields(),
  *     ],
  */
+/**
+ * The Exit Animation effects. Every exit is an ENTRANCE PLAYED BACKWARDS (`animation-direction: reverse`
+ * on the entrance's own keyframes), so no extra Animate.css partials ship and an exit always matches the
+ * look of its entrance. Each row: exit key => [ label, entrance keyframe it reverses, reversed?, group ].
+ * Up/Down swap when reversed (Fade In Up rises from below; run backwards it sinks = Fade Out Down);
+ * Left/Right and the corners keep their names (Fade In Left comes from the left; backwards it leaves to
+ * the left). Hinge is already an exit in Animate.css, so it plays forwards.
+ *
+ * @return array<string,array{0:string,1:string,2:bool,3:string}>
+ */
+if ( ! function_exists( 'sc_exit_effects' ) ) :
+function sc_exit_effects() {
+    $g_back = __( 'Back Exits', 'fw' ); $g_bounce = __( 'Bouncing Exits', 'fw' ); $g_fade = __( 'Fading Exits', 'fw' );
+    $g_flip = __( 'Flippers', 'fw' ); $g_light = __( 'Lightspeed', 'fw' ); $g_rot = __( 'Rotating Exits', 'fw' );
+    $g_slide = __( 'Sliding Exits', 'fw' ); $g_zoom = __( 'Zooming Exits', 'fw' ); $g_spec = __( 'Specials', 'fw' );
+    return array(
+        'animate__backOutDown'         => array( __( 'Back Out Down', 'fw' ), 'animate__backInUp', true, $g_back ),
+        'animate__backOutLeft'         => array( __( 'Back Out Left', 'fw' ), 'animate__backInLeft', true, $g_back ),
+        'animate__backOutRight'        => array( __( 'Back Out Right', 'fw' ), 'animate__backInRight', true, $g_back ),
+        'animate__backOutUp'           => array( __( 'Back Out Up', 'fw' ), 'animate__backInDown', true, $g_back ),
+        'animate__bounceOut'           => array( __( 'Bounce Out', 'fw' ), 'animate__bounceIn', true, $g_bounce ),
+        'animate__bounceOutDown'       => array( __( 'Bounce Out Down', 'fw' ), 'animate__bounceInUp', true, $g_bounce ),
+        'animate__bounceOutLeft'       => array( __( 'Bounce Out Left', 'fw' ), 'animate__bounceInLeft', true, $g_bounce ),
+        'animate__bounceOutRight'      => array( __( 'Bounce Out Right', 'fw' ), 'animate__bounceInRight', true, $g_bounce ),
+        'animate__bounceOutUp'         => array( __( 'Bounce Out Up', 'fw' ), 'animate__bounceInDown', true, $g_bounce ),
+        'animate__fadeOut'             => array( __( 'Fade Out', 'fw' ), 'animate__fadeIn', true, $g_fade ),
+        'animate__fadeOutDown'         => array( __( 'Fade Out Down', 'fw' ), 'animate__fadeInUp', true, $g_fade ),
+        'animate__fadeOutDownBig'      => array( __( 'Fade Out Down Big', 'fw' ), 'animate__fadeInUpBig', true, $g_fade ),
+        'animate__fadeOutLeft'         => array( __( 'Fade Out Left', 'fw' ), 'animate__fadeInLeft', true, $g_fade ),
+        'animate__fadeOutLeftBig'      => array( __( 'Fade Out Left Big', 'fw' ), 'animate__fadeInLeftBig', true, $g_fade ),
+        'animate__fadeOutRight'        => array( __( 'Fade Out Right', 'fw' ), 'animate__fadeInRight', true, $g_fade ),
+        'animate__fadeOutRightBig'     => array( __( 'Fade Out Right Big', 'fw' ), 'animate__fadeInRightBig', true, $g_fade ),
+        'animate__fadeOutUp'           => array( __( 'Fade Out Up', 'fw' ), 'animate__fadeInDown', true, $g_fade ),
+        'animate__fadeOutUpBig'        => array( __( 'Fade Out Up Big', 'fw' ), 'animate__fadeInDownBig', true, $g_fade ),
+        'animate__fadeOutTopLeft'      => array( __( 'Fade Out Top Left', 'fw' ), 'animate__fadeInTopLeft', true, $g_fade ),
+        'animate__fadeOutTopRight'     => array( __( 'Fade Out Top Right', 'fw' ), 'animate__fadeInTopRight', true, $g_fade ),
+        'animate__fadeOutBottomLeft'   => array( __( 'Fade Out Bottom Left', 'fw' ), 'animate__fadeInBottomLeft', true, $g_fade ),
+        'animate__fadeOutBottomRight'  => array( __( 'Fade Out Bottom Right', 'fw' ), 'animate__fadeInBottomRight', true, $g_fade ),
+        'animate__flipOutX'            => array( __( 'Flip Out X', 'fw' ), 'animate__flipInX', true, $g_flip ),
+        'animate__flipOutY'            => array( __( 'Flip Out Y', 'fw' ), 'animate__flipInY', true, $g_flip ),
+        'animate__lightSpeedOutRight'  => array( __( 'Light Speed Out Right', 'fw' ), 'animate__lightSpeedInRight', true, $g_light ),
+        'animate__lightSpeedOutLeft'   => array( __( 'Light Speed Out Left', 'fw' ), 'animate__lightSpeedInLeft', true, $g_light ),
+        'animate__rotateOut'           => array( __( 'Rotate Out', 'fw' ), 'animate__rotateIn', true, $g_rot ),
+        'animate__rotateOutDownLeft'   => array( __( 'Rotate Out Down Left', 'fw' ), 'animate__rotateInDownLeft', true, $g_rot ),
+        'animate__rotateOutDownRight'  => array( __( 'Rotate Out Down Right', 'fw' ), 'animate__rotateInDownRight', true, $g_rot ),
+        'animate__rotateOutUpLeft'     => array( __( 'Rotate Out Up Left', 'fw' ), 'animate__rotateInUpLeft', true, $g_rot ),
+        'animate__rotateOutUpRight'    => array( __( 'Rotate Out Up Right', 'fw' ), 'animate__rotateInUpRight', true, $g_rot ),
+        'animate__slideOutDown'        => array( __( 'Slide Out Down', 'fw' ), 'animate__slideInUp', true, $g_slide ),
+        'animate__slideOutLeft'        => array( __( 'Slide Out Left', 'fw' ), 'animate__slideInLeft', true, $g_slide ),
+        'animate__slideOutRight'       => array( __( 'Slide Out Right', 'fw' ), 'animate__slideInRight', true, $g_slide ),
+        'animate__slideOutUp'          => array( __( 'Slide Out Up', 'fw' ), 'animate__slideInDown', true, $g_slide ),
+        'animate__zoomOut'             => array( __( 'Zoom Out', 'fw' ), 'animate__zoomIn', true, $g_zoom ),
+        'animate__zoomOutDown'         => array( __( 'Zoom Out Down', 'fw' ), 'animate__zoomInUp', true, $g_zoom ),
+        'animate__zoomOutLeft'         => array( __( 'Zoom Out Left', 'fw' ), 'animate__zoomInLeft', true, $g_zoom ),
+        'animate__zoomOutRight'        => array( __( 'Zoom Out Right', 'fw' ), 'animate__zoomInRight', true, $g_zoom ),
+        'animate__zoomOutUp'           => array( __( 'Zoom Out Up', 'fw' ), 'animate__zoomInDown', true, $g_zoom ),
+        'animate__hinge'               => array( __( 'Hinge', 'fw' ), 'animate__hinge', false, $g_spec ),
+        'animate__rollOut'             => array( __( 'Roll Out', 'fw' ), 'animate__rollIn', true, $g_spec ),
+        'animate__jackOutOfTheBox'     => array( __( 'Jack Out Of The Box', 'fw' ), 'animate__jackInTheBox', true, $g_spec ),
+    );
+}
+endif;
+
+/**
+ * Resolve an Exit Animation choice to what the runtime plays: array( keyframe effect class, reversed? ).
+ * 'reverse' = the element's own entrance run backwards (an attention-seeker, or no entrance at all,
+ * falls back to a plain fade, since those have no "hidden" start to return to).
+ */
+if ( ! function_exists( 'sc_exit_resolve' ) ) :
+function sc_exit_resolve( $choice, $entrance ) {
+    $table = sc_exit_effects();
+    if ( isset( $table[ $choice ] ) ) {
+        return array( $table[ $choice ][1], (bool) $table[ $choice ][2] );
+    }
+    $entrance  = (string) $entrance;
+    $seekers   = array( 'animate__bounce', 'animate__flash', 'animate__pulse', 'animate__rubberBand', 'animate__shakeX', 'animate__shakeY',
+        'animate__headShake', 'animate__swing', 'animate__tada', 'animate__wobble', 'animate__jello', 'animate__heartBeat', 'animate__flip' );
+    if ( $entrance === 'animate__hinge' ) { return array( 'animate__hinge', false ); }
+    if ( $entrance !== '' && $entrance !== 'none' && preg_match( '/^animate__[a-zA-Z]+$/', $entrance ) && ! in_array( $entrance, $seekers, true ) ) {
+        return array( $entrance, true );
+    }
+    return array( 'animate__fadeIn', true );
+}
+endif;
+
 if ( ! function_exists( 'sc_get_animation_fields' ) ) :
 function sc_get_animation_fields() {
 
@@ -373,6 +458,23 @@ function sc_get_animation_fields() {
         $effect_tiles[ 'grp_' . $gi ] = [ 'label' => $glabel, 'choices' => $group_tiles ];
     }
 
+    // Exit picker tiles (static/img/exit-effects/<name>.svg — each an entrance tile run backwards), led by
+    // "Reverse the entrance". Grouped like the entrances.
+    $exit_base  = $sc_ext ? $sc_ext->get_declared_URI( '/static/img/exit-effects' ) : '';
+    $exit_tile  = function ( $file, $label ) use ( $exit_base ) {
+        return [
+            'small' => [ 'src' => $exit_base . '/' . $file . '.svg', 'height' => 86 ],
+            'large' => [ 'src' => $exit_base . '/' . $file . '.svg', 'height' => 190 ],
+            'label' => $label,
+        ];
+    };
+    $exit_tiles = [ 'grp_mirror' => [ 'label' => __( 'Mirror', 'fw' ), 'choices' => [ 'reverse' => $exit_tile( 'reverse', __( 'Reverse the entrance', 'fw' ) ) ] ] ];
+    foreach ( sc_exit_effects() as $ek => $ev ) {
+        $gk = 'grp_' . sanitize_key( $ev[3] );
+        if ( ! isset( $exit_tiles[ $gk ] ) ) { $exit_tiles[ $gk ] = [ 'label' => $ev[3], 'choices' => [] ]; }
+        $exit_tiles[ $gk ]['choices'][ $ek ] = $exit_tile( str_replace( 'animate__', '', $ek ), $ev[0] );
+    }
+
     $fields = [
         'animation' => [
             'type'         => 'multi-picker',
@@ -415,6 +517,86 @@ function sc_get_animation_fields() {
             'desc'          => false,
             'anim_attach'   => 'animation',
             'inner-options' => $reveal_group,
+        ],
+        // "+ Add a matching exit" — a one-click shortcut inside the Entrance card that adds the Exit card
+        // (which starts on "Reverse the entrance"). animation-stack.js wires the click.
+        'animation_exit_shortcut' => [
+            'type'        => 'html',
+            'label'       => false,
+            'desc'        => false,
+            'anim_attach' => 'animation',
+            'html'        => '<button type="button" class="button upw-anim-add-exit" data-exit-target="exit_animation">+ ' . esc_html__( 'Add a matching exit', 'fw' ) . '</button>'
+                . ' <span class="upw-anim-add-exit-note" style="color:#646970;font-size:12px;">' . esc_html__( 'Plays this entrance backwards as the element leaves the screen.', 'fw' ) . '</span>',
+        ],
+        // Exit Animation — its own card, so it's visible next to the entrance. Starts on "Reverse the
+        // entrance" (anim_meta add_value) and offers every exit, each an entrance played backwards
+        // (sc_exit_effects()). Plays as the element leaves the screen; the entrance plays again when it returns.
+        'exit_animation' => [
+            'type'         => 'multi-picker',
+            'popover'      => true,
+            'label'        => __( 'Exit Animation', 'fw' ),
+            'desc'         => __( 'Animate the element out as it scrolls off the screen, and back in when it returns. “Reverse the entrance” mirrors the Entrance Animation; or pick any exit.', 'fw' ),
+            'help'         => __( 'Exit Animation: plays as the element leaves the screen (through the top, the bottom, or either — see “Plays when”), and the element animates back in when it returns — with its Entrance Animation, or with this exit played forwards when there is no entrance. On galleries and grids it runs item by item. Takes over from the Entrance’s “Replay On Scroll”.', 'fw' ),
+            'show_borders' => false,
+            'value'        => [ 'effect' => 'none' ],
+            'placeholder'  => __( 'None', 'fw' ),
+            'anim_meta'    => [ 'category' => __( 'Exit', 'fw' ), 'add_value' => 'reverse' ],
+            'picker' => [
+                'effect' => [
+                    'type'    => 'image-picker',
+                    'label'   => false,
+                    'value'   => 'none',
+                    'search'  => __( 'Search exit effects…', 'fw' ),
+                    'layout'  => 'tabs',
+                    'choices' => $exit_tiles,
+                ],
+            ],
+            'choices' => [ 'none' => [] ],
+        ],
+        'exit_animation_settings' => [
+            'type'          => 'multi',
+            'label'         => false,
+            'desc'          => false,
+            'anim_attach'   => 'exit_animation',
+            'inner-options' => [
+                'when' => [
+                    'type'    => 'select',
+                    'label'   => __( 'Plays when', 'fw' ),
+                    'value'   => 'both',
+                    'choices' => [
+                        'both'   => __( 'It leaves the screen either way', 'fw' ),
+                        'top'    => __( 'It scrolls off the top (scrolling down)', 'fw' ),
+                        'bottom' => __( 'It scrolls off the bottom (scrolling back up)', 'fw' ),
+                    ],
+                ],
+                'duration' => [
+                    'type'         => 'number',
+                    'label'        => __( 'Duration (seconds)', 'fw' ),
+                    'desc'         => __( '0 = the same length as the entrance (or 0.8 s when there is no entrance).', 'fw' ),
+                    'value'        => 0,
+                    'min'          => 0,
+                    'step'         => 'any',
+                    'numeric_type' => 'float',
+                ],
+                'delay' => [
+                    'type'         => 'number',
+                    'label'        => __( 'Delay (seconds)', 'fw' ),
+                    'value'        => 0,
+                    'min'          => 0,
+                    'step'         => 'any',
+                    'numeric_type' => 'float',
+                ],
+                'order' => [
+                    'type'    => 'select',
+                    'label'   => __( 'Item Order', 'fw' ),
+                    'desc'    => __( 'For galleries, grids and the Motion Gallery: which item leaves first.', 'fw' ),
+                    'value'   => 'reverse',
+                    'choices' => [
+                        'reverse' => __( 'Last in, first out', 'fw' ),
+                        'same'    => __( 'Same order as the entrance', 'fw' ),
+                    ],
+                ],
+            ],
         ],
     ];
 
@@ -811,6 +993,67 @@ add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
     return $attr;
 }, 21, 2 );
 
+/**
+ * Exit Animation. Emits what sc-animations.js plays as the element leaves the screen:
+ *   data-sc-exit       the entrance keyframe class it plays (e.g. animate__fadeInUp)
+ *   data-sc-exit-rev   1 = play it backwards (every exit but Hinge)
+ *   data-sc-exit-when  both | top | bottom — which edge it has to leave through
+ *   data-sc-exit-dur   seconds (0 in the settings = match the entrance; 0.8 s with no entrance)
+ *   data-sc-exit-delay seconds
+ *   data-sc-exit-order reverse | same (collections: which item leaves first)
+ * On a registered collection with no entrance, the item selector is set here too, so the exit still
+ * runs item by item. Runs after the entrance (20) and the collection cascade (21).
+ */
+add_filter( 'sc_build_wrapper_attr', function ( $attr, $atts ) {
+    $ex     = ( isset( $atts['exit_animation'] ) && is_array( $atts['exit_animation'] ) ) ? $atts['exit_animation'] : array();
+    $choice = isset( $ex['effect'] ) ? (string) $ex['effect'] : 'none';
+    if ( $choice === 'none' || $choice === '' || ( $choice !== 'reverse' && ! preg_match( '/^animate__[a-zA-Z]+$/', $choice ) ) ) {
+        return $attr;
+    }
+    $set   = ( isset( $atts['exit_animation_settings'] ) && is_array( $atts['exit_animation_settings'] ) ) ? $atts['exit_animation_settings'] : array();
+    $anim  = ( isset( $atts['animation'] ) && is_array( $atts['animation'] ) ) ? $atts['animation'] : array();
+    $entr  = ! empty( $attr['data-sc-anim'] ) && isset( $anim['effect'] ) ? (string) $anim['effect'] : '';
+    list( $kf, $rev ) = sc_exit_resolve( $choice, $entr );
+
+    // Duration: the exit's own, else the entrance's (custom duration, then speed preset), else 1 s / 0.8 s.
+    $dur = (float) ( $set['duration'] ?? 0 );
+    if ( $dur <= 0 && $entr !== '' ) {
+        $es  = ( isset( $atts['animation_settings'] ) && is_array( $atts['animation_settings'] ) ) ? $atts['animation_settings'] : array();
+        $dur = (float) ( $es['custom_duration'] ?? 0 );
+        if ( $dur <= 0 ) {
+            $presets = array( 'animate__slow' => 2, 'animate__slower' => 3, 'animate__fast' => 0.8, 'animate__faster' => 0.5 );
+            $sp      = (string) ( $es['speed_preset'] ?? '' );
+            $dur     = isset( $presets[ $sp ] ) ? $presets[ $sp ] : 1;
+        }
+    }
+    if ( $dur <= 0 ) { $dur = 0.8; }
+    $when  = in_array( ( $set['when'] ?? 'both' ), array( 'both', 'top', 'bottom' ), true ) ? $set['when'] : 'both';
+    $order = ( ( $set['order'] ?? 'reverse' ) === 'same' ) ? 'same' : 'reverse';
+
+    $attr['data-sc-exit']       = esc_attr( $kf );
+    $attr['data-sc-exit-rev']   = $rev ? '1' : '0';
+    $attr['data-sc-exit-when']  = esc_attr( $when );
+    $attr['data-sc-exit-dur']   = esc_attr( (string) round( min( 10, $dur ), 3 ) );
+    $attr['data-sc-exit-delay'] = esc_attr( (string) round( max( 0, min( 10, (float) ( $set['delay'] ?? 0 ) ) ), 3 ) );
+    $attr['data-sc-exit-order'] = $order;
+
+    // A collection with an exit but no entrance still exits item by item.
+    if ( empty( $attr['data-sc-anim-children'] ) ) {
+        $base = isset( $atts['base_class'] ) ? (string) $atts['base_class'] : '';
+        $map  = function_exists( 'sc_anim_collection_items' ) ? sc_anim_collection_items() : array();
+        if ( $base !== '' && ! empty( $map[ $base ] ) && ! ( isset( $attr['data-sc-anim-seq'] ) && $attr['data-sc-anim-seq'] === 'no' ) ) {
+            $attr['data-sc-anim-children'] = esc_attr( $map[ $base ] );
+            if ( ! isset( $attr['data-sc-anim-stagger'] ) ) {
+                $attr['data-sc-anim-stagger'] = esc_attr( (string) max( 0, (int) apply_filters( 'sc_anim_stagger_ms', 90, $base, $atts ) ) );
+            }
+        }
+    }
+
+    sc_animation_flag( true );
+    sc_animation_use( $kf );
+    return $attr;
+}, 22, 2 );
+
 
 /**
  * On-demand enqueue at the start of wp_footer. Instead of the whole 72 KB
@@ -849,11 +1092,15 @@ add_action( 'wp_footer', function () {
     //
     // pointer-events:none goes with it: an invisible element must not swallow clicks the way a 0-opacity
     // overlay would. Keyboard focus can still reach one, which scrolls it into view and fires its reveal.
+    // Exit Animation: an exit is its entrance's keyframes run backwards (.sc-anim-exit), and once it has
+    // played the element stays hidden (.sc-anim-gone) until it comes back on screen.
     $inline_css = '.sc-anim-pending{opacity:0;pointer-events:none;}'
                 . '.sc-anim-pending.animate__animated{opacity:1;pointer-events:auto;}'
+                . '.animate__animated.sc-anim-exit{animation-direction:reverse !important;}'
+                . '.sc-anim-gone{opacity:0 !important;pointer-events:none !important;}'
                 . '@media (prefers-reduced-motion: reduce){'
                 .   '.animate__animated{animation:none !important;}'
-                .   '.sc-anim-pending{opacity:1 !important;pointer-events:auto !important;}'
+                .   '.sc-anim-pending,.sc-anim-gone{opacity:1 !important;pointer-events:auto !important;}'
                 . '}';
     wp_add_inline_style( 'animate-css-base', $inline_css );
 

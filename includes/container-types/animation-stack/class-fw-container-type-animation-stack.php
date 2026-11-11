@@ -72,8 +72,11 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 				$is_card = isset( $field['type'] ) && $field['type'] === 'multi-picker' && ! empty( $field['picker'] ) && is_array( $field['picker'] );
 				if ( ! $is_card ) { continue; }
 				$picker_id = array_key_first( $field['picker'] );
-				$off_val   = ( isset( $field['value'][ $picker_id ] ) ) ? $field['value'][ $picker_id ] : 'none';
-				$saved     = ( isset( $values[ $fid ][ $picker_id ] ) ) ? $values[ $fid ][ $picker_id ] : $off_val;
+				$def_val   = ( isset( $field['value'][ $picker_id ] ) ) ? $field['value'][ $picker_id ] : 'none';
+				// anim_meta['off'] names the off value explicitly, for a field whose DEFAULT is a real effect
+				// (e.g. a new Motion Gallery starts with an Entrance added), so the default isn't taken for off.
+				$off_val   = isset( $field['anim_meta']['off'] ) ? (string) $field['anim_meta']['off'] : $def_val;
+				$saved     = ( isset( $values[ $fid ][ $picker_id ] ) ) ? $values[ $fid ][ $picker_id ] : $def_val;
 				$active_map[ $fid ] = ( $saved !== $off_val && $saved !== '' );
 			}
 
@@ -107,9 +110,10 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 				}
 
 				$picker_id = array_key_first( $field['picker'] );
-				$off_val   = ( isset( $field['value'] ) && is_array( $field['value'] ) && isset( $field['value'][ $picker_id ] ) )
-					? $field['value'][ $picker_id ]
-					: 'none';
+				$off_val   = isset( $field['anim_meta']['off'] ) ? (string) $field['anim_meta']['off']
+					: ( ( isset( $field['value'] ) && is_array( $field['value'] ) && isset( $field['value'][ $picker_id ] ) )
+						? $field['value'][ $picker_id ]
+						: 'none' );
 
 				$active = ! empty( $active_map[ $fid ] );
 				if ( $active ) { $any_active = true; }
@@ -149,7 +153,9 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 				$cards .= '<div class="upw-anim-card' . ( $active ? '' : ' is-hidden' ) . '"'
 					. ' data-anim-id="' . esc_attr( $base ) . '"'
 					. ' data-anim-picker="' . esc_attr( $picker_id ) . '"'
-					. ' data-anim-off="' . esc_attr( $off_val ) . '">'
+					. ' data-anim-off="' . esc_attr( $off_val ) . '"'
+					// The value a freshly added card starts on (e.g. Exit → "Reverse the entrance"), instead of empty.
+					. ( isset( $meta['add_value'] ) ? ' data-anim-add="' . esc_attr( (string) $meta['add_value'] ) . '"' : '' ) . '>'
 					. '<button type="button" class="upw-anim-card-remove" aria-label="' . esc_attr__( 'Remove animation', 'fw' ) . '" title="' . esc_attr__( 'Remove animation', 'fw' ) . '">&times;</button>'
 					. $body
 					. '</div>';
@@ -207,6 +213,7 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 		$cat_desc = array(
 			'all'         => __( 'Browse every animation, or filter by how it runs.', 'fw' ),
 			'Entrance'    => __( 'Plays once on an event you pick — scroll into view, page load, click or hover.', 'fw' ),
+			'Exit'        => __( 'Plays as the element leaves the screen, and brings it back in when it returns.', 'fw' ),
 			'Scroll'      => __( 'Driven by scroll position — progress is tied to the scrollbar as the reader scrolls.', 'fw' ),
 			'Interaction' => __( 'Responds to the pointer — active while hovering, dragging or pressing, then reverts.', 'fw' ),
 			'Ambient'     => __( 'Always running — a continuous, decorative flourish with no trigger.', 'fw' ),
@@ -281,10 +288,16 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 		$paths = array(
 			// Entrance — a sparkle (attention / enters view).
 			'animation'   => '<path d="M12 3.5l1.7 5 5 1.7-5 1.7-1.7 5-1.7-5-5-1.7 5-1.7z"/><path d="M18.5 4.5l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/>',
+			// Exit — an arrow leaving a doorway.
+			'exit_animation' => '<path d="M10 4H5.5A1.5 1.5 0 0 0 4 5.5v13A1.5 1.5 0 0 0 5.5 20H10"/><path d="M14.5 8l4 4-4 4"/><path d="M9 12h9.5"/>',
 			// Scroll Motion — double chevron down (scroll-driven).
 			'gsap_motion' => '<path d="M6 8l6 6 6-6"/><path d="M6 13l6 6 6-6"/>',
 			// Hover — a pointer cursor.
 			'interaction' => '<path d="M6 4l0 14 3.4-3.3 2 4.6 2.4-1-2-4.5 4.6-.1z"/>',
+			// Interactions — a trigger (pointer) driving another element (arrow to a box).
+			'upw_interactions' => '<path d="M4 3.5l0 10 2.5-2.4 1.5 3.3 1.8-.8-1.5-3.2 3.3-.1z"/><path d="M13 7.5h4.5"/><path d="M15.5 5.5l2 2-2 2"/><rect x="14" y="13" width="7" height="7" rx="1.5"/>',
+			// States — two looks of one box (dashed → solid).
+			'upw_states' => '<rect x="3" y="7" width="8" height="10" rx="1.5" stroke-dasharray="2 2"/><rect x="14" y="5" width="7" height="14" rx="1.5"/><path d="M11.5 12h2"/>',
 			// Physics — an atom (orbits).
 			'physics'     => '<circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="9.2" ry="3.7"/><ellipse cx="12" cy="12" rx="9.2" ry="3.7" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9.2" ry="3.7" transform="rotate(120 12 12)"/>',
 			// Parallax — stacked depth layers.

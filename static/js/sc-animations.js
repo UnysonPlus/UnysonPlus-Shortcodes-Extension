@@ -15,7 +15,7 @@
         return document.body && (
             document.body.classList.contains('fw-builder-active') ||
             document.body.classList.contains('fw-backend-builder') ||
-            window.self !== window.top
+            (window.self !== window.top && !/[?&]fw-le-motion-preview=/.test(window.location.search)) /* the Live Editor Preview canvas plays like the real page */
         );
     }
 
@@ -26,11 +26,149 @@
         return;
     }
 
+    // Animate.css reads --animate-delay only through its animate__delay-Ns classes, so an element's own
+    // delay (the Animation Delay setting, and each item's stagger in a cascade) never applied. Set it as
+    // a real animation-delay from the inline variable.
+    function applyDelay(el) {
+        var d = el.style ? String(el.style.getPropertyValue('--animate-delay') || '').trim() : '';
+        if (d !== '') { el.style.animationDelay = d; }
+    }
+
     function play(el) {
         var classes = (el.getAttribute('data-sc-anim') || '').split(/\s+/).filter(Boolean);
         if (!classes.length) return;
+        applyDelay(el);
         classes.forEach(function (c) { el.classList.add(c); });
-        el.classList.remove('sc-anim-pending');
+        el.classList.remove('sc-anim-pending', 'sc-anim-gone');
+    }
+
+    // ── Exit Animation round trip ───────────────────────────────────────────────────────────────
+    // An element with data-sc-exit plays its exit as it leaves the screen (through the edge(s) in
+    // data-sc-exit-when) and comes back in when it returns: with its entrance, or with the exit played
+    // forwards when it has no entrance. A collection does this item by item. The exit is the entrance
+    // keyframe in data-sc-exit, run backwards (.sc-anim-exit) unless data-sc-exit-rev is 0 (Hinge);
+    // once it has played the item stays hidden (.sc-anim-gone) until it is back on screen.
+    function exitCfg(el) {
+        var kf = el.getAttribute('data-sc-exit');
+        if (!kf || !/^animate__[A-Za-z]+$/.test(kf)) { return null; }
+        return {
+            kf: kf,
+            rev: el.getAttribute('data-sc-exit-rev') !== '0',
+            when: el.getAttribute('data-sc-exit-when') || 'both',
+            dur: parseFloat(el.getAttribute('data-sc-exit-dur')) || 0.8,
+            delay: parseFloat(el.getAttribute('data-sc-exit-delay')) || 0,
+            order: el.getAttribute('data-sc-exit-order') === 'same' ? 'same' : 'reverse',
+            stagger: (parseFloat(el.getAttribute('data-sc-anim-stagger')) || 0) / 1000
+        };
+    }
+
+    var trips = [], tripTick = false;
+    function checkTrips() {
+        tripTick = false;
+        for (var i = 0; i < trips.length; i++) { trips[i](); }
+    }
+    function onTripScroll() {
+        if (tripTick) { return; }
+        tripTick = true;
+        window.requestAnimationFrame(checkTrips);
+    }
+
+    function roundTrip(el, targets, hasEntrance, viewTrigger, loadTrigger, cfg) {
+        var n = targets.length;
+        function stripExit(t) {
+            t.classList.remove('sc-anim-exit', cfg.kf);
+            if (t.__scExitSaved) {
+                t.style.setProperty('--animate-duration', t.__scExitSaved.dur);
+                t.style.animationDelay = t.__scExitSaved.delay;
+                t.__scExitSaved = null;
+            }
+        }
+        function whenDone(t, token, fn) {
+            var onEnd = function (e) {
+                if (e.target !== t) { return; }
+                t.removeEventListener('animationend', onEnd);
+                if (t.__scTripTok === token) { fn(); }
+            };
+            t.addEventListener('animationend', onEnd);
+        }
+        function playIn(t, i) {
+            var token = (t.__scTripTok = (t.__scTripTok || 0) + 1);
+            stripExit(t);
+            t.classList.remove('sc-anim-gone');
+            if (hasEntrance) {
+                var classes = (t.getAttribute('data-sc-anim') || '').split(/\s+/).filter(Boolean);
+                classes.forEach(function (c) { t.classList.remove(c); });
+                void t.offsetWidth;                                           // restart the keyframes
+                play(t);
+                if (!/(^|\s)animate__infinite(\s|$)/.test(t.getAttribute('data-sc-anim') || '')) {
+                    whenDone(t, token, function () { reset(t, false); });
+                }
+            } else {                                                          // no entrance: the exit played forwards
+                t.__scExitSaved = { dur: t.style.getPropertyValue('--animate-duration'), delay: t.style.animationDelay };
+                t.style.setProperty('--animate-duration', cfg.dur + 's');
+                t.style.animationDelay = (Math.min(i * cfg.stagger, 1.5)).toFixed(3) + 's';
+                t.classList.remove('animate__animated', cfg.kf);
+                void t.offsetWidth;
+                t.classList.add('animate__animated', cfg.kf);
+                whenDone(t, token, function () { t.classList.remove('animate__animated'); stripExit(t); });
+            }
+        }
+        function playOut(t, i) {
+            var token = (t.__scTripTok = (t.__scTripTok || 0) + 1);
+            var entr = (t.getAttribute('data-sc-anim') || '').split(/\s+/).filter(Boolean);
+            entr.forEach(function (c) { t.classList.remove(c); });
+            t.classList.remove('sc-anim-pending', 'sc-anim-exit', cfg.kf);
+            var idx = cfg.order === 'reverse' ? n - 1 - i : i;
+            if (!t.__scExitSaved) { t.__scExitSaved = { dur: t.style.getPropertyValue('--animate-duration'), delay: t.style.animationDelay }; }
+            t.style.setProperty('--animate-duration', cfg.dur + 's');
+            t.style.animationDelay = (cfg.delay + Math.min(idx * cfg.stagger, 1.5)).toFixed(3) + 's';
+            void t.offsetWidth;
+            t.classList.add('animate__animated', cfg.kf);
+            if (cfg.rev) { t.classList.add('sc-anim-exit'); }
+            whenDone(t, token, function () {
+                t.classList.add('sc-anim-gone');
+                t.classList.remove('animate__animated');
+                stripExit(t);
+            });
+        }
+
+        // pending = waiting for its first entrance; in = on screen; out = has exited.
+        var state = (hasEntrance && (viewTrigger || loadTrigger)) ? 'pending' : 'in';
+        var seen = false;                                                     // never exit before it was ever on screen
+        if (hasEntrance && loadTrigger) { targets.forEach(playIn); state = 'in'; }
+        trips.push(function () {
+            var r = el.getBoundingClientRect(), vh = window.innerHeight || 1;
+            if (!r.width && !r.height) { return; }                            // hidden (another tab, display:none)
+            // First entrance: as soon as a slice of it is on screen (like the plain entrance). The exit is
+            // measured from the element's MIDDLE, so it plays while the content is still in view (a gallery's
+            // box has empty stage above and below its photos, and a sticky header covers the top of the
+            // screen): out when the middle rises past 30% of the screen or drops past 80%; back in once the
+            // middle is between 38% and 72% again (a gap, so it never flickers). It only exits after its
+            // middle has been in that central band once, so nothing exits straight after loading.
+            var mid = (r.top + r.bottom) / 2;
+            var inZone = r.top < vh * 0.82 && r.bottom > vh * 0.18;
+            var central = mid > vh * 0.38 && mid < vh * 0.72;
+            if (state === 'pending') {
+                if (inZone && viewTrigger) { targets.forEach(playIn); state = 'in'; }
+                if (central) { seen = true; }
+                return;
+            }
+            if (state === 'out') {
+                if (central) { targets.forEach(playIn); state = 'in'; }
+                return;
+            }
+            if (central) { seen = true; }
+            if (!seen) { return; }
+            var offTop = mid < vh * 0.3, offBottom = mid > vh * 0.8;
+            if ((offTop && cfg.when !== 'bottom') || (offBottom && cfg.when !== 'top')) {
+                targets.forEach(playOut); state = 'out';
+            }
+        });
+        if (trips.length === 1) {
+            window.addEventListener('scroll', onTripScroll, { passive: true });
+            window.addEventListener('resize', onTripScroll, { passive: true });
+        }
+        onTripScroll();
     }
 
     // Strip the animate classes. keepHidden re-adds sc-anim-pending so the "view" replay hides the
@@ -139,6 +277,18 @@
         el.classList.remove('sc-anim-pending');
         el.removeAttribute('data-sc-anim');
 
+        // With an Exit Animation the items make the round trip (in → out as the wrapper leaves → back in).
+        var ecfg = exitCfg(el);
+        if (ecfg) {
+            roundTrip(el, list, animData !== '', has('view'), has('load'), ecfg);
+            if (animData !== '') {
+                var replayAll = function () { list.forEach(function (k) { playReplayable(k); }); };
+                if (has('click')) { el.addEventListener('click', replayAll); }
+                if (has('hover')) { el.addEventListener('mouseenter', replayAll); }
+            }
+            return true;
+        }
+
         var playAll  = function () { list.forEach(function (k) { interactive ? playReplayable(k) : ( replay ? play(k) : playAndClear(k) ); }); };
         var resetAll = function () { list.forEach(function (k) { reset(k, true); }); };
 
@@ -192,6 +342,15 @@
         el.__scAnimInteractive = interactive;
         var entrancePlay = interactive ? playReplayable : play;
 
+        // Exit Animation → the round trip owns scroll-into-view, page load and Replay On Scroll.
+        var ecfg = exitCfg(el);
+        if (ecfg) {
+            roundTrip(el, [el], (el.getAttribute('data-sc-anim') || '') !== '', has('view'), has('load'), ecfg);
+            if (has('click')) { el.addEventListener('click', function () { playReplayable(el); }); }
+            if (has('hover')) { el.addEventListener('mouseenter', function () { playReplayable(el); }); }
+            return;
+        }
+
         // Page load fires immediately and pre-empts scroll-into-view (load wins).
         if (has('load')) {
             entrancePlay(el);
@@ -210,7 +369,7 @@
     }
 
     function scan(root) {
-        (root || document).querySelectorAll('[data-sc-anim]').forEach(bind);
+        (root || document).querySelectorAll('[data-sc-anim],[data-sc-exit]').forEach(bind);
     }
 
     // Bind a single wrapper on demand — used by runtime-built collections (3D gallery) that carry
@@ -228,7 +387,7 @@
             muts.forEach(function (m) {
                 m.addedNodes && m.addedNodes.forEach(function (n) {
                     if (n.nodeType !== 1) return;
-                    if (n.hasAttribute && n.hasAttribute('data-sc-anim')) { bind(n); }
+                    if (n.hasAttribute && (n.hasAttribute('data-sc-anim') || n.hasAttribute('data-sc-exit'))) { bind(n); }
                     if (n.querySelectorAll) scan(n);
                 });
             });

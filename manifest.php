@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.16.10';
+$manifest['version'] = '1.16.16';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,19 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.16.11 - Exit Animation: a new card on every element's Animations tab (its own Exit
+ *          filter), so an element animates out as it scrolls off the screen and back in
+ *          when it returns. It starts on "Reverse the entrance" (the Entrance played
+ *          backwards, following it if it changes) or offers 43 exits; each exit is an
+ *          entrance keyframe run backwards, so no extra CSS ships. Options: which edge it
+ *          leaves through, duration, delay, and the item order on collections, where it runs
+ *          item by item. It plays as the element's middle crosses 30% / 80% of the screen,
+ *          so it is seen, and only after the element has been on screen. The Entrance card
+ *          gains "+ Add a matching exit". Also: the entrance's Animation Delay and the
+ *          per-item Stagger now really delay (Animate.css only reads --animate-delay through
+ *          its delay classes, so they never did); a shortcode's page_builder `new_atts`
+ *          gives an element dropped from the palette its starting values.
+ *
  * 1.16.7 - Testimonials: Read More (Card tab). Long quotes are cut to a set number of
  *          lines (3-12) with a soft fade, from the first paint, and a "Read more" link is
  *          added only to the quotes that are actually cut off. Two modes: Expand in card
