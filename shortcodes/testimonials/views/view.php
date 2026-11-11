@@ -240,8 +240,68 @@ if ( $design === 'default' && $layout_choice === 'grid' && $ts_container_open ==
 	$ts_grid_merged     = true;
 }
 
+/* Read More (Card tab): clamp long quotes to N lines from the first paint (CSS reads the
+   wrapper's data-ts-more + --ts-more-lines, so nothing shifts when the script runs) and let
+   scripts.js add "Read more" to the quotes that are cut off. 'expand' opens the quote in its
+   card; 'popup' opens a panel listing every review in full, built from the JSON printed after
+   the element (so it works with every design, whatever markup the design uses). */
+$ts_more      = (array) sc_get( 'read_more', $atts, array() );
+$ts_more_mode = isset( $ts_more['mode'] ) && in_array( $ts_more['mode'], array( 'expand', 'popup' ), true ) ? $ts_more['mode'] : 'off';
+$ts_more_cfg  = ( 'off' !== $ts_more_mode && isset( $ts_more[ $ts_more_mode ] ) && is_array( $ts_more[ $ts_more_mode ] ) ) ? $ts_more[ $ts_more_mode ] : array();
+if ( 'off' !== $ts_more_mode && ! empty( $testimonials ) ) {
+	$ts_lines           = isset( $ts_more_cfg['lines'] ) ? max( 2, min( 20, (int) $ts_more_cfg['lines'] ) ) : 6;
+	$attr['data-ts-more'] = $ts_more_mode;
+	$attr['style']      = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . '--ts-more-lines:' . $ts_lines . ';';
+}
+
 /* Dispatch to the chosen design template (inherits all of the above). */
 include $design_file;
+
+if ( 'off' !== $ts_more_mode && ! empty( $testimonials ) ) {
+	$ts_data = array(
+		'mode'  => $ts_more_mode,
+		'more'  => isset( $ts_more_cfg['label'] ) && '' !== trim( (string) $ts_more_cfg['label'] ) ? trim( (string) $ts_more_cfg['label'] ) : __( 'Read more', 'fw' ),
+		'less'  => isset( $ts_more_cfg['less_label'] ) && '' !== trim( (string) $ts_more_cfg['less_label'] ) ? trim( (string) $ts_more_cfg['less_label'] ) : __( 'Show less', 'fw' ),
+		'close' => __( 'Close reviews', 'fw' ),
+	);
+	if ( 'popup' === $ts_more_mode ) {
+		$ts_items = array();
+		$ts_sum   = 0.0;
+		$ts_rated = 0;
+		foreach ( $testimonials as $t ) {
+			$f = function_exists( 'sc_testimonial_fields' ) ? sc_testimonial_fields( $t ) : $t;
+			$body = function_exists( 'sc_testimonial_quote_html' ) ? sc_testimonial_quote_html( isset( $f['content'] ) ? $f['content'] : '' ) : esc_html( isset( $f['content'] ) ? $f['content'] : '' );
+			if ( '' === trim( wp_strip_all_tags( $body ) ) && empty( $f['author_name'] ) ) {
+				continue;
+			}
+			$r = isset( $f['rating'] ) && '' !== $f['rating'] ? max( 0, min( 5, (float) $f['rating'] ) ) : 0;
+			if ( $r > 0 ) { $ts_sum += $r; $ts_rated++; }
+			$ts_items[] = array(
+				'name'   => (string) $f['author_name'],
+				'sub'    => (string) $f['author_job'],
+				'avatar' => (string) $f['avatar'],
+				'rating' => $r,
+				'html'   => $body, // already sanitised by sc_testimonial_quote_html (wp_kses + nl2br)
+				'key'    => trim( preg_replace( '/\s+/u', ' ', mb_substr( wp_strip_all_tags( (string) $f['content'] ), 0, 80 ) ) ),
+			);
+		}
+		$logo = isset( $ts_more_cfg['logo']['url'] ) ? (string) $ts_more_cfg['logo']['url'] : '';
+		$ts_data['popup'] = array(
+			'title'  => isset( $ts_more_cfg['title'] ) && '' !== trim( (string) $ts_more_cfg['title'] ) ? trim( (string) $ts_more_cfg['title'] ) : __( 'Reviews', 'fw' ),
+			'logo'   => '' !== $logo ? esc_url_raw( $logo ) : '',
+			'rating' => ( ! isset( $ts_more_cfg['show_rating'] ) || 'no' !== $ts_more_cfg['show_rating'] ) && $ts_rated > 0 ? round( $ts_sum / $ts_rated, 1 ) : 0,
+			'count'  => count( $ts_items ),
+			/* translators: %d: number of reviews */
+			'count_label' => sprintf( _n( '%d review', '%d reviews', count( $ts_items ), 'fw' ), count( $ts_items ) ),
+			'link'   => isset( $ts_more_cfg['link_url'], $ts_more_cfg['link_label'] ) && '' !== trim( (string) $ts_more_cfg['link_url'] ) && '' !== trim( (string) $ts_more_cfg['link_label'] )
+				? array( 'url' => esc_url_raw( trim( (string) $ts_more_cfg['link_url'] ) ), 'label' => trim( (string) $ts_more_cfg['link_label'] ) )
+				: null,
+			'items'  => $ts_items,
+		);
+	}
+	// Right after the element, so scripts.js finds it as the wrapper's next sibling.
+	echo '<script type="application/json" class="ts-more-data">' . wp_json_encode( $ts_data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP ) . '</script>';
+}
 
 /* Optional Review + AggregateRating JSON-LD — machine-readable customer testimonials.
    itemReviewed is a minimal Organization (the site) so the reviews are not orphaned. */

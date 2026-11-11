@@ -34,12 +34,22 @@
 	background: #00a32a; color: #fff;
 	font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
 }
+.upw-scl-card__badge--update { background: #dba617; color: #1d2327; }
+.upw-scl-card.has-update { border-color: #dba617; box-shadow: 0 0 0 1px #dba617 inset; }
+.upw-scl-card__ver { white-space: nowrap; }
+
+/* Toolbar "updates available" badge + Update all */
+.upw-scl__updates {
+	display: inline-block; background: #dba617; color: #1d2327;
+	font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+}
 
 .upw-scl-card__body { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 16px; flex: 1; }
 .upw-scl-card__title { margin: 0; font-size: 15px; }
 .upw-scl-card__desc { margin: 0; color: #646970; font-size: 13px; line-height: 1.5; flex: 1; }
 .upw-scl-card__meta { display: flex; justify-content: space-between; color: #8c8f94; font-size: 12px; margin-top: 4px; }
-.upw-scl-card__actions { margin-top: 10px; }
+.upw-scl-card__actions { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
 .upw-scl-card__btn { width: 100%; text-align: center; justify-content: center; }
+.upw-scl-card__btn--sub { font-size: 12px; }
 
 .upw-scl__empty { color: #646970; font-style: italic; margin-top: 20px; }

@@ -109,7 +109,24 @@ if ( $minh !== '' ) {
 $img_html   = '';
 $img_istyle = 'object-position:' . esc_attr( $bleed_position ) . ';';
 if ( $bleed_url ) {
-	if ( $bleed_att_id && function_exists( 'wp_get_attachment_image' ) ) {
+	if ( $bleed_att_id && function_exists( 'fw_image_tag' ) && function_exists( 'sc_responsive_image_art' ) ) {
+		// Shared renderer: the same responsive srcset, plus a <picture> source per device
+		// when "Crop on Smaller Screens" or a Tablet & Phone Image is set. Image Position is
+		// the focal point of every crop (and stays the object-position of the desktop file).
+		$bl_focal = preg_match( '/^(left|right|center)$/', $bleed_position ) ? $bleed_position . ' center' : ( preg_match( '/^(top|bottom)$/', $bleed_position ) ? 'center ' . $bleed_position : $bleed_position );
+		$img_html = fw_image_tag( $bleed_att_id, array(
+			'alt'             => $bleed_alt,
+			'class'           => 'bleed-section__image',
+			'extra_attr'      => array( 'style' => $img_istyle ),
+			'inline_style'    => false,
+			'object_position' => $bl_focal,
+			'sizes'           => '(max-width: 767.98px) 100vw, ' . $image_pct . 'vw',
+			'fallback_size'   => 'full',
+			'fetchpriority'   => $bleed_lazy ? '' : 'high',
+			'art'             => sc_responsive_image_art( $atts, 'img_', $bleed_att_id, '', array( 'focal' => $bl_focal ) ),
+		) );
+	}
+	if ( '' === $img_html && $bleed_att_id && function_exists( 'wp_get_attachment_image' ) ) {
 		$img_html = wp_get_attachment_image( $bleed_att_id, 'full', false, array(
 			'alt'      => $bleed_alt,
 			'class'    => 'bleed-section__image',
@@ -118,7 +135,7 @@ if ( $bleed_url ) {
 			'decoding' => 'async',
 			'loading'  => $bleed_lazy ? 'lazy' : 'eager',
 		) );
-	} else {
+	} elseif ( '' === $img_html ) {
 		$img_html = '<img class="bleed-section__image" src="' . esc_url( $bleed_url ) . '" alt="' . esc_attr( $bleed_alt ) . '" style="' . $img_istyle . '" decoding="async" loading="' . ( $bleed_lazy ? 'lazy' : 'eager' ) . '" />';
 	}
 }

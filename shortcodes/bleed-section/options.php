@@ -66,6 +66,11 @@ $options = array(
 							'right bottom' => __( 'Right Bottom', 'fw' ),
 						),
 					),
+				) + ( function_exists( 'sc_responsive_image_fields' )
+					// Per-device crop + tablet/phone image. Image Position above is the focal point;
+					// stacked on phones the image is a short wide strip, so a 4:3 or 16:9 crop suits it.
+					? sc_responsive_image_fields( array( 'prefix' => 'img_', 'fields' => array( 'crops', 'images' ) ) )
+					: array() ) + array(
 					'bleed_image_lazy' => array(
 						'type'         => 'switch',
 						'label'        => __( 'Lazy-load Image', 'fw' ),

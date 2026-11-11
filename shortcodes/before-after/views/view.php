@@ -51,11 +51,12 @@ if ( ! function_exists( 'sc_bac_image' ) ) {
 	 * Resolve an upload att to [ url, alt ] (full-size url, alt from the library).
 	 */
 	function sc_bac_image( $raw ) {
-		$out = array( 'url' => '', 'alt' => '' );
+		$out = array( 'url' => '', 'alt' => '', 'id' => 0 );
 		if ( ! is_array( $raw ) ) {
 			return $out;
 		}
 		$id  = ! empty( $raw['attachment_id'] ) ? (int) $raw['attachment_id'] : 0;
+		$out['id'] = $id;
 		$url = ! empty( $raw['url'] ) ? $raw['url'] : '';
 		if ( $id ) {
 			$full = wp_get_attachment_image_url( $id, 'full' );
@@ -83,6 +84,42 @@ if ( ! function_exists( 'sc_bac_color_var' ) ) {
 			}
 		}
 		return '';
+	}
+}
+
+if ( ! function_exists( 'sc_bac_main_ratio' ) ) {
+	/** The Image Ratio class ('ratio-16-9', 'original') as a ratio string ('16/9', '' = uncropped). */
+	function sc_bac_main_ratio( $ratio ) {
+		return preg_match( '/^ratio-(\d+)-(\d+)$/', (string) $ratio, $m ) ? $m[1] . '/' . $m[2] : '';
+	}
+}
+
+if ( ! function_exists( 'sc_bac_img_html' ) ) {
+	/**
+	 * One comparison photo through the shared renderer: pre-cropped files at the desktop
+	 * Image Ratio, plus a <picture> source per device when "Crop on Smaller Screens" is set.
+	 * Both photos are passed the same ratio, crops and focal point, so they always line up.
+	 * Falls back to the plain responsive <img> for a URL-only image.
+	 */
+	function sc_bac_img_html( $img, $alt, $atts, $main_ratio, $sizes, $extra_class = '' ) {
+		if ( empty( $img['id'] ) || ! function_exists( 'fw_image_tag' ) ) {
+			return '<img' . ( '' !== $extra_class ? ' class="' . esc_attr( $extra_class ) . '"' : '' ) . ' src="' . esc_url( $img['url'] ) . '" alt="' . esc_attr( $alt ) . '"'
+				. ( function_exists( 'fw_img_responsive_attr_html' ) ? fw_img_responsive_attr_html( $img['url'] ) : '' )
+				. ' loading="lazy" decoding="async" />';
+		}
+		$focal = trim( (string) sc_get( 'img_focal', $atts, 'center center' ) );
+		$focal = '' !== $focal ? $focal : 'center center';
+		return fw_image_tag( (int) $img['id'], array(
+			'class'           => $extra_class,
+			'alt'             => $alt,
+			'sizes'           => $sizes,
+			'aspect_ratio'    => $main_ratio,
+			'object_fit'      => 'cover',
+			'object_position' => $focal,
+			'inline_style'    => false, // the comparison box sizes the image (cover)
+			'fallback_size'   => 'full',
+			'art'             => function_exists( 'sc_responsive_image_art' ) ? sc_responsive_image_art( $atts, 'img_', (int) $img['id'], $main_ratio ) : array(),
+		) );
 	}
 }
 
@@ -205,6 +242,15 @@ if ( ! function_exists( 'sc_bac_render_comparison' ) ) {
 		$atts['unique_id_prefix'] = 'bac-';
 		$atts['css_class']        = trim( implode( ' ', $classes ) . ' ' . ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) );
 
+		// Per-device box shape (Crop on Smaller Screens) + the slot width the photos are picked for.
+		if ( ! $as_bg ) {
+			$style_var .= function_exists( 'sc_responsive_image_box_vars' ) ? sc_responsive_image_box_vars( $atts, 'img_', (int) $before['id'], sc_bac_main_ratio( $ratio ), '--bac-ar' ) : '';
+		}
+		$bac_sizes = '100vw';
+		if ( ! $as_bg && $max_width !== '' && preg_match( '/^(\d+(?:\.\d+)?)px$/', preg_replace( '/\s+/', '', $max_width ), $mwm ) ) {
+			$bac_sizes = '(max-width: ' . (int) $mwm[1] . 'px) 100vw, ' . (int) $mwm[1] . 'px';
+		}
+
 		$attr = sc_build_wrapper_attr( $atts );
 		$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style_var;
 
@@ -229,10 +275,10 @@ if ( ! function_exists( 'sc_bac_render_comparison' ) ) {
 				<img class="fw-bac__sizer" src="<?php echo esc_url( $before['url'] ); ?>" alt="" aria-hidden="true" />
 
 				<div class="fw-bac__layer fw-bac__after">
-					<img src="<?php echo esc_url( $after['url'] ); ?>" alt="<?php echo esc_attr( $a_alt ); ?>" loading="lazy" decoding="async" />
+					<?php echo sc_bac_img_html( $after, $a_alt, $atts, $as_bg ? '' : sc_bac_main_ratio( $ratio ), $bac_sizes ); // escaped inside ?>
 				</div>
 				<div class="fw-bac__layer fw-bac__before">
-					<img src="<?php echo esc_url( $before['url'] ); ?>" alt="<?php echo esc_attr( $b_alt ); ?>" loading="lazy" decoding="async" />
+					<?php echo sc_bac_img_html( $before, $b_alt, $atts, $as_bg ? '' : sc_bac_main_ratio( $ratio ), $bac_sizes ); // escaped inside ?>
 				</div>
 
 				<?php if ( $show_labels && $before_label !== '' ) : ?>
@@ -296,6 +342,15 @@ if ( ! function_exists( 'sc_bac_render_spotlight' ) ) {
 		$atts['unique_id_prefix'] = 'bac-';
 		$atts['css_class']        = trim( implode( ' ', $classes ) . ' ' . ( isset( $atts['css_class'] ) ? $atts['css_class'] : '' ) );
 
+		// Per-device box shape (Crop on Smaller Screens) + the slot width the photos are picked for.
+		if ( ! $as_bg ) {
+			$style_var .= function_exists( 'sc_responsive_image_box_vars' ) ? sc_responsive_image_box_vars( $atts, 'img_', (int) $before['id'], sc_bac_main_ratio( $ratio ), '--bac-ar' ) : '';
+		}
+		$bac_sizes = '100vw';
+		if ( ! $as_bg && $max_width !== '' && preg_match( '/^(\d+(?:\.\d+)?)px$/', preg_replace( '/\s+/', '', $max_width ), $mwm ) ) {
+			$bac_sizes = '(max-width: ' . (int) $mwm[1] . 'px) 100vw, ' . (int) $mwm[1] . 'px';
+		}
+
 		$attr = sc_build_wrapper_attr( $atts );
 		$attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' : '' ) . $style_var;
 
@@ -315,10 +370,10 @@ if ( ! function_exists( 'sc_bac_render_spotlight' ) ) {
 				<img class="fw-bac__sizer" src="<?php echo esc_url( $before['url'] ); ?>" alt="" aria-hidden="true" />
 
 				<div class="fw-bac__layer fw-bac__after">
-					<img src="<?php echo esc_url( $after['url'] ); ?>" alt="<?php echo esc_attr( $a_alt ); ?>" loading="lazy" decoding="async" />
+					<?php echo sc_bac_img_html( $after, $a_alt, $atts, $as_bg ? '' : sc_bac_main_ratio( $ratio ), $bac_sizes ); // escaped inside ?>
 				</div>
 				<div class="fw-bac__layer fw-bac__before">
-					<img src="<?php echo esc_url( $before['url'] ); ?>" alt="<?php echo esc_attr( $b_alt ); ?>" loading="lazy" decoding="async" />
+					<?php echo sc_bac_img_html( $before, $b_alt, $atts, $as_bg ? '' : sc_bac_main_ratio( $ratio ), $bac_sizes ); // escaped inside ?>
 				</div>
 			</div>
 		</div>

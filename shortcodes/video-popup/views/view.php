@@ -117,7 +117,9 @@ if ( ! function_exists( 'sc_vp_render' ) ) {
 		echo '<span class="fw-vp__media">';
 		if ( $poster_url !== '' ) {
 			$alt = $poster_id ? (string) get_post_meta( $poster_id, '_wp_attachment_image_alt', true ) : '';
-			echo '<img class="fw-vp__poster" src="' . esc_url( $poster_url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" decoding="async" />';
+			echo '<img class="fw-vp__poster" src="' . esc_url( $poster_url ) . '" alt="' . esc_attr( $alt ) . '"'
+				. ( function_exists( 'fw_img_responsive_attr_html' ) ? fw_img_responsive_attr_html( $poster_url ) : '' )
+				. ' loading="lazy" decoding="async" />';
 		}
 		echo '<span class="fw-vp__btn" aria-hidden="true"><span class="fw-vp__pulse"></span><span class="fw-vp__icon">' . $play_svg . '</span></span>';
 		echo '</span>';

@@ -470,3 +470,10 @@
     .imgbox--fx-tilt:hover .imgbox__media,
     .imgbox--fx-lift:hover { transform: none !important; }
 }
+
+/* Per-device shape (Crop on Smaller Screens): the view writes --ib-ar-lg / -md / -base only when a
+   device differs from the desktop Image Crop Ratio. The image inside is pre-cropped to that shape. */
+.imgbox__media .fw-picture, .imgbox__media-inner > .fw-picture, .imgs-wrap > .fw-picture { display: contents; }
+@media (max-width: 1199.98px) { .imgbox[style*="--ib-ar-lg"] .imgbox__media { aspect-ratio: var(--ib-ar-lg); } .imgbox[style*="--ib-ar-lg"] .imgbox__img { height: 100%; } }
+@media (max-width: 991.98px) { .imgbox[style*="--ib-ar-md"] .imgbox__media { aspect-ratio: var(--ib-ar-md); } }
+@media (max-width: 767.98px) { .imgbox[style*="--ib-ar-base"] .imgbox__media { aspect-ratio: var(--ib-ar-base); } }

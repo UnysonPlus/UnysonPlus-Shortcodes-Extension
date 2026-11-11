@@ -48,7 +48,27 @@ $slots = array();
 // Image Style preset (Theme Settings → Components → Image Styles): wrap the photo in
 // `.imgs-wrap imgs-{slug}` so crop / corners / mask / filter / scrim apply. Only when set.
 $imgs_cls = function_exists( 'sc_image_style_class' ) ? sc_image_style_class( $atts ) : '';
-$img_tag  = '<img src="' . esc_url( $image ) . '" alt="' . esc_attr( $name ) . '" loading="lazy" />';
+$img_tag  = '<img src="' . esc_url( $image ) . '" alt="' . esc_attr( $name ) . '"'
+	. ( function_exists( 'fw_img_responsive_attr_html' ) ? fw_img_responsive_attr_html( $image ) : '' )
+	. ' loading="lazy" />';
+// A Media Library photo goes through the shared renderer: responsive srcset, and per-device
+// crops / a tablet-phone photo (<picture>) when set. The portrait keeps its own shape on
+// desktop; a device crop gives that device a file of the chosen shape.
+$tm_id = ( ! empty( $atts['image']['attachment_id'] ) ) ? (int) $atts['image']['attachment_id'] : 0;
+if ( $tm_id > 0 && function_exists( 'fw_image_tag' ) ) {
+	$tm_focal = isset( $atts['img_focal'] ) && '' !== trim( (string) $atts['img_focal'] ) ? trim( (string) $atts['img_focal'] ) : 'center center';
+	$tm_html  = fw_image_tag( $tm_id, array(
+		'alt'             => $name,
+		'class'           => '',
+		'object_position' => $tm_focal,
+		'fallback_size'   => 'large',
+		'sizes'           => '(max-width: 575.98px) 100vw, (max-width: 991.98px) 50vw, 33vw',
+		'art'             => function_exists( 'sc_responsive_image_art' ) ? sc_responsive_image_art( $atts, 'img_', $tm_id, '' ) : array(),
+	) );
+	if ( '' !== $tm_html ) {
+		$img_tag = $tm_html;
+	}
+}
 if ( $imgs_cls !== '' ) {
 	$img_tag = '<span class="imgs-wrap ' . esc_attr( $imgs_cls ) . '">' . $img_tag . '</span>';
 }

@@ -2,6 +2,21 @@
     die( 'Forbidden' );
 }
 
+if ( ! function_exists( 'sc_ts_more_lines_field' ) ) {
+    /** "Visible Lines" for the Read More clamp (shared by the Expand and Popup choices). */
+    function sc_ts_more_lines_field() {
+        $c = [];
+        foreach ( [ 3, 4, 5, 6, 7, 8, 10, 12 ] as $n ) { $c[ (string) $n ] = sprintf( _n( '%d line', '%d lines', $n, 'fw' ), $n ); }
+        return [
+            'type'    => 'select',
+            'label'   => __( 'Visible Lines', 'fw' ),
+            'desc'    => __( 'How many lines of a review show before "Read more".', 'fw' ),
+            'value'   => '6',
+            'choices' => $c,
+        ];
+    }
+}
+
 /* Design image-picker choices via the pluggable-designs layer: built-in designs
    PLUS installed design packs (each pack's img/icon.svg becomes a tile). Falls
    back to the built-in registry if the layer isn't loaded. */
@@ -441,6 +456,76 @@ $options = [
             'group_rating' => [
                 'type'    => 'group',
                 'options' => function_exists( 'sc_rating_style_field' ) ? sc_rating_style_field() : [],
+            ],
+            // Long reviews: clamp the quote and add "Read more" — expand in the card, or open a
+            // popup listing every review in full (scrolled to the one clicked). Works with every design.
+            'group_read_more' => [
+                'type'    => 'group',
+                'options' => [
+                    'read_more' => [
+                        'type'         => 'multi-picker',
+                        'label'        => false,
+                        'desc'         => false,
+                        'show_borders' => false,
+                        'picker'       => [
+                            'mode' => [
+                                'type'    => 'select',
+                                'label'   => __( 'Read More', 'fw' ),
+                                'desc'    => __( 'Shorten long reviews to a few lines and add a "Read more" link.', 'fw' ),
+                                'help'    => __( 'Expand opens the review inside its card. Popup opens a panel listing every review in full, scrolled to the one clicked, like the review popups on booking sites. Short reviews that already fit get no link.', 'fw' ),
+                                'value'   => 'off',
+                                'choices' => [
+                                    'off'    => __( 'Off (show every review in full)', 'fw' ),
+                                    'expand' => __( 'Expand in the card', 'fw' ),
+                                    'popup'  => __( 'Open all reviews in a popup', 'fw' ),
+                                ],
+                            ],
+                        ],
+                        'choices'      => [
+                            'expand' => [
+                                'lines'      => sc_ts_more_lines_field(),
+                                'label'      => [ 'type' => 'text', 'label' => __( 'Link Text', 'fw' ), 'value' => __( 'Read more', 'fw' ) ],
+                                'less_label' => [ 'type' => 'text', 'label' => __( 'Collapse Text', 'fw' ), 'value' => __( 'Show less', 'fw' ) ],
+                            ],
+                            'popup'  => [
+                                'lines'      => sc_ts_more_lines_field(),
+                                'label'      => [ 'type' => 'text', 'label' => __( 'Link Text', 'fw' ), 'value' => __( 'Read more', 'fw' ) ],
+                                'title'      => [
+                                    'type'  => 'text',
+                                    'label' => __( 'Popup Title', 'fw' ),
+                                    'desc'  => __( 'E.g. "Guest Reviews" or "Airbnb Reviews".', 'fw' ),
+                                    'value' => __( 'Reviews', 'fw' ),
+                                ],
+                                'logo'       => [
+                                    'type'        => 'upload',
+                                    'label'       => __( 'Popup Logo', 'fw' ),
+                                    'desc'        => __( 'Optional small logo beside the title (e.g. the review site\'s logo). SVG or PNG, shown at 30px.', 'fw' ),
+                                    'images_only' => true,
+                                ],
+                                'show_rating' => [
+                                    'type'         => 'switch',
+                                    'label'        => __( 'Average Rating', 'fw' ),
+                                    'desc'         => __( 'Show the average star rating and the number of reviews under the title.', 'fw' ),
+                                    'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
+                                    'left-choice'  => [ 'value' => 'no', 'label' => __( 'No', 'fw' ) ],
+                                    'value'        => 'yes',
+                                ],
+                                'link_label' => [
+                                    'type'  => 'text',
+                                    'label' => __( 'Footer Link Text', 'fw' ),
+                                    'desc'  => __( 'Optional link at the bottom of the popup, e.g. "See all reviews on Airbnb". Needs a URL below.', 'fw' ),
+                                    'value' => '',
+                                ],
+                                'link_url'   => [
+                                    'type'  => 'text',
+                                    'label' => __( 'Footer Link URL', 'fw' ),
+                                    'desc'  => __( 'Opens in a new tab.', 'fw' ),
+                                    'value' => '',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
             ],
         ],
     ],

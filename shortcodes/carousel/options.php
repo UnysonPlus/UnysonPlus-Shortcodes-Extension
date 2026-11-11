@@ -54,6 +54,9 @@ $options = [
 								'label' => __( 'Image', 'fw' ),
 								'desc'  => __( 'Slide image. Use it as a full-bleed background (with text overlaid) or as an inline picture — see "Image Mode".', 'fw' ),
 							],
+						] + ( function_exists( 'sc_responsive_image_fields' )
+							? sc_responsive_image_fields( [ 'prefix' => 'img_', 'fields' => [ 'focal', 'images' ] ] )
+							: [] ) + [
 							'image_mode' => [
 								'type'    => 'select',
 								'label'   => __( 'Image Mode', 'fw' ),
@@ -117,6 +120,27 @@ $options = [
 					'per_page_mobile' => carousel_per_page( __( 'Slides per View (Mobile)', 'fw' ), __( 'Applied at ≤ 576px.', 'fw' ), '1' ),
 				],
 			],
+			'group_bg' => [
+				'type'    => 'group',
+				'options' => [
+					'as_background' => function_exists( 'sc_section_background_field' )
+						? sc_section_background_field( array(
+							'desc' => __( 'Fill the parent Section and sit behind its content as a background slideshow — the Section\'s own heading, text and buttons are automatically lifted on top.', 'fw' ),
+							'help' => __( 'When on, Slide Height, Slides per View, Gap, Arrows, Dots and Drag are ignored: the slides cover the whole Section, one at a time, and play on their own (turn Autoplay on; Fade suits it best). Give the Section a min-height so it has room to fill. Use background-mode slides with no text of their own.', 'fw' ),
+						) )
+						: array( 'type' => 'switch', 'label' => __( 'Use as Section Background', 'fw' ), 'value' => 'no', 'right-choice' => array( 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ), 'left-choice' => array( 'value' => 'no', 'label' => __( 'No', 'fw' ) ) ),
+				],
+			],
+			'group_crops' => [
+				'type'    => 'group',
+				'options' => function_exists( 'sc_responsive_image_fields' )
+					? sc_responsive_image_fields( [
+						'prefix'      => 'img_',
+						'fields'      => [ 'crops' ],
+						'crops_label' => __( 'Crop Slides on Smaller Screens', 'fw' ),
+					] )
+					: [],
+			],
 			'group_dims' => [
 				'type'    => 'group',
 				'options' => [
@@ -164,6 +188,7 @@ $options = [
 						'value'   => 'slide',
 						'choices' => [ 'slide' => __( 'Slide', 'fw' ), 'fade' => __( 'Fade', 'fw' ) ],
 					],
+					'slow_zoom'  => carousel_switch( __( 'Slow Zoom', 'fw' ), __( 'Background images drift slowly closer while their slide is showing (a "Ken Burns" effect). Best with Fade. Off for visitors who ask for reduced motion.', 'fw' ), 'no' ),
 				],
 			],
 		],

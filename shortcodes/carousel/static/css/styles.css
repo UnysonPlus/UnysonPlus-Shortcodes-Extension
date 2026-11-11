@@ -26,6 +26,10 @@
 	object-fit: cover;
 	z-index: 0;
 }
+/* A per-device picture (fw_image_tag 'art'): the <picture> wrapper must not become a
+   box of its own, so the <img> inside keeps covering the slide exactly as before. */
+.fw-carousel__slide > .fw-picture,
+.fw-carousel__media > .fw-picture { display: contents; }
 .fw-carousel__overlay {
 	position: absolute;
 	inset: 0;
@@ -122,4 +126,26 @@
 .fw-carousel .splide__pagination__page.is-active {
 	background: #fff;
 	transform: scale(1.45);
+}
+
+/* --- Section background (as_background) ---
+   sc-bg-fill.css stretches the wrapper over its Section; make every Splide layer
+   follow so each slide covers the whole Section. */
+.fw-carousel--bg .splide,
+.fw-carousel--bg .splide__track,
+.fw-carousel--bg .splide__list,
+.fw-carousel--bg .fw-carousel__slide { height: 100%; }
+.fw-carousel--bg .fw-carousel__slide--bg { min-height: 0; }
+
+/* --- Slow zoom ("Ken Burns") on background images ---
+   The active slide's image eases from 1 to 1.08 over the time it stays on screen
+   (--fwc-zoom-dur, set in view.php from the interval + speed). */
+.fw-carousel--zoom .fw-carousel__bg {
+	transform: scale(1);
+	transition: transform var(--fwc-zoom-dur, 8000ms) linear;
+	will-change: transform;
+}
+.fw-carousel--zoom .is-active .fw-carousel__bg { transform: scale(1.08); }
+@media (prefers-reduced-motion: reduce) {
+	.fw-carousel--zoom .fw-carousel__bg { transition: none; transform: none; }
 }

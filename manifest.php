@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.15.94';
+$manifest['version'] = '1.16.10';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,94 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.16.7 - Testimonials: Read More (Card tab). Long quotes are cut to a set number of
+ *          lines (3-12) with a soft fade, from the first paint, and a "Read more" link is
+ *          added only to the quotes that are actually cut off. Two modes: Expand in card
+ *          (opens the full text in place, "Show less" closes it) and Reviews popup (one
+ *          panel with every review in full, the average rating and count, an optional logo
+ *          and a link to the review site, scrolled to the review clicked; a bottom sheet on
+ *          phones, with focus trap, Esc and click-outside to close). Works with every design,
+ *          including the carousels and the marquee, whose duplicated slides are matched to
+ *          their review by text.
+ *
+ * 1.16.6 - Per-device images, phase 2: Before/After, Image Box, Image + Content, Team
+ *          Member and Bleed Section render through fw_image_tag() and take the shared
+ *          fields. Each element's own ratio stays the desktop shape and Crop on Smaller
+ *          Screens gives tablets / phones their own (Image Box, Image + Content, Team and
+ *          Bleed Section also take a Tablet & Phone Image). Before/After cuts BOTH photos
+ *          with one shape + focal point, and offers no per-device photos, so the pair always
+ *          lines up. Elements whose box is shaped by a ratio class get it per device from
+ *          sc_responsive_image_box_vars() (CSS variables applied in max-width media
+ *          queries). Ratio crops are now real pre-cropped files in these elements too.
+ *
+ * 1.16.5 - Shortcode Library update detection. The library now knows which version of
+ *          each installed shortcode you have and compares it to the catalog, so a newer
+ *          version shows an "Update available" badge with an "Update" button (one click,
+ *          no more Remove-then-reinstall), a "vOLD to vNEW" line, and a toolbar count with
+ *          "Update all". An install stamps its version in a hidden .upw-version sidecar in
+ *          the slug folder; copies installed before this adopt the current catalog version
+ *          as their baseline the first time a trusted remote catalog is seen, so only a
+ *          future catalog bump flags them (no one-off "update everything" burst).
+ *
+ * 1.16.3 - Per-device images: Carousel / Slider and Image can show a different crop,
+ *          focal point or even a different photo on tablets and phones. New fields
+ *          (Focal Point, Crop on Smaller Screens, Tablet & Phone Image) come from one
+ *          shared helper, sc_responsive_image_fields(), and are read back with
+ *          sc_responsive_image_art(); fw_image_tag() takes the result as 'art' and
+ *          writes a <picture> with one <source> per breakpoint, each a set of real
+ *          pre-cropped files. The problem it solves: a landscape photo filling a tall
+ *          phone hero was picked by its box width and stretched (768px file shown at
+ *          ~1200px), soft and wasteful; phones now get e.g. a 1100x1467 portrait crop.
+ *          Desktop-first: the main Image stays the desktop picture and smaller screens
+ *          only override, so no saved slider or image changes. The Slider's first slide
+ *          now always loads eagerly with per-device preload hints, and later slides load
+ *          just before they show (sources first, then the img). The `responsive` option
+ *          type gained a 'devices' subset and 'off_note'. Docs: docs.unysonplus.com,
+ *          For Developers > Responsive images.
+ *
+ * 1.16.1 - Carousel: autoplay now pauses while the carousel is off-screen, and does not
+ *          run at all for a visitor who has asked for reduced motion. This is a bandwidth
+ *          fix as much as a motion one. Slides after the first are lazy-loaded, so every
+ *          autoplay advance fetches the next slide's image - which means an autoplaying
+ *          hero keeps pulling full-bleed photos for as long as the tab is open, including
+ *          long after the reader has scrolled past it, and those fetches queue ahead of the
+ *          content images further down the page. Measured on a real site: 1.6 MB of hero
+ *          slides against 260 KB for every other image on the page, with slides still
+ *          arriving 10 seconds in while the reader was several screens down. Nobody is
+ *          watching an off-screen carousel, so the animation is invisible and the downloads
+ *          are pure waste. A/B on a tall test page: scrolled away, 4 of 4 slides (~1200 KB)
+ *          before and 2 of 4 (~600 KB) after; a reader who stays on the hero still gets all
+ *          four, unchanged. Suppressing autoplay under prefers-reduced-motion also answers
+ *          WCAG 2.2.2 - arrows, dots and drag still work. Falls back to the previous
+ *          behaviour where IntersectionObserver is unavailable.
+ *
+ * 1.15.99 - Elements that build their own <img> now emit srcset, sizes, width and height. An
+ *          element handed only an image URL emitted one fixed file at whatever size happened to
+ *          be stored - the same bytes for a phone and a 5K monitor - and offered the browser no
+ *          smaller alternative, because there was no srcset at all. Audited across the bundled
+ *          set: of the elements that emit an image, only bleed-section, carousel,
+ *          featured-image, image-box, media-image and tabs produced one. Measured on a real
+ *          page, a card rendered about 420 CSS px wide was downloading a 768px file. Missing
+ *          width/height is the other half: without them the browser cannot reserve space, so the
+ *          layout jumps as each image lands. Fixed in Team Member, Video Popup (poster), Audio
+ *          Player (cover art, both the main and per-track images) and Before/After (all four
+ *          images, across both of its render paths) via a shared core helper -
+ *          fw_img_responsive_atts() / fw_img_responsive_attr_html() in
+ *          framework/helpers/general.php - which resolves the attachment behind a URL (memoized,
+ *          and scheme-tolerant for sites that moved to https after uploading) and returns
+ *          WordPress's own srcset. It returns NOTHING for an image that is not a local
+ *          attachment, so a caller merges it unconditionally and an external image is simply
+ *          left alone. The remaining untouched cases are icon uploads rather than content
+ *          photos, where a srcset buys nothing.
+ *
+ * 1.15.95 - Carousel can be a Section background. A new "Use as Section Background" switch (the
+ *          shared sc-bg-fill convention Before/After and Video already use) stretches the carousel
+ *          over its Section, behind the Section's own heading, text and buttons, so a hero can have a
+ *          fading photo backdrop instead of a heavy background video of the same photos. New "Slow
+ *          Zoom" eases each background image closer while its slide shows (off for reduced motion).
+ *          The first background slide loads with high priority. Also fixes Fade + Loop, which stopped
+ *          on the last slide: with Fade, Loop now rewinds to the first.
+ *
  * 1.15.81 - Post Date gains a Prefix ("Last updated:", "Published"), matching Post Author's. A byline
  *          built from Theme Builder elements needed a label in front of the date and had to put it in
  *          a separate text block that did not wrap with the date. The prefix sits inside the element,

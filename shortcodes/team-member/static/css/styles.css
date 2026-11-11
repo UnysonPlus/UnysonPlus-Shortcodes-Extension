@@ -41,3 +41,5 @@
 	font-size: 13px;
 	color: #666666;
 }
+/* Per-device picture (fw_image_tag art). */
+.fw-team .fw-team-image .fw-picture, .fw-team .fw-team-image img { display: inline-block; max-width: 100%; height: auto; }

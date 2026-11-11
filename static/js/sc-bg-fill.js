@@ -34,9 +34,12 @@
 		// stay behind the fill (it keeps its own z-index:0). Lifting it would paint the pattern
 		// over the fill (it sits after the fill in the DOM), hiding video / 3D-gallery backdrops.
 		Array.prototype.forEach.call(host.children, function (ch) {
-			if (ch === el || (ch.classList && ch.classList.contains('pattern-layer'))) { return; }
-			if (getComputedStyle(ch).position === 'static') { ch.style.position = 'relative'; }
-			if (!ch.style.zIndex) { ch.style.zIndex = '1'; }
+			// The Section's own background layers (pattern, image / video container) stay put.
+			if (ch === el || (ch.classList && (ch.classList.contains('pattern-layer') || ch.classList.contains('fs-background-container')))) { return; }
+			var cs = getComputedStyle(ch);
+			if (cs.position === 'static') { ch.style.position = 'relative'; }
+			// Keep a z-index the theme already gives the content; only fill in a missing one.
+			if (!ch.style.zIndex && cs.zIndex === 'auto') { ch.style.zIndex = '1'; }
 		});
 
 		el.__scBgHost = host;

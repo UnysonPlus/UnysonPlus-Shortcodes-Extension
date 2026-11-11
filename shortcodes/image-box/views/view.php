@@ -390,6 +390,7 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
 
         /* --- Build the image <img> ---------------------------------------- */
         $img_html = '';
+        $ib_vars  = '';
         if ( $image_url !== '' ) {
             $img_attr = array(
                 'src'      => esc_url( $image_url ),
@@ -402,6 +403,30 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
             // the image arrives and pick a file that suits the slot.
             $img_attr = array_merge( $img_attr, sc_imgbox_img_dimension_atts( $att_id, $image_url ) );
             $img_html = fw_html_tag( 'img', $img_attr );
+
+            // A Media Library image goes through the shared renderer instead: real files
+            // pre-cropped to the Image Crop Ratio around the Focal Point (not the full
+            // original cropped by CSS), plus a <picture> source per device when "Crop on
+            // Smaller Screens" or a Tablet & Phone Image is set. The box's own CSS sizes it.
+            $ib_id = (int) $att_id > 0 ? (int) $att_id : ( function_exists( 'sc_imgbox_attachment_id_from_url' ) ? (int) sc_imgbox_attachment_id_from_url( $image_url ) : 0 );
+            if ( $ib_id > 0 && function_exists( 'fw_image_tag' ) && function_exists( 'sc_ratio_from_class' ) ) {
+                $ib_ratio = sc_ratio_from_class( $ratio );
+                $ib_focal = isset( $atts['img_focal'] ) && '' !== trim( (string) $atts['img_focal'] ) ? trim( (string) $atts['img_focal'] ) : 'center center';
+                $ib_html  = fw_image_tag( $ib_id, array(
+                    'class'           => 'imgbox__img',
+                    'alt'             => $alt,
+                    'aspect_ratio'    => $ib_ratio,
+                    'object_fit'      => 'cover',
+                    'object_position' => $ib_focal,
+                    'inline_style'    => false,
+                    'fallback_size'   => 'full',
+                    'art'             => sc_responsive_image_art( $atts, 'img_', $ib_id, $ib_ratio ),
+                ) );
+                if ( '' !== $ib_html ) {
+                    $img_html = $ib_html;
+                    $ib_vars  = sc_responsive_image_box_vars( $atts, 'img_', $ib_id, $ib_ratio, '--ib-ar' );
+                }
+            }
         }
 
         /* --- Build the icon ----------------------------------------------- */
@@ -555,6 +580,9 @@ if ( ! function_exists( 'sc_imgbox_render' ) ) {
         }
         if ( $mask_custom_style !== '' ) {
             $style_var .= $mask_custom_style;
+        }
+        if ( ! empty( $ib_vars ) ) {
+            $style_var .= $ib_vars; // per-device box shape (Crop on Smaller Screens)
         }
         $attr['style'] = isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], ';' ) . ';' . $style_var : $style_var;
 

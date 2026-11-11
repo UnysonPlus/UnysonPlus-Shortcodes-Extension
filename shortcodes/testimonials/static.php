@@ -30,6 +30,19 @@ wp_enqueue_script(
 	true
 );
 
+// Read More: the "Read more" button, its open / fits states and the whole reviews popup
+// (.ts-rv, .ts-rv__*, html.ts-rv-lock) are made by scripts.js, so they never appear in
+// the HTML the Asset Optimizer scans. Without this its unused-CSS purge drops them and
+// the popup renders unstyled.
+add_filter(
+	'fw:ext:asset-optimizer:protected_classes',
+	function ( $classes ) {
+		$classes[] = 'ts-rv';
+		$classes[] = 'ts-more';
+		return $classes;
+	}
+);
+
 /* ---------------------------------------------------------------------------
  * Per-design assets (registry-driven). The base styles.css / scripts.js above
  * always load (they cover the Classic/default design + shared avatars, ratings

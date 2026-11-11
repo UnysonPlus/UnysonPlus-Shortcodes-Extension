@@ -307,6 +307,8 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			'scroll_text_highlight' => '<rect x="3.4" y="5.8" width="8" height="3.4" rx="1" fill="currentColor" stroke="none" opacity="0.25"/><path d="M4.2 7.5h6.8"/><path d="M4 12h14"/><path d="M4 16.5h9"/>',
 			// Scroll Color Shift — a screen whose upper band is tinted (colour morph).
 			'scroll_color_shift' => '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="4.6" y="4.6" width="14.8" height="7" rx="1.6" fill="currentColor" stroke="none" opacity="0.26"/><path d="M4 12h16"/>',
+			// Painted — a paint brush over a wash.
+			'painted' => '<path d="M3.5 17.5c3-1.6 6.5-1.4 9.2.2 2 1.2 4.6 1.3 7.3.3" opacity="0.45"/><path d="M14.2 9.8l5.6-5.6a1.4 1.4 0 0 1 2 2l-5.6 5.6"/><path d="M14.2 9.8c-1.9-.4-3.6.9-3.7 2.8-.1 1.2-.7 2-1.9 2.4 2.5 1 5.5.4 6.9-1.6.6-.9.4-2.2-.3-2.9z"/>',
 			'_default'    => '<circle cx="12" cy="12" r="8.5"/><path d="M9 12h6M12 9v6"/>',
 		);
 		$inner = isset( $paths[ $fid ] ) ? $paths[ $fid ] : $paths['_default'];
@@ -331,6 +333,7 @@ class FW_Container_Type_Animation_Stack extends FW_Container_Type {
 			'flip_card'    => 'Interaction',
 			'marquee'      => 'Ambient',
 			'confetti'     => 'Ambient',
+			'painted'      => 'Ambient',
 		);
 		return isset( $map[ $fid ] ) ? $map[ $fid ] : __( 'Other', 'fw' );
 	}

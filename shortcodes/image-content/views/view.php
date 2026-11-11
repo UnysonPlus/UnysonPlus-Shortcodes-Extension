@@ -161,6 +161,36 @@ if ( $img_style !== '' ) {
 $image_html = '';
 if ( ! empty( $atts['image'] ) && ! empty( $atts['image']['url'] ) ) {
 	$image_html = '<img ' . fw_attr_to_html( $img_attr ) . '/>';
+	// A Media Library image goes through the shared renderer: a responsive srcset (pre-cropped
+	// to the Aspect Ratio around the Focal Point when Fit = Cover), and a <picture> source per
+	// device when "Crop on Smaller Screens" or a Tablet & Phone Image is set. The element's own
+	// inline style (radius, shadow, ratio box) is kept; with per-device files the box follows
+	// each device's file instead of the desktop ratio.
+	$ic_id = ! empty( $atts['image']['attachment_id'] ) ? (int) $atts['image']['attachment_id'] : 0;
+	if ( $ic_id > 0 && function_exists( 'fw_image_tag' ) ) {
+		$ic_ratio = ( $image_ratio !== '' ) ? str_replace( 'x', '/', $image_ratio ) : '';
+		$ic_cover = ( $image_fit !== 'contain' );
+		$ic_focal = isset( $atts['img_focal'] ) && '' !== trim( (string) $atts['img_focal'] ) ? trim( (string) $atts['img_focal'] ) : 'center center';
+		$ic_extra = array();
+		if ( $img_style !== '' ) {
+			$ic_extra['style'] = $img_style . ( $ic_cover && $ic_ratio !== '' ? ';object-position:' . $ic_focal : '' );
+		}
+		$ic_html = fw_image_tag( $ic_id, array(
+			'class'           => implode( ' ', $img_classes ),
+			'alt'             => (string) $alt,
+			'aspect_ratio'    => $ic_cover ? $ic_ratio : '',
+			'object_fit'      => $ic_cover ? 'cover' : 'contain',
+			'object_position' => $ic_focal,
+			'inline_style'    => false, // the element's own style (below) carries ratio / radius / shadow
+			'extra_attr'      => $ic_extra,
+			'fallback_size'   => 'full',
+			'sizes'           => '(max-width: 767.98px) 100vw, 50vw',
+			'art'             => ( $ic_cover && function_exists( 'sc_responsive_image_art' ) ) ? sc_responsive_image_art( $atts, 'img_', $ic_id, $ic_ratio ) : array(),
+		) );
+		if ( '' !== $ic_html ) {
+			$image_html = $ic_html;
+		}
+	}
 	if ( ! empty( $atts['image_link'] ) ) {
 		$target     = ! empty( $atts['image_link_target'] ) && in_array( $atts['image_link_target'], [ '_self', '_blank' ], true ) ? $atts['image_link_target'] : '_self';
 		$rel        = $target === '_blank' ? ' rel="noopener noreferrer"' : '';

@@ -1183,6 +1183,8 @@ class FW_Ext_Shortcodes_Settings_Page {
 				<input type="search" id="upw-scl-search" class="upw-scl__search" placeholder="<?php esc_attr_e( 'Search shortcodes…', 'fw' ); ?>" />
 				<select id="upw-scl-category" class="upw-scl__category"></select>
 				<button type="button" class="button upw-scl__refresh" data-act="refresh"><?php esc_html_e( 'Refresh catalog', 'fw' ); ?></button>
+				<span class="upw-scl__updates" id="upw-scl-updates" hidden></span>
+				<button type="button" class="button button-primary upw-scl__update-all" id="upw-scl-update-all" hidden><?php esc_html_e( 'Update all', 'fw' ); ?></button>
 			</div>
 			<div class="upw-scl__notice" id="upw-scl-notice" hidden></div>
 			<div class="upw-scl__grid" id="upw-scl-grid" aria-live="polite"></div>

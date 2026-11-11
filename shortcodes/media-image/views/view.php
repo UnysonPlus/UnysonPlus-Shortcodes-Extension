@@ -107,6 +107,14 @@ $img_html = fw_image_tag(
 		'aspect_ratio'    => $image_ratio,
 		'object_fit'      => $image_fit,
 		'object_position' => $focal_position,
+		// Per-device crop / tablet & phone image (Content tab). Aspect Ratio + Crop
+		// Position stay the desktop picture; smaller screens get their own pre-cropped
+		// files through a <picture>. Not with Fit = Contain (nothing is cropped there).
+		'art'             => ( $attachment_id && 'contain' !== $image_fit && function_exists( 'sc_responsive_image_art' ) )
+			? sc_responsive_image_art( $atts, 'img_', $attachment_id, $image_ratio, array(
+				'focal' => isset( $atts['focal_position'] ) && '' !== trim( (string) $atts['focal_position'] ) ? trim( (string) $atts['focal_position'] ) : 'center center',
+			) )
+			: array(),
 	)
 );
 

@@ -127,19 +127,71 @@ function upw_sc_lib_installed_slugs() {
 	return $out;
 }
 
-/** Merged gallery items, each tagged with state: installed | available. */
+/**
+ * Version stamp — the catalog version an installed copy was last installed/updated from.
+ * Kept in a hidden sidecar file inside the slug folder, so the library can compare it against
+ * the live catalog version and tell when a newer version is available. Without it the library
+ * only knows "present vs not" and can never surface an update.
+ */
+function upw_sc_lib_version_file( $slug ) {
+	return upw_sc_lib_install_dir() . '/' . sanitize_key( $slug ) . '/.upw-version';
+}
+
+/** Read the stamped installed version for a slug, or '' when there is no stamp yet. */
+function upw_sc_lib_installed_version( $slug ) {
+	$file = upw_sc_lib_version_file( $slug );
+	return is_file( $file ) ? trim( (string) file_get_contents( $file ) ) : '';
+}
+
+/** Write the version stamp for an installed slug (best-effort; a read-only FS just leaves it unstamped). */
+function upw_sc_lib_stamp_version( $slug, $version ) {
+	$dir = upw_sc_lib_install_dir() . '/' . sanitize_key( $slug );
+	if ( ! is_dir( $dir ) ) { return false; }
+	return false !== @file_put_contents( $dir . '/.upw-version', (string) $version );
+}
+
+/**
+ * Merged gallery items, each tagged with state: available | installed | update.
+ *
+ * `update` = installed, and the stamped version is older than the catalog version. Installed copies
+ * with no stamp yet (installed before update-tracking, or installed while offline) adopt the current
+ * catalog version as their baseline the first time a trusted remote catalog is seen — so only a
+ * FUTURE catalog bump flags them, never a one-off "update everything" burst on upgrade.
+ */
 function upw_sc_lib_items() {
-	$catalog   = upw_sc_lib_catalog();
-	$installed = upw_sc_lib_installed_slugs();
-	$items     = array();
+	$catalog    = upw_sc_lib_catalog();
+	$catalog_ok = ! empty( $catalog['_catalog_ok'] );
+	$installed  = upw_sc_lib_installed_slugs();
+	$items      = array();
 	foreach ( $catalog['shortcodes'] as $slug => $it ) {
-		$it['state']     = in_array( $slug, $installed, true ) ? 'installed' : 'available';
-		$it['thumb_url'] = upw_sc_lib_resolve_url( $catalog, $it['thumb'] );
+		$state             = 'available';
+		$installed_version = '';
+		if ( in_array( $slug, $installed, true ) ) {
+			$installed_version = upw_sc_lib_installed_version( $slug );
+			if ( '' === $installed_version ) {
+				// No baseline yet: adopt the current catalog version (only from a trusted remote catalog).
+				if ( $catalog_ok ) { upw_sc_lib_stamp_version( $slug, $it['version'] ); }
+				$installed_version = $it['version'];
+				$state             = 'installed';
+			} else {
+				$state = version_compare( $installed_version, $it['version'], '<' ) ? 'update' : 'installed';
+			}
+		}
+		$it['state']             = $state;
+		$it['installed_version'] = $installed_version;
+		$it['thumb_url']         = upw_sc_lib_resolve_url( $catalog, $it['thumb'] );
 		unset( $it['payload'], $it['sha256'] ); // not needed client-side
 		$items[] = $it;
 	}
 	usort( $items, function ( $a, $b ) { return strcasecmp( $a['title'], $b['title'] ); } );
 	return $items;
+}
+
+/** Count of installed shortcodes with a newer version available (for the header badge). */
+function upw_sc_lib_updates_count() {
+	$n = 0;
+	foreach ( upw_sc_lib_items() as $it ) { if ( 'update' === $it['state'] ) { $n++; } }
+	return $n;
 }
 
 /* -------------------------------------------------------------------------- *
@@ -203,6 +255,8 @@ function upw_sc_lib_install( $slug ) {
 		if ( is_wp_error( $copied ) ) { $GLOBALS['wp_filesystem']->delete( $staging, true ); return $copied; }
 	}
 	$GLOBALS['wp_filesystem']->delete( $staging, true );
+	// Record the version we just installed, so the library can detect a future update.
+	upw_sc_lib_stamp_version( $slug, isset( $entry['version'] ) ? $entry['version'] : '' );
 	return true;
 }
 
@@ -236,17 +290,24 @@ function upw_sc_lib_installer_payload() {
 		'nonce'     => wp_create_nonce( 'upw_sc_lib_manage' ),
 		'items'     => upw_sc_lib_items(),
 		'installed' => upw_sc_lib_installed_slugs(),
+		'updates'   => upw_sc_lib_updates_count(),
 		'catalogOk' => ! empty( $catalog['_catalog_ok'] ),
 		'i18n'      => array(
-			'install'    => __( 'Install', 'fw' ),
-			'installing' => __( 'Installing…', 'fw' ),
-			'installed'  => __( 'Installed', 'fw' ),
-			'remove'     => __( 'Remove', 'fw' ),
-			'removing'   => __( 'Removing…', 'fw' ),
-			'failed'     => __( 'Something went wrong. Please try again.', 'fw' ),
-			'offline'    => __( 'Showing the built-in list — the online catalog is unreachable right now.', 'fw' ),
-			'reload'     => __( 'Installed! Reload the Page Builder to use it.', 'fw' ),
-			'allCats'    => __( 'All categories', 'fw' ),
+			'install'     => __( 'Install', 'fw' ),
+			'installing'  => __( 'Installing…', 'fw' ),
+			'installed'   => __( 'Installed', 'fw' ),
+			'update'      => __( 'Update', 'fw' ),
+			'updating'    => __( 'Updating…', 'fw' ),
+			'updateReady' => __( 'Update available', 'fw' ),
+			'updatedMsg'  => __( 'Updated! Reload the Page Builder to use the new version.', 'fw' ),
+			'remove'      => __( 'Remove', 'fw' ),
+			'removing'    => __( 'Removing…', 'fw' ),
+			'failed'      => __( 'Something went wrong. Please try again.', 'fw' ),
+			'offline'     => __( 'Showing the built-in list — the online catalog is unreachable right now.', 'fw' ),
+			'reload'      => __( 'Installed! Reload the Page Builder to use it.', 'fw' ),
+			'allCats'     => __( 'All categories', 'fw' ),
+			/* translators: %s is the new version, e.g. 2.0.2. */
+			'newVersion'  => __( 'v%s available', 'fw' ),
 		),
 	);
 }
@@ -260,7 +321,8 @@ function upw_sc_lib_ajax_manage() {
 	$action = isset( $_POST['sc_action'] ) ? sanitize_key( wp_unslash( $_POST['sc_action'] ) ) : '';
 	$slug   = isset( $_POST['slug'] ) ? sanitize_key( wp_unslash( $_POST['slug'] ) ) : '';
 
-	if ( 'install' === $action ) {
+	if ( 'install' === $action || 'update' === $action ) {
+		// An update re-installs: the installer replaces the folder and re-stamps the new version.
 		$r = upw_sc_lib_install( $slug );
 	} elseif ( 'uninstall' === $action ) {
 		$r = upw_sc_lib_uninstall( $slug );
@@ -277,6 +339,7 @@ function upw_sc_lib_ajax_manage() {
 	wp_send_json_success( array(
 		'items'     => upw_sc_lib_items(),
 		'installed' => upw_sc_lib_installed_slugs(),
+		'updates'   => upw_sc_lib_updates_count(),
 		'catalogOk' => ! empty( $catalog['_catalog_ok'] ),
 	) );
 }

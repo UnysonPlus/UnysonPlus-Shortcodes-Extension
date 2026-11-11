@@ -215,6 +215,11 @@ $options = [
 						],
 						'value' => '',
 					],
+				] + ( function_exists( 'sc_responsive_image_fields' )
+					// Per-device crop + tablet/phone image (with Image Fit = Cover). Image Aspect
+					// Ratio stays the desktop shape; smaller screens can take their own.
+					? sc_responsive_image_fields( [ 'prefix' => 'img_' ] )
+					: [] ) + [
 					'image_radius' => [
 						'type'    => 'select',
 						'label'   => __( 'Image Border Radius', 'fw' ),

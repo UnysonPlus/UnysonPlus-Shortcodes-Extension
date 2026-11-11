@@ -276,7 +276,18 @@ $options = array(
 						),
 						'desc' => __( 'Rounding of the corners. Ignored in background mode.', 'fw' ),
 					),
-				),
+				) + ( function_exists( 'sc_responsive_image_fields' )
+					// Per-device shape for BOTH images: Image Ratio above stays the desktop shape;
+					// tablets / phones can take another, and both photos are always cut with the
+					// same shape + focal point, so the comparison keeps lining up. No per-device
+					// replacement photos here: a mismatched pair would break the comparison.
+					? sc_responsive_image_fields( array(
+						'prefix'      => 'img_',
+						'fields'      => array( 'focal', 'crops' ),
+						'focal_label' => __( 'Focal Point (both images)', 'fw' ),
+						'crops_label' => __( 'Crop on Smaller Screens (both images)', 'fw' ),
+					) )
+					: array() ),
 			),
 		),
 	),

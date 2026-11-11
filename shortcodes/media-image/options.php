@@ -82,7 +82,11 @@ $options = [
                             'right bottom'  => __( 'Bottom Right', 'fw' ),
                         ],
                     ],
-                ],
+                ] + ( function_exists( 'sc_responsive_image_fields' )
+                    // Per-device crop + tablet/phone image. Aspect Ratio and Crop Position above
+                    // stay the desktop picture; these only override smaller screens.
+                    ? sc_responsive_image_fields( [ 'prefix' => 'img_', 'fields' => [ 'crops', 'images' ] ] )
+                    : [] ),
             ],
             'screen_preview' => [
                 'type'    => 'group',

@@ -13,6 +13,10 @@ $options = [
                 'help'  => __('Use a square headshot for the most consistent look across multiple team members in a row.', 'fw'),
                 'type'  => 'upload',
             ],
+        ] + ( function_exists( 'sc_responsive_image_fields' )
+            // Focal point, crop per device and a tablet/phone photo for the portrait.
+            ? sc_responsive_image_fields( [ 'prefix' => 'img_' ] )
+            : [] ) + [
             'name' => [
                 'label' => __('Name', 'fw'),
                 'desc'  => __('Name of the person', 'fw'),

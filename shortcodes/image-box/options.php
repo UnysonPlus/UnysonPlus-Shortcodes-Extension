@@ -319,6 +319,10 @@ $options = [
                             'ratio-2-3'   => __( 'Portrait 2:3', 'fw' ),
                         ],
                     ],
+                ] + ( function_exists( 'sc_responsive_image_fields' )
+                    // Per-device crop + tablet/phone image; Image Crop Ratio stays the desktop shape.
+                    ? sc_responsive_image_fields( [ 'prefix' => 'img_' ] )
+                    : [] ) + [
                     'content_align' => sc_alignment_field( array(
                         'label'   => __( 'Content Alignment', 'fw' ),
                         'inherit' => true,

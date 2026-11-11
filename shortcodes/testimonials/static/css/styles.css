@@ -323,3 +323,68 @@
 .ts-card__extra-row + .ts-card__extra-row { margin-top: .4rem; }
 .ts-card__extra-label { font-size: .8rem; line-height: 1.3; color: var(--ts-extra-label, #6b7280); }
 .ts-card__extra-value { font-weight: 700; line-height: 1.25; color: var(--ts-extra-value, var(--color-primary, #1a7d5a)); }
+
+/* ---------------------------------------------------------------------------------------------
+ * Read More (Card tab → Read More). The wrapper carries data-ts-more + --ts-more-lines, so long
+ * quotes are clamped from the first paint (no layout shift when the script adds the link).
+ * scripts.js marks quotes that fit with .ts-more-fits (no fade) and adds .ts-more-btn after the
+ * ones that are cut off. 'expand' opens a quote in place (.ts-more-open); 'popup' opens .ts-rv.
+ * ------------------------------------------------------------------------------------------- */
+[data-ts-more] .testimonial-quote {
+	display: block;
+	max-height: calc(var(--ts-more-lines, 6) * 1.65em);
+	overflow: hidden;
+	-webkit-mask-image: linear-gradient(180deg, #000 70%, transparent);
+	mask-image: linear-gradient(180deg, #000 70%, transparent);
+}
+@supports (max-height: 1lh) {
+	[data-ts-more] .testimonial-quote { max-height: calc(var(--ts-more-lines, 6) * 1lh); }
+}
+[data-ts-more] .testimonial-quote.ts-more-fits,
+[data-ts-more] .testimonial-quote.ts-more-open { max-height: none; -webkit-mask-image: none; mask-image: none; }
+.ts-more-btn {
+	display: inline-block; align-self: flex-start; margin: 6px 0 0; padding: 0; border: 0; background: none;
+	color: var(--ts-more-color, var(--bs-primary, #b4532f)); font: inherit; font-weight: 600; cursor: pointer;
+	text-decoration: underline; text-underline-offset: 3px;
+}
+.ts-more-btn:hover { opacity: .8; }
+.ts-more-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 2px; }
+.text-center .ts-more-btn, .text-center + .ts-more-btn { align-self: center; }
+
+/* The reviews popup */
+.ts-rv-lock { overflow: hidden !important; }
+.ts-rv { position: fixed; inset: 0; z-index: 100000; display: flex; align-items: center; justify-content: center; padding: 24px 16px; background: rgba(15, 16, 14, .6); opacity: 0; transition: opacity .25s ease; }
+.ts-rv.is-open { opacity: 1; }
+.ts-rv[hidden] { display: none; }
+.ts-rv__panel { position: relative; display: flex; flex-direction: column; width: min(600px, 100%); max-height: min(86vh, 860px); background: #fff; color: #22201c; border-radius: 20px; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, .6); overflow: hidden; transform: translateY(14px) scale(.985); transition: transform .3s cubic-bezier(.2, .7, .2, 1); text-align: left; }
+.ts-rv.is-open .ts-rv__panel { transform: none; }
+.ts-rv__head { display: flex; align-items: center; gap: 14px; padding: 20px 64px 18px 26px; border-bottom: 1px solid rgba(0, 0, 0, .08); }
+.ts-rv__logo { width: 30px; height: 30px; flex: 0 0 auto; object-fit: contain; }
+.ts-rv .ts-rv__title { margin: 0; font-size: 1.125rem; font-weight: 700; line-height: 1.2; color: inherit; letter-spacing: 0; text-transform: none; }
+.ts-rv__meta { margin: 3px 0 0; display: flex; align-items: center; gap: 8px; font-size: .875rem; opacity: .8; }
+.ts-rv__meta b { font-size: .9375rem; }
+.ts-rv__stars { color: var(--ts-rv-star, #f2b33d); letter-spacing: 1px; line-height: 1; }
+.ts-rv__fill { background: linear-gradient(90deg, var(--ts-rv-star, #f2b33d) var(--ts-rv-fill, 100%), var(--ts-rv-star-off, #d8d3ca) 0); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ts-rv__close { position: absolute; top: 14px; right: 14px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .06); color: inherit; cursor: pointer; display: grid; place-items: center; }
+.ts-rv__close:hover { background: rgba(0, 0, 0, .1); }
+.ts-rv__close:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.ts-rv__list { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 6px 26px 8px; }
+.ts-rv__item { padding: 20px 0 22px; border-bottom: 1px solid rgba(0, 0, 0, .06); border-radius: 12px; transition: background-color .6s ease, box-shadow .6s ease; }
+.ts-rv__item:last-child { border-bottom: 0; }
+.ts-rv__item.is-target { background: rgba(242, 179, 61, .1); box-shadow: 0 0 0 10px rgba(242, 179, 61, .1); }
+.ts-rv__who { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.ts-rv__avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex: 0 0 auto; background: rgba(0, 0, 0, .06); display: grid; place-items: center; font-weight: 700; }
+.ts-rv__avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ts-rv .ts-rv__name { margin: 0; font-weight: 700; font-size: 1rem; line-height: 1.25; color: inherit; }
+.ts-rv__sub { margin: 2px 0 0; font-size: .8125rem; opacity: .75; }
+.ts-rv__text { margin: 8px 0 0; font-size: .9688rem; line-height: 1.7; }
+.ts-rv__foot { padding: 14px 26px 18px; border-top: 1px solid rgba(0, 0, 0, .08); text-align: center; }
+.ts-rv__foot a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 599.98px) {
+	.ts-rv { align-items: flex-end; padding: 0; }
+	.ts-rv__panel { width: 100%; max-height: 88vh; border-radius: 20px 20px 0 0; transform: translateY(40px); }
+	.ts-rv__head { padding: 18px 60px 16px 20px; }
+	.ts-rv__list { padding: 4px 20px 8px; }
+	.ts-rv__foot { padding: 12px 20px calc(16px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) { .ts-rv, .ts-rv__panel, .ts-rv__item { transition: none; } }

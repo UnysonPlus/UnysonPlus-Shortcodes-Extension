@@ -222,3 +222,18 @@
 .fw-bac--bg .fw-bac__sizer { display: none; }
 .fw-bac--bg .fw-bac__layer { position: absolute; inset: 0; }
 .fw-bac--bg .fw-bac__layer img { height: 100%; }
+
+/* Per-device shape (Crop on Smaller Screens): the view writes --bac-ar-lg / -md / -base only when a
+   device differs from the desktop Image Ratio. Both photos are pre-cropped to the same shape, so the
+   box simply takes it; the hidden "original" sizer is not needed once a shape is set. */
+.fw-bac__layer > .fw-picture { display: contents; }
+@media (max-width: 1199.98px) {
+	.fw-bac[style*="--bac-ar-lg"]:not(.fw-bac--bg) .fw-bac__media { aspect-ratio: var(--bac-ar-lg); }
+	.fw-bac[style*="--bac-ar-lg"]:not(.fw-bac--bg) .fw-bac__sizer { display: none; }
+}
+@media (max-width: 991.98px) {
+	.fw-bac[style*="--bac-ar-md"]:not(.fw-bac--bg) .fw-bac__media { aspect-ratio: var(--bac-ar-md); }
+}
+@media (max-width: 767.98px) {
+	.fw-bac[style*="--bac-ar-base"]:not(.fw-bac--bg) .fw-bac__media { aspect-ratio: var(--bac-ar-base); }
+}

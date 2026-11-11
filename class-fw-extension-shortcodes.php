@@ -106,6 +106,10 @@ class FW_Extension_Shortcodes extends FW_Extension
 		// its own wp_footer enqueue, so require it on every request.
 		require_once dirname( __FILE__ ) . '/includes/shortcode-background-helper.php';
 
+		// Per-device image fields (focal point, crop per device, tablet/phone image)
+		// + the reader that turns them into fw_image_tag()'s <picture> spec.
+		require_once dirname( __FILE__ ) . '/includes/responsive-image-fields.php';
+
 		// Shortcode Design Presets — uploadable per-element designs (values bundle).
 		// Registers the builder-side Design bar enqueue + the enabled-shortcodes list.
 		require_once dirname( __FILE__ ) . '/includes/design-presets.php';

@@ -112,7 +112,9 @@ if ( ! function_exists( 'sc_ap_render' ) ) {
 
 		// Cover (card / playlist designs).
 		echo '<div class="fw-ap__cover"' . ( $first['cover'] === '' ? ' data-empty="1"' : '' ) . '>';
-		echo '<img class="fw-ap__cover-img" src="' . esc_url( $first['cover'] ) . '" alt="" />';
+		echo '<img class="fw-ap__cover-img" src="' . esc_url( $first['cover'] ) . '" alt=""'
+			. ( function_exists( 'fw_img_responsive_attr_html' ) ? fw_img_responsive_attr_html( $first['cover'] ) : '' )
+			. ' />';
 		echo '<span class="fw-ap__cover-note" aria-hidden="true">&#9835;</span>';
 		echo '</div>';
 
@@ -142,7 +144,9 @@ if ( ! function_exists( 'sc_ap_render' ) ) {
 		foreach ( $tracks as $i => $t ) {
 			echo '<li class="fw-ap__track' . ( $i === 0 ? ' is-active' : '' ) . '" data-src="' . esc_url( $t['src'] ) . '" data-title="' . esc_attr( $t['title'] ) . '" data-artist="' . esc_attr( $t['artist'] ) . '" data-cover="' . esc_url( $t['cover'] ) . '">';
 			echo '<span class="fw-ap__track-num">' . ( $i + 1 ) . '</span>';
-			if ( $t['cover'] !== '' ) { echo '<img class="fw-ap__track-cover" src="' . esc_url( $t['cover'] ) . '" alt="" loading="lazy" />'; }
+			if ( $t['cover'] !== '' ) { echo '<img class="fw-ap__track-cover" src="' . esc_url( $t['cover'] ) . '" alt=""'
+				. ( function_exists( 'fw_img_responsive_attr_html' ) ? fw_img_responsive_attr_html( $t['cover'] ) : '' )
+				. ' loading="lazy" />'; }
 			echo '<span class="fw-ap__track-meta"><span class="fw-ap__track-title">' . esc_html( $t['title'] !== '' ? $t['title'] : __( 'Untitled', 'fw' ) ) . '</span>';
 			if ( $t['artist'] !== '' ) { echo '<span class="fw-ap__track-artist">' . esc_html( $t['artist'] ) . '</span>'; }
 			echo '</span>';

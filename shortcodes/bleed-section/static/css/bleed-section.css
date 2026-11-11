@@ -127,3 +127,6 @@
 	/* The desktop spacer column is meaningless once stacked. */
 	.bleed-section__spacer { display: none; }
 }
+
+/* Per-device picture (fw_image_tag art): the <picture> wrapper adds no box of its own. */
+.bleed-section__img > .fw-picture { display: contents; }
