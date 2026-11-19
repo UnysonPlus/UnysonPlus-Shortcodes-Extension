@@ -55,6 +55,18 @@
 	overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
 }
 
+/* Custom curve — a CSS cubic-bezier typed by hand, below the tiles. */
+.upw-easing-custom { flex: 0 0 auto; padding: 8px 12px 10px; border-top: 1px solid #eef1f5; }
+.upw-easing-custom-row { display: flex; align-items: center; gap: 8px; }
+.upw-easing-custom-img { width: 44px; height: 34px; flex: 0 0 44px; background: #f7f9fc; border-radius: 6px; object-fit: contain; }
+.upw-easing-custom-img:not([src]), .upw-easing-custom-img[src=""] { visibility: hidden; }
+.upw-easing-custom-input {
+	flex: 1 1 auto; min-width: 0; padding: 6px 9px; border: 1px solid #d5dbe2; border-radius: 6px;
+	font: 12px/1.3 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.upw-easing-custom-input:focus { outline: none; border-color: #2f74e6; box-shadow: 0 0 0 3px rgba(47,116,230,.15); }
+.upw-easing-custom-hint { margin: 5px 0 0; font-size: 11px; color: #8a94a0; line-height: 1.35; }
+
 @media ( prefers-color-scheme: dark ) {
 	/* wp-admin is light; left intentionally minimal. */
 }

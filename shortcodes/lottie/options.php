@@ -55,7 +55,9 @@ $options = [
 							'viewport' => __( 'Play when scrolled into view', 'fw' ),
 							'hover'    => __( 'Play on hover', 'fw' ),
 							'click'    => __( 'Play / pause on click', 'fw' ),
+							'manual'   => __( 'Controlled by Interactions (waits on its first frame)', 'fw' ),
 						],
+						'desc'    => __( '“Controlled by Interactions”: an Interactions step on any element plays, reverses, pauses or scrubs it (Do → Control its Lottie animation).', 'fw' ),
 					],
 					'loop' => [
 						'type'  => 'switch',

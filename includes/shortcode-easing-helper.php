@@ -34,10 +34,43 @@ if ( ! function_exists( 'sc_easing_defs' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'sc_easing_normalize' ) ) :
+	/**
+	 * A saved easing value in today's form: the Animation Engine's older short keys (Interactions, States,
+	 * Scroll Keyframes: out / inout / in / back / sine) become their exact "Classic" entries, and a custom
+	 * curve is kept only as a well-formed cubic-bezier(x1, y1, x2, y2) with x1 / x2 in 0..1.
+	 */
+	function sc_easing_normalize( $key ) {
+		$key     = trim( (string) $key );
+		$aliases = array(
+			'out'   => 'classic_out',
+			'inout' => 'classic_in_out',
+			'in'    => 'classic_in',
+			'back'  => 'classic_back',
+			'sine'  => 'in_out_sine',
+		);
+		if ( isset( $aliases[ $key ] ) ) {
+			return $aliases[ $key ];
+		}
+		if ( stripos( $key, 'cubic-bezier' ) === 0 ) {
+			if ( ! preg_match( '/^cubic-bezier\(\s*(-?[0-9]*\.?[0-9]+)\s*,\s*(-?[0-9]*\.?[0-9]+)\s*,\s*(-?[0-9]*\.?[0-9]+)\s*,\s*(-?[0-9]*\.?[0-9]+)\s*\)$/i', $key, $m ) ) {
+				return 'default';
+			}
+			$n = array_map( 'floatval', array_slice( $m, 1 ) );
+			$n[0] = max( 0, min( 1, $n[0] ) );
+			$n[2] = max( 0, min( 1, $n[2] ) );
+			$n[1] = max( -2, min( 3, $n[1] ) );
+			$n[3] = max( -2, min( 3, $n[3] ) );
+			return 'cubic-bezier(' . implode( ',', array_map( function ( $v ) { return rtrim( rtrim( number_format( $v, 3, '.', '' ), '0' ), '.' ); }, $n ) ) . ')';
+		}
+		return $key;
+	}
+endif;
+
 if ( ! function_exists( 'sc_easing_css' ) ) :
 	/** Resolve an easing key to a CSS animation-timing-function value ('' = no override / Default). */
 	function sc_easing_css( $key ) {
-		$key = (string) $key;
+		$key = sc_easing_normalize( $key );
 		if ( $key === '' || $key === 'default' ) {
 			return '';
 		}
@@ -56,7 +89,7 @@ endif;
 if ( ! function_exists( 'sc_easing_gsap' ) ) :
 	/** Resolve an easing key to the nearest GSAP ease name ('' = default). */
 	function sc_easing_gsap( $key ) {
-		$key  = (string) $key;
+		$key  = sc_easing_normalize( $key );
 		$defs = sc_easing_defs();
 		return isset( $defs[ $key ] ) ? (string) $defs[ $key ]['gsap'] : '';
 	}

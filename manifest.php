@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.16.16';
+$manifest['version'] = '1.16.18';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,16 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.16.17 - Shared easing set: two new groups and a custom curve. "Motion design" holds
+ *          the twelve named curves of Kinetic Scenes (Soft land, Snap and settle, Pop over,
+ *          Bounce hard...), sampled as CSS linear() from the same functions, so a curve
+ *          looks the same in a scene and on a page; "Classic" holds the Animation Engine's
+ *          older five, exact. The easing-picker palette gains a Custom curve row (a CSS
+ *          cubic-bezier typed as four numbers, drawn as you type), and sc_easing_normalize()
+ *          maps older saved keys (out, inout, in, back, sine) to their Classic entries and
+ *          checks custom curves. The Animation Engine now uses this picker in Interactions,
+ *          States and Scroll Keyframes, and offers its springs in Scroll Motion.
+ *
  * 1.16.11 - Exit Animation: a new card on every element's Animations tab (its own Exit
  *          filter), so an element animates out as it scrolls off the screen and back in
  *          when it returns. It starts on "Reverse the entrance" (the Entrance played

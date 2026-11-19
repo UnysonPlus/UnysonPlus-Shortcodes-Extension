@@ -56,6 +56,28 @@
 			$grid.append($tile);
 		});
 		$palette.append($scroll);
+
+		// Custom curve: type a CSS cubic-bezier (four numbers) and use it. Saved as "cubic-bezier(x1,y1,x2,y2)".
+		var $custom = $('<div class="upw-easing-custom"></div>');
+		$custom.append($('<div class="upw-easing-group"></div>').text((data.i18n && data.i18n.custom) || 'Custom curve'));
+		var $row = $('<div class="upw-easing-custom-row"></div>');
+		var $cin = $('<input type="text" class="upw-easing-custom-input" spellcheck="false" />')
+			.attr('placeholder', '0.2, 0.8, 0.2, 1')
+			.attr('aria-label', (data.i18n && data.i18n.customHint) || 'Cubic-bezier: x1, y1, x2, y2');
+		var $cimg = $('<img class="upw-easing-custom-img" alt="" aria-hidden="true" />');
+		var $cuse = $('<button type="button" class="button button-small upw-easing-custom-use"></button>').text((data.i18n && data.i18n.use) || 'Use');
+		$row.append($cimg, $cin, $cuse);
+		$custom.append($row, $('<p class="upw-easing-custom-hint"></p>').text((data.i18n && data.i18n.customHint) || 'Cubic-bezier: x1, y1, x2, y2'));
+		$palette.append($custom);
+		$cin.on('input', function () { var v = customValue(this.value); $cimg.attr('src', v ? curveThumb(v) : ''); $cuse.prop('disabled', !v); });
+		$cin.on('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $cuse.trigger('mousedown'); } });
+		$cuse.on('mousedown', function (e) {
+			e.preventDefault();
+			var v = customValue($cin.val());
+			if (!v || !$activeTrigger) { return; }
+			select($activeTrigger, v);
+			close();
+		});
 		$('body').append($palette);
 
 		// The palette is appended to <body>, i.e. OUTSIDE the module's multi-picker popover. That
@@ -87,6 +109,27 @@
 		return $palette;
 	}
 
+	/** "0.2, 0.8, 0.2, 1" or "cubic-bezier(…)" → "cubic-bezier(0.2,0.8,0.2,1)", or '' when not four numbers. */
+	function customValue(txt) {
+		var n = String(txt || '').replace(/cubic-bezier|[()]/gi, '').split(/[\s,]+/).filter(Boolean).map(Number);
+		if (n.length !== 4 || n.some(isNaN)) { return ''; }
+		n[0] = Math.max(0, Math.min(1, n[0])); n[2] = Math.max(0, Math.min(1, n[2]));
+		n[1] = Math.max(-2, Math.min(3, n[1])); n[3] = Math.max(-2, Math.min(3, n[3]));
+		return 'cubic-bezier(' + n.map(function (v) { return Math.round(v * 1000) / 1000; }).join(',') + ')';
+	}
+	/** A thumbnail (SVG data URI, 120×96 like the generated ones) of a cubic-bezier value. */
+	function curveThumb(v) {
+		var n = String(v).replace(/cubic-bezier|[()]/gi, '').split(',').map(Number), pts = [], ys = [0, 1];
+		for (var i = 0; i <= 40; i++) {
+			var t = i / 40, u = 1 - t;
+			var x = 3 * n[0] * t * u * u + 3 * n[2] * t * t * u + t * t * t, y = 3 * n[1] * t * u * u + 3 * n[3] * t * t * u + t * t * t;
+			pts.push([x, y]); ys.push(y);
+		}
+		var mn = Math.min.apply(null, ys), mx = Math.max.apply(null, ys);
+		var d = pts.map(function (p, i) { return (i ? 'L ' : 'M ') + (13 + 94 * p[0]).toFixed(1) + ' ' + (84 - (p[1] - mn) / (mx - mn) * 72).toFixed(1); }).join(' ');
+		return 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 96"><path d="' + d + '" fill="none" stroke="#3858e9" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+	}
+
 	function select($trigger, key) {
 		var $wrap = $trigger.closest('.upw-easing');
 		var $input = $wrap.find('.upw-easing-value');
@@ -95,8 +138,9 @@
 
 		var it = null;
 		for (var i = 0; i < data.items.length; i++) { if (data.items[i].key === key) { it = data.items[i]; break; } }
-		$trigger.find('.upw-easing-name').text(it ? it.label : key);
-		if (it) { $trigger.find('.upw-easing-thumb').attr('src', it.svg); }
+		var custom = !it && key.indexOf('cubic-bezier(') === 0;
+		$trigger.find('.upw-easing-name').text(it ? it.label : (custom ? ((data.i18n && data.i18n.custom) || 'Custom curve') : key));
+		if (it) { $trigger.find('.upw-easing-thumb').attr('src', it.svg); } else if (custom) { $trigger.find('.upw-easing-thumb').attr('src', curveThumb(key)); }
 		$wrap.attr('data-value', key);
 		// Notify Fw the way containers listen for it (multi-picker reads via fw.options.on.change);
 		// fall back to a plain change event if the Fw API isn't present.
@@ -128,6 +172,10 @@
 		top = Math.max(8, Math.min(top, window.innerHeight - ph - 8));
 		var left = Math.max(8, Math.min(r.left, window.innerWidth - pw - 8));
 		$p.css({ top: top + 'px', left: left + 'px', visibility: 'visible' });
+
+		// A custom value opens with its numbers in the Custom curve field.
+		var isCustom = String(cur || '').indexOf('cubic-bezier(') === 0;
+		$p.find('.upw-easing-custom-input').val(isCustom ? String(cur).replace(/cubic-bezier\(|\)/g, '').replace(/,/g, ', ') : '').trigger('input');
 
 		var $active = $p.find('.upw-easing-tile.is-active');
 		if ($active.length) { $active[0].scrollIntoView({ block: 'nearest' }); }

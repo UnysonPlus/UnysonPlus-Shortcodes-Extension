@@ -33,7 +33,33 @@
 		anim.addEventListener('DOMLoaded', function () {
 			anim.setSpeed(speed);
 			anim.setDirection(dir);
+			try { root.dispatchEvent(new CustomEvent('fwLottieReady', { bubbles: true, detail: { api: api, element: root } })); } catch (e) {}
 		});
+
+		// A control API on the element, like Rive's el.fwRive: Interactions steps (Animation Engine) and page
+		// scripts drive this animation through it. Frames are the file's own frame numbers.
+		var last = function () { return Math.max(0, (anim.totalFrames || 1) - 1); };
+		var api = {
+			el: root,
+			anim: anim,
+			play: function () {
+				anim.setDirection(dir);
+				if (!loop && anim.currentFrame >= last() - 0.5) { anim.goToAndPlay(0, true); } else { anim.play(); }
+				return api;
+			},
+			reverse: function () {
+				anim.setDirection(-dir);
+				if (anim.currentFrame <= 0.5) { anim.goToAndPlay(last(), true); } else { anim.play(); }
+				return api;
+			},
+			pause: function () { anim.pause(); return api; },
+			stop: function () { anim.stop(); return api; },
+			goTo: function (frame, andPlay) { if (andPlay) { anim.goToAndPlay(frame, true); } else { anim.goToAndStop(frame, true); } return api; },
+			segment: function (from, to) { anim.playSegments([from, to], true); return api; },
+			frame: function () { return anim.currentFrame; },
+			last: last
+		};
+		root.fwLottie = api;
 
 		if (trigger === 'viewport') {
 			if ('IntersectionObserver' in window) {

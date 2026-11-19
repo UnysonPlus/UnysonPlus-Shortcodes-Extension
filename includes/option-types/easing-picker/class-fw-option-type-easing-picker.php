@@ -75,7 +75,12 @@ class FW_Option_Type_Easing_Picker extends FW_Option_Type {
 			wp_localize_script( 'fw-option-type-easing-picker', 'upwEasingData', array(
 				'items'   => $out,
 				'default' => 'default',
-				'i18n'    => array( 'search' => __( 'Search easings…', 'fw' ) ),
+				'i18n'    => array(
+					'search'     => __( 'Search easings…', 'fw' ),
+					'custom'     => __( 'Custom curve', 'fw' ),
+					'customHint' => __( 'Cubic-bezier: x1, y1, x2, y2 (x between 0 and 1), as in CSS.', 'fw' ),
+					'use'        => __( 'Use', 'fw' ),
+				),
 			) );
 		}
 	}
@@ -89,7 +94,7 @@ class FW_Option_Type_Easing_Picker extends FW_Option_Type {
 	/** @internal */
 	protected function _get_value_from_input( $option, $input_value ) {
 		$val = (string) ( is_null( $input_value ) ? $option['value'] : $input_value );
-		$val = trim( $val );
+		$val = function_exists( 'sc_easing_normalize' ) ? sc_easing_normalize( $val ) : trim( $val );
 		if ( $val === '' ) {
 			return 'default';
 		}
