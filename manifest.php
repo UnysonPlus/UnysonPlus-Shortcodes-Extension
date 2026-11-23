@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.16.18';
+$manifest['version'] = '1.16.21';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,19 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.16.21 - Call to Action: a Button Style option. Its button always carried the
+ *          placeholder classes "btn btn-1", which no preset defines, so it rendered as an
+ *          unstyled outline on every site. It now picks a Button Style preset like the
+ *          Button element (same choices and default), and content saved before the option
+ *          existed (including the original Unyson's) gets the site's default button style.
+ *
+ * 1.16.19 - Accordion URL Hash Deep-Linking now defaults OFF. Opening a panel used to
+ *          write a "#accordion-...-header-n" hash into the address bar (and auto-scroll
+ *          to it on load), which most pages do not want and which clutters the URL. The
+ *          option still exists for anyone who wants shareable deep links to a specific
+ *          item; it is just opt-in now. An accordion saved while the old default applied
+ *          keeps its stored value until the option is switched off on that element.
+ *
  * 1.16.17 - Shared easing set: two new groups and a custom curve. "Motion design" holds
  *          the twelve named curves of Kinetic Scenes (Soft land, Snap and settle, Pop over,
  *          Bounce hard...), sampled as CSS linear() from the same functions, so a curve

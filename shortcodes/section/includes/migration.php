@@ -44,6 +44,28 @@ if ( ! function_exists( 'section_bg_preset_to_hex' ) ) :
 	}
 endif;
 
+if ( ! function_exists( 'section_background_is_empty' ) ) :
+	/**
+	 * True when a background-pro value sets nothing (no colour, gradient, image, video or overlay).
+	 * Atts are merged with the option defaults before render, so a section saved by the original
+	 * Unyson (legacy `background_color` etc.) still arrives with an empty default `background`;
+	 * that must not hide the legacy values.
+	 *
+	 * @param mixed $bg
+	 * @return bool
+	 */
+	function section_background_is_empty( $bg ) {
+		if ( ! is_array( $bg ) || ! $bg ) { return true; }
+		$c = isset( $bg['color']['value'] ) && is_array( $bg['color']['value'] ) ? $bg['color']['value'] : array();
+		if ( ! empty( $c['custom'] ) || ! empty( $c['predefined'] ) ) { return false; }
+		if ( ! empty( $bg['gradient']['data']['stops'] ) ) { return false; }
+		if ( ! empty( $bg['image']['src'] ) ) { return false; }
+		if ( isset( $bg['video']['enabled'] ) && $bg['video']['enabled'] === 'yes' ) { return false; }
+		if ( ! empty( $bg['overlay']['color'] ) || ! empty( $bg['overlay']['gradient']['stops'] ) ) { return false; }
+		return true;
+	}
+endif;
+
 if ( ! function_exists( 'section_migrate_legacy_background' ) ) :
 	/**
 	 * Build a background-pro-shaped value from the legacy Section atts.

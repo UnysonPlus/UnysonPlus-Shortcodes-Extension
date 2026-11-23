@@ -2827,13 +2827,15 @@ if ( ! function_exists( 'sc_migrate_atts' ) ) :
 	 *   - an array:
 	 *       'cb'   => callable,                 // required
 	 *       'arg'  => 'value' | 'atts',         // pass the att's value (default) or the whole atts
-	 *       'when' => 'not_array'|'missing'|'always',
+	 *       'when' => 'not_array'|'missing'|'always'|callable,
 	 *
 	 *   'value'     → $cb( $atts[$id] )         (transform one option's value)
 	 *   'atts'      → $cb( $atts )              (build from several legacy atts, e.g. background)
 	 *   when 'not_array' (default) → runs only while the value isn't already an array
 	 *   when 'missing'            → runs only while the att is empty/unset
 	 *   when 'always'            → runs every time
+	 *   when a callable          → runs while $when( $current ) is true (e.g. a value that
+	 *                              holds only the option defaults, as after a defaults merge)
 	 * A callback returning null leaves the att untouched (e.g. "no legacy data").
 	 *
 	 *   $atts = sc_migrate_atts( $atts, array(
@@ -2867,6 +2869,7 @@ if ( ! function_exists( 'sc_migrate_atts' ) ) :
 			$run = true;
 			if ( $when === 'not_array' )    { $run = ! is_array( $current ); }
 			elseif ( $when === 'missing' )  { $run = empty( $current ); }
+			elseif ( $when !== 'always' && is_callable( $when ) ) { $run = (bool) call_user_func( $when, $current ); }
 			// 'always' → leave $run true.
 
 			if ( ! $run ) {

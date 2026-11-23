@@ -64,10 +64,16 @@ if ( is_string( $split_raw ) && strpos( $split_raw, '/' ) !== false ) {
 	$cta_label  = isset( $atts['button_label'] )  ? trim( (string) $atts['button_label'] ) : '';
 	$cta_link   = isset( $atts['button_link'] )   ? (string) $atts['button_link']   : '#';
 	$cta_target = isset( $atts['button_target'] ) ? (string) $atts['button_target'] : '_self';
+	// Button Style preset; content saved before this option (incl. the original Unyson's) gets the site default.
+	$cta_style  = isset( $atts['button_style'] ) ? sanitize_html_class( (string) $atts['button_style'] ) : '';
+	if ( $cta_style === '' ) {
+		$cta_style = function_exists( 'sc_get_button_style_default' ) ? (string) sc_get_button_style_default() : '';
+		$cta_style = $cta_style !== '' ? sanitize_html_class( $cta_style ) : 'btn-primary';
+	}
 	if ( $cta_label !== '' ) :
 	?>
 	<div class="fw-action-btn" style="flex-grow:<?php echo esc_attr( $btn_grow ); ?>">
-		<a href="<?php echo esc_url( $cta_link ); ?>" class="btn btn-1" target="<?php echo esc_attr( $cta_target ); ?>">
+		<a href="<?php echo esc_url( $cta_link ); ?>" class="btn <?php echo esc_attr( $cta_style ); ?>" target="<?php echo esc_attr( $cta_target ); ?>">
 			<span><?php echo esc_html( $cta_label ); ?></span>
 		</a>
 	</div>

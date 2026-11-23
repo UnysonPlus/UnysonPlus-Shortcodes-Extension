@@ -58,9 +58,9 @@ foreach ( array( 'gap_x' => 'section--gap-x', 'gap_y' => 'section--gap-y' ) as $
 }
 
 // --- Background (background-pro): new value, else migrated legacy atts. ---
-$bgv = ( ! empty( $atts['background'] ) && is_array( $atts['background'] ) )
+$bgv = ( is_array( $atts['background'] ?? null ) && ! section_background_is_empty( $atts['background'] ) )
 	? $atts['background']
-	: section_migrate_legacy_background( $atts );
+	: ( section_migrate_legacy_background( $atts ) ?: ( $atts['background'] ?? null ) );
 
 $section_style = sc_bg_pro_style( $bgv );
 

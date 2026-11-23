@@ -27,7 +27,10 @@
    inherits its context colour (usually an <a>, so `inherit` avoids the theme LINK colour),
    a neutral outline border (so a preset with a transparent fill shows through, not a link),
    and compact sizing. */
-:where(.btn) {
+/* `html a:where(.btn)` / `html button:where(.btn)` weigh two ELEMENTS (0,0,2): still below any preset or child-theme
+   class rule (0,1,0), but they beat a theme's CSS reset (`a { padding:0; border:0 }`, common in older themes) even
+   when the reset loads after this file, which otherwise wiped the padding and border of every button. */
+:where(.btn), html a:where(.btn), html button:where(.btn), html input:where(.btn) {
 	/* transition lives here (zero specificity) so a Colour Preset's own transition — e.g. a converted
 	   source's .45s cubic-bezier lift — wins over this base easing regardless of load order. */
 	transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out;
@@ -47,8 +50,8 @@
 /* Size modifiers — :where() = zero specificity, so a Button Size Preset
    (`.btn-lg { padding/​radius/​font }` in the generated presets CSS) always wins
    regardless of stylesheet load order, matching the colour-variant treatment above. */
-:where(.btn-lg) { padding: 0.5rem 1rem;     font-size: 1.25rem;  border-radius: 0.5rem; }
-:where(.btn-sm) { padding: 0.25rem 0.5rem;  font-size: 0.875rem; border-radius: 0.25rem; }
+:where(.btn-lg), html a:where(.btn-lg), html button:where(.btn-lg) { padding: 0.5rem 1rem;     font-size: 1.25rem;  border-radius: 0.5rem; }
+:where(.btn-sm), html a:where(.btn-sm), html button:where(.btn-sm) { padding: 0.25rem 0.5rem;  font-size: 0.875rem; border-radius: 0.25rem; }
 
 /* Full-width modifier (Button "Width → Full Width") */
 .btn.w-100 { width: 100%; }

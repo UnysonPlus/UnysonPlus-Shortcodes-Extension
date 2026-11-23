@@ -86,7 +86,9 @@ class Page_Builder_Section_Item extends Page_Builder_Item
 				//   - min_height : legacy scalar (e.g. "40vh") → multi-picker shape
 				if ( function_exists( 'sc_migrate_atts' ) ) {
 					$attributes['atts'] = sc_migrate_atts( $attributes['atts'], array(
-						'background' => array( 'cb' => 'section_migrate_legacy_background', 'arg' => 'atts', 'when' => 'missing' ),
+						// "Empty", not just "missing": data loaded from storage already carries the
+						// default (empty) background next to the original Unyson's background_color.
+						'background' => array( 'cb' => 'section_migrate_legacy_background', 'arg' => 'atts', 'when' => 'section_background_is_empty' ),
 						'min_height' => 'section_migrate_min_height',
 					) );
 				}

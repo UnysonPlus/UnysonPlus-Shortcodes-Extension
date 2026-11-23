@@ -305,7 +305,7 @@ $options = [
                 'help'         => __( 'Lets you link directly to a specific FAQ answer. Disable it if multiple accordions on one page cause unwanted scrolling or hash conflicts.', 'fw' ),
                 'right-choice' => [ 'value' => 'yes', 'label' => __( 'Yes', 'fw' ) ],
                 'left-choice'  => [ 'value' => 'no',  'label' => __( 'No',  'fw' ) ],
-                'value'        => 'yes',
+                'value'        => 'no',
             ],
             'show_expand_collapse_all' => [
                 'type'         => 'switch',

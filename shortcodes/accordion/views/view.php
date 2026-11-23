@@ -22,7 +22,11 @@ $multiple_open = ( ! empty( $atts['multiple_open'] ) && $atts['multiple_open'] =
 // title alignment. (Stagger Item Reveal was removed in 2.7.106 — when an
 // Animations-tab effect is enabled, the cascade across items now happens
 // automatically; see the cascade block below `sc_build_wrapper_attr`.)
-$hash_linking            = ( ! isset( $atts['hash_linking'] )            || $atts['hash_linking']            === 'yes' );
+// Default OFF: opening a panel used to write a `#accordion-…` hash into the address
+// bar (and auto-scroll on load), which most pages do not want. It is now opt-IN —
+// enabled only when the option is explicitly 'yes'. An accordion saved while the
+// old default applied keeps its stored 'yes' until the option is turned off.
+$hash_linking            = ( isset( $atts['hash_linking'] )              && $atts['hash_linking']            === 'yes' );
 $show_expand_collapse    = ( ! empty( $atts['show_expand_collapse_all'] ) && $atts['show_expand_collapse_all'] === 'yes' );
 $title_alignment         = isset( $atts['title_alignment'] ) && in_array( $atts['title_alignment'], array( 'left', 'center', 'right' ), true )
     ? $atts['title_alignment']
