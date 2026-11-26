@@ -1480,6 +1480,10 @@ if ( ! function_exists( 'sc_icon_badge_preset_previews' ) ) :
 				case 'rounded': $tile[] = 'border-radius:' . ( $corner !== '' ? $corner : '8px' ); break;
 				default:        $tile[] = 'border-radius:50%'; break;
 			}
+			if ( ( 'square' === $shape || 'rounded' === $shape ) && function_exists( 'unysonplus_corner_shape_decl' ) ) {
+				$cs = unysonplus_corner_shape_decl( isset( $bp['corner_smoothing'] ) ? $bp['corner_smoothing'] : '' );
+				if ( $cs !== '' ) { $tile[] = $cs; }
+			}
 			$fill = $bg_color( isset( $def['background'] ) ? $def['background'] : null );
 			if ( $fill !== '' ) { $tile[] = 'background:' . $fill; }
 
@@ -1820,11 +1824,9 @@ if ( ! function_exists( 'sc_get_font_size_preset_choices' ) ) :
 		foreach ( unysonplus_get_font_size_presets() as $entry ) {
 			// A Text Style is pickable if it sets ANY typographic property — not just
 			// a size (a style-only preset, e.g. an eyebrow, sets only weight/tracking).
-			$has_style = ! empty( $entry['size'] )
-				|| ! empty( $entry['weight'] )
-				|| ( isset( $entry['line_height'] ) && trim( (string) $entry['line_height'] ) !== '' )
-				|| ( isset( $entry['letter_spacing'] ) && trim( (string) $entry['letter_spacing'] ) !== '' )
-				|| ! empty( $entry['transform'] );
+			$has_style = function_exists( 'unysonplus_text_style_is_set' )
+				? unysonplus_text_style_is_set( $entry )
+				: ( ! empty( $entry['size'] ) || ! empty( $entry['weight'] ) || ! empty( $entry['transform'] ) );
 			if ( ! $has_style ) { continue; }
 			if ( ! empty( $entry['class'] ) ) {
 				$class = sc_sanitize_class( $entry['class'] );
@@ -2449,6 +2451,10 @@ if ( ! function_exists( 'sc_emit_button_size_preview_saved_css' ) ) :
 
 			$rad = $size_len( $bs['border_radius'] ?? '' );
 			if ( $rad !== '' ) { $parts[] = "border-radius:{$rad}"; }
+			if ( function_exists( 'unysonplus_corner_shape_decl' ) ) {
+				$cs = unysonplus_corner_shape_decl( $bs['corner_smoothing'] ?? '' );
+				if ( $cs !== '' ) { $parts[] = $cs; }
+			}
 
 			// The preview must SIZE like the front-end `.btn-{slug}` rule (css-tokens.php) — line-height, the
 			// min/max widths, and above all a FIXED min-height with inline-flex centring. Without these a

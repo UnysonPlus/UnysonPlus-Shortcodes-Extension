@@ -160,6 +160,7 @@ $options = array(
 				'show_borders' => false,
 			),
 			'border_radius' => array( 'label' => __( 'Border radius', 'fw' ), 'type' => 'unit-input', 'units' => array( 'px', 'em', 'rem', '%' ), 'min' => 0 ),
+			'corner_smoothing' => function_exists( 'unysonplus_corner_smoothing_field' ) ? unysonplus_corner_smoothing_field() : array( 'type' => 'hidden', 'value' => '' ),
 			'padding'       => array(
 				'type'  => 'spacing',
 				'mode'  => 'padding',

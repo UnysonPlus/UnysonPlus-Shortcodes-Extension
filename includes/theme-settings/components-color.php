@@ -31,6 +31,26 @@ $options = array(
 				'options'      => array(
 					'name'  => array( 'label' => __( 'Color', 'fw' ), 'type' => 'text', 'value' => '', 'dynamic_content' => false ),
 					'color' => array( 'label' => '', 'type' => 'color-picker', 'value' => '' ),
+					// Wide-gamut colour (roadmap 7d). The colour above stays the colour on every screen that cannot show more.
+					'wide_gamut' => array(
+						'label'   => __( 'Vivid on wide-gamut screens', 'fw' ),
+						'type'    => 'short-select',
+						'value'   => '',
+						'choices' => array(
+							''       => __( 'Off (the same colour everywhere)', 'fw' ),
+							'subtle' => __( 'Subtle boost', 'fw' ),
+							'vivid'  => __( 'Most vivid', 'fw' ),
+							'custom' => __( 'Custom P3 value', 'fw' ),
+						),
+						'help'    => __( 'Phones, tablets and laptops with a Display P3 screen can show brighter colours than ordinary screens. Subtle boost and Most vivid keep this colour\'s hue and lightness and make it more saturated on those screens only; every other screen keeps the colour above. Greys are left as they are.', 'fw' ),
+					),
+					'p3' => array(
+						'label'           => __( 'P3 value', 'fw' ),
+						'type'            => 'text',
+						'value'           => '',
+						'dynamic_content' => false,
+						'help'            => __( 'For Custom: a colour such as <code>color(display-p3 0 0.85 0.55)</code> or <code>oklch(0.75 0.2 165)</code>.', 'fw' ),
+					),
 				),
 			),
 		),

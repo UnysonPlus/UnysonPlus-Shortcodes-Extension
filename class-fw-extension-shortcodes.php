@@ -106,6 +106,12 @@ class FW_Extension_Shortcodes extends FW_Extension
 		// its own wp_footer enqueue, so require it on every request.
 		require_once dirname( __FILE__ ) . '/includes/shortcode-background-helper.php';
 
+		// One shared "Effects" tab on every element (Animation Engine roadmap 8a):
+		// opacity, blend, outline, stacked shadows, 2D/3D transforms, filters,
+		// backdrop filters, transition, cursor, pointer-events, CSS variables.
+		// Injects via fw_shortcode_get_options + emits scoped inline CSS.
+		require_once dirname( __FILE__ ) . '/includes/shortcode-effects-helper.php';
+
 		// Per-device image fields (focal point, crop per device, tablet/phone image)
 		// + the reader that turns them into fw_image_tag()'s <picture> spec.
 		require_once dirname( __FILE__ ) . '/includes/responsive-image-fields.php';

@@ -50,7 +50,8 @@ $preview_template = <<<'TPL'
 	var scrim = { top:'linear-gradient(0deg,transparent 55%,'+scrimC+')', bottom:'linear-gradient(180deg,transparent 55%,'+scrimC+')', radial:'radial-gradient(120% 100% at 50% 100%,'+scrimC+',transparent 60%)' }[o.scrim] || 'transparent';
 	var duoC = (o.duo_color && o.duo_color.custom) ? o.duo_color.custom : '';
 	var photo = "linear-gradient(135deg,#8ea2c4,#c9b3d6 45%,#e7c9a3)";
-	var css = ".ph{position:relative;width:100%;aspect-ratio:"+ar+";border-radius:"+r+";overflow:hidden;background:"+photo+";filter:"+f+";clip-path:"+clip+"}"
+	var csK = { soft:'1.5', squircle:'2', strong:'2.5' }[o.corner_smoothing];
+	var css = ".ph{position:relative;width:100%;aspect-ratio:"+ar+";border-radius:"+r+";"+(csK ? "corner-shape:superellipse("+csK+");" : "")+"overflow:hidden;background:"+photo+";filter:"+f+";clip-path:"+clip+"}"
 		+ ".sc{position:absolute;inset:0;background:"+scrim+"}"
 		+ (o.filter==='duotone'&&duoC ? ".du{position:absolute;inset:0;background:"+duoC+";mix-blend-mode:color}" : ".du{display:none}");
 	var html = "<div class='ph'><div class='du'></div><div class='sc'></div></div>";
@@ -104,6 +105,7 @@ $options = array(
 						'placeholder' => '12px',
 						'help'        => __( 'A CSS length (e.g. <code>12px</code>, <code>1rem</code>) for simple rounded corners. Used when Shape / Mask is “None”; picking a Mask shape overrides it.', 'fw' ),
 					),
+					'corner_smoothing' => function_exists( 'unysonplus_corner_smoothing_field' ) ? unysonplus_corner_smoothing_field() : array( 'type' => 'hidden', 'value' => '' ),
 					// Shape / Mask — a popover image-picker of shape thumbnails (the same visual
 					// grid as the Image Box shortcode, from the shared mask library), with a
 					// "Custom" reveal for an inline SVG / URL / clip-path. Popover keeps the row
