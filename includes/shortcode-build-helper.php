@@ -363,6 +363,18 @@ function sc_build_wrapper_attr( $atts ) {
         $attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . ';' : '' ) . $pos_style;
     }
 
+    // Freeform placement (roadmap 7h): an item inside a Freeform Div carries its box (left / top / width in the
+    // canvas, layer) as CSS variables. The parent's stylesheet places it absolutely on wide screens and stacks it
+    // in reading order on small ones; outside a Freeform parent the variables are inert.
+    $free = function_exists( 'sc_free_box' ) ? sc_free_box( $atts ) : null;
+    if ( $free ) {
+        $classes[]     = 'fw-free-item';
+        $attr['style'] = ( isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . ';' : '' )
+            . '--fw-x:' . $free['x'] . '%;--fw-y:' . $free['y'] . 'px;'
+            . ( $free['w'] > 0 ? '--fw-w:' . $free['w'] . '%;' : '' )
+            . '--fw-z:' . $free['z'] . ';--fw-o:' . $free['o'];
+    }
+
     // Add class attribute if classes exist (de-duplicated — e.g. a base_class of
     // "heading" plus a user/converter css_class of "heading" collapse to one token).
     if ( ! empty( $classes ) ) {
@@ -373,6 +385,31 @@ function sc_build_wrapper_attr( $atts ) {
     /** Filters the assembled HTML attribute array for a shortcode wrapper element before it is rendered. */
     return apply_filters( 'sc_build_wrapper_attr', $attr, $atts );
 }
+
+if ( ! function_exists( 'sc_free_box' ) ) :
+	/**
+	 * The Freeform box of an item (roadmap 7h), from its hidden `free_box` att: JSON {x, y, w, z} with x and w in % of
+	 * the Freeform canvas width, y in px from its top, z the layer. Null when the item has none.
+	 * `o` is the stacking order on small screens: top to bottom, then left to right.
+	 *
+	 * @param array $atts
+	 * @return array|null { x, y, w, z, o }
+	 */
+	function sc_free_box( $atts ) {
+		if ( empty( $atts['free_box'] ) ) {
+			return null;
+		}
+		$b = is_array( $atts['free_box'] ) ? $atts['free_box'] : json_decode( (string) $atts['free_box'], true );
+		if ( ! is_array( $b ) || ! isset( $b['x'], $b['y'] ) || ! is_numeric( $b['x'] ) || ! is_numeric( $b['y'] ) ) {
+			return null;
+		}
+		$x = round( max( -50, min( 150, (float) $b['x'] ) ), 2 );
+		$y = (int) round( max( -2000, min( 20000, (float) $b['y'] ) ) );
+		$w = isset( $b['w'] ) && is_numeric( $b['w'] ) ? round( max( 0, min( 200, (float) $b['w'] ) ), 2 ) : 0;
+		$z = isset( $b['z'] ) && is_numeric( $b['z'] ) ? max( 0, min( 999, (int) $b['z'] ) ) : 1;
+		return array( 'x' => $x, 'y' => $y, 'w' => $w, 'z' => $z, 'o' => max( 0, $y ) * 100 + (int) max( 0, min( 99, round( $x ) ) ) );
+	}
+endif;
 
 if ( ! function_exists( 'sc_editor_notice' ) ) :
 	/**

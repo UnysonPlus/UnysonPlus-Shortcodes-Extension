@@ -65,3 +65,27 @@
 	outline: 2px solid currentColor;
 	outline-offset: 2px;
 }
+
+/* Freeform (roadmap 7h): children are placed by their own --fw-x / --fw-y / --fw-w / --fw-z (set by
+   sc_free_box() from the Live Editor). x and width are % of the canvas, y is px from its top. Below the
+   "Stack Below" size they stack in reading order (--fw-o: top to bottom, then left to right). */
+.fw-flexbox.fw-free { position: relative; }
+.fw-flexbox.fw-free > .fw-free-item { box-sizing: border-box; }
+.fw-flexbox.fw-free.fw-free--stack-never { min-height: var(--fw-free-h, 560px); }
+.fw-flexbox.fw-free.fw-free--stack-never > .fw-free-item.fw-free-item { position: absolute; left: var(--fw-x, 0); top: var(--fw-y, 0); width: var(--fw-w, auto); z-index: var(--fw-z, 1); margin: 0; }
+@media (min-width: 992px) {
+	.fw-flexbox.fw-free.fw-free--stack-md { min-height: var(--fw-free-h, 560px); }
+	.fw-flexbox.fw-free.fw-free--stack-md > .fw-free-item.fw-free-item { position: absolute; left: var(--fw-x, 0); top: var(--fw-y, 0); width: var(--fw-w, auto); z-index: var(--fw-z, 1); margin: 0; }
+}
+@media (min-width: 768px) {
+	.fw-flexbox.fw-free.fw-free--stack-sm { min-height: var(--fw-free-h, 560px); }
+	.fw-flexbox.fw-free.fw-free--stack-sm > .fw-free-item.fw-free-item { position: absolute; left: var(--fw-x, 0); top: var(--fw-y, 0); width: var(--fw-w, auto); z-index: var(--fw-z, 1); margin: 0; }
+}
+@media (max-width: 991.98px) {
+	.fw-flexbox.fw-free--stack-md { display: flex; flex-direction: column; gap: var(--fw-free-gap, 24px); }
+	.fw-flexbox.fw-free.fw-free--stack-md > .fw-free-item.fw-free-item { order: var(--fw-o, 0); max-width: 100%; }
+}
+@media (max-width: 767.98px) {
+	.fw-flexbox.fw-free--stack-sm { display: flex; flex-direction: column; gap: var(--fw-free-gap, 24px); }
+	.fw-flexbox.fw-free.fw-free--stack-sm > .fw-free-item.fw-free-item { order: var(--fw-o, 0); max-width: 100%; }
+}

@@ -1,0 +1,9 @@
+/* Vector Shape (roadmap 7g). */
+.vshape { line-height: 0; }
+.vshape--center { text-align: center; }
+.vshape--right { text-align: right; }
+.vshape__svg { display: inline-block; max-width: 100%; }
+.vshape__svg svg { display: block; width: 100%; height: auto; overflow: visible; }
+.vshape--mono .vshape__svg [fill]:not([fill="none"]) { fill: currentColor; }
+.vshape--mono .vshape__svg [stroke]:not([stroke="none"]) { stroke: currentColor; }
+.vshape__link { display: inline-block; }

@@ -306,6 +306,7 @@ $options = [
 							'inline-block' => __( 'Inline Block', 'fw' ),
 							'inline'       => __( 'Inline', 'fw' ),
 							'none'         => __( 'None (hidden)', 'fw' ),
+							'free'         => __( 'Freeform (place freely)', 'fw' ),
 						],
 					],
 				],
@@ -452,6 +453,38 @@ $options = [
 			],
 			// Flex-only arrangement — Direction / Wrap / Reverse have no meaning under Grid or Block,
 			// so this group is revealed by the reactive JS ONLY when Display = Flex.
+			// Freeform (roadmap 7h): children sit where they are dragged in the Live Editor, and stack in reading
+			// order (top to bottom, then left to right) below the chosen screen size. Shown only for Display = Freeform.
+			'group_free' => [
+				'type'    => 'group',
+				'options' => [
+					'free_height' => [
+						'type'  => 'unit-input',
+						'label' => __( 'Canvas Height', 'fw' ),
+						'desc'  => __( 'The height of the freeform area where elements are placed freely.', 'fw' ),
+						'units' => [ 'px', 'vh' ],
+						'value' => [ 'value' => '560', 'unit' => 'px' ],
+					],
+					'free_stack' => [
+						'type'    => 'select',
+						'label'   => __( 'Stack Below', 'fw' ),
+						'desc'    => __( 'Under this screen size the elements stop being placed freely and stack one under another, in reading order.', 'fw' ),
+						'value'   => 'md',
+						'choices' => [
+							'md'    => __( 'Tablet (stack on tablets and phones)', 'fw' ),
+							'sm'    => __( 'Phone (stack on phones only)', 'fw' ),
+							'never' => __( 'Never (place freely on every screen)', 'fw' ),
+						],
+					],
+					'free_gap' => [
+						'type'  => 'unit-input',
+						'label' => __( 'Stacked Gap', 'fw' ),
+						'desc'  => __( 'Space between the elements once they stack.', 'fw' ),
+						'units' => [ 'px', 'rem' ],
+						'value' => [ 'value' => '24', 'unit' => 'px' ],
+					],
+				],
+			],
 			'group_flex' => [
 				'type'    => 'group',
 				'options' => [

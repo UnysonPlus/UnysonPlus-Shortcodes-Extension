@@ -753,6 +753,7 @@
 		// Display-driven groups.
 		toggle( find( '#fw-backend-options-group-group_grid' ),    isGrid );
 		toggle( find( '#fw-backend-options-group-group_flex' ),    isFlex );
+		toggle( find( '#fw-backend-options-group-group_free' ),    display === 'free' );
 		toggle( find( '#fw-backend-options-group-group_arrange' ), isFlexGrid );
 		// HTML-Tag-driven groups.
 		toggle( find( '#fw-backend-options-group-group_section_style' ), isSection );

@@ -1892,6 +1892,9 @@ if ( ! function_exists( 'sc_needs_wrapper' ) ) :
 		// Advanced tab — CSS ID / Class
 		if ( ! empty( $atts['css_id'] ) || ! empty( $atts['css_class'] ) ) { return true; }
 
+		// Freeform placement (7h): the box rides on the wrapper (sc_build_wrapper_attr).
+		if ( ! empty( $atts['free_box'] ) ) { return true; }
+
 		// Advanced tab — per-element Custom CSS. The wrapper MUST render so it carries
 		// the `.u{hash}` scope class that the element's `selector`-scoped Custom CSS
 		// (aggregated by dynamic-css.php) targets — otherwise the rule has nothing to

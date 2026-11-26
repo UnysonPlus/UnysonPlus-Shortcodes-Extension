@@ -9,7 +9,7 @@ $manifest['description'] = __(
 	'fw' 
 );
 
-$manifest['version'] = '1.16.25';
+$manifest['version'] = '1.16.27';
 $manifest['display']     = false;
 $manifest['standalone']  = true;
 
@@ -38,6 +38,18 @@ $manifest['requires_wp']  = '5.8';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.16.27 - Freeform sections. The Flexbox Div gains Display "Freeform": its children
+ *          sit where they are dragged in the Live Editor (left and width in % of the
+ *          canvas, top in px, a layer), stored per item in the shared Advanced att
+ *          free_box and applied by sc_build_wrapper_attr() as CSS variables. Below the
+ *          "Stack Below" size (tablet, phone or never) they stack in reading order.
+ *          New options: Canvas Height, Stack Below, Stacked Gap.
+ *
+ * 1.16.26 - Vector Shape element. A shape drawn in a vector editor (pen with curve
+ *          handles, rectangle, ellipse, polygon, star; union, subtract, intersect,
+ *          exclude) and kept as clean, sanitised inline SVG, with an optional
+ *          one-colour mode. Built on the new framework option type vector-svg.
+ *
  * 1.16.21 - Call to Action: a Button Style option. Its button always carried the
  *          placeholder classes "btn btn-1", which no preset defines, so it rendered as an
  *          unstyled outline on every site. It now picks a Button Style preset like the

@@ -32,7 +32,7 @@ if ( $html_tag_raw === 'custom' ) {
 // Display mode: Flex (default) / Grid / Block. Flex keeps the d-flex utility class; Grid and
 // Block set their display (+ grid template-columns) via a scoped rule keyed to the fx- class
 // (below), so existing flexboxes are unchanged and the flex utility classes stay inert on them.
-$display  = ( isset( $atts['display'] ) && in_array( $atts['display'], array( 'flex', 'inline-flex', 'grid', 'block', 'inline-block', 'inline', 'none' ), true ) ) ? $atts['display'] : 'flex';
+$display  = ( isset( $atts['display'] ) && in_array( $atts['display'], array( 'flex', 'inline-flex', 'grid', 'block', 'inline-block', 'inline', 'none', 'free' ), true ) ) ? $atts['display'] : 'flex';
 // `inline-flex` is a flex container too — it takes every flex arrangement class (direction / wrap /
 // justify / align), just inline-level. Treat it as flex throughout, only the base class differs.
 $is_flex  = ( $display === 'flex' || $display === 'inline-flex' );
@@ -49,6 +49,19 @@ $parent_is_grid = ( ! empty( $GLOBALS['_fw_flex_stack'] ) && end( $GLOBALS['_fw_
 $classes = ( $display === 'flex' ) ? array( 'fw-flex' )
 	: ( ( $display === 'inline-flex' ) ? array( 'fw-inline-flex' )
 	: ( ( $display === 'grid' ) ? array( 'fw-grid' ) : array() ) );
+// Freeform (roadmap 7h): a positioned canvas; its children carry their own box (sc_free_box()).
+if ( $display === 'free' ) {
+	$fx_stack  = ( isset( $atts['free_stack'] ) && in_array( $atts['free_stack'], array( 'md', 'sm', 'never' ), true ) ) ? $atts['free_stack'] : 'md';
+	$classes   = array( 'fw-free', 'fw-free--stack-' . $fx_stack );
+	$fx_len    = function ( $v, $units, $def ) {
+		if ( is_array( $v ) && isset( $v['value'] ) && is_numeric( $v['value'] ) ) {
+			return ( 0 + $v['value'] ) . ( ( isset( $v['unit'] ) && in_array( $v['unit'], $units, true ) ) ? $v['unit'] : $units[0] );
+		}
+		return $def;
+	};
+	$fx_free_style = '--fw-free-h:' . $fx_len( isset( $atts['free_height'] ) ? $atts['free_height'] : null, array( 'px', 'vh' ), '560px' )
+		. ';--fw-free-gap:' . $fx_len( isset( $atts['free_gap'] ) ? $atts['free_gap'] : null, array( 'px', 'rem' ), '24px' ) . ';';
+}
 
 // --- Responsive helper: read a { base, md, lg } value (tolerating a legacy scalar).
 // The parsing lives in the shared fw_sc_resp_value() (shortcodes helpers.php) so
@@ -434,7 +447,7 @@ $bg_style = function_exists( 'sc_bg_pro_style' ) ? sc_bg_pro_style( $bgv ) : '';
 // Display = inline-block / inline / none has no fw-flex/fw-grid class (those are flex/grid only)
 // and no default rule, so emit it as an inline declaration. (block is the element's natural default.)
 $disp_style  = in_array( $display, array( 'inline-block', 'inline', 'none' ), true ) ? ( 'display:' . $display . ';' ) : '';
-$extra_style = $disp_style . $bg_style;
+$extra_style = $disp_style . $bg_style . ( isset( $fx_free_style ) ? $fx_free_style : '' );
 if ( $extra_style !== '' ) {
 	$existing      = isset( $attr['style'] ) && $attr['style'] !== '' ? rtrim( $attr['style'], '; ' ) . '; ' : '';
 	$attr['style'] = $existing . $extra_style;

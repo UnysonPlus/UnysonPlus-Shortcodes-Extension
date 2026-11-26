@@ -31,6 +31,12 @@ function sc_get_advanced_tab() {
         'unique_id' => [
             'type' => 'unique',
         ],
+        // Freeform placement (roadmap 7h): set by dragging the item in a Freeform Div in the Live Editor.
+        // JSON {x, y, w, z}; empty = not placed. No control of its own (see sc_free_box()).
+        'free_box' => [
+            'type'  => 'hidden',
+            'value' => '',
+        ],
         'group_css' => [
             'type'    => 'group',
             'options' => [
